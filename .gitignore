@@ -4,12 +4,7 @@ DerivedDataCache
 Intermediate
 Saved
 
-Content/StarterContent
-Content/MedievalDungeon
-Content/InfinityBladeIceLands
-Content/InfinityBladeWarriors
-Content/InfinityBladeAdversaries
-Content/ParagonMinions
+Content/*
 
 .vscode
 .vs
