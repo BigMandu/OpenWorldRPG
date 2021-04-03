@@ -42,6 +42,9 @@ AMainCharacter::AMainCharacter()
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationRoll = false;
 	bUseControllerRotationYaw = false;
+
+	StimuliSourceComp = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("StimuliSource"));
+
 }
 
 // Called to bind functionality to input
@@ -57,8 +60,8 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
-	/*PlayerInputComponent->BindAxis("TurnRate", this, &AMainCharacter::TurnAtRate);
-	PlayerInputComponent->BindAxis("LookUpRate", this, &AMainCharacter::LookUpAtRate);*/
+	PlayerInputComponent->BindAxis("TurnRate", this, &AMainCharacter::TurnAtRate);
+	PlayerInputComponent->BindAxis("LookUpRate", this, &AMainCharacter::LookUpAtRate);
 
 }
 
@@ -67,10 +70,10 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 void AMainCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
 	StimuliSourceComp->bAutoRegister = true;
 	StimuliSourceComp->RegisterForSense(Sight);
 	StimuliSourceComp->RegisterForSense(Hearing);
+	
 }
 
 // Called every frame

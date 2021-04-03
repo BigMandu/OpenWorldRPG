@@ -25,11 +25,11 @@ AEnemyAIController::AEnemyAIController()
 	SightConfig->SightRadius = 1500.f;
 	SightConfig->LoseSightRadius = 2000.f;
 	SightConfig->PeripheralVisionAngleDegrees = 60.f;
-	SightConfig->SetMaxAge(60.f);
+	SightConfig->SetMaxAge(15.f);
 	SightConfig->DetectionByAffiliation.bDetectNeutrals = true;
 	
-	HearingConfig->HearingRange = 1000.f;
-	HearingConfig->LoSHearingRange = 1200.f;
+	HearingConfig->HearingRange = 1500.f;
+	HearingConfig->LoSHearingRange = 1900.f;
 
 }
 
