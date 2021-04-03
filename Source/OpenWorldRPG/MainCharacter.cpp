@@ -5,6 +5,11 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
+#include "Perception/AIPerceptionStimuliSourceComponent.h"
+#include "Perception/AISense_Sight.h"
+#include "Perception/AISense_Hearing.h"
+//#include "Perception/AISense.h"
+
 
 // Sets default values
 AMainCharacter::AMainCharacter()
@@ -52,8 +57,8 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
-	PlayerInputComponent->BindAxis("TurnRate", this, &AMainCharacter::TurnAtRate);
-	PlayerInputComponent->BindAxis("LookUpRate", this, &AMainCharacter::LookUpAtRate);
+	/*PlayerInputComponent->BindAxis("TurnRate", this, &AMainCharacter::TurnAtRate);
+	PlayerInputComponent->BindAxis("LookUpRate", this, &AMainCharacter::LookUpAtRate);*/
 
 }
 
@@ -63,6 +68,9 @@ void AMainCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	StimuliSourceComp->bAutoRegister = true;
+	StimuliSourceComp->RegisterForSense(Sight);
+	StimuliSourceComp->RegisterForSense(Hearing);
 }
 
 // Called every frame

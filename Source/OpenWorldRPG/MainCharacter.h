@@ -23,6 +23,12 @@ public:
 	float BaseTurnRate;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	float BaseLookupRate;
+
+
+
+	class UAIPerceptionStimuliSourceComponent* StimuliSourceComp;
+	TSubclassOf<class UAISense_Sight> Sight;
+	TSubclassOf<class UAISense_Hearing> Hearing;
 	
 
 	
