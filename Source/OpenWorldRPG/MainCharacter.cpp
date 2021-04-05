@@ -2,13 +2,18 @@
 
 
 #include "MainCharacter.h"
+#include "MainAnimInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "Perception/AISense_Sight.h"
 #include "Perception/AISense_Hearing.h"
+#include "Components/PawnNoiseEmitterComponent.h"
 //#include "Perception/AISense.h"
+#include "Sound/SoundBase.h"
+#include "Kismet/GameplayStatics.h"
+#include "Sound/SoundCue.h"
 
 
 // Sets default values
@@ -60,8 +65,8 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
-	PlayerInputComponent->BindAxis("TurnRate", this, &AMainCharacter::TurnAtRate);
-	PlayerInputComponent->BindAxis("LookUpRate", this, &AMainCharacter::LookUpAtRate);
+	/*PlayerInputComponent->BindAxis("TurnRate", this, &AMainCharacter::TurnAtRate);
+	PlayerInputComponent->BindAxis("LookUpRate", this, &AMainCharacter::LookUpAtRate);*/
 
 }
 
@@ -70,9 +75,19 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 void AMainCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	MainAnimInstance = Cast<UMainAnimInstance>(GetMesh()->GetAnimInstance());
+
+	if (MainAnimInstance)
+	{
+		MainAnimInstance->StepSound.AddUObject(this, &AMainCharacter::StepSound);
+	}
+
 	StimuliSourceComp->bAutoRegister = true;
 	StimuliSourceComp->RegisterForSense(Sight);
 	StimuliSourceComp->RegisterForSense(Hearing);
+
+	
 	
 }
 
@@ -80,7 +95,16 @@ void AMainCharacter::BeginPlay()
 void AMainCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	//bIsAccelerating
+	FVector VecLength = FVector(0.f);
+	if (GetCharacterMovement()->GetCurrentAcceleration().Size() > VecLength.Size())
+	{
+		bIsAccelerating = true;
+	}
+	else
+	{
+		bIsAccelerating = false;
+	}
 }
 
 void AMainCharacter::TurnAtRate(float Rate)
@@ -121,4 +145,16 @@ void AMainCharacter::MoveRight(float Value)
 		FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 		AddMovementInput(Direction, Value);
 	}
+}
+
+void AMainCharacter::StepSound()
+{
+	//UE_LOG(LogTemp, Warning, TEXT("AnimNotify -> AMainChar:: StepSound()"));
+
+	if (StepSoundCue)
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), StepSoundCue, GetActorLocation());
+	}
+	UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), 1.f, this);
+
 }

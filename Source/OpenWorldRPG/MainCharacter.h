@@ -13,6 +13,10 @@ class OPENWORLDRPG_API AMainCharacter : public ACharacter
 public:
 	AMainCharacter();
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool bIsAccelerating;
+
+	/**********   카메라 관련  *************/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	class USpringArmComponent* CameraBoom;
 
@@ -25,13 +29,17 @@ public:
 	float BaseLookupRate;
 
 
+	class UMainAnimInstance* MainAnimInstance;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Sounds)
+	class USoundCue* StepSoundCue;
+
+
+	/**************    Perception Source 관련   ******************/
 	class UAIPerceptionStimuliSourceComponent* StimuliSourceComp;
 	TSubclassOf<class UAISense_Sight> Sight;
 	TSubclassOf<class UAISense_Hearing> Hearing;
-	
 
-	
 
 protected:
 	// Called when the game starts or when spawned
@@ -49,7 +57,8 @@ public:
 	void LookUpAtRate(float Rate);
 
 	void MoveForward(float Value);
-
 	void MoveRight(float Value);
+
+	void StepSound();
 
 };

@@ -28,8 +28,13 @@ AEnemyAIController::AEnemyAIController()
 	SightConfig->SetMaxAge(15.f);
 	SightConfig->DetectionByAffiliation.bDetectNeutrals = true;
 	
-	HearingConfig->HearingRange = 1500.f;
-	HearingConfig->LoSHearingRange = 1900.f;
+	HearingConfig->bUseLoSHearing = true;
+	HearingConfig->HearingRange = 1000.f;
+	HearingConfig->LoSHearingRange = 1500.f;
+	HearingConfig->SetMaxAge(15.f);
+	//HearingConfig->DetectionByAffiliation.bDetectNeutrals = true;
+	//HearingConfig->DetectionByAffiliation.bDetectEnemies = true;
+	HearingConfig->DetectionByAffiliation.bDetectFriendlies = true;
 
 }
 
@@ -58,6 +63,13 @@ void AEnemyAIController::DetectedTarget(AActor* Target, FAIStimulus Stimulus)
 		if (Player)
 		{
 			FVector DetectedLocation = Stimulus.StimulusLocation;
+
+			//FAISenseID HearingSense = UAISense::GetSenseID<UAISense_Hearing>(); // UAISenseConfig_Hearing::GetSenseID();
+			//if (PerceptionComponent->GetSenseConfig(HearingSense))
+			//{
+			//	UE_LOG(LogTemp, Warning, TEXT("AI : Hearing"));
+			//}
+
 			if (Stimulus.WasSuccessfullySensed())
 			{
 				if (GetWorldTimerManager().IsTimerActive(TargetLostTimer))
