@@ -86,8 +86,6 @@ void AMainCharacter::BeginPlay()
 	StimuliSourceComp->bAutoRegister = true;
 	StimuliSourceComp->RegisterForSense(Sight);
 	StimuliSourceComp->RegisterForSense(Hearing);
-
-	
 	
 }
 
@@ -157,4 +155,33 @@ void AMainCharacter::StepSound()
 	}
 	UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), 1.f, this);
 
+}
+
+
+bool AMainCharacter::CanBeSeenFrom(const FVector& ObserverLocation, FVector& OutSeenLocation, int32& NumberOfLoSChecksPerformed, float& OutSightStrength, const AActor* IgnoreActor) const
+{
+	FHitResult HitResult;
+	bool bResult = false;
+	/*FCollisionObjectQueryParams에는 	FCollisionObjectQueryParams(int32 InObjectTypesToQuery)를 사용할거다.
+	* 이를 사용하기 위해서는 To do this, use ECC_TO_BITFIELD to convert to bit field 이렇게 하라고 한다.
+	*/
+	bool bHit = GetWorld()->LineTraceSingleByObjectType(HitResult, ObserverLocation, GetActorLocation()
+		, FCollisionObjectQueryParams(ECC_TO_BITFIELD(ECC_WorldDynamic) | ECC_TO_BITFIELD(ECC_WorldStatic))
+		, FCollisionQueryParams(FName(TEXT("SightSense")), true, IgnoreActor));
+
+	if (bHit == false || (HitResult.Actor.IsValid() && HitResult.Actor->IsOwnedBy(this)))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Player:: Catch"));
+		OutSeenLocation = GetActorLocation();
+		OutSightStrength = 1;
+		UE_LOG(LogTemp, Warning, TEXT("OutSeenLocation : %s, OutSightStrength : %f"), *OutSeenLocation.ToString(), OutSightStrength);
+		bResult = true;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Player:: Hiding"));
+		OutSightStrength = 1;
+	}
+	
+	return bResult;
 }

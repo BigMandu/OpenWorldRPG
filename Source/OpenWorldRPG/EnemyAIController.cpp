@@ -35,7 +35,6 @@ AEnemyAIController::AEnemyAIController()
 	//HearingConfig->DetectionByAffiliation.bDetectNeutrals = true;
 	//HearingConfig->DetectionByAffiliation.bDetectEnemies = true;
 	HearingConfig->DetectionByAffiliation.bDetectFriendlies = true;
-
 }
 
 void AEnemyAIController::PostInitializeComponents()
@@ -80,31 +79,28 @@ void AEnemyAIController::DetectedTarget(AActor* Target, FAIStimulus Stimulus)
 
 			if (Stimulus.WasSuccessfullySensed())
 			{
-				if (GetWorldTimerManager().IsTimerActive(TargetLostTimer))
+				if (GetWorldTimerManager().IsTimerActive(TargetLostTimer)) //타이머 초기화
 				{
 					GetWorldTimerManager().ClearTimer(TargetLostTimer);
 				}
-				
-				/*bIsSight = FPerceptionListener::HasSense(SightSenseID);
-				bIsHearing = FPerceptionListener::HasSense(HearingSenseID);
-				UE_LOG(LogTemp, Warning, TEXT("sight : %d, hearing : %d"), bIsSight, bIsHearing);*/
 
-				if (Stimulus.Type == SightSenseID)
+				if (Stimulus.Type == SightSenseID) //Sight를 감지했을때
 				{
 					
 					UE_LOG(LogTemp, Warning, TEXT("AI : Sight, Sense ID : %d"), SightSenseID.Index);
 				}
-				else if (Stimulus.Type == HearingSenseID)
+				
+				if (Stimulus.Type == HearingSenseID) //Hearing을 감지했을때
 				{
 					UE_LOG(LogTemp, Warning, TEXT("AI : Hearing, Sense ID : %d"), HearingSenseID.Index);
 				}
 
 				UE_LOG(LogTemp, Warning, TEXT("AI : Detected!! / Detect Location : %s"), *DetectedLocation.ToString())
 			}
-			else
+			else //감지를 못했을때
 			{
 				TargetLostDelegate = FTimerDelegate::CreateUObject(this, &AEnemyAIController::LostTarget, Target);
-				GetWorldTimerManager().SetTimer(TargetLostTimer, TargetLostDelegate, SightConfig->GetMaxAge(), false);
+				GetWorldTimerManager().SetTimer(TargetLostTimer, TargetLostDelegate, SightConfig->GetMaxAge(), false); //특정초 이후에 LostTarget함수를 호출한다.
 
 				UE_LOG(LogTemp, Warning, TEXT("AI : Missing!! / Last Location : %s"), *DetectedLocation.ToString())
 			}
@@ -114,7 +110,7 @@ void AEnemyAIController::DetectedTarget(AActor* Target, FAIStimulus Stimulus)
 
 void AEnemyAIController::LostTarget(AActor* Target)
 {
-	if (GetWorldTimerManager().IsTimerActive(TargetLostTimer))
+	if (GetWorldTimerManager().IsTimerActive(TargetLostTimer)) //타이머 초기화
 	{
 		GetWorldTimerManager().ClearTimer(TargetLostTimer);
 	}

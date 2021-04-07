@@ -4,10 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Perception/AISightTargetInterface.h"
 #include "MainCharacter.generated.h"
 
 UCLASS()
-class OPENWORLDRPG_API AMainCharacter : public ACharacter
+class OPENWORLDRPG_API AMainCharacter : public ACharacter, public IAISightTargetInterface
 {
 	GENERATED_BODY()
 public:
@@ -60,5 +61,7 @@ public:
 	void MoveRight(float Value);
 
 	void StepSound();
+
+	virtual bool CanBeSeenFrom(const FVector& ObserverLocation, FVector& OutSeenLocation, int32& NumberOfLoSChecksPerformed, float& OutSightStrength, const AActor* IgnoreActor) const;
 
 };

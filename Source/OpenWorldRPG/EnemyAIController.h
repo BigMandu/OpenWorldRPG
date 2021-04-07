@@ -25,15 +25,8 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = AI)
 	class UAISenseConfig_Hearing* HearingConfig;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = AI)
-	bool bIsSight;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = AI)
-	bool bIsHearing;
-
-
 	FTimerHandle TargetLostTimer;
 	FTimerDelegate TargetLostDelegate;
-
 
 	/*UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = AI)
 	class UNavigationSystemV1* NavSys;*/
