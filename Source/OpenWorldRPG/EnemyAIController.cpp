@@ -64,17 +64,39 @@ void AEnemyAIController::DetectedTarget(AActor* Target, FAIStimulus Stimulus)
 		{
 			FVector DetectedLocation = Stimulus.StimulusLocation;
 
-			//FAISenseID HearingSense = UAISense::GetSenseID<UAISense_Hearing>(); // UAISenseConfig_Hearing::GetSenseID();
-			//if (PerceptionComponent->GetSenseConfig(HearingSense))
-			//{
-			//	UE_LOG(LogTemp, Warning, TEXT("AI : Hearing"));
-			//}
+			FAISenseID HearingSenseID = HearingConfig->GetSenseID(); 
+			FAISenseID SightSenseID = SightConfig->GetSenseID();
+			
+			/*
+			FAISenseID HearingSenseID = UAISense::GetSenseID<UAISense_Hearing>(); 	
+			if (PerceptionComponent->GetSenseConfig(HearingSenseID) != nullptr)
+			{
+				const FActorPerceptionInfo* HeardPerceptionInfo = PerceptionComponent->GetFreshestTrace(HearingSenseID);
+			if (HeardPerceptionInfo != nullptr && PerceptionComponent->HasActiveStimulus(*HeardPerceptionInfo->Target, HearingSenseID))
+			{
+  			FVector HeardSomethingLocation = HeardPerceptionInfo->GetStimulusLocation(HearingSenseID);
+  			float NoiseStrength = HeardPerceptionInfo->GetStimulusStrength(HearingSenseID);
+			*/
 
 			if (Stimulus.WasSuccessfullySensed())
 			{
 				if (GetWorldTimerManager().IsTimerActive(TargetLostTimer))
 				{
 					GetWorldTimerManager().ClearTimer(TargetLostTimer);
+				}
+				
+				/*bIsSight = FPerceptionListener::HasSense(SightSenseID);
+				bIsHearing = FPerceptionListener::HasSense(HearingSenseID);
+				UE_LOG(LogTemp, Warning, TEXT("sight : %d, hearing : %d"), bIsSight, bIsHearing);*/
+
+				if (Stimulus.Type == SightSenseID)
+				{
+					
+					UE_LOG(LogTemp, Warning, TEXT("AI : Sight, Sense ID : %d"), SightSenseID.Index);
+				}
+				else if (Stimulus.Type == HearingSenseID)
+				{
+					UE_LOG(LogTemp, Warning, TEXT("AI : Hearing, Sense ID : %d"), HearingSenseID.Index);
 				}
 
 				UE_LOG(LogTemp, Warning, TEXT("AI : Detected!! / Detect Location : %s"), *DetectedLocation.ToString())
@@ -92,6 +114,10 @@ void AEnemyAIController::DetectedTarget(AActor* Target, FAIStimulus Stimulus)
 
 void AEnemyAIController::LostTarget(AActor* Target)
 {
+	if (GetWorldTimerManager().IsTimerActive(TargetLostTimer))
+	{
+		GetWorldTimerManager().ClearTimer(TargetLostTimer);
+	}
 	UE_LOG(LogTemp, Warning, TEXT("AI : Target Lost!, Lost Target : %s"), *Target->GetFName().ToString());
 }
 
