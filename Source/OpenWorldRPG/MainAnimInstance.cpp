@@ -30,7 +30,7 @@ void UMainAnimInstance::UpdateAnimationProperties()
 
 	if (Player)
 	{
-		FVector Speed = Player->GetCharacterMovement()->GetCurrentAcceleration();
+		FVector Speed = Player->GetVelocity();
 		FVector LateralSpeed = FVector(Speed.X, Speed.Y, 0.f);
 		MovementSpeed = LateralSpeed.Size();
 

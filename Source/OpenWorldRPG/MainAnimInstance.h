@@ -28,6 +28,8 @@ public:
 	bool bIsinAir;
 
 	class APawn* Pawn;
+
+	UPROPERTY(BlueprintReadOnly)
 	class AMainCharacter* Player;
 
 
@@ -38,7 +40,5 @@ public:
 
 	UFUNCTION()
 	void AnimNotify_StepSound();
-
-	
 	
 };

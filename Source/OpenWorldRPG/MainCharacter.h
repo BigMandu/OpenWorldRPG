@@ -13,11 +13,10 @@ class OPENWORLDRPG_API AMainCharacter : public ACharacter, public IAISightTarget
 	GENERATED_BODY()
 public:
 	AMainCharacter();
+	
+	class UMainAnimInstance* MainAnimInstance;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	bool bIsAccelerating;
-
-	/**********   카메라 관련  *************/
+	/**********   카메라 *************/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	class USpringArmComponent* CameraBoom;
 
@@ -29,9 +28,25 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	float BaseLookupRate;
 
+	/********** Movement *************/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Movement)
+	float MaxWalkSpeed;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Movement)
+	float MinWalkSpeed;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement)
+	bool bIsAccelerating;	
 
-	class UMainAnimInstance* MainAnimInstance;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement)
+	bool bCrouchToggle;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement)
+	bool bWalkToggle;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement)
+	bool bIsWalking;
+
+	/**********  Sounds ************/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Sounds)
 	class USoundCue* StepSoundCue;
 
@@ -52,16 +67,24 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
+	virtual void PostInitializeComponents() override;
 
 	void TurnAtRate(float Rate);
 	void LookUpAtRate(float Rate);
 
+	/********   Movement 함수 *******/
 	void MoveForward(float Value);
 	void MoveRight(float Value);
+	
+	void MyCrouch();
+	void MyUnCrouch();
 
+	void Walk();
+	void UnWalk();
+
+	/********** Sounds ********/
 	void StepSound();
 
+	/********** Perception ********/
 	virtual bool CanBeSeenFrom(const FVector& ObserverLocation, FVector& OutSeenLocation, int32& NumberOfLoSChecksPerformed, float& OutSightStrength, const AActor* IgnoreActor) const;
-
 };
