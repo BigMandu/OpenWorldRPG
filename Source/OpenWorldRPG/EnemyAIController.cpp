@@ -3,11 +3,14 @@
 
 #include "EnemyAIController.h"
 #include "EnemyCharacter.h"
+#include "MainCharacter.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISenseConfig_Hearing.h"
 #include "Perception/AISenseConfig_Sight.h"
 #include "Perception/AIPerceptionTypes.h"
-#include "MainCharacter.h"
+#include "BehaviorTree/BehaviorTree.h"
+#include "BehaviorTree/BehaviorTreeComponent.h"
+#include "BehaviorTree/BlackboardComponent.h"
 
 AEnemyAIController::AEnemyAIController()
 {
@@ -32,9 +35,14 @@ AEnemyAIController::AEnemyAIController()
 	HearingConfig->HearingRange = 1000.f;
 	HearingConfig->LoSHearingRange = 1500.f;
 	HearingConfig->SetMaxAge(15.f);
-	//HearingConfig->DetectionByAffiliation.bDetectNeutrals = true;
+	//HearingConfig->DetectionByAffiliation.bDetectNeutrals = true; //기본세팅이 Friend로 되어있어서 주석처리 했다.
 	//HearingConfig->DetectionByAffiliation.bDetectEnemies = true;
 	HearingConfig->DetectionByAffiliation.bDetectFriendlies = true;
+
+	/************** Behavoir ***********/
+	BTComp = CreateDefaultSubobject<UBehaviorTreeComponent>(TEXT("BehaviorTreeComponent"));
+	BBComp = CreateDefaultSubobject<UBlackboardComponent>(TEXT("BlackboardComponent"));
+
 }
 
 void AEnemyAIController::PostInitializeComponents()
@@ -54,6 +62,23 @@ void AEnemyAIController::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
+void AEnemyAIController::OnPossess(APawn* InPawn) //AIController가 해당Enemy를 제어할 수 있도록함.
+{
+	Super::OnPossess(InPawn);
+
+	AEnemyCharacter* Enemy = Cast<AEnemyCharacter>(InPawn);
+
+	if (Enemy)
+	{
+		const FVector OriginPosition = Enemy->GetActorLocation();
+		
+		BBComp->InitializeBlackboard(*(Enemy->BTAsset->BlackboardAsset)); //Blackboard초기화
+		BBComp->SetValueAsVector(OriginPosKey, OriginPosition); //Spawn위치 저장.
+		
+		BTComp->StartTree(*(Enemy->BTAsset)); //마지막에 StartTree
+	}	
+}
+
 void AEnemyAIController::DetectedTarget(AActor* Target, FAIStimulus Stimulus)
 {
 	if (Target)
@@ -63,19 +88,8 @@ void AEnemyAIController::DetectedTarget(AActor* Target, FAIStimulus Stimulus)
 		{
 			FVector DetectedLocation = Stimulus.StimulusLocation;
 
-			FAISenseID HearingSenseID = HearingConfig->GetSenseID(); 
-			FAISenseID SightSenseID = SightConfig->GetSenseID();
-			
-			/*
-			FAISenseID HearingSenseID = UAISense::GetSenseID<UAISense_Hearing>(); 	
-			if (PerceptionComponent->GetSenseConfig(HearingSenseID) != nullptr)
-			{
-				const FActorPerceptionInfo* HeardPerceptionInfo = PerceptionComponent->GetFreshestTrace(HearingSenseID);
-			if (HeardPerceptionInfo != nullptr && PerceptionComponent->HasActiveStimulus(*HeardPerceptionInfo->Target, HearingSenseID))
-			{
-  			FVector HeardSomethingLocation = HeardPerceptionInfo->GetStimulusLocation(HearingSenseID);
-  			float NoiseStrength = HeardPerceptionInfo->GetStimulusStrength(HearingSenseID);
-			*/
+			FAISenseID HearingSenseID = HearingConfig->GetSenseID();  //Hearing인지
+			FAISenseID SightSenseID = SightConfig->GetSenseID(); //Sight인지 따로 처리를 하기 위해  ID를 가져온다.
 
 			if (Stimulus.WasSuccessfullySensed())
 			{
@@ -83,7 +97,7 @@ void AEnemyAIController::DetectedTarget(AActor* Target, FAIStimulus Stimulus)
 				{
 					GetWorldTimerManager().ClearTimer(TargetLostTimer);
 				}
-
+				
 				if (Stimulus.Type == SightSenseID) //Sight를 감지했을때
 				{
 					

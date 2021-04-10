@@ -18,7 +18,7 @@ class OPENWORLDRPG_API AEnemyAIController : public AAIController
 public:
 	AEnemyAIController();
 
-	/*********** AI Perception ฐüทร ***************/
+	/*********** AI Perception ***************/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = AI)
 	class UAISenseConfig_Sight* SightConfig;
 
@@ -28,8 +28,16 @@ public:
 	FTimerHandle TargetLostTimer;
 	FTimerDelegate TargetLostDelegate;
 
-	/*UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = AI)
-	class UNavigationSystemV1* NavSys;*/
+	/************* Behavior Tree *************/
+	UPROPERTY()
+	class UBehaviorTreeComponent* BTComp;
+	UPROPERTY()
+	class UBlackboardComponent* BBComp;
+
+	/**********  Blackboard Key   **********/
+
+	const FName OriginPosKey = FName(TEXT("OriginPos"));
+	const FName PatrolPosKey = FName(TEXT("PatrolPos"));
 
 
 protected:
@@ -45,6 +53,8 @@ public:
 
 	UFUNCTION()
 	void LostTarget(AActor* Target);
+
+	virtual void OnPossess(APawn* InPawn) override;
 
 
 	

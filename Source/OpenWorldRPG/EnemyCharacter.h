@@ -15,6 +15,9 @@ public:
 	// Sets default values for this character's properties
 	AEnemyCharacter();
 
+	UPROPERTY(EditDefaultsOnly, Category = AI)
+	class UBehaviorTree* BTAsset; //AIController의 BTComp에 넣어주기 위함.
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
