@@ -11,6 +11,6 @@ UBTTask_Patrol::UBTTask_Patrol()
 EBTNodeResult::Type UBTTask_Patrol::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	EBTNodeResult::Type Result = Super::ExecuteTask(OwnerComp, NodeMemory);
-
+	
 	return Result;
 }

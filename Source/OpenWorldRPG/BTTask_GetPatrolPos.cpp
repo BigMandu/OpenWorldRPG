@@ -25,22 +25,24 @@ EBTNodeResult::Type UBTTask_GetPatrolPos::ExecuteTask(UBehaviorTreeComponent& Ow
 		AEnemyCharacter* Enemy = Cast<AEnemyCharacter>(AIController->GetCharacter());
 		if (Enemy)
 		{
-			UNavigationSystemV1* NavSys = UNavigationSystemV1::GetNavigationSystem(GetWorld());
+			UNavigationSystemV1* NavSys = UNavigationSystemV1::GetNavigationSystem(Enemy->GetWorld());
 			if (NavSys)
 			{
 				const FVector OriginPos = BBComp->GetValueAsVector(AIController->OriginPosKey);
+				FVector CurrentEnemyPos = Enemy->GetActorLocation();
 				FVector NewPatrolPos;
-				FVector CurrentEnemyPos;
-				NewPatrolPos = NavSys->GetRandomReachablePointInRadius(GetWorld(), OriginPos, 500.f); // Radius는 임의의 숫자 500.f로 해줬다. 추후 Enemy에 변수 추가 예정.
-				CurrentEnemyPos = Enemy->GetActorLocation();
+				//NewPatrolPos = NavSys->GetRandomReachablePointInRadius(Enemy->GetWorld(), OriginPos, 1000.f); // Radius는 임의의 숫자 500.f로 해줬다. 추후 Enemy에 변수 추가 예정.
 
+				float sub = 0.f; //abs(CurrentEnemyPos.Size() - NewPatrolPos.Size());
 
-				while (abs(CurrentEnemyPos.Size() - NewPatrolPos.Size()) >= 150.f) //현재위치와 새로구한 정찰위치가 150이상 차이날때
+				while ( sub >= 500.f) //현재위치와 새로구한 정찰위치가 x이상 차이날때
 				{
-					BBComp->SetValueAsVector(AIController->PatrolPosKey, NewPatrolPos);
-
-					Result = EBTNodeResult::Succeeded;
+					NewPatrolPos = NavSys->GetRandomReachablePointInRadius(Enemy->GetWorld(), OriginPos, 1000.f);
+					sub = abs(CurrentEnemyPos.Size() - NewPatrolPos.Size());
 				}
+				BBComp->SetValueAsVector(AIController->PatrolPosKey, NewPatrolPos);
+
+				Result = EBTNodeResult::Succeeded;
 			}
 		}
 	}
