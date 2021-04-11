@@ -35,7 +35,7 @@ EBTNodeResult::Type UBTTask_GetPatrolPos::ExecuteTask(UBehaviorTreeComponent& Ow
 
 				float sub = 0.f; //abs(CurrentEnemyPos.Size() - NewPatrolPos.Size());
 
-				while ( sub >= 500.f) //현재위치와 새로구한 정찰위치가 x이상 차이날때
+				while ( sub <= 500.f) //현재위치와 새로구한 정찰위치가 x이상 차이날때
 				{
 					NewPatrolPos = NavSys->GetRandomReachablePointInRadius(Enemy->GetWorld(), OriginPos, 1000.f);
 					sub = abs(CurrentEnemyPos.Size() - NewPatrolPos.Size());
