@@ -74,6 +74,8 @@ void AEnemyAIController::OnPossess(APawn* InPawn) //AIController가 해당Enemy를 �
 		
 		BBComp->InitializeBlackboard(*(Enemy->BTAsset->BlackboardAsset)); //Blackboard초기화
 		BBComp->SetValueAsVector(OriginPosKey, OriginPosition); //Spawn위치 저장.
+		BBComp->SetValueAsBool(bHasTargetPointsKey, Enemy->bHasPatrolPoints); //Targetpoint 보유 여부를 넘겨줌.
+		BBComp->SetValueAsInt(TargetPointIndexKey, 0); //Targetpoint index를 0으로 세팅한다.
 		
 		BTComp->StartTree(*(Enemy->BTAsset)); //마지막에 StartTree
 	}	
@@ -131,3 +133,14 @@ void AEnemyAIController::LostTarget(AActor* Target)
 	UE_LOG(LogTemp, Warning, TEXT("AI : Target Lost!, Lost Target : %s"), *Target->GetFName().ToString());
 }
 
+
+/******************  Black board Key Update Function***********************/
+void AEnemyAIController::UpdateTargetPointIndex(int32 index)
+{
+	BBComp->SetValueAsInt(TargetPointIndexKey, index);
+}
+
+void AEnemyAIController::UpdatePatrolPosKey(FVector NewPatrolPos)
+{
+	BBComp->SetValueAsVector(PatrolPosKey, NewPatrolPos);
+}

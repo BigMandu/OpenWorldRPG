@@ -15,6 +15,9 @@ AEnemyCharacter::AEnemyCharacter()
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 540.f, 0.f);
 	bUseControllerRotationYaw = false;
 
+	bHasPatrolPoints = false;
+
+
 	AIControllerClass = AEnemyAIController::StaticClass(); //AIController를 넣어주고
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned; //AIController의 소유시기를 정해줌.
 

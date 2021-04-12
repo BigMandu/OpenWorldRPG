@@ -38,6 +38,8 @@ public:
 
 	const FName OriginPosKey = FName(TEXT("OriginPos"));
 	const FName PatrolPosKey = FName(TEXT("PatrolPos"));
+	const FName bHasTargetPointsKey = FName(TEXT("HasTargetPoints"));
+	const FName TargetPointIndexKey = FName(TEXT("TargetPointIndex"));
 
 
 protected:
@@ -56,6 +58,8 @@ public:
 
 	virtual void OnPossess(APawn* InPawn) override;
 
+	void UpdateTargetPointIndex(int32 index);
+	void UpdatePatrolPosKey(FVector NewPatrolPos);
 
 	
 };

@@ -31,14 +31,18 @@ EBTNodeResult::Type UBTTask_GetPatrolPos::ExecuteTask(UBehaviorTreeComponent& Ow
 				const FVector OriginPos = BBComp->GetValueAsVector(AIController->OriginPosKey);
 				FVector CurrentEnemyPos = Enemy->GetActorLocation();
 				FVector NewPatrolPos;
-				//NewPatrolPos = NavSys->GetRandomReachablePointInRadius(Enemy->GetWorld(), OriginPos, 1000.f); // Radius는 임의의 숫자 500.f로 해줬다. 추후 Enemy에 변수 추가 예정.
+				FNavLocation NavLocation;
+				float sub = 0.f;
 
-				float sub = 0.f; //abs(CurrentEnemyPos.Size() - NewPatrolPos.Size());
-
-				while ( sub <= 500.f) //현재위치와 새로구한 정찰위치가 x이상 차이날때
+				while ( sub <= 500.f) //현재위치와 새로구한 정찰위치가 x이상 차이날때까지
 				{
-					NewPatrolPos = NavSys->GetRandomReachablePointInRadius(Enemy->GetWorld(), OriginPos, 1000.f);
-					sub = abs(CurrentEnemyPos.Size() - NewPatrolPos.Size());
+					//NewPatrolPos = NavSys->GetRandomReachablePointInRadius(Enemy->GetWorld(), OriginPos, 1000.f); // Radius는 임의의 숫자 500.f로 해줬다. 추후 Enemy에 변수 추가 예정.
+					bool bNavResult = NavSys->GetRandomReachablePointInRadius(OriginPos, 1000.f, NavLocation);
+					if (bNavResult)
+					{
+						NewPatrolPos = NavLocation.Location;
+						sub = abs(CurrentEnemyPos.Size() - NewPatrolPos.Size());
+					}
 				}
 				BBComp->SetValueAsVector(AIController->PatrolPosKey, NewPatrolPos);
 
