@@ -37,7 +37,7 @@ EBTNodeResult::Type UBTTask_GetPatrolPos::ExecuteTask(UBehaviorTreeComponent& Ow
 				while ( sub <= 500.f) //현재위치와 새로구한 정찰위치가 x이상 차이날때까지
 				{
 					//NewPatrolPos = NavSys->GetRandomReachablePointInRadius(Enemy->GetWorld(), OriginPos, 1000.f); // Radius는 임의의 숫자 500.f로 해줬다. 추후 Enemy에 변수 추가 예정.
-					bool bNavResult = NavSys->GetRandomReachablePointInRadius(OriginPos, 1000.f, NavLocation);
+					bool bNavResult = NavSys->GetRandomReachablePointInRadius(OriginPos, Enemy->RandomPatrolRadius, NavLocation); //위의 FVector리턴하는 함수는 언리얼에서 비추한다고 함.
 					if (bNavResult)
 					{
 						NewPatrolPos = NavLocation.Location;

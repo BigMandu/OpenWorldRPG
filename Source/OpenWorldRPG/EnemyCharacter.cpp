@@ -16,7 +16,10 @@ AEnemyCharacter::AEnemyCharacter()
 	bUseControllerRotationYaw = false;
 
 	bHasPatrolPoints = false;
-
+	RandomPatrolRadius = 1000.f;
+	PatrolAcceptableRadius = 5.f;
+	SightMaxAge = 15.f;
+	HearingMaxAge = 10.f;
 
 	AIControllerClass = AEnemyAIController::StaticClass(); //AIController를 넣어주고
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned; //AIController의 소유시기를 정해줌.

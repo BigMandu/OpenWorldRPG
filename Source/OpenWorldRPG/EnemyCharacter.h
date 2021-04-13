@@ -22,7 +22,19 @@ public:
 	bool bHasPatrolPoints;
 
 	UPROPERTY(EditAnywhere, Category = AI)
-	TArray<class ATargetPoint*> TargetPoints;
+	TArray<class ATargetPoint*> TargetPoints; //정찰 루트
+
+	UPROPERTY(EditAnywhere, Category = AI)
+	float RandomPatrolRadius; //무작위 정찰 포인트를 얻는 범위(Origin Pos기준)
+
+	UPROPERTY(EditAnywhere, Category = AI)
+	float PatrolAcceptableRadius; //정찰 포인트의 도달 허용 범위
+
+	UPROPERTY(EditAnywhere, Category = AI)
+	float SightMaxAge; //시야 식별후 사라졌을때 최대 인내?시간
+
+	UPROPERTY(EditAnywhere, Category = AI)
+	float HearingMaxAge; //소음 식별후 사라졌을때 최대 인내?시간
 
 protected:
 	// Called when the game starts or when spawned

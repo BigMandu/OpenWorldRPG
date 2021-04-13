@@ -2,6 +2,7 @@
 
 
 #include "EnemyAIController.h"
+#include "Navigation/CrowdFollowingComponent.h"
 #include "EnemyCharacter.h"
 #include "MainCharacter.h"
 #include "Perception/AIPerceptionComponent.h"
@@ -12,7 +13,8 @@
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
-AEnemyAIController::AEnemyAIController()
+AEnemyAIController::AEnemyAIController(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer.SetDefaultSubobjectClass<UCrowdFollowingComponent>(TEXT("PathFollowingComponent")))
 {
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -43,6 +45,8 @@ AEnemyAIController::AEnemyAIController()
 	BTComp = CreateDefaultSubobject<UBehaviorTreeComponent>(TEXT("BehaviorTreeComponent"));
 	BBComp = CreateDefaultSubobject<UBlackboardComponent>(TEXT("BlackboardComponent"));
 
+	
+
 }
 
 void AEnemyAIController::PostInitializeComponents()
@@ -71,13 +75,16 @@ void AEnemyAIController::OnPossess(APawn* InPawn) //AIController가 해당Enemy를 �
 	if (Enemy)
 	{
 		const FVector OriginPosition = Enemy->GetActorLocation();
-		
 		BBComp->InitializeBlackboard(*(Enemy->BTAsset->BlackboardAsset)); //Blackboard초기화
 		BBComp->SetValueAsVector(OriginPosKey, OriginPosition); //Spawn위치 저장.
 		BBComp->SetValueAsBool(bHasTargetPointsKey, Enemy->bHasPatrolPoints); //Targetpoint 보유 여부를 넘겨줌.
 		BBComp->SetValueAsInt(TargetPointIndexKey, 0); //Targetpoint index를 0으로 세팅한다.
 		
 		BTComp->StartTree(*(Enemy->BTAsset)); //마지막에 StartTree
+
+		//Sight, Hearing의 세팅
+		SightConfig->SetMaxAge(Enemy->SightMaxAge);
+		HearingConfig->SetMaxAge(Enemy->HearingMaxAge);
 	}	
 }
 
@@ -115,6 +122,7 @@ void AEnemyAIController::DetectedTarget(AActor* Target, FAIStimulus Stimulus)
 			}
 			else //감지를 못했을때
 			{
+
 				TargetLostDelegate = FTimerDelegate::CreateUObject(this, &AEnemyAIController::LostTarget, Target);
 				GetWorldTimerManager().SetTimer(TargetLostTimer, TargetLostDelegate, SightConfig->GetMaxAge(), false); //특정초 이후에 LostTarget함수를 호출한다.
 

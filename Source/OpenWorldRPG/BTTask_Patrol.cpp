@@ -2,6 +2,8 @@
 
 
 #include "BTTask_Patrol.h"
+#include "EnemyAIController.h"
+#include "EnemyCharacter.h"
 
 UBTTask_Patrol::UBTTask_Patrol()
 {
@@ -11,6 +13,10 @@ UBTTask_Patrol::UBTTask_Patrol()
 EBTNodeResult::Type UBTTask_Patrol::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	EBTNodeResult::Type Result = Super::ExecuteTask(OwnerComp, NodeMemory);
-	
+	AEnemyAIController* AICon = Cast<AEnemyAIController>(OwnerComp.GetAIOwner());
+	check(AICon);
+	AEnemyCharacter* Enemy = Cast<AEnemyCharacter>(AICon->GetCharacter());
+	check(Enemy);
+	AcceptableRadius = Enemy->PatrolAcceptableRadius;
 	return Result;
 }

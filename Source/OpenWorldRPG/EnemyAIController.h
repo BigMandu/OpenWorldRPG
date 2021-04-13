@@ -16,7 +16,7 @@ class OPENWORLDRPG_API AEnemyAIController : public AAIController
 	GENERATED_BODY()
 
 public:
-	AEnemyAIController();
+	AEnemyAIController(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
 	/*********** AI Perception ***************/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = AI)
@@ -40,6 +40,8 @@ public:
 	const FName PatrolPosKey = FName(TEXT("PatrolPos"));
 	const FName bHasTargetPointsKey = FName(TEXT("HasTargetPoints"));
 	const FName TargetPointIndexKey = FName(TEXT("TargetPointIndex"));
+	//const FName DetectPlayer = FName(TEXT("DetectPlayer"));
+	//const FName bSeePlayer = FName(TEXT("SeePlayer"));
 
 
 protected:
