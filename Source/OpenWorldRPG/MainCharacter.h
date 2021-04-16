@@ -7,6 +7,18 @@
 #include "Perception/AISightTargetInterface.h"
 #include "MainCharacter.generated.h"
 
+UENUM(BlueprintType)
+enum class EMainChracterStatus : uint8
+{
+	EMCS_Dead		UMETA(DisplayName = "Dead"),
+	EMCS_Crouch		UMETA(DisplayName = "Crouch"),
+	EMCS_Normal		UMETA(DisplayName = "Normal"),
+	EMCS_Walk		UMETA(DisplayName = "Walk"),
+	EMCS_Sprint		UMETA(DisplayName = "Sprint"),
+
+	EMCS_MAX		UMETA(DisplayName = "DefaultMAX")
+};
+
 UCLASS()
 class OPENWORLDRPG_API AMainCharacter : public ACharacter, public IAISightTargetInterface
 {
@@ -27,6 +39,12 @@ public:
 	float BaseTurnRate;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	float BaseLookupRate;
+
+
+	/********** enum **********/
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Enums")
+	EMainChracterStatus MainChracterStatus;
+
 
 	/********** Movement *************/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Movement)
@@ -71,6 +89,9 @@ public:
 
 	void TurnAtRate(float Rate);
 	void LookUpAtRate(float Rate);
+
+	/************** Enum 함수 **************/
+	void SetMainCharacterStatus(EMainChracterStatus Type);
 
 	/********   Movement 함수 *******/
 	void MoveForward(float Value);

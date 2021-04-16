@@ -21,6 +21,9 @@ AEnemyCharacter::AEnemyCharacter()
 	SightMaxAge = 15.f;
 	HearingMaxAge = 10.f;
 
+	bSeePlayer = false;
+	bHearPlayer = false;
+
 	AIControllerClass = AEnemyAIController::StaticClass(); //AIController를 넣어주고
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned; //AIController의 소유시기를 정해줌.
 

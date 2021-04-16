@@ -36,6 +36,14 @@ public:
 	UPROPERTY(EditAnywhere, Category = AI)
 	float HearingMaxAge; //소음 식별후 사라졌을때 최대 인내?시간
 
+
+	/******* 디버깅용 ********/
+	UPROPERTY(VisibleAnywhere, Category = AI)
+	bool bSeePlayer;
+
+	UPROPERTY(VisibleAnywhere, Category = AI)
+	bool bHearPlayer;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

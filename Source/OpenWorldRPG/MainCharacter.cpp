@@ -98,7 +98,7 @@ void AMainCharacter::PostInitializeComponents()
 		MainAnimInstance->StepSound.AddUObject(this, &AMainCharacter::StepSound); //AnimInstance의 StepSound_Notify에서 호출.
 	}
 
-	/**** Perception StimuliSource 제공 (Sight, Hearing Sense) ****/
+	/**** Perception StimuliSource 제공 (Sight, Hearing Sense) ****/	
 	StimuliSourceComp->bAutoRegister = true;
 	StimuliSourceComp->RegisterForSense(Sight);
 	StimuliSourceComp->RegisterForSense(Hearing);
@@ -177,25 +177,25 @@ void AMainCharacter::MyCrouch()
 	{
 		Super::UnCrouch();
 		UE_LOG(LogTemp, Warning, TEXT("Crouch:: UnCrouch"));
+		SetMainCharacterStatus(EMainChracterStatus::EMCS_Normal);
 	}
 
 	if (MainAnimInstance->MovementSpeed <= 10 && bIsCrouched == false)
 	{
 		Super::Crouch();
 		UE_LOG(LogTemp, Warning, TEXT("Crouch:: Crouch"));
+		SetMainCharacterStatus(EMainChracterStatus::EMCS_Crouch);
 	}
 }
 
 void AMainCharacter::MyUnCrouch()
 {
 	//Crouch를 Toggle로 사용하지 않을때만 Key Release  bind함수를 호출한다.
-	if (bCrouchToggle == false) 
+	if (bCrouchToggle == false && bIsCrouched)
 	{
-		if (bIsCrouched)
-		{
-			Super::UnCrouch();
-			UE_LOG(LogTemp, Warning, TEXT("UnCrouch:: UnCrouch"));
-		}
+		Super::UnCrouch();
+		UE_LOG(LogTemp, Warning, TEXT("UnCrouch:: UnCrouch"));
+		SetMainCharacterStatus(EMainChracterStatus::EMCS_Normal);	
 	}
 }
 
@@ -205,27 +205,49 @@ void AMainCharacter::Walk()
 	if (bWalkToggle && bIsWalking == true)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Walk:: UnWalk"));
-		bIsWalking = false;
-		GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
+		SetMainCharacterStatus(EMainChracterStatus::EMCS_Normal);
+		//bIsWalking = false; -> Set enum함수에서 변경해줬다.
 		return;
 	}
 	
 	if (bIsWalking == false)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Walk:: Walk"));
-		bIsWalking = true;
-		GetCharacterMovement()->MaxWalkSpeed = MinWalkSpeed;
+		SetMainCharacterStatus(EMainChracterStatus::EMCS_Walk);
+		//bIsWalking = true;
 		return;
 	}
 }
 
 void AMainCharacter::UnWalk()
 {
-	if (bWalkToggle == false)
+	if (bWalkToggle == false && bIsWalking == true)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("UnWalk:: UnWalk"));
-		bIsWalking = false;
+		SetMainCharacterStatus(EMainChracterStatus::EMCS_Normal);
+		//bIsWalking = false;		
+	}
+}
+
+
+/***************************** enum 함수********************************/
+void AMainCharacter::SetMainCharacterStatus(EMainChracterStatus Type)
+{
+	MainChracterStatus = Type;
+	switch (MainChracterStatus)
+	{
+	case EMainChracterStatus::EMCS_Normal:
 		GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
+		bIsWalking = false;
+		break;
+	case EMainChracterStatus::EMCS_Walk:
+		GetCharacterMovement()->MaxWalkSpeed = MinWalkSpeed;
+		bIsWalking = true;
+		break;
+	case EMainChracterStatus::EMCS_Sprint:
+		break;
+	default:
+		break;
 	}
 }
 
@@ -259,7 +281,7 @@ bool AMainCharacter::CanBeSeenFrom(const FVector& ObserverLocation, FVector& Out
 	/* FCollisionObjectQueryParams에는 	FCollisionObjectQueryParams(int32 InObjectTypesToQuery)를 사용할거다.
 	* 이를 사용하기 위해서는 To do this, use ECC_TO_BITFIELD to convert to bit field 이렇게 하라고 한다.        */
 
-	//WorldDynamic, WorldStatic, IgnoreActor를 LineTrace로 감지.
+	//WorldDynamic, WorldStatic, IgnoreActor를 (관측자의 위치에서 Player의 위치의 범위) LineTrace로 감지. 
 	bool bHit = GetWorld()->LineTraceSingleByObjectType(HitResult, ObserverLocation, PlayerLocation
 		, FCollisionObjectQueryParams(ECC_TO_BITFIELD(ECC_WorldDynamic) | ECC_TO_BITFIELD(ECC_WorldStatic))
 		, FCollisionQueryParams(FName(TEXT("SightSense")), true, IgnoreActor));
@@ -269,16 +291,16 @@ bool AMainCharacter::CanBeSeenFrom(const FVector& ObserverLocation, FVector& Out
 	//위에서 감지된게 아니거나, Actor가 Player라면
 	if (bHit == false || (HitResult.Actor.IsValid() && HitResult.Actor->IsOwnedBy(this)))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Player:: Catch"));
 		OutSeenLocation = PlayerLocation;
 		OutSightStrength = 1;
-		UE_LOG(LogTemp, Warning, TEXT("OutSeenLocation : %s, OutSightStrength : %f"), *OutSeenLocation.ToString(), OutSightStrength);
 		bResult = true;
+		//UE_LOG(LogTemp, Warning, TEXT("Player:: Catch"));
+		//UE_LOG(LogTemp, Warning, TEXT("OutSeenLocation : %s, OutSightStrength : %f"), *OutSeenLocation.ToString(), OutSightStrength);
 	}
 	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Player:: Hiding"));
+	{		
 		OutSightStrength = 0;
+		//UE_LOG(LogTemp, Warning, TEXT("Player:: Hiding"));
 	}
 	return bResult;
 }

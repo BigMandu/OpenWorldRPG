@@ -30,13 +30,14 @@ AEnemyAIController::AEnemyAIController(const FObjectInitializer& ObjectInitializ
 	SightConfig->SightRadius = 1500.f;
 	SightConfig->LoseSightRadius = 2000.f;
 	SightConfig->PeripheralVisionAngleDegrees = 60.f;
-	SightConfig->SetMaxAge(15.f);
+	//SightConfig->SetMaxAge(15.f); //OnPossess함수에서 다시 변경함.
 	SightConfig->DetectionByAffiliation.bDetectNeutrals = true;
 	
+
 	HearingConfig->bUseLoSHearing = true;
 	HearingConfig->HearingRange = 1000.f;
 	HearingConfig->LoSHearingRange = 1500.f;
-	HearingConfig->SetMaxAge(15.f);
+	//HearingConfig->SetMaxAge(15.f); //OnPossess함수에서 다시 변경함.
 	//HearingConfig->DetectionByAffiliation.bDetectNeutrals = true; //기본세팅이 Friend로 되어있어서 주석처리 했다.
 	//HearingConfig->DetectionByAffiliation.bDetectEnemies = true;
 	HearingConfig->DetectionByAffiliation.bDetectFriendlies = true;
@@ -70,7 +71,8 @@ void AEnemyAIController::OnPossess(APawn* InPawn) //AIController가 해당Enemy를 �
 {
 	Super::OnPossess(InPawn);
 
-	AEnemyCharacter* Enemy = Cast<AEnemyCharacter>(InPawn);
+	Enemy = Cast<AEnemyCharacter>(InPawn);
+	check(Enemy);
 
 	if (Enemy)
 	{
@@ -82,9 +84,11 @@ void AEnemyAIController::OnPossess(APawn* InPawn) //AIController가 해당Enemy를 �
 		
 		BTComp->StartTree(*(Enemy->BTAsset)); //마지막에 StartTree
 
+
 		//Sight, Hearing의 세팅
 		SightConfig->SetMaxAge(Enemy->SightMaxAge);
 		HearingConfig->SetMaxAge(Enemy->HearingMaxAge);
+		PerceptionComponent->SetDominantSense(SightConfig->Implementation); //우선순위를 Sight로 설정.
 	}	
 }
 
@@ -100,33 +104,117 @@ void AEnemyAIController::DetectedTarget(AActor* Target, FAIStimulus Stimulus)
 			FAISenseID HearingSenseID = HearingConfig->GetSenseID();  //Hearing인지
 			FAISenseID SightSenseID = SightConfig->GetSenseID(); //Sight인지 따로 처리를 하기 위해  ID를 가져온다.
 
+			const FActorPerceptionInfo* info = PerceptionComponent->GetActorInfo(*Player);
+			check(info);
+
+			//LastSensedStimuli를 이용한 방법.
+			/*
+			if (info->LastSensedStimuli[SightSenseID].WasSuccessfullySensed())
+			{
+				Enemy->bSeePlayer = true;
+				Enemy->bHearPlayer = false;
+				UE_LOG(LogTemp, Warning, TEXT("AI : Sight, Sense ID : %d"), SightSenseID.Index);
+				UE_LOG(LogTemp, Warning, TEXT("Stimulus Age is : %f, SightMaxAge is : %f"), Stimulus.GetAge(), SightConfig->GetMaxAge());
+				UE_LOG(LogTemp, Warning, TEXT("AI : Detected!! / Detect Location : %s"), *DetectedLocation.ToString());
+			}
+			else if (info->LastSensedStimuli[HearingSenseID].WasSuccessfullySensed())
+			{
+				Enemy->bHearPlayer = true;
+				Enemy->bSeePlayer = false;
+				UE_LOG(LogTemp, Warning, TEXT("AI : Hearing, Sense ID : %d"), HearingSenseID.Index);
+				UE_LOG(LogTemp, Warning, TEXT("Stimulus Age is : %f, HearingMaxAge is : %f"), Stimulus.GetAge(), HearingConfig->GetMaxAge());
+				UE_LOG(LogTemp, Warning, TEXT("AI : Detected!! / Detect Location : %s"), *DetectedLocation.ToString());
+			}*/
+			
+			//Stimulus.WasSuccessfullySensed() ==flase와 같은 역할함.
+			/*if (info->HasAnyCurrentStimulus() == false)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("AI ActorInfo :: has not detected"));
+			}*/
+
 			if (Stimulus.WasSuccessfullySensed())
 			{
 				if (GetWorldTimerManager().IsTimerActive(TargetLostTimer)) //타이머 초기화
 				{
 					GetWorldTimerManager().ClearTimer(TargetLostTimer);
 				}
-				
-				if (Stimulus.Type == SightSenseID) //Sight를 감지했을때
+
+
+				//마지막이 아닌, Age가 긴 놈을 가져온다.
+				/*for (int32 Sense = 0; Sense < info->LastSensedStimuli.Num(); ++Sense)
 				{
-					
+					float Age = info->LastSensedStimuli[Sense].GetAge();
+					if (info->LastSensedStimuli[Sense].WasSuccessfullySensed())
+					{
+						FName Senseid;
+						if (Sense == 0)
+						{
+							Senseid = TEXT("Sight");
+						}
+						else if (Sense == 1)
+						{
+							Senseid = TEXT("Hearing");
+						}
+						UE_LOG(LogTemp, Warning, TEXT("LastStimuli Sense is : %d"), Sense);
+						UE_LOG(LogTemp, Warning, TEXT("LastStimuli Age is : %.2f"), Age);
+					}
+				}*/
+				UE_LOG(LogTemp, Warning, TEXT("DominantSense is %s"), *PerceptionComponent->GetDominantSenseID().Name.ToString());
+				if (Stimulus.Type == SightSenseID)// && Stimulus.Strength >= 1.f) //Sight를 감지했을때
+				{
+					Enemy->bSeePlayer = true; //디버깅
+					Enemy->bHearPlayer = false; //디버깅
 					UE_LOG(LogTemp, Warning, TEXT("AI : Sight, Sense ID : %d"), SightSenseID.Index);
+					UE_LOG(LogTemp, Warning, TEXT("Stimulus Age is : %f, SightMaxAge is : %f"), Stimulus.GetAge(), SightConfig->GetMaxAge());
 				}
-				
-				if (Stimulus.Type == HearingSenseID) //Hearing을 감지했을때
+				else if (Stimulus.Type == HearingSenseID && info->IsSenseActive(SightSenseID) == false)// && Stimulus.Strength >= 1.f) //Hearing을 감지했을때
 				{
+					Enemy->bHearPlayer = true; //디버깅
+					Enemy->bSeePlayer = false;
+
+					//청각만 들었을때 Hearing의 MaxAge이후 LostTarget을 실행한다.
+					TargetLostDelegate = FTimerDelegate::CreateUObject(this, &AEnemyAIController::LostTarget, Target);
+					GetWorldTimerManager().SetTimer(TargetLostTimer, TargetLostDelegate, HearingConfig->GetMaxAge(), false);
 					UE_LOG(LogTemp, Warning, TEXT("AI : Hearing, Sense ID : %d"), HearingSenseID.Index);
+					UE_LOG(LogTemp, Warning, TEXT("Stimulus Age is : %f, HearingMaxAge is : %f"), Stimulus.GetAge(), HearingConfig->GetMaxAge());
 				}
+				//UE_LOG(LogTemp, Warning, TEXT("AI : Detected!! / Detect Location : %s"), *DetectedLocation.ToString());
 
-				UE_LOG(LogTemp, Warning, TEXT("AI : Detected!! / Detect Location : %s"), *DetectedLocation.ToString())
+				//Stimulus.SetExpirationAge(3.f); //1초뒤에 감각 무효화.
 			}
-			else //감지를 못했을때
+			else //감지를 못했을때 (시야만 동작)
 			{
-
+			//	/*FActorPerceptionInfo* info = PerceptionComponent->GetActorInfo();
+			//	if (info->LastSensedStimuli[0].IsValid())
+			//	{
+			//	}*/
+			// 
+			//	if (Stimulus.AgeStimulus(1.f) == false)
+			//	{
+			//		UE_LOG(LogTemp, Warning, TEXT("Expiration Age is Passed!"));
+			//	}
+			//	if (Stimulus.GetAge() >= 2.f)
+			//	{
+			//		if (Stimulus.Type == HearingSenseID)
+			//		{
+			//			Stimulus.MarkExpired();
+			//			Enemy->bHearPlayer = false; //디버깅
+			//		}
+			//		if (Stimulus.Type == SightSenseID)
+			//		{
+			//			Stimulus.MarkExpired();
+			//			Enemy->bSeePlayer = false; //디버깅
+			//		}
+			//		TargetLostDelegate = FTimerDelegate::CreateUObject(this, &AEnemyAIController::LostTarget, Target);
+			//		GetWorldTimerManager().SetTimer(TargetLostTimer, TargetLostDelegate, SightConfig->GetMaxAge(), false); //특정초 이후에 LostTarget함수를 호출한다.
+				Enemy->bSeePlayer = false; //디버깅
+				//Enemy->bHearPlayer = false; //디버깅
+				//Stimulus.MarkExpired();
 				TargetLostDelegate = FTimerDelegate::CreateUObject(this, &AEnemyAIController::LostTarget, Target);
 				GetWorldTimerManager().SetTimer(TargetLostTimer, TargetLostDelegate, SightConfig->GetMaxAge(), false); //특정초 이후에 LostTarget함수를 호출한다.
 
-				UE_LOG(LogTemp, Warning, TEXT("AI : Missing!! / Last Location : %s"), *DetectedLocation.ToString())
+				UE_LOG(LogTemp, Warning, TEXT("AI : Missing!! / Last Location : %s"), *DetectedLocation.ToString());
+
 			}
 		}
 	}
@@ -138,6 +226,11 @@ void AEnemyAIController::LostTarget(AActor* Target)
 	{
 		GetWorldTimerManager().ClearTimer(TargetLostTimer);
 	}
+	if (Enemy->bHearPlayer)
+	{
+		Enemy->bHearPlayer = false;
+	}
+	PerceptionComponent->ForgetActor(Target);
 	UE_LOG(LogTemp, Warning, TEXT("AI : Target Lost!, Lost Target : %s"), *Target->GetFName().ToString());
 }
 
