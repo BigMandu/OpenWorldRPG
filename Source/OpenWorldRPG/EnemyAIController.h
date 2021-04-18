@@ -43,6 +43,7 @@ public:
 	const FName bHasTargetPointsKey = FName(TEXT("HasTargetPoints"));
 	const FName TargetPointIndexKey = FName(TEXT("TargetPointIndex"));
 	const FName PlayerKey = FName(TEXT("Player"));
+	const FName HearLocation = FName(TEXT("HearLocation"));
 	const FName bSeePlayerKey = FName(TEXT("SeePlayer"));
 	const FName bHearPlayerKey = FName(TEXT("HearPlayer"));
 
@@ -65,6 +66,9 @@ public:
 
 	void UpdateTargetPointIndex(int32 index);
 	void UpdatePatrolPosKey(FVector NewPatrolPos);
-
+	void UpdatePlayerKey(AActor* Actor);
+	void UpdateHearLocationKey(FVector Location);
+	void UpdateSeePlayerKey(bool HasSee);
+	void UpdateHearPlayerKey(bool HasHear);
 	
 };

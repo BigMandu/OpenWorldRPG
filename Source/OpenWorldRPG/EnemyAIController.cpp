@@ -140,7 +140,7 @@ void AEnemyAIController::DetectedTarget(AActor* Target, FAIStimulus Stimulus)
 				}
 
 
-				//마지막이 아닌, Age가 긴 놈을 가져온다.
+				//마지막이 아닌, Age가 긴 Sense를 가져온다.
 				/*for (int32 Sense = 0; Sense < info->LastSensedStimuli.Num(); ++Sense)
 				{
 					float Age = info->LastSensedStimuli[Sense].GetAge();
@@ -159,11 +159,18 @@ void AEnemyAIController::DetectedTarget(AActor* Target, FAIStimulus Stimulus)
 						UE_LOG(LogTemp, Warning, TEXT("LastStimuli Age is : %.2f"), Age);
 					}
 				}*/
-				UE_LOG(LogTemp, Warning, TEXT("DominantSense is %s"), *PerceptionComponent->GetDominantSenseID().Name.ToString());
+
+				//DominantSense는 GetLastStimuliLocation함수에만 쓰이는것 같다. 
+				//UE_LOG(LogTemp, Warning, TEXT("DominantSense is %s"), *PerceptionComponent->GetDominantSenseID().Name.ToString());
+
+
 				if (Stimulus.Type == SightSenseID)// && Stimulus.Strength >= 1.f) //Sight를 감지했을때
 				{
 					Enemy->bSeePlayer = true; //디버깅
 					Enemy->bHearPlayer = false; //디버깅
+					UpdateSeePlayerKey(true);
+					UpdateHearPlayerKey(false);
+					UpdatePlayerKey(Player); //Player를 Setting해준다.
 					UE_LOG(LogTemp, Warning, TEXT("AI : Sight, Sense ID : %d"), SightSenseID.Index);
 					UE_LOG(LogTemp, Warning, TEXT("Stimulus Age is : %f, SightMaxAge is : %f"), Stimulus.GetAge(), SightConfig->GetMaxAge());
 				}
@@ -171,7 +178,9 @@ void AEnemyAIController::DetectedTarget(AActor* Target, FAIStimulus Stimulus)
 				{
 					Enemy->bHearPlayer = true; //디버깅
 					Enemy->bSeePlayer = false;
-
+					UpdateSeePlayerKey(false);
+					UpdateHearPlayerKey(true);
+					UpdateHearLocationKey(Stimulus.StimulusLocation);
 					//청각만 들었을때 Hearing의 MaxAge이후 LostTarget을 실행한다.
 					TargetLostDelegate = FTimerDelegate::CreateUObject(this, &AEnemyAIController::LostTarget, Target);
 					GetWorldTimerManager().SetTimer(TargetLostTimer, TargetLostDelegate, HearingConfig->GetMaxAge(), false);
@@ -208,6 +217,7 @@ void AEnemyAIController::DetectedTarget(AActor* Target, FAIStimulus Stimulus)
 			//		TargetLostDelegate = FTimerDelegate::CreateUObject(this, &AEnemyAIController::LostTarget, Target);
 			//		GetWorldTimerManager().SetTimer(TargetLostTimer, TargetLostDelegate, SightConfig->GetMaxAge(), false); //특정초 이후에 LostTarget함수를 호출한다.
 				Enemy->bSeePlayer = false; //디버깅
+				UpdateSeePlayerKey(false);
 				//Enemy->bHearPlayer = false; //디버깅
 				//Stimulus.MarkExpired();
 				TargetLostDelegate = FTimerDelegate::CreateUObject(this, &AEnemyAIController::LostTarget, Target);
@@ -226,10 +236,16 @@ void AEnemyAIController::LostTarget(AActor* Target)
 	{
 		GetWorldTimerManager().ClearTimer(TargetLostTimer);
 	}
+	if (BBComp->GetValueAsBool(bHearPlayerKey))
+	{
+		UpdateHearPlayerKey(false);
+	}
 	if (Enemy->bHearPlayer)
 	{
 		Enemy->bHearPlayer = false;
 	}
+	UpdatePlayerKey(nullptr);
+	UpdateHearLocationKey(FVector::ZeroVector);
 	PerceptionComponent->ForgetActor(Target);
 	UE_LOG(LogTemp, Warning, TEXT("AI : Target Lost!, Lost Target : %s"), *Target->GetFName().ToString());
 }
@@ -244,4 +260,23 @@ void AEnemyAIController::UpdateTargetPointIndex(int32 index)
 void AEnemyAIController::UpdatePatrolPosKey(FVector NewPatrolPos)
 {
 	BBComp->SetValueAsVector(PatrolPosKey, NewPatrolPos);
+}
+
+void AEnemyAIController::UpdatePlayerKey(AActor* Actor)
+{
+	BBComp->SetValueAsObject(PlayerKey, Actor);
+}
+
+void AEnemyAIController::UpdateHearLocationKey(FVector Location)
+{
+	BBComp->SetValueAsVector(HearLocation, Location);
+}
+
+void AEnemyAIController::UpdateSeePlayerKey(bool HasSee)
+{
+	BBComp->SetValueAsBool(bSeePlayerKey, HasSee);
+}
+void AEnemyAIController::UpdateHearPlayerKey(bool HasHear)
+{
+	BBComp->SetValueAsBool(bHearPlayerKey, HasHear);
 }

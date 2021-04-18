@@ -45,6 +45,7 @@ EBTNodeResult::Type UBTTask_GetPatrolPos::ExecuteTask(UBehaviorTreeComponent& Ow
 					}
 				}
 				BBComp->SetValueAsVector(AIController->PatrolPosKey, NewPatrolPos);
+				//AIController->UpdatePatrolPosKey(NewPatrolPos);
 
 				Result = EBTNodeResult::Succeeded;
 			}
