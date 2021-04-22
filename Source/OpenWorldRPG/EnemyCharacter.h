@@ -36,6 +36,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = AI)
 	float HearingMaxAge; //소음 식별후 사라졌을때 최대 인내?시간
 
+	UPROPERTY(EditAnywhere, Category = Combat)
+	float Range; //무기의 Range로 교체 할 예정임.
 
 	/******* 디버깅용 ********/
 	UPROPERTY(VisibleAnywhere, Category = AI)

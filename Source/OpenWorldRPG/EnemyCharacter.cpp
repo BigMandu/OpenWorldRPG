@@ -24,6 +24,8 @@ AEnemyCharacter::AEnemyCharacter()
 	bSeePlayer = false;
 	bHearPlayer = false;
 
+	Range = 1800.f;
+
 	AIControllerClass = AEnemyAIController::StaticClass(); //AIController를 넣어주고
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned; //AIController의 소유시기를 정해줌.
 

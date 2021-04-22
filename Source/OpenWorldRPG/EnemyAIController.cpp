@@ -65,6 +65,21 @@ void AEnemyAIController::BeginPlay()
 void AEnemyAIController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (BBComp->GetValueAsObject(PlayerKey) != nullptr) //object키가 null이 아니고
+	{
+		AMainCharacter* Main = Cast<AMainCharacter>(BBComp->GetValueAsObject(PlayerKey));
+		check(Main);
+		float Distance = FVector::Dist(Enemy->GetActorLocation(), Main->GetActorLocation());
+		if (Distance < (Enemy->Range - (Enemy->Range * 0.1))) //main과 Enemy의 거리가 enemy range내에 있으면 공격 가능.
+		{
+			BBComp->SetValueAsBool(CanAttackKey, true);
+		}
+		else
+		{
+			BBComp->SetValueAsBool(CanAttackKey, false);
+		}
+	}
 }
 
 void AEnemyAIController::OnPossess(APawn* InPawn) //AIController가 해당Enemy를 제어할 수 있도록함.
@@ -162,7 +177,7 @@ void AEnemyAIController::DetectedTarget(AActor* Target, FAIStimulus Stimulus)
 
 				//DominantSense는 GetLastStimuliLocation함수에만 쓰이는것 같다. 
 				//UE_LOG(LogTemp, Warning, TEXT("DominantSense is %s"), *PerceptionComponent->GetDominantSenseID().Name.ToString());
-
+				
 
 				if (Stimulus.Type == SightSenseID)// && Stimulus.Strength >= 1.f) //Sight를 감지했을때
 				{
@@ -279,4 +294,9 @@ void AEnemyAIController::UpdateSeePlayerKey(bool HasSee)
 void AEnemyAIController::UpdateHearPlayerKey(bool HasHear)
 {
 	BBComp->SetValueAsBool(bHearPlayerKey, HasHear);
+}
+
+void AEnemyAIController::UpdateAttackableLocationKey(FVector Location)
+{
+	BBComp->SetValueAsVector(AttackableLocationKey, Location);
 }

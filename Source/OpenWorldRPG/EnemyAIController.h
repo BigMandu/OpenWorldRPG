@@ -46,6 +46,8 @@ public:
 	const FName HearLocation = FName(TEXT("HearLocation"));
 	const FName bSeePlayerKey = FName(TEXT("SeePlayer"));
 	const FName bHearPlayerKey = FName(TEXT("HearPlayer"));
+	const FName AttackableLocationKey = FName(TEXT("AttackableLocation"));
+	const FName CanAttackKey = FName(TEXT("CanAttack"));
 
 
 protected:
@@ -70,5 +72,6 @@ public:
 	void UpdateHearLocationKey(FVector Location);
 	void UpdateSeePlayerKey(bool HasSee);
 	void UpdateHearPlayerKey(bool HasHear);
+	void UpdateAttackableLocationKey(FVector Location);
 	
 };
