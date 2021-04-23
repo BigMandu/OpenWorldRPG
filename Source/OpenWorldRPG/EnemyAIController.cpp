@@ -66,18 +66,28 @@ void AEnemyAIController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (BBComp->GetValueAsObject(PlayerKey) != nullptr) //object키가 null이 아니고
+	if (BBComp->GetValueAsBool(bSeePlayerKey) == true) //player를 식별했으면
 	{
 		AMainCharacter* Main = Cast<AMainCharacter>(BBComp->GetValueAsObject(PlayerKey));
-		check(Main);
-		float Distance = FVector::Dist(Enemy->GetActorLocation(), Main->GetActorLocation());
-		if (Distance < (Enemy->Range - (Enemy->Range * 0.1))) //main과 Enemy의 거리가 enemy range내에 있으면 공격 가능.
+		if (Main)
 		{
-			BBComp->SetValueAsBool(CanAttackKey, true);
-		}
-		else
-		{
-			BBComp->SetValueAsBool(CanAttackKey, false);
+			FVector PlayerLo = Main->GetActorLocation();
+			FVector EnemyLo = Enemy->GetActorLocation();
+
+			FVector Dis = (PlayerLo - EnemyLo).GetSafeNormal();
+			FRotator NRot = Dis.Rotation();
+
+			Enemy->SetActorRotation(NRot);
+
+			float Distance = FVector::Dist(Enemy->GetActorLocation(), Main->GetActorLocation());
+			if (Distance < (Enemy->Range - (Enemy->Range * 0.1))) //main과 Enemy의 거리가 enemy range내에 있으면 공격 가능.
+			{
+				BBComp->SetValueAsBool(CanAttackKey, true);
+			}
+			else
+			{
+				BBComp->SetValueAsBool(CanAttackKey, false);
+			}
 		}
 	}
 }

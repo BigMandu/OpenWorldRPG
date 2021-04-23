@@ -10,6 +10,7 @@
 UBTService_AttackMoving::UBTService_AttackMoving()
 {
 	NodeName = TEXT("AttackMoving");
+	Interval = 0.0001;
 }
 
 void UBTService_AttackMoving::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
@@ -26,6 +27,8 @@ void UBTService_AttackMoving::TickNode(UBehaviorTreeComponent& OwnerComp, uint8*
 
 	FVector PlayerLo = Main->GetActorLocation();
 
+	//플레이어 주변 빙글빙글 도는 코드
+	/*
 	float Dist = Enemy->Range - Enemy->Range * 0.3;
 	FVector Distance = FVector(Dist, 0.f, 0.f);
 	FVector AngleVec = FVector(0.f, 0.f, 1.f); // z = 1.f
@@ -42,6 +45,7 @@ void UBTService_AttackMoving::TickNode(UBehaviorTreeComponent& OwnerComp, uint8*
 	PlayerLo.Y += RotateVec.Y;
 
 	AICon->MoveToLocation(PlayerLo);
+	*/
 	PlayerLo = Main->GetActorLocation();
 	FVector EnemyLo = Enemy->GetActorLocation();
 
