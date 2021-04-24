@@ -12,6 +12,6 @@ UBTTask_MoveToAttackableArea::UBTTask_MoveToAttackableArea()
 EBTNodeResult::Type UBTTask_MoveToAttackableArea::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	EBTNodeResult::Type Result = Super::ExecuteTask(OwnerComp, NodeMemory);
-		
+	bUsePathfinding = true;
 	return Result;
 }

@@ -71,14 +71,14 @@ void AEnemyAIController::Tick(float DeltaTime)
 		AMainCharacter* Main = Cast<AMainCharacter>(BBComp->GetValueAsObject(PlayerKey));
 		if (Main)
 		{
+			//Player를 식별하면 계속해서 Player의 방향으로 회전한다.
 			FVector PlayerLo = Main->GetActorLocation();
 			FVector EnemyLo = Enemy->GetActorLocation();
 
-			FVector Dis = (PlayerLo - EnemyLo).GetSafeNormal();
-			FRotator NRot = Dis.Rotation();
-
+			FVector RotationVec = (PlayerLo - EnemyLo).GetSafeNormal();
+			FRotator NRot = FRotator(0.f, RotationVec.Rotation().Yaw, 0.f);
 			Enemy->SetActorRotation(NRot);
-
+			
 			float Distance = FVector::Dist(Enemy->GetActorLocation(), Main->GetActorLocation());
 			if (Distance < (Enemy->Range - (Enemy->Range * 0.1))) //main과 Enemy의 거리가 enemy range내에 있으면 공격 가능.
 			{

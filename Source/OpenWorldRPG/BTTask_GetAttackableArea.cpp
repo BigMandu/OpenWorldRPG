@@ -33,19 +33,30 @@ EBTNodeResult::Type UBTTask_GetAttackableArea::ExecuteTask(UBehaviorTreeComponen
 
 	FVector PlayerLo = Main->GetActorLocation();
 	FVector AILo = Enemy->GetActorLocation();
+	 
 
-	FVector RotationVec = (PlayerLo - AILo).GetSafeNormal(); //플레이어의 방향으로
-	float Distance = (FVector::Dist(PlayerLo, AILo) - (Enemy->Range - Enemy->Range*0.1)); //Player와 Enemy+Range의 거리를 구한다. -> 너무 타이트해서 살짝 더 나가게 해줬다.
-	FVector AIWithRange = (RotationVec * Distance) + AILo; //Range만큼 나아간다. ->Range만큼만 나가면 안되고, Player의 위치와  AI의 위치의 차가 Range보다 얼만큼 클때 ㅇㅇ
+	FVector NewAILocation;
 
-	FVector NewAILocation = FVector(AIWithRange.X, AIWithRange.Y, PlayerLo.Z); //Player의 높이로 해준다. 안그럼 못올라감.
-	
+	//if (abs(PlayerLo.Z - AILo.Z) >= 30.f) //높이차가 30 이상이면 
+	//{
+	//	NewAILocation = PlayerLo; //그냥 PlayerLocation으로 해준다.
+	//}
+	//else //높이 차가 얼마 안나면
+	{
+		FVector RotationVec = (PlayerLo - AILo).GetSafeNormal(); //플레이어의 방향으로
+		float Distance = (FVector::Dist(PlayerLo, AILo) - (Enemy->Range - Enemy->Range * 0.1)); //Player와 Enemy+Range의 거리를 구한다. -> 너무 타이트해서 살짝 더 나가게 해줬다.
+		FVector AIWithRange = (RotationVec * Distance) + AILo; //Range만큼 나아간다. ->Range만큼만 나가면 안되고, Player의 위치와  AI의 위치의 차가 Range보다 얼만큼 클때~로 해준다.
+
+		NewAILocation = FVector(AIWithRange.X, AIWithRange.Y, AIWithRange.Z); //Player의 높이로 해준다. -> ai가 턱에 걸려 못올라간다. 수정 필요.
+	}
 	
 	//for debug
 	{
 		UE_LOG(LogTemp, Warning, TEXT("AttackableArea : %s"), *NewAILocation.ToString());
 		//UKismetSystemLibrary::DrawDebugSphere(this, AttackableLocation, 50.f, 12, FLinearColor::Blue, 3.f, 2.f);
 		UKismetSystemLibrary::DrawDebugLine(this, AILo, NewAILocation, FLinearColor::Yellow, 2.f, 2.f);
+		UKismetSystemLibrary::DrawDebugSphere(this, NewAILocation, 20.f, 8, FLinearColor::Yellow, 2.f, 2.f);
+
 	}
 	AICon->UpdateAttackableLocationKey(NewAILocation);
 	return Result;
