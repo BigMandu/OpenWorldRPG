@@ -6,11 +6,15 @@
 #include "MainCharacter.h"
 #include "EnemyCharacter.h"
 #include "EnemyAIController.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 UBTService_AttackMoving::UBTService_AttackMoving()
 {
 	NodeName = TEXT("AttackMoving");
 	Interval = 0.0001;
+
+	Distance = 100.f;
+	Alpha = 0.f;
 }
 
 void UBTService_AttackMoving::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
@@ -25,7 +29,26 @@ void UBTService_AttackMoving::TickNode(UBehaviorTreeComponent& OwnerComp, uint8*
 	check(Enemy);
 	check(Main);
 
-	FVector PlayerLo = Main->GetActorLocation();
+	FVector EnemyLo = Enemy->GetActorLocation();
+	FVector RightVec = Enemy->GetActorRightVector();
+	
+	Alpha += DeltaSeconds;
+
+	if (Alpha >= 2.f)
+	{
+		Alpha = 0.f;
+		
+		Distance *= -1;
+	}
+
+	RightVec.X *= Distance;
+	RightVec.Y *= Distance;
+
+	FVector MovementVec = FVector(RightVec.X+EnemyLo.X, RightVec.Y+EnemyLo.Y, EnemyLo.Z); 
+	//->좌우로 움직이는 코드는 AIController에 넣어줬다. 이 서비스는 인터벌마다 불러와서 실행되기때문에 토글형식이 안먹힘.
+
+
+	//FVector PlayerLo = Main->GetActorLocation();
 
 	//플레이어 주변 빙글빙글 도는 코드
 	/*
@@ -46,6 +69,9 @@ void UBTService_AttackMoving::TickNode(UBehaviorTreeComponent& OwnerComp, uint8*
 
 	AICon->MoveToLocation(PlayerLo);
 	*/
+
+	//플레이어를 향해 회전하는 코드 -> AIController Tick에서 구현함.
+	/*
 	PlayerLo = Main->GetActorLocation();
 	FVector EnemyLo = Enemy->GetActorLocation();
 
@@ -53,6 +79,12 @@ void UBTService_AttackMoving::TickNode(UBehaviorTreeComponent& OwnerComp, uint8*
 	FRotator NRot = Dis.Rotation();
 
 	Enemy->SetActorRotation(NRot);
-	
-	UE_LOG(LogTemp, Warning, TEXT("NewLocation : %s"), *PlayerLo.ToString());
+	*/
+
+	//디버깅
+	{
+		UE_LOG(LogTemp, Warning, TEXT("MovementVec : %s"), *MovementVec.ToString());
+		UE_LOG(LogTemp, Warning, TEXT("Delta : %f"), DeltaSeconds);
+		UKismetSystemLibrary::DrawDebugLine(this, EnemyLo, MovementVec, FLinearColor::Yellow, 2.f, 2.f);
+	}
 }

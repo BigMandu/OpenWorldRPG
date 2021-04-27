@@ -49,6 +49,13 @@ public:
 	const FName AttackableLocationKey = FName(TEXT("AttackableLocation"));
 	const FName CanAttackKey = FName(TEXT("CanAttack"));
 
+	/*********************************************/
+
+	float Alpha;
+	float AttackMVDist;
+	bool bUpdateEnemyLo;
+	FVector EnemyAttackLo;
+
 
 protected:
 	virtual void BeginPlay() override;
@@ -73,5 +80,7 @@ public:
 	void UpdateSeePlayerKey(bool HasSee);
 	void UpdateHearPlayerKey(bool HasHear);
 	void UpdateAttackableLocationKey(FVector Location);
+
+	void AttackMoving(const FVector Vec, FVector RightVec);
 	
 };

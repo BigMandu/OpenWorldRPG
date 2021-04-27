@@ -19,6 +19,15 @@ enum class EMainChracterStatus : uint8
 	EMCS_MAX		UMETA(DisplayName = "DefaultMAX")
 };
 
+UENUM(BlueprintType)
+enum class ECameraMode : uint8
+{
+	ECM_TPS		UMETA(DisplayName = "TPS"),
+	ECM_FPS		UMETA(DisplayName = "FPS"),
+	
+	ECM_MAX		UMETA(DisplayName = "DefaultMAX")
+};
+
 UCLASS()
 class OPENWORLDRPG_API AMainCharacter : public ACharacter, public IAISightTargetInterface
 {
@@ -40,11 +49,16 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	float BaseLookupRate;
 
+	const float MAXCameraLength = 900.f;
+	const float MINCameraLength = 350.f;
 
 	/********** enum **********/
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Enums")
 	EMainChracterStatus MainChracterStatus;
 
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Enums")
+	ECameraMode CameraMode;
 
 	/********** Movement *************/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Movement)
@@ -64,15 +78,18 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement)
 	bool bIsWalking;
 
-	/**********  Sounds ************/
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Sounds)
-	class USoundCue* StepSoundCue;
-
-
 	/**************    Perception Source 관련   ******************/
 	class UAIPerceptionStimuliSourceComponent* StimuliSourceComp;
 	TSubclassOf<class UAISense_Sight> Sight;
 	TSubclassOf<class UAISense_Hearing> Hearing;
+
+	/**********  Sounds ************/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Sounds)
+	class USoundCue* StepSoundCue;
+
+	/**********  Item 관련 ************/
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Item)
+	class AActor* OverlappingActor;
 
 
 protected:
@@ -92,6 +109,7 @@ public:
 
 	/************** Enum 함수 **************/
 	void SetMainCharacterStatus(EMainChracterStatus Type);
+	void SetCameraMode(ECameraMode Type);
 
 	/********   Movement 함수 *******/
 	void MoveForward(float Value);
@@ -103,9 +121,22 @@ public:
 	void Walk();
 	void UnWalk();
 
+	void ScrollDN();
+	void ScrollUP();
+
+	void VKeyDN();
+
 	/********** Sounds ********/
 	void StepSound();
 
 	/********** Perception ********/
 	virtual bool CanBeSeenFrom(const FVector& ObserverLocation, FVector& OutSeenLocation, int32& NumberOfLoSChecksPerformed, float& OutSightStrength, const AActor* IgnoreActor) const;
+
+	/************ Input **********/
+
+	void EKeyDown();
+	void EKeyUp();
+
+	/********  Item 관련 ******/
+	FORCEINLINE void SetOverlappingActor(AActor* Actor) { OverlappingActor = Actor; }
 };

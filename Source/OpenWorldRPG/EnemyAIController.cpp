@@ -12,6 +12,7 @@
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 AEnemyAIController::AEnemyAIController(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer.SetDefaultSubobjectClass<UCrowdFollowingComponent>(TEXT("PathFollowingComponent")))
@@ -46,8 +47,11 @@ AEnemyAIController::AEnemyAIController(const FObjectInitializer& ObjectInitializ
 	BTComp = CreateDefaultSubobject<UBehaviorTreeComponent>(TEXT("BehaviorTreeComponent"));
 	BBComp = CreateDefaultSubobject<UBlackboardComponent>(TEXT("BlackboardComponent"));
 
-	
-
+	/***********************/
+	Alpha = 0.f;
+	AttackMVDist = 100.f;
+	bUpdateEnemyLo = false;
+	EnemyAttackLo = FVector::ZeroVector;
 }
 
 void AEnemyAIController::PostInitializeComponents()
@@ -77,16 +81,38 @@ void AEnemyAIController::Tick(float DeltaTime)
 
 			FVector RotationVec = (PlayerLo - EnemyLo).GetSafeNormal();
 			FRotator NRot = FRotator(0.f, RotationVec.Rotation().Yaw, 0.f);
-			Enemy->SetActorRotation(NRot);
-			
-			float Distance = FVector::Dist(Enemy->GetActorLocation(), Main->GetActorLocation());
-			if (Distance < (Enemy->Range - (Enemy->Range * 0.1))) //main과 Enemy의 거리가 enemy range내에 있으면 공격 가능.
+			Enemy->SetActorRotation(NRot); //회전과
+			SetFocalPoint(PlayerLo); //focus를  Player에 맞춰준다.
+
+			float Distance = FVector::Dist(EnemyLo, PlayerLo);
+			if (Distance <= (Enemy->Range + Enemy->Range * 0.1)) //main과 Enemy의 거리가 enemy range내에 있으면 공격 가능.
 			{
 				BBComp->SetValueAsBool(CanAttackKey, true);
+
+				//Range가 400이하 -> 나중엔 무기 계열(샷건이나 smg계열만)에 따라 적용 여부 판단.
+				if(Enemy->Range <= 400.f) //좌우로 움직이는 코드 -> 확률 적용하기.
+				{
+					FVector EnemyRightLo = Enemy->GetActorRightVector();
+					if (bUpdateEnemyLo == false) //위치를 한번만 업데이트 하기 위함.
+					{
+						bUpdateEnemyLo = true;
+						EnemyAttackLo = Enemy->GetActorLocation(); //이 어택 위치를 AttackMoving()에 넘겨준다.
+					}
+					Alpha += DeltaTime;
+
+					if (Alpha >= 0.3f && EnemyAttackLo != FVector::ZeroVector) //.3 초 지나면
+					{
+						Alpha = 0.f;
+
+						AttackMVDist *= -1; //좌, 우로 변경하기
+						AttackMoving(EnemyAttackLo, EnemyRightLo);
+					}
+				}
 			}
 			else
 			{
 				BBComp->SetValueAsBool(CanAttackKey, false);
+				bUpdateEnemyLo = false;
 			}
 		}
 	}
@@ -275,6 +301,24 @@ void AEnemyAIController::LostTarget(AActor* Target)
 	UE_LOG(LogTemp, Warning, TEXT("AI : Target Lost!, Lost Target : %s"), *Target->GetFName().ToString());
 }
 
+/******************  ***********************/
+
+void AEnemyAIController::AttackMoving(const FVector LocationVec, FVector RightVec)
+{
+	RightVec.X *= AttackMVDist;
+	RightVec.Y *= AttackMVDist;
+
+	FVector MovementVec = FVector(RightVec.X + LocationVec.X, RightVec.Y + LocationVec.Y, LocationVec.Z);
+
+	FAIMoveRequest MoveReq;
+	MoveReq.SetGoalLocation(MovementVec);
+	MoveTo(MoveReq);
+
+	//디버깅용
+	{
+		UKismetSystemLibrary::DrawDebugLine(this, LocationVec, MovementVec, FLinearColor::Yellow, 0.6f, 2.f);
+	}
+}
 
 /******************  Black board Key Update Function***********************/
 void AEnemyAIController::UpdateTargetPointIndex(int32 index)
@@ -310,3 +354,4 @@ void AEnemyAIController::UpdateAttackableLocationKey(FVector Location)
 {
 	BBComp->SetValueAsVector(AttackableLocationKey, Location);
 }
+

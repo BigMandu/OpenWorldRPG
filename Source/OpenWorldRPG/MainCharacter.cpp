@@ -13,6 +13,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
 #include "Engine/SkeletalMeshSocket.h"
+#include "Weapon.h"
 
 
 // Sets default values
@@ -44,20 +45,11 @@ AMainCharacter::AMainCharacter()
 	/* 카메라 관련 */
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->TargetArmLength = 450.f;
-	CameraBoom->bUsePawnControlRotation = true;
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
-	Camera->bUsePawnControlRotation = false;
-
-	BaseTurnRate = 45.f;
-	BaseLookupRate = 45.f;
-
-	/* 회전시 카메라에만 영향 가도록 설정 */
-	bUseControllerRotationPitch = false;
-	bUseControllerRotationRoll = false;
-	bUseControllerRotationYaw = false;
+	
+	SetCameraMode(ECameraMode::ECM_TPS); //초기 카메라 모드는 3인칭 모드로.
 
 	/******  Perception ****/
 	StimuliSourceComp = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("StimuliSource"));
@@ -69,6 +61,7 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+	/************** Movement & sight key bind ***************/
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 
@@ -85,6 +78,16 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 	PlayerInputComponent->BindAction("Walk", IE_Pressed, this, &AMainCharacter::Walk);
 	PlayerInputComponent->BindAction("Walk", IE_Released, this, &AMainCharacter::UnWalk);
+
+	PlayerInputComponent->BindAction("ScrollDN", IE_Pressed, this, &AMainCharacter::ScrollDN);
+	PlayerInputComponent->BindAction("ScrollUP", IE_Pressed, this, &AMainCharacter::ScrollUP);
+
+	PlayerInputComponent->BindAction("Camera", IE_Pressed, this, &AMainCharacter::VKeyDN);
+
+	/************** Interactive & Inventory key bind ************/
+
+	PlayerInputComponent->BindAction("Interactive", IE_Pressed, this, &AMainCharacter::EKeyDown);
+	PlayerInputComponent->BindAction("Interactive", IE_Released, this, &AMainCharacter::EKeyUp);
 
 }
 
@@ -129,7 +132,11 @@ void AMainCharacter::Tick(float DeltaTime)
 	{
 		bIsAccelerating = false;
 	}
+
+
 }
+
+/****************************** 이동, 시점 관련 키 바인드 ***************************/
 
 void AMainCharacter::TurnAtRate(float Rate)
 {
@@ -229,9 +236,42 @@ void AMainCharacter::UnWalk()
 	}
 }
 
+void AMainCharacter::ScrollDN()
+{
+	if (CameraBoom->TargetArmLength <= MINCameraLength)
+	{
+		CameraBoom->TargetArmLength = MINCameraLength;
+	}
+	else CameraBoom->TargetArmLength -= 50;
+
+}
+
+void AMainCharacter::ScrollUP()
+{
+	if (CameraBoom->TargetArmLength >= MAXCameraLength)
+	{
+		CameraBoom->TargetArmLength = MAXCameraLength;
+	}
+	else CameraBoom->TargetArmLength += 50;
+}
+
+void AMainCharacter::VKeyDN()
+{
+	switch (CameraMode)
+	{
+	case ECameraMode::ECM_TPS:
+		SetCameraMode(ECameraMode::ECM_FPS);
+		break;
+	case ECameraMode::ECM_FPS:
+		SetCameraMode(ECameraMode::ECM_TPS);
+		break;
+	default:
+		break;
+	}
+}
 
 /***************************** enum 함수********************************/
-void AMainCharacter::SetMainCharacterStatus(EMainChracterStatus Type)
+void AMainCharacter::SetMainCharacterStatus(EMainChracterStatus Type) //플레이어의 상태
 {
 	MainChracterStatus = Type;
 	switch (MainChracterStatus)
@@ -251,6 +291,35 @@ void AMainCharacter::SetMainCharacterStatus(EMainChracterStatus Type)
 	}
 }
 
+void AMainCharacter::SetCameraMode(ECameraMode Type) //플레이어 시점 상태 -> VKeyDN
+{
+	CameraMode = Type;
+	switch (CameraMode)
+	{
+	case ECameraMode::ECM_TPS:
+		CameraBoom->TargetArmLength = 450.f;
+		CameraBoom->bUsePawnControlRotation = true;
+		Camera->bUsePawnControlRotation = false;
+
+		/* 회전시 카메라에만 영향 가도록 설정 */
+		bUseControllerRotationPitch = false;
+		bUseControllerRotationRoll = false;
+		bUseControllerRotationYaw = false;
+
+		BaseTurnRate = 45.f;
+		BaseLookupRate = 45.f;
+		break;
+
+	case ECameraMode::ECM_FPS:
+		CameraBoom->TargetArmLength = 0.f;
+		break;
+	default:
+		break;
+	}
+}
+
+
+/******************************************************************************/
 void AMainCharacter::StepSound()
 {
 	//UE_LOG(LogTemp, Warning, TEXT("AnimNotify -> AMainChar:: StepSound()"));
@@ -303,4 +372,25 @@ bool AMainCharacter::CanBeSeenFrom(const FVector& ObserverLocation, FVector& Out
 		//UE_LOG(LogTemp, Warning, TEXT("Player:: Hiding"));
 	}
 	return bResult;
+}
+
+/************** Interactive & Inventory Key bind 함수 ***********/
+
+void AMainCharacter::EKeyDown()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Player:: E Key Down"));
+	if (OverlappingActor)
+	{
+		AWeapon* Weapon = Cast<AWeapon>(OverlappingActor);
+		if (Weapon)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Player:: EKeyDown -> Weapon. Weapon is : %s"), *(Weapon->GetFName().ToString()));
+		}
+		
+	}
+}
+
+void AMainCharacter::EKeyUp()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Player:: E Key Up"));
 }
