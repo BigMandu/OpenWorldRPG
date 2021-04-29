@@ -7,16 +7,17 @@
 #include "Perception/AISightTargetInterface.h"
 #include "MainCharacter.generated.h"
 
-UENUM(BlueprintType)
-enum class EMainChracterStatus : uint8
-{
-	EMCS_Dead		UMETA(DisplayName = "Dead"),
-	EMCS_Crouch		UMETA(DisplayName = "Crouch"),
-	EMCS_Normal		UMETA(DisplayName = "Normal"),
-	EMCS_Walk		UMETA(DisplayName = "Walk"),
-	EMCS_Sprint		UMETA(DisplayName = "Sprint"),
 
-	EMCS_MAX		UMETA(DisplayName = "DefaultMAX")
+UENUM(BlueprintType)
+enum class EPlayerStatus : uint8
+{
+	EPS_Dead		UMETA(DisplayName = "Dead"),
+	EPS_Crouch		UMETA(DisplayName = "Crouch"),
+	EPS_Normal		UMETA(DisplayName = "Normal"),
+	EPS_Walk		UMETA(DisplayName = "Walk"),
+	EPS_Sprint		UMETA(DisplayName = "Sprint"),
+
+	EPS_MAX		UMETA(DisplayName = "DefaultMAX")
 };
 
 UENUM(BlueprintType)
@@ -27,6 +28,16 @@ enum class ECameraMode : uint8
 	
 	ECM_MAX		UMETA(DisplayName = "DefaultMAX")
 };
+
+UENUM(BlueprintType)
+enum class EAimMode : uint8
+{
+	EAM_Aim				UMETA(DisplayName = "Aim"),
+	EAM_NotAim			UMETA(DisplayName = "NotAim"),
+
+	EAM_MAX				UMETA(DisplayName = "DefaultMAX")
+};
+
 
 UCLASS()
 class OPENWORLDRPG_API AMainCharacter : public ACharacter, public IAISightTargetInterface
@@ -42,29 +53,35 @@ public:
 	class USpringArmComponent* CameraBoom;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
-	class UCameraComponent* Camera;
+	class UCameraComponent* CameraTPS; //3인칭 카메라
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
+	UCameraComponent* CameraFPS; //1인칭 카메라
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	float BaseTurnRate;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	float BaseLookupRate;
 
-	const float MAXCameraLength = 900.f;
-	const float MINCameraLength = 350.f;
+	const FVector TPSCam_Rel_Location = FVector(0.f, 30.f, 20.f);
+
+	const float MAXCameraLength = 600.f;
+	const float MINCameraLength = 250.f;
+	float BeforeCameraLength;
 
 	/********** enum **********/
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Enums")
-	EMainChracterStatus MainChracterStatus;
-
+	EPlayerStatus MainChracterStatus;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Enums")
 	ECameraMode CameraMode;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Enums")
+	EAimMode AimMode;
+
 	/********** Movement *************/
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Movement)
-	float MaxWalkSpeed;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Movement)
-	float MinWalkSpeed;
+	const float MaxWalkSpeed = 600.f; //뛰는 속도
+	const float MinWalkSpeed = 300.f; //걷는 속도
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement)
 	bool bIsAccelerating;	
@@ -78,6 +95,15 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement)
 	bool bIsWalking;
 
+	/********* Input *********/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	bool bAimToggle;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Input)
+	bool bIsAim;
+
+	
+
 	/**************    Perception Source 관련   ******************/
 	class UAIPerceptionStimuliSourceComponent* StimuliSourceComp;
 	TSubclassOf<class UAISense_Sight> Sight;
@@ -87,9 +113,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Sounds)
 	class USoundCue* StepSoundCue;
 
-	/**********  Item 관련 ************/
+	/**********  Item & Combat 관련 ************/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Item)
 	class AActor* OverlappingActor;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item | Weapon")
+	class AWeapon* EquippedWeapon;
 
 
 protected:
@@ -108,8 +137,9 @@ public:
 	void LookUpAtRate(float Rate);
 
 	/************** Enum 함수 **************/
-	void SetMainCharacterStatus(EMainChracterStatus Type);
+	void SetMainCharacterStatus(EPlayerStatus Type);
 	void SetCameraMode(ECameraMode Type);
+	void SetAimMode(EAimMode Mode);
 
 	/********   Movement 함수 *******/
 	void MoveForward(float Value);
@@ -126,16 +156,20 @@ public:
 
 	void VKeyDN();
 
+	/************ Input **********/
+	void EKeyDown();
+	void EKeyUp();
+
+	void RMBDown();
+	void RMBUp();
+
 	/********** Sounds ********/
 	void StepSound();
 
 	/********** Perception ********/
 	virtual bool CanBeSeenFrom(const FVector& ObserverLocation, FVector& OutSeenLocation, int32& NumberOfLoSChecksPerformed, float& OutSightStrength, const AActor* IgnoreActor) const;
 
-	/************ Input **********/
-
-	void EKeyDown();
-	void EKeyUp();
+	
 
 	/********  Item 관련 ******/
 	FORCEINLINE void SetOverlappingActor(AActor* Actor) { OverlappingActor = Actor; }

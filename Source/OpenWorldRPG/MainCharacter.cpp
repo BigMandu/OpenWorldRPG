@@ -30,9 +30,8 @@ AMainCharacter::AMainCharacter()
 
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true; //웅크리기를 할 수 있도록 true로 해준다.
 	GetCharacterMovement()->CrouchedHalfHeight = GetDefaultHalfHeight() / 1.4f; //웅크린 크기를 기본HalfHeight의 /1.6으로 지정한다.
-
-	MinWalkSpeed = 300.f; //걷는 속도는 Crouch기본속도랑 똑같게 해줬다.
-	MaxWalkSpeed = 600.f; //뛰는속도는 600으로 해준다(스프린트 속도 아님)
+	
+	GetCharacterMovement()->MaxWalkSpeedCrouched = 300.f;
 	GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
 	bIsWalking = false; //걷기 기본설정은 false.
 	
@@ -40,16 +39,35 @@ AMainCharacter::AMainCharacter()
 	/********** Input ***********/
 	bCrouchToggle = true; //웅크리기 키 Toggle을 true로 기본세팅 한다.
 	bWalkToggle = true; //걷기 키 Toggle을 true로 세팅한다.
+	bAimToggle = true; //조준키를 toggel true세팅.
+
+	bIsAim = false;
 	
 
 	/* 카메라 관련 */
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
 
-	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
-	Camera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
-	
+	CameraTPS = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraTPS"));
+	CameraTPS->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
+
+	CameraFPS = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraFPS"));
+	CameraFPS->SetupAttachment(GetMesh(), FName("headsocket"));
+
+	CameraBoom->TargetArmLength = MAXCameraLength;
+	CameraBoom->bUsePawnControlRotation = true;
+	CameraTPS->bUsePawnControlRotation = false;
+	CameraTPS->SetRelativeLocation(TPSCam_Rel_Location); //3인칭 카메라를 살짝 우측으로 치우지게 한다.
+
+	CameraFPS->bUsePawnControlRotation = true;
+	CameraFPS->SetRelativeLocationAndRotation(FVector(0.f, 8.f, 0.f), FRotator(-90.f, 0.f, 90.f));
+
+	BaseTurnRate = 45.f;
+	BaseLookupRate = 45.f;
+
+	/********** 초기 enum 세팅************/
 	SetCameraMode(ECameraMode::ECM_TPS); //초기 카메라 모드는 3인칭 모드로.
+	SetAimMode(EAimMode::EAM_NotAim);
 
 	/******  Perception ****/
 	StimuliSourceComp = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("StimuliSource"));
@@ -72,6 +90,10 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("TurnRate", this, &AMainCharacter::TurnAtRate);
 	PlayerInputComponent->BindAxis("LookUpRate", this, &AMainCharacter::LookUpAtRate);
+
+
+	PlayerInputComponent->BindAction("RMB", IE_Pressed, this, &AMainCharacter::RMBDown);
+	PlayerInputComponent->BindAction("RMB", IE_Released, this, &AMainCharacter::RMBUp);
 
 	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &AMainCharacter::MyCrouch);
 	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &AMainCharacter::MyUnCrouch);
@@ -136,6 +158,103 @@ void AMainCharacter::Tick(float DeltaTime)
 
 }
 
+
+/***************************** enum 함수********************************/
+void AMainCharacter::SetMainCharacterStatus(EPlayerStatus Type) //플레이어의 상태
+{
+	MainChracterStatus = Type;
+	switch (MainChracterStatus)
+	{
+	case EPlayerStatus::EPS_Normal:
+		GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
+		bIsWalking = false;
+		break;
+	case EPlayerStatus::EPS_Walk:
+		GetCharacterMovement()->MaxWalkSpeed = MinWalkSpeed;
+		bIsWalking = true;
+		break;
+	case EPlayerStatus::EPS_Sprint:
+		break;
+	default:
+		break;
+	}
+}
+
+void AMainCharacter::SetCameraMode(ECameraMode Type) //플레이어 시점 상태 -> VKeyDN
+{
+	CameraMode = Type;
+	switch (CameraMode)
+	{
+	case ECameraMode::ECM_TPS:
+		CameraTPS->Activate();
+		CameraFPS->Deactivate();
+
+		/* 회전시 카메라에만 영향 가도록 설정 */
+		bUseControllerRotationPitch = false;
+		bUseControllerRotationRoll = false;
+		if (EquippedWeapon)
+		{
+			bUseControllerRotationYaw = true;
+		}
+		else bUseControllerRotationYaw = false; //-> 비전투모드일때는 false, 전투모드일때는 true로 해줘야겠다.
+
+
+		break;
+
+	case ECameraMode::ECM_FPS:
+		CameraFPS->Activate();
+		CameraTPS->Deactivate();
+
+		bUseControllerRotationPitch = false;
+		bUseControllerRotationRoll = false;
+		//카메라 회전시 캐릭터가 회전을 따라서 회전하도록 한다. 그래야 뒷걸음, 좌우 게걸음이 가능하다.
+		bUseControllerRotationYaw = true;
+
+
+		break;
+	default:
+		break;
+	}
+}
+
+void AMainCharacter::SetAimMode(EAimMode Mode)
+{
+	AimMode = Mode;
+	switch (AimMode)
+	{
+	case EAimMode::EAM_Aim:
+	{
+		bIsAim = true;
+		GetCharacterMovement()->MaxWalkSpeed = MinWalkSpeed;
+		if (CameraMode == ECameraMode::ECM_TPS)
+		{
+			//TPS모드 + Aim상태일때 카메라를 살짝 앞으로 땡겨준다.
+
+			BeforeCameraLength = CameraBoom->TargetArmLength; //현재 SprintArm의 길이를 저장한다.
+			//float CameraLength = FMath::FInterpTo(BeforeCameraLength, MINCameraLength, GetWorld()->GetDeltaSeconds(), 15.f);
+			CameraBoom->TargetArmLength = MINCameraLength;
+		}
+		break;
+	}
+	case EAimMode::EAM_NotAim:
+	{
+		bIsAim = false;
+		GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
+		if (CameraMode == ECameraMode::ECM_TPS)
+		{
+			//땡긴 카메라를 다시 원복 시킨다.
+			/*float CurrentLength = CameraBoom->TargetArmLength;
+			float CameraLength = FMath::FInterpTo(CurrentLength, BeforeCameraLength, GetWorld()->GetDeltaSeconds(), 15.f);*/
+			CameraBoom->TargetArmLength = BeforeCameraLength;
+		}
+		break;
+	}
+	default:
+		break;
+	}
+}
+
+
 /****************************** 이동, 시점 관련 키 바인드 ***************************/
 
 void AMainCharacter::TurnAtRate(float Rate)
@@ -169,11 +288,13 @@ void AMainCharacter::MoveRight(float Value)
 {
 	if (Controller != NULL && Value != 0.f)
 	{
+		
 		FRotator Rotation = Controller->GetControlRotation();
 		FRotator YawRotation = FRotator(0.f, Rotation.Yaw, 0.f);
-		
+
 		//right 벡터
-		FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+		FVector Direction = FRotationMatrix(Rotation).GetUnitAxis(EAxis::Y);
+		
 		AddMovementInput(Direction, Value);
 	}
 }
@@ -184,14 +305,14 @@ void AMainCharacter::MyCrouch()
 	{
 		Super::UnCrouch();
 		UE_LOG(LogTemp, Warning, TEXT("Crouch:: UnCrouch"));
-		SetMainCharacterStatus(EMainChracterStatus::EMCS_Normal);
+		SetMainCharacterStatus(EPlayerStatus::EPS_Normal);
 	}
 
 	if (MainAnimInstance->MovementSpeed <= 10 && bIsCrouched == false)
 	{
 		Super::Crouch();
 		UE_LOG(LogTemp, Warning, TEXT("Crouch:: Crouch"));
-		SetMainCharacterStatus(EMainChracterStatus::EMCS_Crouch);
+		SetMainCharacterStatus(EPlayerStatus::EPS_Crouch);
 	}
 }
 
@@ -202,25 +323,25 @@ void AMainCharacter::MyUnCrouch()
 	{
 		Super::UnCrouch();
 		UE_LOG(LogTemp, Warning, TEXT("UnCrouch:: UnCrouch"));
-		SetMainCharacterStatus(EMainChracterStatus::EMCS_Normal);	
+		SetMainCharacterStatus(EPlayerStatus::EPS_Normal);
 	}
 }
 
 void AMainCharacter::Walk()
 {
 	
-	if (bWalkToggle && bIsWalking == true)
+	if (bWalkToggle && bIsWalking && AimMode != EAimMode::EAM_Aim)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Walk:: UnWalk"));
-		SetMainCharacterStatus(EMainChracterStatus::EMCS_Normal);
+		SetMainCharacterStatus(EPlayerStatus::EPS_Normal);
 		//bIsWalking = false; -> Set enum함수에서 변경해줬다.
 		return;
 	}
 	
-	if (bIsWalking == false)
+	if (bIsWalking == false && AimMode != EAimMode::EAM_Aim)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Walk:: Walk"));
-		SetMainCharacterStatus(EMainChracterStatus::EMCS_Walk);
+		SetMainCharacterStatus(EPlayerStatus::EPS_Walk);
 		//bIsWalking = true;
 		return;
 	}
@@ -228,31 +349,37 @@ void AMainCharacter::Walk()
 
 void AMainCharacter::UnWalk()
 {
-	if (bWalkToggle == false && bIsWalking == true)
+	if (bWalkToggle == false && bIsWalking == true && AimMode != EAimMode::EAM_Aim)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("UnWalk:: UnWalk"));
-		SetMainCharacterStatus(EMainChracterStatus::EMCS_Normal);
+		SetMainCharacterStatus(EPlayerStatus::EPS_Normal);
 		//bIsWalking = false;		
 	}
 }
 
 void AMainCharacter::ScrollDN()
 {
-	if (CameraBoom->TargetArmLength <= MINCameraLength)
+	//TPS모드일 경우에만 스크롤 다운, 업이 가능하도록 (카메라 멀게 , 가까이)
+	if (CameraMode == ECameraMode::ECM_TPS) 
 	{
-		CameraBoom->TargetArmLength = MINCameraLength;
+		if (CameraBoom->TargetArmLength <= MINCameraLength)
+		{
+			CameraBoom->TargetArmLength = MINCameraLength;
+		}
+		else CameraBoom->TargetArmLength -= 50;
 	}
-	else CameraBoom->TargetArmLength -= 50;
-
 }
 
 void AMainCharacter::ScrollUP()
 {
-	if (CameraBoom->TargetArmLength >= MAXCameraLength)
+	if (CameraMode == ECameraMode::ECM_TPS)
 	{
-		CameraBoom->TargetArmLength = MAXCameraLength;
+		if (CameraBoom->TargetArmLength >= MAXCameraLength)
+		{
+			CameraBoom->TargetArmLength = MAXCameraLength;
+		}
+		else CameraBoom->TargetArmLength += 50;
 	}
-	else CameraBoom->TargetArmLength += 50;
 }
 
 void AMainCharacter::VKeyDN()
@@ -270,51 +397,57 @@ void AMainCharacter::VKeyDN()
 	}
 }
 
-/***************************** enum 함수********************************/
-void AMainCharacter::SetMainCharacterStatus(EMainChracterStatus Type) //플레이어의 상태
+
+/************** Interactive & Inventory Key bind 함수 ***********/
+
+void AMainCharacter::EKeyDown()
 {
-	MainChracterStatus = Type;
-	switch (MainChracterStatus)
+	UE_LOG(LogTemp, Warning, TEXT("Player:: E Key Down"));
+	if (OverlappingActor)
 	{
-	case EMainChracterStatus::EMCS_Normal:
-		GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
-		bIsWalking = false;
-		break;
-	case EMainChracterStatus::EMCS_Walk:
-		GetCharacterMovement()->MaxWalkSpeed = MinWalkSpeed;
-		bIsWalking = true;
-		break;
-	case EMainChracterStatus::EMCS_Sprint:
-		break;
-	default:
-		break;
+		AWeapon* Weapon = Cast<AWeapon>(OverlappingActor);
+		if (Weapon)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Player:: EKeyDown -> Weapon. Weapon is : %s"), *(Weapon->GetFName().ToString()));
+			SetOverlappingActor(nullptr);
+			EquippedWeapon = Weapon;
+			Weapon->Equip(this);
+		}
+
 	}
 }
 
-void AMainCharacter::SetCameraMode(ECameraMode Type) //플레이어 시점 상태 -> VKeyDN
+void AMainCharacter::EKeyUp()
 {
-	CameraMode = Type;
-	switch (CameraMode)
+	UE_LOG(LogTemp, Warning, TEXT("Player:: E Key Up"));
+}
+
+void AMainCharacter::RMBDown()
+{
+	if (EquippedWeapon != nullptr)
 	{
-	case ECameraMode::ECM_TPS:
-		CameraBoom->TargetArmLength = 450.f;
-		CameraBoom->bUsePawnControlRotation = true;
-		Camera->bUsePawnControlRotation = false;
+		if (bAimToggle && bIsAim)
+		{
+			SetAimMode(EAimMode::EAM_NotAim);
+			UE_LOG(LogTemp, Warning, TEXT("Aim off"));
+		}
+		else
+		{
+			SetAimMode(EAimMode::EAM_Aim);
+			UE_LOG(LogTemp, Warning, TEXT("Aim on"));
+		}
+	}
+}
 
-		/* 회전시 카메라에만 영향 가도록 설정 */
-		bUseControllerRotationPitch = false;
-		bUseControllerRotationRoll = false;
-		bUseControllerRotationYaw = false;
-
-		BaseTurnRate = 45.f;
-		BaseLookupRate = 45.f;
-		break;
-
-	case ECameraMode::ECM_FPS:
-		CameraBoom->TargetArmLength = 0.f;
-		break;
-	default:
-		break;
+void AMainCharacter::RMBUp()
+{
+	if (EquippedWeapon != nullptr)
+	{
+		if (bAimToggle == false)
+		{
+			SetAimMode(EAimMode::EAM_NotAim);
+			UE_LOG(LogTemp, Warning, TEXT("Aim off"));
+		}
 	}
 }
 
@@ -372,25 +505,4 @@ bool AMainCharacter::CanBeSeenFrom(const FVector& ObserverLocation, FVector& Out
 		//UE_LOG(LogTemp, Warning, TEXT("Player:: Hiding"));
 	}
 	return bResult;
-}
-
-/************** Interactive & Inventory Key bind 함수 ***********/
-
-void AMainCharacter::EKeyDown()
-{
-	UE_LOG(LogTemp, Warning, TEXT("Player:: E Key Down"));
-	if (OverlappingActor)
-	{
-		AWeapon* Weapon = Cast<AWeapon>(OverlappingActor);
-		if (Weapon)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Player:: EKeyDown -> Weapon. Weapon is : %s"), *(Weapon->GetFName().ToString()));
-		}
-		
-	}
-}
-
-void AMainCharacter::EKeyUp()
-{
-	UE_LOG(LogTemp, Warning, TEXT("Player:: E Key Up"));
 }

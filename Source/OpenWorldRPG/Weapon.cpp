@@ -2,6 +2,7 @@
 
 
 #include "Weapon.h"
+#include "Engine/SkeletalMeshSocket.h"
 #include "Components/BoxComponent.h"
 #include "MainCharacter.h"
 
@@ -74,3 +75,20 @@ void AWeapon::CollisionEndOverlap(UPrimitiveComponent* OverlappedComponent, AAct
 	}
 }
 
+void AWeapon::Equip(ACharacter* Char)
+{
+	AMainCharacter* Main = Cast<AMainCharacter>(Char);
+	/*FAttachmentTransformRules ATR;
+	ATR.ScaleRule = EAttachmentRule::KeepRelative;
+	ATR.LocationRule = EAttachmentRule::KeepRelative;*/
+	if (Main)
+	{
+		const USkeletalMeshSocket* Socket = Main->GetMesh()->GetSocketByName("WeaponGrip");
+		if (Socket)
+		{
+			//AttachToActor(this, ATR, Socket->GetFName());
+			Socket->AttachActor(this, Main->GetMesh());
+		}
+		
+	}
+}

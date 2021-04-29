@@ -25,6 +25,15 @@ public:
 	float MovementSpeed;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement)
+	float Direction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement)
+	float Pitch;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement)
+	float Yaw;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement)
 	bool bIsinAir;
 
 	class APawn* Pawn;
