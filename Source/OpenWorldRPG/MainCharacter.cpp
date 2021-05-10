@@ -14,7 +14,8 @@
 #include "Sound/SoundCue.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "Weapon.h"
-
+#include "InventorySystem/Item.h"
+#include "InventorySystem/InventoryComponent.h"
 
 // Sets default values
 AMainCharacter::AMainCharacter()
@@ -64,6 +65,10 @@ AMainCharacter::AMainCharacter()
 
 	BaseTurnRate = 45.f;
 	BaseLookupRate = 45.f;
+
+	/****** Inventory ****/
+	Inventory = CreateDefaultSubobject<UInventoryComponent>(TEXT("Inventory"));
+	//Inventory->
 
 	/********** 초기 enum 세팅************/
 	SetCameraMode(ECameraMode::ECM_TPS); //초기 카메라 모드는 3인칭 모드로.
@@ -448,6 +453,17 @@ void AMainCharacter::RMBUp()
 			SetAimMode(EAimMode::EAM_NotAim);
 			UE_LOG(LogTemp, Warning, TEXT("Aim off"));
 		}
+	}
+}
+
+/*************************  Item  관련 ***************************************************/
+
+void AMainCharacter::UseItem(class UItem* Item)
+{
+	if (Item)
+	{
+		Item->Use(this);
+		Item->OnUse(this);
 	}
 }
 

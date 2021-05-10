@@ -102,6 +102,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Input)
 	bool bIsAim;
 
+	/********* Inventory ********/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Item)
+	class UInventoryComponent* Inventory;
 	
 
 	/**************    Perception Source 관련   ******************/
@@ -173,4 +176,7 @@ public:
 
 	/********  Item 관련 ******/
 	FORCEINLINE void SetOverlappingActor(AActor* Actor) { OverlappingActor = Actor; }
+
+	UFUNCTION(BlueprintCallable)
+	void UseItem(class UItem* Item);
 };
