@@ -48,6 +48,8 @@ public:
 	
 	class UMainAnimInstance* MainAnimInstance;
 
+	class AMainController* MainController;
+
 	/**********   Ä«¸Þ¶ó *************/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	class USpringArmComponent* CameraBoom;
@@ -102,8 +104,11 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Input)
 	bool bIsAim;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Input)
+	bool bTapKeyDown;
+
 	/********* Inventory ********/
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Item)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Item)
 	class UInventoryComponent* Inventory;
 	
 
@@ -123,7 +128,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item | Weapon")
 	class AWeapon* EquippedWeapon;
 
+	AActor* InteractActor;
 
+	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -166,6 +173,8 @@ public:
 	void RMBDown();
 	void RMBUp();
 
+	void TapKeyDown();
+
 	/********** Sounds ********/
 	void StepSound();
 
@@ -178,5 +187,7 @@ public:
 	FORCEINLINE void SetOverlappingActor(AActor* Actor) { OverlappingActor = Actor; }
 
 	UFUNCTION(BlueprintCallable)
-	void UseItem(class UItem* Item);
+	void UseItem(class AItem* Item);
+
+	void Interactive();
 };

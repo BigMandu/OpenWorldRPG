@@ -2,6 +2,7 @@
 
 
 #include "MainCharacter.h"
+#include "MainController.h"
 #include "MainAnimInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -14,8 +15,11 @@
 #include "Sound/SoundCue.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "Weapon.h"
-#include "InventorySystem/Item.h"
-#include "InventorySystem/InventoryComponent.h"
+#include "Item/Item.h"
+#include "Item/InventoryComponent.h"
+#include "Item/Interactable.h"
+#include "Item/Interactive_Interface.h"
+#include "DrawDebugHelpers.h" //디버깅용
 
 // Sets default values
 AMainCharacter::AMainCharacter()
@@ -43,7 +47,7 @@ AMainCharacter::AMainCharacter()
 	bAimToggle = true; //조준키를 toggel true세팅.
 
 	bIsAim = false;
-	
+	bTapKeyDown = false;
 
 	/* 카메라 관련 */
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
@@ -68,7 +72,6 @@ AMainCharacter::AMainCharacter()
 
 	/****** Inventory ****/
 	Inventory = CreateDefaultSubobject<UInventoryComponent>(TEXT("Inventory"));
-	//Inventory->
 
 	/********** 초기 enum 세팅************/
 	SetCameraMode(ECameraMode::ECM_TPS); //초기 카메라 모드는 3인칭 모드로.
@@ -113,6 +116,8 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 	/************** Interactive & Inventory key bind ************/
 
+	PlayerInputComponent->BindAction("Tab", IE_Pressed, this, &AMainCharacter::TapKeyDown);
+
 	PlayerInputComponent->BindAction("Interactive", IE_Pressed, this, &AMainCharacter::EKeyDown);
 	PlayerInputComponent->BindAction("Interactive", IE_Released, this, &AMainCharacter::EKeyUp);
 
@@ -141,7 +146,7 @@ void AMainCharacter::PostInitializeComponents()
 void AMainCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
+	MainController = Cast<AMainController>(GetController());
 }
 
 // Called every frame
@@ -275,10 +280,10 @@ void AMainCharacter::LookUpAtRate(float Rate)
 
 void AMainCharacter::MoveForward(float Value)
 {
-	if (Controller != NULL && Value != 0.f)
+	if (MainController != NULL && Value != 0.f)
 	{
 		//어느방향으로 갈지 찾고
-		FRotator Rotation = Controller->GetControlRotation();
+		FRotator Rotation = MainController->GetControlRotation();
 		FRotator YawRotation = FRotator(0.f, Rotation.Yaw, 0.f);
 
 		// forward벡터를 구한다.
@@ -291,10 +296,10 @@ void AMainCharacter::MoveForward(float Value)
 
 void AMainCharacter::MoveRight(float Value)
 {
-	if (Controller != NULL && Value != 0.f)
+	if (MainController != NULL && Value != 0.f)
 	{
 		
-		FRotator Rotation = Controller->GetControlRotation();
+		FRotator Rotation = MainController->GetControlRotation();
 		FRotator YawRotation = FRotator(0.f, Rotation.Yaw, 0.f);
 
 		//right 벡터
@@ -404,29 +409,6 @@ void AMainCharacter::VKeyDN()
 
 
 /************** Interactive & Inventory Key bind 함수 ***********/
-
-void AMainCharacter::EKeyDown()
-{
-	UE_LOG(LogTemp, Warning, TEXT("Player:: E Key Down"));
-	if (OverlappingActor)
-	{
-		AWeapon* Weapon = Cast<AWeapon>(OverlappingActor);
-		if (Weapon)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Player:: EKeyDown -> Weapon. Weapon is : %s"), *(Weapon->GetFName().ToString()));
-			SetOverlappingActor(nullptr);
-			EquippedWeapon = Weapon;
-			Weapon->Equip(this);
-		}
-
-	}
-}
-
-void AMainCharacter::EKeyUp()
-{
-	UE_LOG(LogTemp, Warning, TEXT("Player:: E Key Up"));
-}
-
 void AMainCharacter::RMBDown()
 {
 	if (EquippedWeapon != nullptr)
@@ -456,16 +438,97 @@ void AMainCharacter::RMBUp()
 	}
 }
 
+
+void AMainCharacter::TapKeyDown()
+{
+	bTapKeyDown = true;
+	//GetController()->
+}
+
+void AMainCharacter::EKeyDown()
+{
+	if (OverlappingActor)
+	{
+		AWeapon* Weapon = Cast<AWeapon>(OverlappingActor);
+		if (Weapon)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Player:: EKeyDown -> Weapon. Weapon is : %s"), *(Weapon->GetFName().ToString()));
+			SetOverlappingActor(nullptr);
+			EquippedWeapon = Weapon;
+			Weapon->Equip(this);
+		}
+
+	}
+	Interactive();
+}
+
+void AMainCharacter::EKeyUp()
+{
+	//UE_LOG(LogTemp, Warning, TEXT("Player:: E Key Up"));
+}
+
 /*************************  Item  관련 ***************************************************/
 
-void AMainCharacter::UseItem(class UItem* Item)
+void AMainCharacter::Interactive()
+{
+
+	FVector Start;
+	FVector End;
+
+	switch (CameraMode) //카메라 모드에 따라 Line Trace 변경.
+	{
+	case ECameraMode::ECM_FPS:
+		Start = CameraFPS->GetComponentLocation();
+		End = Start + CameraFPS->GetComponentRotation().Vector() * 500.f;
+		break;
+	case ECameraMode::ECM_TPS:
+	{
+		const USkeletalMeshSocket* Head = GetMesh()->GetSocketByName(FName("headsocket"));
+		check(Head)
+			Start = GetMesh()->GetSocketLocation(FName("headsocket"));
+		End = Start + CameraTPS->GetComponentRotation().Vector() * 500.f;
+		break;
+	}
+	default:
+		break;
+	}
+
+	FHitResult HitResult;
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+
+	DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 2.f, (uint8)nullptr, 2.f);
+
+	bool bInteractable = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECollisionChannel::ECC_WorldStatic, Params);
+	if (bInteractable)
+	{
+		AActor* HitActor = HitResult.GetActor();
+		if (HitActor)
+		{
+			IInteractive_Interface* Interface = Cast<IInteractive_Interface>(HitActor); //AInteractable* InteractActor = Cast<AInteractable>(HitActor);
+			if (Interface) 
+			{
+				InteractActor = HitActor;
+				Interface->Interaction(InteractActor);
+				//UE_LOG(LogTemp, Warning, TEXT("Actor is : %s"), *InteractActor->GetName());
+			}
+			
+			
+		}
+		
+	}
+}
+
+
+void AMainCharacter::UseItem(class AItem* Item)
 {
 	if (Item)
 	{
 		Item->Use(this);
-		Item->OnUse(this);
 	}
 }
+
+
 
 
 /******************************************************************************/

@@ -10,14 +10,20 @@
  * 
  */
 UCLASS()
-class OPENWORLDRPG_API UFood : public UItem
+class OPENWORLDRPG_API AFood : public AItem
 {
 	GENERATED_BODY()
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Item)
-	float Heal = 10.f;
+	AFood();
 
-protected:
-	virtual void Use(class AMainCharacter* Character) override;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Item)
+	float Heal;
+
+	virtual void Interact() override;//_Implementation() override;
+
+	virtual void Pickup() override;
+
+	virtual void Use(class ACharacter* Character) override;
+
 	
 };

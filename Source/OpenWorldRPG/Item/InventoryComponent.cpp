@@ -7,35 +7,36 @@
 // Sets default values for this component's properties
 UInventoryComponent::UInventoryComponent()
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = false;
 
 	Capacity = 20;
 }
 
 
-// Called when the game starts
 void UInventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	for (auto& item : DefaultItems) //시작할때 Default Item을 넣어준다.
-	{
-		AddItem(item);
-	}
+	//for (auto& item : DefaultItems) //시작할때 Default Item을 넣어준다.
+	//{
+	//	AItem* RefItem = Cast<AItem>(item);
+	//	if (RefItem)
+	//	{
+	//		AddItem(RefItem);
+	//	}
+	//	
+	//}
 	
 }
 
-bool UInventoryComponent::AddItem(class UItem* Item)
+bool UInventoryComponent::AddItem(class AItem* Item)
 {
 	if (InventoryItems.Num() >= Capacity || Item == nullptr) //허용개수를 넘거나, item이 없으면 
 	{
 		return false;
 	}
 
-	Item->OwningInventory = this;	
-	Item->World = Item->GetWorld();
+	Item->OwningInventory = this;
 	InventoryItems.Add(Item);
 
 	OnInventoryUpdated.Broadcast();
@@ -43,12 +44,11 @@ bool UInventoryComponent::AddItem(class UItem* Item)
 	return true;
 }
 
-bool UInventoryComponent::RemoveItem(class UItem* Item)
+bool UInventoryComponent::RemoveItem(class AItem* Item)
 {
 	if (Item)
 	{
 		Item->OwningInventory = nullptr;
-		Item->World = nullptr;
 		InventoryItems.RemoveSingle(Item);
 
 		OnInventoryUpdated.Broadcast();
