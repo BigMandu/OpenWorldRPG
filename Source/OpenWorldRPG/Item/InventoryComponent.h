@@ -6,6 +6,8 @@
 #include "Components/ActorComponent.h"
 #include "InventoryComponent.generated.h"
 
+class AActor;
+class AItem;
 
 //Inventory가 업데이트 될때마다 블루프린트에서 ui를 업데이트를 하기 위해 delegate를 만들어준다.
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInventoryUpdated);
@@ -22,21 +24,21 @@ public:
 	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite) //Instanced)
 	//TArray<TSubclassOf<class AItem>> DefaultItems; //게임 시작시 주어지는 item들
 	
-	UPROPERTY(EditDefaultsOnly, Category = Inventory)
+	UPROPERTY(VisibleAnywhere, Category = Inventory)
 	int32 Capacity;
 
 	UPROPERTY(BlueprintAssignable, Category = Inventory)
 	FOnInventoryUpdated OnInventoryUpdated;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Items)
-	TArray<class AItem*> InventoryItems; //inventory에 있는 item들
+	TArray<AActor*> InventoryItems; //inventory에 있는 item들
 
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
 public:	
-	bool AddItem(class AItem* Item);
-	bool RemoveItem(class AItem* Item);
+	bool AddItem(AItem* Item);
+	bool RemoveItem(AItem* Item);
 		
 };

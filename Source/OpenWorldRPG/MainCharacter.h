@@ -7,6 +7,20 @@
 #include "Perception/AISightTargetInterface.h"
 #include "MainCharacter.generated.h"
 
+class AActor;
+class AMainController;
+class AWeapon;
+
+class UAISense_Sight;
+class UAISense_Hearing;
+class UAIPerceptionStimuliSourceComponent;
+class UCameraComponent;
+class UInputComponent;
+class UInventoryComponent;
+class UMainAnimInstance;
+class USpringArmComponent;
+class USoundCue;
+
 
 UENUM(BlueprintType)
 enum class EPlayerStatus : uint8
@@ -46,16 +60,20 @@ class OPENWORLDRPG_API AMainCharacter : public ACharacter, public IAISightTarget
 public:
 	AMainCharacter();
 	
-	class UMainAnimInstance* MainAnimInstance;
+	UMainAnimInstance* MainAnimInstance;
 
-	class AMainController* MainController;
+	AMainController* MainController;
+
+	/************ Socket Name ************/
+	FName HeadSocketName;
+	FName WeaponGripSocketName;
 
 	/**********   카메라 *************/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
-	class USpringArmComponent* CameraBoom;
+	USpringArmComponent* CameraBoom;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
-	class UCameraComponent* CameraTPS; //3인칭 카메라
+	UCameraComponent* CameraTPS; //3인칭 카메라
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	UCameraComponent* CameraFPS; //1인칭 카메라
@@ -97,7 +115,12 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement)
 	bool bIsWalking;
 
+
+	/********* 입력 막아주기 *********/
+	bool bDisableInput; //Widget을 보고 있을때 true로 만들어 특정키 입력을 막는다.
+
 	/********* Input *********/
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	bool bAimToggle;
 
@@ -105,29 +128,31 @@ public:
 	bool bIsAim;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Input)
-	bool bTapKeyDown;
+	bool bTabKeyDown;
 
 	/********* Inventory ********/
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Item)
-	class UInventoryComponent* Inventory;
+	UInventoryComponent* Inventory;
 	
 
 	/**************    Perception Source 관련   ******************/
-	class UAIPerceptionStimuliSourceComponent* StimuliSourceComp;
-	TSubclassOf<class UAISense_Sight> Sight;
-	TSubclassOf<class UAISense_Hearing> Hearing;
+	UAIPerceptionStimuliSourceComponent* StimuliSourceComp;
+	TSubclassOf<UAISense_Sight> Sight;
+	TSubclassOf<UAISense_Hearing> Hearing;
 
 	/**********  Sounds ************/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Sounds)
-	class USoundCue* StepSoundCue;
+	USoundCue* StepSoundCue;
 
 	/**********  Item & Combat 관련 ************/
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Item)
-	class AActor* OverlappingActor;
+
+	FVector Interact_LineTrace_StartLocation;
+	FVector Interact_LineTrace_EndLocation;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item | Weapon")
-	class AWeapon* EquippedWeapon;
+	AWeapon* EquippedWeapon;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item")
 	AActor* InteractActor;
 
 	
@@ -140,7 +165,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	virtual void PostInitializeComponents() override;
 
 	void TurnAtRate(float Rate);
@@ -154,6 +179,9 @@ public:
 	/********   Movement 함수 *******/
 	void MoveForward(float Value);
 	void MoveRight(float Value);
+
+	void MyJump();
+	void MyStopJumping();
 	
 	void MyCrouch();
 	void MyUnCrouch();
@@ -173,7 +201,7 @@ public:
 	void RMBDown();
 	void RMBUp();
 
-	void TapKeyDown();
+	void TabKeyDown();
 
 	/********** Sounds ********/
 	void StepSound();
@@ -183,11 +211,17 @@ public:
 
 	
 
-	/********  Item 관련 ******/
-	FORCEINLINE void SetOverlappingActor(AActor* Actor) { OverlappingActor = Actor; }
+	/********  Interaction 관련 ******/
+
+	FHitResult InteractableLineTrace(const FVector& StartLo, const FVector& EndLo);
+
+	void SetInteractActor(AActor* Actor);
+
+	void UnsetInteractActor();
 
 	UFUNCTION(BlueprintCallable)
-	void UseItem(class AItem* Item);
+	void UseItem(AActor* Item);
 
 	void Interactive();
+
 };

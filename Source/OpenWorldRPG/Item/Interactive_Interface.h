@@ -23,5 +23,6 @@ class OPENWORLDRPG_API IInteractive_Interface
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 	//Force implement function.
-	virtual AActor* Interaction(AActor* Actor) = 0;// { return nullptr; }
+	virtual void Interaction(class AActor* Actor) = 0;// { return nullptr; }
+
 };

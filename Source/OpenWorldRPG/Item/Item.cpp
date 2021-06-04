@@ -2,41 +2,38 @@
 
 
 #include "Item.h"
-#include "Components/StaticMeshComponent.h"
+#include "InventoryComponent.h"
+#include "OpenWorldRPG/MainCharacter.h"
 
-// Sets default values
-AItem::AItem()
+
+void AItem::Pickup(class AActor* Actor)
 {
-	PrimaryActorTick.bCanEverTick = false;
-	
-	ItemSMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Static Mesh"));
-	ItemSMesh->SetSimulatePhysics(true);
-	ItemSMesh->SetupAttachment(GetRootComponent());
-	
-	UseActionText = FText::FromString("eat");
-	ItemName = FText::FromString("Item");
+	//UE_LOG(LogTemp, Warning, TEXT("AItem::Pickup"));
+	AMainCharacter* Main = Cast<AMainCharacter>(Actor);
+	if (Main)
+	{
+		//UE_LOG(LogTemp, Warning, TEXT("AItem::Add To Inventory"));
 
-	InteractText = FString("Press E to pick up");
-}
-
-// Called when the game starts or when spawned
-void AItem::BeginPlay()
-{
-	Super::BeginPlay();
+		Main->Inventory->AddItem(this); //OwningInventory세팅 및 Tarray에 넣어줌.
+		
+		Mesh->SetHiddenInGame(true);
+		//Mesh->bHiddenInGame = true;
+		Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
 	
 }
 
-void AItem::Interact()//_Implementation()
+void AItem::Drop()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Item::Interact"));
+	if (OwningInventory)
+	{
+		OwningInventory->RemoveItem(this);
+		Mesh->SetHiddenInGame(false);
+		Mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	}
 }
 
-void AItem::Pickup()
+void AItem::Use(class AMainChrarcter* Main)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Item::Pickup"));
-}
-
-void AItem::Use(class ACharacter* Character)
-{
-	UE_LOG(LogTemp, Warning, TEXT("Item::Use"));
+	//UE_LOG(LogTemp, Warning, TEXT("AItem::Use"));
 }

@@ -14,8 +14,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
 #include "Engine/SkeletalMeshSocket.h"
-#include "Weapon.h"
-#include "Item/Item.h"
+#include "Engine/EngineTypes.h"
+//#include "Weapon.h"
 #include "Item/InventoryComponent.h"
 #include "Item/Interactable.h"
 #include "Item/Interactive_Interface.h"
@@ -26,6 +26,9 @@ AMainCharacter::AMainCharacter()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	HeadSocketName = FName("headsocket");
+	WeaponGripSocketName = FName("WeaponGrip");
 
 	/******** Movement ********/
 	GetCharacterMovement()->bOrientRotationToMovement = true; //움직인 방향 = 진행방향으로 설정
@@ -42,12 +45,14 @@ AMainCharacter::AMainCharacter()
 	
 
 	/********** Input ***********/
+	bDisableInput = false;
+
 	bCrouchToggle = true; //웅크리기 키 Toggle을 true로 기본세팅 한다.
 	bWalkToggle = true; //걷기 키 Toggle을 true로 세팅한다.
 	bAimToggle = true; //조준키를 toggel true세팅.
 
 	bIsAim = false;
-	bTapKeyDown = false;
+	bTabKeyDown = false;
 
 	/* 카메라 관련 */
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
@@ -61,8 +66,9 @@ AMainCharacter::AMainCharacter()
 
 	CameraBoom->TargetArmLength = MAXCameraLength;
 	CameraBoom->bUsePawnControlRotation = true;
-	CameraTPS->bUsePawnControlRotation = false;
+	CameraTPS->bUsePawnControlRotation = true;
 	CameraTPS->SetRelativeLocation(TPSCam_Rel_Location); //3인칭 카메라를 살짝 우측으로 치우지게 한다.
+
 
 	CameraFPS->bUsePawnControlRotation = true;
 	CameraFPS->SetRelativeLocationAndRotation(FVector(0.f, 8.f, 0.f), FRotator(-90.f, 0.f, 90.f));
@@ -88,8 +94,8 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	/************** Movement & sight key bind ***************/
-	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
-	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &AMainCharacter::MyJump);
+	PlayerInputComponent->BindAction("Jump", IE_Released, this, &AMainCharacter::MyStopJumping);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &AMainCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AMainCharacter::MoveRight);
@@ -116,7 +122,7 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 	/************** Interactive & Inventory key bind ************/
 
-	PlayerInputComponent->BindAction("Tab", IE_Pressed, this, &AMainCharacter::TapKeyDown);
+	PlayerInputComponent->BindAction("Tab", IE_Pressed, this, &AMainCharacter::TabKeyDown);
 
 	PlayerInputComponent->BindAction("Interactive", IE_Pressed, this, &AMainCharacter::EKeyDown);
 	PlayerInputComponent->BindAction("Interactive", IE_Released, this, &AMainCharacter::EKeyUp);
@@ -149,6 +155,7 @@ void AMainCharacter::BeginPlay()
 	MainController = Cast<AMainController>(GetController());
 }
 
+
 // Called every frame
 void AMainCharacter::Tick(float DeltaTime)
 {
@@ -165,7 +172,44 @@ void AMainCharacter::Tick(float DeltaTime)
 		bIsAccelerating = false;
 	}
 
+	/* 카메라 모드에 따라 상호작용 LineTrace 변경 */
+	switch (CameraMode)
+	{
+	case ECameraMode::ECM_FPS:
+		Interact_LineTrace_StartLocation = CameraFPS->GetComponentLocation();
+		Interact_LineTrace_EndLocation = Interact_LineTrace_StartLocation + CameraFPS->GetComponentRotation().Vector() * 500.f;
+		break;
+	case ECameraMode::ECM_TPS:
+	{
+		const USkeletalMeshSocket* Head = GetMesh()->GetSocketByName(FName("headsocket"));
+		check(Head)
+			Interact_LineTrace_StartLocation = GetMesh()->GetSocketLocation(FName("headsocket"));
+		Interact_LineTrace_EndLocation = Interact_LineTrace_StartLocation + CameraTPS->GetComponentRotation().Vector() * 500.f;
+		break;
+	}
+	default:
+		break;
+	}
 
+	
+	
+	AActor* HitActor = InteractableLineTrace(Interact_LineTrace_StartLocation, Interact_LineTrace_EndLocation).GetActor();
+	if (HitActor)
+	{
+		IInteractive_Interface* Interface = Cast<IInteractive_Interface>(HitActor);
+		if (Interface)
+		{
+			SetInteractActor(HitActor);
+		}
+		else
+		{
+			UnsetInteractActor();
+		}
+	}
+	else
+	{
+		UnsetInteractActor();
+	}
 }
 
 
@@ -202,11 +246,13 @@ void AMainCharacter::SetCameraMode(ECameraMode Type) //플레이어 시점 상태 -> VKe
 		/* 회전시 카메라에만 영향 가도록 설정 */
 		bUseControllerRotationPitch = false;
 		bUseControllerRotationRoll = false;
-		if (EquippedWeapon)
-		{
-			bUseControllerRotationYaw = true;
-		}
-		else bUseControllerRotationYaw = false; //-> 비전투모드일때는 false, 전투모드일때는 true로 해줘야겠다.
+		bUseControllerRotationYaw = true; //true로 임시 변경.
+		
+		//if (EquippedWeapon)
+		//{
+		//	bUseControllerRotationYaw = true;
+		//}
+		//else bUseControllerRotationYaw = false; //-> 비전투모드일때는 false, 전투모드일때는 true로 해줘야겠다. -> Aim, NotAim상태로만 변경이 되도록 했다.
 
 
 		break;
@@ -238,8 +284,10 @@ void AMainCharacter::SetAimMode(EAimMode Mode)
 		GetCharacterMovement()->MaxWalkSpeed = MinWalkSpeed;
 		if (CameraMode == ECameraMode::ECM_TPS)
 		{
-			//TPS모드 + Aim상태일때 카메라를 살짝 앞으로 땡겨준다.
+			bUseControllerRotationYaw = true; //3인칭에 Aim상태면 Yaw를 잡아준다.
+			
 
+			//TPS모드 + Aim상태일때 카메라를 살짝 앞으로 땡겨준다.
 			BeforeCameraLength = CameraBoom->TargetArmLength; //현재 SprintArm의 길이를 저장한다.
 			//float CameraLength = FMath::FInterpTo(BeforeCameraLength, MINCameraLength, GetWorld()->GetDeltaSeconds(), 15.f);
 			CameraBoom->TargetArmLength = MINCameraLength;
@@ -252,6 +300,7 @@ void AMainCharacter::SetAimMode(EAimMode Mode)
 		GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
 		if (CameraMode == ECameraMode::ECM_TPS)
 		{
+			bUseControllerRotationYaw = false; //3인칭에 Aim상태가 아니면, Yaw를 풀어준다.
 			//땡긴 카메라를 다시 원복 시킨다.
 			/*float CurrentLength = CameraBoom->TargetArmLength;
 			float CameraLength = FMath::FInterpTo(CurrentLength, BeforeCameraLength, GetWorld()->GetDeltaSeconds(), 15.f);*/
@@ -291,6 +340,8 @@ void AMainCharacter::MoveForward(float Value)
 		
 		//그 방향으로 value만큼 간다.
 		AddMovementInput(Direction, Value);
+		UE_LOG(LogTemp, Warning, TEXT("my  ForVec = %s"), *Direction.ToString());
+		UE_LOG(LogTemp, Warning, TEXT("Actor::ForVec = %s"), *GetActorForwardVector().ToString());
 	}
 }
 
@@ -306,104 +357,138 @@ void AMainCharacter::MoveRight(float Value)
 		FVector Direction = FRotationMatrix(Rotation).GetUnitAxis(EAxis::Y);
 		
 		AddMovementInput(Direction, Value);
+		UE_LOG(LogTemp, Warning, TEXT("my  RigVec = %s"), *Direction.ToString());
+		UE_LOG(LogTemp, Warning, TEXT("Actor::RigVec = %s"), *GetActorRightVector().ToString());
 	}
+}
+
+void AMainCharacter::MyJump()
+{
+	if (bDisableInput == false)
+	{
+		Super::Jump();
+	}
+}
+void AMainCharacter::MyStopJumping()
+{
+	Super::StopJumping();
 }
 
 void AMainCharacter::MyCrouch()
 {
-	if (bCrouchToggle && bIsCrouched)
+	if (bDisableInput == false)
 	{
-		Super::UnCrouch();
-		UE_LOG(LogTemp, Warning, TEXT("Crouch:: UnCrouch"));
-		SetMainCharacterStatus(EPlayerStatus::EPS_Normal);
-	}
+		if (bCrouchToggle && bIsCrouched)
+		{
+			Super::UnCrouch();
+			UE_LOG(LogTemp, Warning, TEXT("Crouch:: UnCrouch"));
+			SetMainCharacterStatus(EPlayerStatus::EPS_Normal);
+		}
 
-	if (MainAnimInstance->MovementSpeed <= 10 && bIsCrouched == false)
-	{
-		Super::Crouch();
-		UE_LOG(LogTemp, Warning, TEXT("Crouch:: Crouch"));
-		SetMainCharacterStatus(EPlayerStatus::EPS_Crouch);
+		if (MainAnimInstance->MovementSpeed <= 10 && bIsCrouched == false)
+		{
+			Super::Crouch();
+			UE_LOG(LogTemp, Warning, TEXT("Crouch:: Crouch"));
+			SetMainCharacterStatus(EPlayerStatus::EPS_Crouch);
+		}
 	}
 }
 
 void AMainCharacter::MyUnCrouch()
 {
 	//Crouch를 Toggle로 사용하지 않을때만 Key Release  bind함수를 호출한다.
-	if (bCrouchToggle == false && bIsCrouched)
+	if (bDisableInput == false)
 	{
-		Super::UnCrouch();
-		UE_LOG(LogTemp, Warning, TEXT("UnCrouch:: UnCrouch"));
-		SetMainCharacterStatus(EPlayerStatus::EPS_Normal);
+		if (bCrouchToggle == false && bIsCrouched)
+		{
+			Super::UnCrouch();
+			UE_LOG(LogTemp, Warning, TEXT("UnCrouch:: UnCrouch"));
+			SetMainCharacterStatus(EPlayerStatus::EPS_Normal);
+		}
 	}
 }
 
 void AMainCharacter::Walk()
 {
-	
-	if (bWalkToggle && bIsWalking && AimMode != EAimMode::EAM_Aim)
+	if (bDisableInput == false)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Walk:: UnWalk"));
-		SetMainCharacterStatus(EPlayerStatus::EPS_Normal);
-		//bIsWalking = false; -> Set enum함수에서 변경해줬다.
-		return;
-	}
-	
-	if (bIsWalking == false && AimMode != EAimMode::EAM_Aim)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Walk:: Walk"));
-		SetMainCharacterStatus(EPlayerStatus::EPS_Walk);
-		//bIsWalking = true;
-		return;
+		if (bWalkToggle && bIsWalking && AimMode != EAimMode::EAM_Aim)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Walk:: UnWalk"));
+			SetMainCharacterStatus(EPlayerStatus::EPS_Normal);
+			//bIsWalking = false; -> Set enum함수에서 변경해줬다.
+			return;
+		}
+
+		if (bIsWalking == false && AimMode != EAimMode::EAM_Aim)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Walk:: Walk"));
+			SetMainCharacterStatus(EPlayerStatus::EPS_Walk);
+			//bIsWalking = true;
+			return;
+		}
 	}
 }
 
 void AMainCharacter::UnWalk()
 {
-	if (bWalkToggle == false && bIsWalking == true && AimMode != EAimMode::EAM_Aim)
+	if (bDisableInput == false)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("UnWalk:: UnWalk"));
-		SetMainCharacterStatus(EPlayerStatus::EPS_Normal);
-		//bIsWalking = false;		
+		if (bWalkToggle == false && bIsWalking == true && AimMode != EAimMode::EAM_Aim)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("UnWalk:: UnWalk"));
+			SetMainCharacterStatus(EPlayerStatus::EPS_Normal);
+			//bIsWalking = false;		
+		}
 	}
 }
 
 void AMainCharacter::ScrollDN()
 {
-	//TPS모드일 경우에만 스크롤 다운, 업이 가능하도록 (카메라 멀게 , 가까이)
-	if (CameraMode == ECameraMode::ECM_TPS) 
+	if (bDisableInput == false)
 	{
-		if (CameraBoom->TargetArmLength <= MINCameraLength)
+		//TPS모드일 경우에만 스크롤 다운, 업이 가능하도록 (카메라 멀게 , 가까이)
+		if (CameraMode == ECameraMode::ECM_TPS)
 		{
-			CameraBoom->TargetArmLength = MINCameraLength;
+			if (CameraBoom->TargetArmLength <= MINCameraLength)
+			{
+				CameraBoom->TargetArmLength = MINCameraLength;
+			}
+			else CameraBoom->TargetArmLength -= 50;
 		}
-		else CameraBoom->TargetArmLength -= 50;
 	}
 }
 
 void AMainCharacter::ScrollUP()
 {
-	if (CameraMode == ECameraMode::ECM_TPS)
+	if (bDisableInput == false)
 	{
-		if (CameraBoom->TargetArmLength >= MAXCameraLength)
+		if (CameraMode == ECameraMode::ECM_TPS)
 		{
-			CameraBoom->TargetArmLength = MAXCameraLength;
+			if (CameraBoom->TargetArmLength >= MAXCameraLength)
+			{
+				CameraBoom->TargetArmLength = MAXCameraLength;
+			}
+			else CameraBoom->TargetArmLength += 50;
 		}
-		else CameraBoom->TargetArmLength += 50;
 	}
 }
 
 void AMainCharacter::VKeyDN()
 {
-	switch (CameraMode)
+	if (bDisableInput == false)
 	{
-	case ECameraMode::ECM_TPS:
-		SetCameraMode(ECameraMode::ECM_FPS);
-		break;
-	case ECameraMode::ECM_FPS:
-		SetCameraMode(ECameraMode::ECM_TPS);
-		break;
-	default:
-		break;
+		switch (CameraMode)
+		{
+		case ECameraMode::ECM_TPS:
+			SetCameraMode(ECameraMode::ECM_FPS);
+			break;
+		case ECameraMode::ECM_FPS:
+			SetCameraMode(ECameraMode::ECM_TPS);
+			break;
+		default:
+			break;
+		}
 	}
 }
 
@@ -411,55 +496,54 @@ void AMainCharacter::VKeyDN()
 /************** Interactive & Inventory Key bind 함수 ***********/
 void AMainCharacter::RMBDown()
 {
-	if (EquippedWeapon != nullptr)
+	if (bDisableInput == false)
 	{
-		if (bAimToggle && bIsAim)
+		if (EquippedWeapon != nullptr)
 		{
-			SetAimMode(EAimMode::EAM_NotAim);
-			UE_LOG(LogTemp, Warning, TEXT("Aim off"));
-		}
-		else
-		{
-			SetAimMode(EAimMode::EAM_Aim);
-			UE_LOG(LogTemp, Warning, TEXT("Aim on"));
+			if (bAimToggle && bIsAim)
+			{
+				SetAimMode(EAimMode::EAM_NotAim);
+				UE_LOG(LogTemp, Warning, TEXT("Aim off"));
+			}
+			else
+			{
+				SetAimMode(EAimMode::EAM_Aim);
+				UE_LOG(LogTemp, Warning, TEXT("Aim on"));
+			}
 		}
 	}
 }
 
 void AMainCharacter::RMBUp()
 {
-	if (EquippedWeapon != nullptr)
+	if (bDisableInput == false)
 	{
-		if (bAimToggle == false)
+		if (EquippedWeapon != nullptr)
 		{
-			SetAimMode(EAimMode::EAM_NotAim);
-			UE_LOG(LogTemp, Warning, TEXT("Aim off"));
+			if (bAimToggle == false)
+			{
+				SetAimMode(EAimMode::EAM_NotAim);
+				UE_LOG(LogTemp, Warning, TEXT("Aim off"));
+			}
 		}
 	}
 }
 
 
-void AMainCharacter::TapKeyDown()
+void AMainCharacter::TabKeyDown()
 {
-	bTapKeyDown = true;
-	//GetController()->
+	bTabKeyDown = true;
+	UE_LOG(LogTemp, Warning, TEXT("Tab key down"));
+
+	MainController->ToggleInventory();
 }
 
 void AMainCharacter::EKeyDown()
 {
-	if (OverlappingActor)
+	if (bDisableInput == false)
 	{
-		AWeapon* Weapon = Cast<AWeapon>(OverlappingActor);
-		if (Weapon)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Player:: EKeyDown -> Weapon. Weapon is : %s"), *(Weapon->GetFName().ToString()));
-			SetOverlappingActor(nullptr);
-			EquippedWeapon = Weapon;
-			Weapon->Equip(this);
-		}
-
+		Interactive();
 	}
-	Interactive();
 }
 
 void AMainCharacter::EKeyUp()
@@ -467,64 +551,72 @@ void AMainCharacter::EKeyUp()
 	//UE_LOG(LogTemp, Warning, TEXT("Player:: E Key Up"));
 }
 
-/*************************  Item  관련 ***************************************************/
+/*************************  Interaction 관련 ***************************************************/
 
-void AMainCharacter::Interactive()
+FHitResult AMainCharacter::InteractableLineTrace(const FVector& StartLo, const FVector& EndLo)
 {
-
-	FVector Start;
-	FVector End;
-
-	switch (CameraMode) //카메라 모드에 따라 Line Trace 변경.
-	{
-	case ECameraMode::ECM_FPS:
-		Start = CameraFPS->GetComponentLocation();
-		End = Start + CameraFPS->GetComponentRotation().Vector() * 500.f;
-		break;
-	case ECameraMode::ECM_TPS:
-	{
-		const USkeletalMeshSocket* Head = GetMesh()->GetSocketByName(FName("headsocket"));
-		check(Head)
-			Start = GetMesh()->GetSocketLocation(FName("headsocket"));
-		End = Start + CameraTPS->GetComponentRotation().Vector() * 500.f;
-		break;
-	}
-	default:
-		break;
-	}
-
-	FHitResult HitResult;
+	FHitResult Hit;
 	FCollisionQueryParams Params;
 	Params.AddIgnoredActor(this);
 
-	DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 2.f, (uint8)nullptr, 2.f);
+	/* debug */
+	//DrawDebugLine(GetWorld(), StartLo, EndLo, FColor::Green, false, 2.f, (uint8)nullptr, 2.f);
 
-	bool bInteractable = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECollisionChannel::ECC_WorldStatic, Params);
-	if (bInteractable)
-	{
-		AActor* HitActor = HitResult.GetActor();
-		if (HitActor)
-		{
-			IInteractive_Interface* Interface = Cast<IInteractive_Interface>(HitActor); //AInteractable* InteractActor = Cast<AInteractable>(HitActor);
-			if (Interface) 
-			{
-				InteractActor = HitActor;
-				Interface->Interaction(InteractActor);
-				//UE_LOG(LogTemp, Warning, TEXT("Actor is : %s"), *InteractActor->GetName());
-			}
-			
-			
-		}
-		
-	}
+	GetWorld()->LineTraceSingleByChannel(Hit, StartLo, EndLo, ECollisionChannel::ECC_WorldStatic, Params);
+
+	return Hit;
 }
 
 
-void AMainCharacter::UseItem(class AItem* Item)
+void AMainCharacter::SetInteractActor(AActor* Actor)
+{
+	//UE_LOG(LogTemp, Warning, TEXT("InteractActor is Valid"));
+	MainController->ShowInteractText();
+	if (InteractActor == nullptr)
+	{
+		InteractActor = Actor;
+		AInteractable* InActor = Cast<AInteractable>(InteractActor);
+		if (InActor)
+		{
+			InActor->SetOutline();
+		}
+	}
+}
+
+void AMainCharacter::UnsetInteractActor()
+{
+	//UE_LOG(LogTemp, Warning, TEXT("InteractActor is Invalid"));
+	if (InteractActor)
+	{
+		AInteractable* InActor = Cast<AInteractable>(InteractActor);
+		if (InActor)
+		{
+			InActor->UnsetOutline();
+		}
+		InteractActor = nullptr;
+		MainController->HideInteractText();
+	}
+}
+
+void AMainCharacter::Interactive()
+{
+	if (InteractActor)
+	{
+		IInteractive_Interface* Interface = Cast<IInteractive_Interface>(InteractActor);
+		if (Interface)
+		{
+			Interface->Interaction(this);
+		}
+	}
+	
+}
+
+
+void AMainCharacter::UseItem(class AActor* Item)
 {
 	if (Item)
 	{
-		Item->Use(this);
+		//Item->Use(this);
 	}
 }
 
