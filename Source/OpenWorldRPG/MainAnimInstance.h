@@ -49,5 +49,6 @@ public:
 
 	UFUNCTION()
 	void AnimNotify_StepSound();
+
 	
 };

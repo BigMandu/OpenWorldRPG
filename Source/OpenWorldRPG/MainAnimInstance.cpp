@@ -3,6 +3,7 @@
 
 #include "MainAnimInstance.h"
 #include "MainCharacter.h"
+#include "Item/Weapon.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 void UMainAnimInstance::NativeInitializeAnimation()

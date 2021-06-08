@@ -145,6 +145,8 @@ public:
 	USoundCue* StepSoundCue;
 
 	/**********  Item & Combat ฐüทร ************/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
+	float ActiveInteractDistance;
 
 	FVector Interact_LineTrace_StartLocation;
 	FVector Interact_LineTrace_EndLocation;
@@ -154,7 +156,6 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item")
 	AActor* InteractActor;
-
 	
 protected:
 	// Called when the game starts or when spawned
@@ -223,5 +224,9 @@ public:
 	void UseItem(AActor* Item);
 
 	void Interactive();
+
+	/********  Hand ik ******/
+	UFUNCTION(BlueprintCallable)
+	FTransform LeftHandik();
 
 };

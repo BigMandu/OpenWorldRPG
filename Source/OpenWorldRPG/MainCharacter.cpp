@@ -7,18 +7,19 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
+#include "Components/PawnNoiseEmitterComponent.h"
+#include "Engine/SkeletalMeshSocket.h"
+#include "Engine/EngineTypes.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "Perception/AISense_Sight.h"
 #include "Perception/AISense_Hearing.h"
-#include "Components/PawnNoiseEmitterComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
-#include "Engine/SkeletalMeshSocket.h"
-#include "Engine/EngineTypes.h"
-//#include "Weapon.h"
 #include "Item/InventoryComponent.h"
-#include "Item/Interactable.h"
 #include "Item/Interactive_Interface.h"
+#include "Item/Interactable.h"
+#include "Item/Weapon.h"
+
 #include "DrawDebugHelpers.h" //디버깅용
 
 // Sets default values
@@ -76,8 +77,10 @@ AMainCharacter::AMainCharacter()
 	BaseTurnRate = 45.f;
 	BaseLookupRate = 45.f;
 
-	/****** Inventory ****/
+	/****** Item ****/
 	Inventory = CreateDefaultSubobject<UInventoryComponent>(TEXT("Inventory"));
+
+	ActiveInteractDistance = 200.f;
 
 	/********** 초기 enum 세팅************/
 	SetCameraMode(ECameraMode::ECM_TPS); //초기 카메라 모드는 3인칭 모드로.
@@ -181,10 +184,9 @@ void AMainCharacter::Tick(float DeltaTime)
 		break;
 	case ECameraMode::ECM_TPS:
 	{
-		const USkeletalMeshSocket* Head = GetMesh()->GetSocketByName(FName("headsocket"));
-		check(Head)
-			Interact_LineTrace_StartLocation = GetMesh()->GetSocketLocation(FName("headsocket"));
-		Interact_LineTrace_EndLocation = Interact_LineTrace_StartLocation + CameraTPS->GetComponentRotation().Vector() * 500.f;
+		FVector CamLocation = CameraTPS->GetComponentLocation();
+		Interact_LineTrace_StartLocation = CamLocation; //TPS카메라를 기준으로 Trace를 시작한다.
+		Interact_LineTrace_EndLocation = Interact_LineTrace_StartLocation + CameraTPS->GetComponentRotation().Vector() * (MAXCameraLength + 800.f); //카메라Boom길이보다 더길게 끝나야한다.
 		break;
 	}
 	default:
@@ -246,7 +248,7 @@ void AMainCharacter::SetCameraMode(ECameraMode Type) //플레이어 시점 상태 -> VKe
 		/* 회전시 카메라에만 영향 가도록 설정 */
 		bUseControllerRotationPitch = false;
 		bUseControllerRotationRoll = false;
-		bUseControllerRotationYaw = true; //true로 임시 변경.
+		bUseControllerRotationYaw = false;
 		
 		//if (EquippedWeapon)
 		//{
@@ -340,8 +342,8 @@ void AMainCharacter::MoveForward(float Value)
 		
 		//그 방향으로 value만큼 간다.
 		AddMovementInput(Direction, Value);
-		UE_LOG(LogTemp, Warning, TEXT("my  ForVec = %s"), *Direction.ToString());
-		UE_LOG(LogTemp, Warning, TEXT("Actor::ForVec = %s"), *GetActorForwardVector().ToString());
+		/*UE_LOG(LogTemp, Warning, TEXT("my  ForVec = %s"), *Direction.ToString());
+		UE_LOG(LogTemp, Warning, TEXT("Actor::ForVec = %s"), *GetActorForwardVector().ToString());*/
 	}
 }
 
@@ -357,8 +359,8 @@ void AMainCharacter::MoveRight(float Value)
 		FVector Direction = FRotationMatrix(Rotation).GetUnitAxis(EAxis::Y);
 		
 		AddMovementInput(Direction, Value);
-		UE_LOG(LogTemp, Warning, TEXT("my  RigVec = %s"), *Direction.ToString());
-		UE_LOG(LogTemp, Warning, TEXT("Actor::RigVec = %s"), *GetActorRightVector().ToString());
+		/*UE_LOG(LogTemp, Warning, TEXT("my  RigVec = %s"), *Direction.ToString());
+		UE_LOG(LogTemp, Warning, TEXT("Actor::RigVec = %s"), *GetActorRightVector().ToString());*/
 	}
 }
 
@@ -557,12 +559,17 @@ FHitResult AMainCharacter::InteractableLineTrace(const FVector& StartLo, const F
 {
 	FHitResult Hit;
 	FCollisionQueryParams Params;
+	FCollisionShape Shape = FCollisionShape::MakeCapsule(5.f, 5.f); //살짝 넓게 해서 탐지가 쉽게 했다.
 	Params.AddIgnoredActor(this);
 
+	 
+	//GetWorld()->LineTraceSingleByChannel(Hit, StartLo, EndLo, ECollisionChannel::ECC_WorldStatic, Params); // LineTraceSingle에서 
+	
+	GetWorld()->SweepSingleByChannel(Hit, StartLo, EndLo, FQuat::Identity, ECollisionChannel::ECC_WorldStatic, Shape, Params); //SweepSingle로 변경, 캡슐형태의 모양으로 LineTrace.
+	
 	/* debug */
 	//DrawDebugLine(GetWorld(), StartLo, EndLo, FColor::Green, false, 2.f, (uint8)nullptr, 2.f);
-
-	GetWorld()->LineTraceSingleByChannel(Hit, StartLo, EndLo, ECollisionChannel::ECC_WorldStatic, Params);
+	//DrawDebugCapsule(GetWorld(), (StartLo+EndLo)/2, Shape.GetCapsuleHalfHeight(),Shape.GetCapsuleRadius(),FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), FColor::Green, false, 0.8f, (uint8)nullptr, 2.f);
 
 	return Hit;
 }
@@ -570,7 +577,7 @@ FHitResult AMainCharacter::InteractableLineTrace(const FVector& StartLo, const F
 
 void AMainCharacter::SetInteractActor(AActor* Actor)
 {
-	//UE_LOG(LogTemp, Warning, TEXT("InteractActor is Valid"));
+	UE_LOG(LogTemp, Warning, TEXT("InteractActor is Valid"));
 	MainController->ShowInteractText();
 	if (InteractActor == nullptr)
 	{
@@ -603,7 +610,7 @@ void AMainCharacter::Interactive()
 	if (InteractActor)
 	{
 		IInteractive_Interface* Interface = Cast<IInteractive_Interface>(InteractActor);
-		if (Interface)
+		if (Interface && (GetActorLocation()-InteractActor->GetActorLocation()).Size() <= ActiveInteractDistance)
 		{
 			Interface->Interaction(this);
 		}
@@ -676,4 +683,20 @@ bool AMainCharacter::CanBeSeenFrom(const FVector& ObserverLocation, FVector& Out
 		//UE_LOG(LogTemp, Warning, TEXT("Player:: Hiding"));
 	}
 	return bResult;
+}
+
+
+FTransform AMainCharacter::LeftHandik()
+{
+	FTransform Transform;
+	if (EquippedWeapon)
+	{
+		FVector LeftTransVector;
+		FRotator LeftTransRotation;
+		
+		Transform = EquippedWeapon->WeaponMesh->GetSocketTransform(FName("LeftHandPos"), ERelativeTransformSpace::RTS_World);
+		return Transform;
+	}
+	
+	return Transform;
 }
