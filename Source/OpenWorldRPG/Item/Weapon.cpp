@@ -21,15 +21,24 @@ void AWeapon::Equip(AActor* Char)
 	AMainCharacter* Main = Cast<AMainCharacter>(Char);
 	if (Main)
 	{
-		const USkeletalMeshSocket* Socket = Main->GetMesh()->GetSocketByName("WeaponGrip");
-		if (Socket)
+		const USkeletalMeshSocket* TPSocket = Main->GetMesh()->GetSocketByName("WeaponGrip");
+		const USkeletalMeshSocket* FPSocket = Main->FPMesh->GetSocketByName("WeaponGrip");
+		if (TPSocket && FPSocket)
 		{
 			Mesh->SetHiddenInGame(true); //Static Mesh를 지워준다.
 			Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 			WeaponMesh->SetHiddenInGame(false);
 
-			Socket->AttachActor(this, Main->GetMesh());
+			if (Main->CameraMode == ECameraMode::ECM_FPS)
+			{
+				FPSocket->AttachActor(this, Main->FPMesh);
+			}
+			else
+			{
+				TPSocket->AttachActor(this, Main->GetMesh());
+			}
+			
 			Main->EquippedWeapon = this;
 
 			/*if (EquippedSound)

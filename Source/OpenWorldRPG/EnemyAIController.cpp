@@ -82,7 +82,8 @@ void AEnemyAIController::Tick(float DeltaTime)
 			FVector RotationVec = (PlayerLo - EnemyLo).GetSafeNormal();
 			FRotator NRot = FRotator(0.f, RotationVec.Rotation().Yaw, 0.f);
 			Enemy->SetActorRotation(NRot); //회전과
-			SetFocalPoint(PlayerLo); //focus를  Player에 맞춰준다.
+			SetFocus(Main); //Focus를 Player를 향하게 한다.
+			//SetFocalPoint(PlayerLo); // SetFocalPoint에서 SetFocus로 변경
 
 			float Distance = FVector::Dist(EnemyLo, PlayerLo);
 			if (Distance <= (Enemy->Range + Enemy->Range * 0.1)) //main과 Enemy의 거리가 enemy range내에 있으면 공격 가능.
@@ -109,12 +110,16 @@ void AEnemyAIController::Tick(float DeltaTime)
 					}
 				}
 			}
-			else
+			else //공격이 불가능할때
 			{
 				BBComp->SetValueAsBool(CanAttackKey, false);
 				bUpdateEnemyLo = false;
 			}
 		}
+	}
+	else 
+	{
+		SetFocus(nullptr); //식별하지 못했으면 Focus초기화.
 	}
 }
 

@@ -31,6 +31,7 @@ AMainCharacter::AMainCharacter()
 	HeadSocketName = FName("headsocket");
 	WeaponGripSocketName = FName("WeaponGrip");
 
+
 	/******** Movement ********/
 	GetCharacterMovement()->bOrientRotationToMovement = true; //움직인 방향 = 진행방향으로 설정
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 540.f, 0.f); //회전속도
@@ -63,13 +64,12 @@ AMainCharacter::AMainCharacter()
 	CameraTPS->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 
 	CameraFPS = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraFPS"));
-	CameraFPS->SetupAttachment(GetMesh(), FName("headsocket"));
+	CameraFPS->SetupAttachment(GetRootComponent());
 
 	CameraBoom->TargetArmLength = MAXCameraLength;
 	CameraBoom->bUsePawnControlRotation = true;
 	CameraTPS->bUsePawnControlRotation = true;
 	CameraTPS->SetRelativeLocation(TPSCam_Rel_Location); //3인칭 카메라를 살짝 우측으로 치우지게 한다.
-
 
 	CameraFPS->bUsePawnControlRotation = true;
 	CameraFPS->SetRelativeLocationAndRotation(FVector(0.f, 8.f, 0.f), FRotator(-90.f, 0.f, 90.f));
@@ -77,14 +77,19 @@ AMainCharacter::AMainCharacter()
 	BaseTurnRate = 45.f;
 	BaseLookupRate = 45.f;
 
+	/****** First Person Mesh *****/
+	FPMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FPMesh"));
+	FPMesh->SetupAttachment(CameraFPS);
+
 	/****** Item ****/
 	Inventory = CreateDefaultSubobject<UInventoryComponent>(TEXT("Inventory"));
 
 	ActiveInteractDistance = 200.f;
 
-	/********** 초기 enum 세팅************/
+	/********** 초기 세팅 ************/
 	SetCameraMode(ECameraMode::ECM_TPS); //초기 카메라 모드는 3인칭 모드로.
 	SetAimMode(EAimMode::EAM_NotAim);
+	
 
 	/******  Perception ****/
 	StimuliSourceComp = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("StimuliSource"));
@@ -147,7 +152,11 @@ void AMainCharacter::PostInitializeComponents()
 	StimuliSourceComp->RegisterForSense(Sight);
 	StimuliSourceComp->RegisterForSense(Hearing);
 
+	
 
+
+
+FPMesh->SetHiddenInGame(true);
 
 }
 
@@ -249,13 +258,28 @@ void AMainCharacter::SetCameraMode(ECameraMode Type) //플레이어 시점 상태 -> VKe
 		bUseControllerRotationPitch = false;
 		bUseControllerRotationRoll = false;
 		bUseControllerRotationYaw = false;
-		
-		//if (EquippedWeapon)
-		//{
-		//	bUseControllerRotationYaw = true;
-		//}
-		//else bUseControllerRotationYaw = false; //-> 비전투모드일때는 false, 전투모드일때는 true로 해줘야겠다. -> Aim, NotAim상태로만 변경이 되도록 했다.
 
+		//->비전투모드, 전투모드는 없애기로하고, TPS일때 Aim mode일때만 Rotation Yaw를 true로 변경해줌.
+		/*
+		if (EquippedWeapon)
+		{
+			bUseControllerRotationYaw = true;
+		}
+		else bUseControllerRotationYaw = false; //-> 비전투모드일때는 false, 전투모드일때는 true로 해줘야겠다. -> Aim, NotAim상태로만 변경이 되도록 했다.
+		*/
+
+		/* Character Mesh 설정 */
+		FPMesh->SetHiddenInGame(true);  //1인칭 Mesh 숨김
+		GetMesh()->SetHiddenInGame(false); //3인칭 Mesh 안숨김
+
+		if (EquippedWeapon) //현재 장착무기가 있으면 First,Third mesh에 따라 소켓에 부착.
+		{
+			const USkeletalMeshSocket* TPSocket = GetMesh()->GetSocketByName("WeaponGrip");
+			if (TPSocket)
+			{
+				TPSocket->AttachActor(EquippedWeapon, GetMesh());
+			}
+		}
 
 		break;
 
@@ -268,7 +292,19 @@ void AMainCharacter::SetCameraMode(ECameraMode Type) //플레이어 시점 상태 -> VKe
 		//카메라 회전시 캐릭터가 회전을 따라서 회전하도록 한다. 그래야 뒷걸음, 좌우 게걸음이 가능하다.
 		bUseControllerRotationYaw = true;
 
+		/*  Character Mesh 설정 */
+		FPMesh->SetHiddenInGame(false);
+		GetMesh()->SetHiddenInGame(true);
 
+		/* 장착 무기 Mesh에 부착 */
+		if (EquippedWeapon)
+		{
+			const USkeletalMeshSocket* FPSocket = FPMesh->GetSocketByName("WeaponGrip");
+			if (FPSocket)
+			{
+				FPSocket->AttachActor(EquippedWeapon, FPMesh);
+			}
+		}
 		break;
 	default:
 		break;
@@ -578,14 +614,18 @@ FHitResult AMainCharacter::InteractableLineTrace(const FVector& StartLo, const F
 void AMainCharacter::SetInteractActor(AActor* Actor)
 {
 	UE_LOG(LogTemp, Warning, TEXT("InteractActor is Valid"));
-	MainController->ShowInteractText();
-	if (InteractActor == nullptr)
+	//MainController->ShowInteractText(); //특정거리내에 Text가 뜨도록 변경.
+	//if (InteractActor == nullptr) //거리를 계속해서 update해야하므로 조건제거.
 	{
 		InteractActor = Actor;
 		AInteractable* InActor = Cast<AInteractable>(InteractActor);
 		if (InActor)
 		{
 			InActor->SetOutline();
+		}
+		if ((GetActorLocation() - InteractActor->GetActorLocation()).Size() <= ActiveInteractDistance) //특정거리 이내면 Text Show.
+		{
+			MainController->ShowInteractText();
 		}
 	}
 }

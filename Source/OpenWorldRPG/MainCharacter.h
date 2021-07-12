@@ -19,6 +19,7 @@ class UInputComponent;
 class UInventoryComponent;
 class UMainAnimInstance;
 class USpringArmComponent;
+class USkeletalMeshComponent;
 class USoundCue;
 
 
@@ -64,6 +65,9 @@ public:
 
 	AMainController* MainController;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Character)
+	USkeletalMeshComponent* FPMesh;
+
 	/************ Socket Name ************/
 	FName HeadSocketName;
 	FName WeaponGripSocketName;
@@ -104,7 +108,7 @@ public:
 	const float MinWalkSpeed = 300.f; //°È´Â ¼Óµµ
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement)
-	bool bIsAccelerating;	
+	bool bIsAccelerating;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement)
 	bool bCrouchToggle;
