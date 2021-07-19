@@ -17,6 +17,7 @@ class UAIPerceptionStimuliSourceComponent;
 class UCameraComponent;
 class UInputComponent;
 class UInventoryComponent;
+class UEquipmentComponent;
 class UMainAnimInstance;
 class USpringArmComponent;
 class USkeletalMeshComponent;
@@ -137,6 +138,9 @@ public:
 	/********* Inventory ********/
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Item)
 	UInventoryComponent* Inventory;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Item)
+	UEquipmentComponent* Equipment;
 	
 
 	/**************    Perception Source ฐüทร   ******************/

@@ -2,7 +2,7 @@
 
 
 #include "Item.h"
-#include "InventoryComponent.h"
+//#include "InventoryComponent.h"
 #include "OpenWorldRPG/MainCharacter.h"
 
 

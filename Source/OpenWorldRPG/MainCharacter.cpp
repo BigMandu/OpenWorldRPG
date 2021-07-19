@@ -83,8 +83,9 @@ AMainCharacter::AMainCharacter()
 
 	/****** Item ****/
 	Inventory = CreateDefaultSubobject<UInventoryComponent>(TEXT("Inventory"));
+	Equipment = CreateDefaultSubobject<UEquipmentComponent>(TEXT("Equipment"));
 
-	ActiveInteractDistance = 200.f;
+	ActiveInteractDistance = 200.f; //상호작용 아이템이 표시되는 최대거리.
 
 	/********** 초기 세팅 ************/
 	SetCameraMode(ECameraMode::ECM_TPS); //초기 카메라 모드는 3인칭 모드로.
@@ -423,7 +424,7 @@ void AMainCharacter::MyCrouch()
 			SetMainCharacterStatus(EPlayerStatus::EPS_Normal);
 		}
 
-		if (MainAnimInstance->MovementSpeed <= 10 && bIsCrouched == false)
+		if (bIsCrouched == false)
 		{
 			Super::Crouch();
 			UE_LOG(LogTemp, Warning, TEXT("Crouch:: Crouch"));
@@ -613,7 +614,8 @@ FHitResult AMainCharacter::InteractableLineTrace(const FVector& StartLo, const F
 
 void AMainCharacter::SetInteractActor(AActor* Actor)
 {
-	UE_LOG(LogTemp, Warning, TEXT("InteractActor is Valid"));
+	//UE_LOG(LogTemp, Warning, TEXT("InteractActor is Valid"));
+	// 
 	//MainController->ShowInteractText(); //특정거리내에 Text가 뜨도록 변경.
 	//if (InteractActor == nullptr) //거리를 계속해서 update해야하므로 조건제거.
 	{

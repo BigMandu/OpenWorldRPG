@@ -6,6 +6,7 @@
 #include "Engine/SkeletalMeshSocket.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
+#include "EquipmentComponent.h"
 
 AWeapon::AWeapon()
 {
@@ -25,11 +26,13 @@ void AWeapon::Equip(AActor* Char)
 		const USkeletalMeshSocket* FPSocket = Main->FPMesh->GetSocketByName("WeaponGrip");
 		if (TPSocket && FPSocket)
 		{
-			Mesh->SetHiddenInGame(true); //Static Mesh를 지워준다.
-			Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			Mesh->SetHiddenInGame(true); //Static Mesh를 안보이게 하고, Collision을 끈다.
+			Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision); 
 
 			WeaponMesh->SetHiddenInGame(false);
 
+
+			//카메라 모드에 따라 1인칭, 3인칭 Mesh에 부착시킨다.
 			if (Main->CameraMode == ECameraMode::ECM_FPS)
 			{
 				FPSocket->AttachActor(this, Main->FPMesh);
@@ -38,8 +41,9 @@ void AWeapon::Equip(AActor* Char)
 			{
 				TPSocket->AttachActor(this, Main->GetMesh());
 			}
-			
+
 			Main->EquippedWeapon = this;
+			Main->Equipment->AddEquipment(this); //Main에 있는 Equipment에 Add해준다.
 
 			/*if (EquippedSound)
 			{
