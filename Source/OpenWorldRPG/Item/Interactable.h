@@ -61,12 +61,9 @@ public:
 	UFUNCTION(BlueprintNativeEvent)
 	void SetOutline();
 
-	void SetOutline_Implementation(); //아니..원래 이거 선언 안해도 되는데.. 갑자기 에러가 나네..
-
 	UFUNCTION(BlueprintNativeEvent)
 	void UnsetOutline();
 
-	void UnsetOutline_Implementation();
 
 
 };

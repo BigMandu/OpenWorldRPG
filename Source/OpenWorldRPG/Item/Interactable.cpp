@@ -52,6 +52,14 @@ void AInteractable::Interaction(class AActor* Actor)
 		AMainCharacter* Main = Cast<AMainCharacter>(Actor);
 		if (Main)
 		{
+			//여기서 Weapon을 검사하지 말고, 걍 바로 Equip을 호출해야함.
+			AWeapon* Weapon = Cast<AWeapon>(this);
+			if (Weapon)
+			{
+				Weapon->Equip(Actor); //Weapon으로 cast, equip함수 호출
+			}
+			/*
+			
 			if (Main->EquippedWeapon == false) //장착한 Weapon이 없으면
 			{
 				AWeapon* Weapon = Cast<AWeapon>(this);
@@ -68,6 +76,7 @@ void AInteractable::Interaction(class AActor* Actor)
 					Item->Pickup(Actor); //Item으로 Cast, Pickup함수 호출
 				}
 			}
+			*/
 		}
 
 		break;
@@ -82,10 +91,12 @@ void AInteractable::Interaction(class AActor* Actor)
 void AInteractable::SetOutline_Implementation()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Interactable::enable outline"));
+	//Mesh->SetRenderCustomDepth(true);
 }
 
 
 void AInteractable::UnsetOutline_Implementation()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Interactable::disable outline"));
+	//Mesh->SetRenderCustomDepth(false);
 }

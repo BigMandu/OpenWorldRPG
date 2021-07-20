@@ -204,7 +204,7 @@ void AMainCharacter::Tick(float DeltaTime)
 	}
 
 	
-	
+	/* Static FHitResult를 리턴받아서 Interface 변환, 성공하면 Outline과 TEXT를 띄움.*/
 	AActor* HitActor = InteractableLineTrace(Interact_LineTrace_StartLocation, Interact_LineTrace_EndLocation).GetActor();
 	if (HitActor)
 	{
@@ -592,6 +592,7 @@ void AMainCharacter::EKeyUp()
 
 /*************************  Interaction 관련 ***************************************************/
 
+/* Static을 감지해서 FHitResult를 리턴 */
 FHitResult AMainCharacter::InteractableLineTrace(const FVector& StartLo, const FVector& EndLo)
 {
 	FHitResult Hit;
@@ -614,10 +615,10 @@ FHitResult AMainCharacter::InteractableLineTrace(const FVector& StartLo, const F
 
 void AMainCharacter::SetInteractActor(AActor* Actor)
 {
-	//UE_LOG(LogTemp, Warning, TEXT("InteractActor is Valid"));
-	// 
-	//MainController->ShowInteractText(); //특정거리내에 Text가 뜨도록 변경.
-	//if (InteractActor == nullptr) //거리를 계속해서 update해야하므로 조건제거.
+	UE_LOG(LogTemp, Warning, TEXT("InteractActor is Valid"));
+	
+	//MainController->ShowInteractText(); //특정거리내에 Text가 뜨도록 변경함. 아래 코드.
+	//if (InteractActor == nullptr) //붙어있으면 바뀌지 않기때문에 조건문 삭제.
 	{
 		InteractActor = Actor;
 		AInteractable* InActor = Cast<AInteractable>(InteractActor);
@@ -625,7 +626,12 @@ void AMainCharacter::SetInteractActor(AActor* Actor)
 		{
 			InActor->SetOutline();
 		}
-		if ((GetActorLocation() - InteractActor->GetActorLocation()).Size() <= ActiveInteractDistance) //특정거리 이내면 Text Show.
+		
+		//InteractActor의 Static Mesh의 위치를 기준으로 거리를 구한다.
+		
+		//InteractActor->GetActorLocation()
+		
+		if ((GetActorLocation() - InActor->Mesh->GetComponentLocation()).Size() <= ActiveInteractDistance) //특정거리 이내면 Text Show.
 		{
 			MainController->ShowInteractText();
 		}
@@ -634,7 +640,7 @@ void AMainCharacter::SetInteractActor(AActor* Actor)
 
 void AMainCharacter::UnsetInteractActor()
 {
-	//UE_LOG(LogTemp, Warning, TEXT("InteractActor is Invalid"));
+	UE_LOG(LogTemp, Warning, TEXT("InteractActor is Invalid"));
 	if (InteractActor)
 	{
 		AInteractable* InActor = Cast<AInteractable>(InteractActor);
