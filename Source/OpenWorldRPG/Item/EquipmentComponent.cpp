@@ -50,3 +50,48 @@ bool UEquipmentComponent::RemoveEquipment(AWeapon* Weapon)
 	return false;
 }
 
+bool UEquipmentComponent::IsWeaponExist(AWeapon* Weapon)
+{
+	int32 RifleCnt = 0;
+
+	for (auto& EquipItem : EquipmentItems)
+	{
+		AWeapon* Equipped = Cast<AWeapon>(EquipItem);
+		if (Equipped)
+		{
+			//Rifle Type은 주무기, 부무기 두개를 장착할 수 있다.
+			if (Equipped->WeaponType == EWeaponType::EWT_Rifle && Weapon->WeaponType == EWeaponType::EWT_Rifle)
+			{
+				RifleCnt++;
+			}
+			else if(Equipped->WeaponType == Weapon->WeaponType) //파라미터 Weapon의 Type이 이미 있으면 true
+			{
+				return true;
+			}
+
+			if (RifleCnt >= 2) //RifleType의 무기가 2개이상일 경우 true
+			{
+				return true;
+			}
+		}
+	}
+
+	//없으면 false리턴
+	return false;
+}
+
+AWeapon* UEquipmentComponent::GetBeforeWeapon(AWeapon* Weapon)
+{
+	for (auto& EquipItem : EquipmentItems)
+	{
+		AWeapon* Equipped = Cast<AWeapon>(EquipItem);
+		if (Equipped)
+		{
+			if (Equipped->WeaponType == Weapon->WeaponType)
+			{
+				return Equipped;
+			}
+		}
+	}
+	return nullptr;
+}

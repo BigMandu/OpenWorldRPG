@@ -14,6 +14,7 @@
 
 class USoundCue;
 class USkeletalMeshComponent;
+class AMainCharacter;
 
 UENUM(BlueprintType)
 enum class EWeaponType : uint8
@@ -34,7 +35,7 @@ class OPENWORLDRPG_API AWeapon : public AItem
 public:
 	AWeapon();
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Item)
-	USkeletalMeshComponent* WeaponMesh;
+	USkeletalMeshComponent* SKMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Enums")
 	EWeaponType WeaponType;
@@ -46,4 +47,8 @@ public:
 	UEquipmentComponent* OwningEquipment;
 
 	void Equip(AActor* Char);
+
+	void CheckSendToInventory(AMainCharacter* Main);
+
+	void AttachToMesh(AMainCharacter* Main);
 };

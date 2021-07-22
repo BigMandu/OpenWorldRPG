@@ -615,8 +615,6 @@ FHitResult AMainCharacter::InteractableLineTrace(const FVector& StartLo, const F
 
 void AMainCharacter::SetInteractActor(AActor* Actor)
 {
-	UE_LOG(LogTemp, Warning, TEXT("InteractActor is Valid"));
-	
 	//MainController->ShowInteractText(); //특정거리내에 Text가 뜨도록 변경함. 아래 코드.
 	//if (InteractActor == nullptr) //붙어있으면 바뀌지 않기때문에 조건문 삭제.
 	{
@@ -625,22 +623,24 @@ void AMainCharacter::SetInteractActor(AActor* Actor)
 		if (InActor)
 		{
 			InActor->SetOutline();
-		}
-		
-		//InteractActor의 Static Mesh의 위치를 기준으로 거리를 구한다.
-		
-		//InteractActor->GetActorLocation()
-		
-		if ((GetActorLocation() - InActor->Mesh->GetComponentLocation()).Size() <= ActiveInteractDistance) //특정거리 이내면 Text Show.
-		{
-			MainController->ShowInteractText();
-		}
+
+			//InteractActor의 Static Mesh의 위치를 기준으로 거리를 구한다.
+
+			//InteractActor->GetActorLocation()
+			if ((GetActorLocation() - InActor->Mesh->GetComponentLocation()).Size() <= ActiveInteractDistance) //특정거리 이내면 Text Show.
+			{
+				MainController->ShowInteractText();
+			}
+
+			/* debug */
+			//UE_LOG(LogTemp, Warning, TEXT("Main::InteractActor is Valid"));
+		}		
 	}
+	
 }
 
 void AMainCharacter::UnsetInteractActor()
 {
-	UE_LOG(LogTemp, Warning, TEXT("InteractActor is Invalid"));
 	if (InteractActor)
 	{
 		AInteractable* InActor = Cast<AInteractable>(InteractActor);
@@ -651,6 +651,8 @@ void AMainCharacter::UnsetInteractActor()
 		InteractActor = nullptr;
 		MainController->HideInteractText();
 	}
+	/* debug */
+	//UE_LOG(LogTemp, Warning, TEXT("Main::InteractActor is Invalid"));
 }
 
 void AMainCharacter::Interactive()
@@ -658,9 +660,13 @@ void AMainCharacter::Interactive()
 	if (InteractActor)
 	{
 		IInteractive_Interface* Interface = Cast<IInteractive_Interface>(InteractActor);
-		if (Interface && (GetActorLocation()-InteractActor->GetActorLocation()).Size() <= ActiveInteractDistance)
+		AInteractable* InActor = Cast<AInteractable>(InteractActor);
+		if (Interface && InActor)
 		{
-			Interface->Interaction(this);
+			if ((GetActorLocation() - InActor->Mesh->GetComponentLocation()).Size() <= ActiveInteractDistance)
+			{
+				Interface->Interaction(this);
+			}
 		}
 	}
 	
@@ -742,7 +748,7 @@ FTransform AMainCharacter::LeftHandik()
 		FVector LeftTransVector;
 		FRotator LeftTransRotation;
 		
-		Transform = EquippedWeapon->WeaponMesh->GetSocketTransform(FName("LeftHandPos"), ERelativeTransformSpace::RTS_World);
+		Transform = EquippedWeapon->SKMesh->GetSocketTransform(FName("LeftHandPos"), ERelativeTransformSpace::RTS_World);
 		return Transform;
 	}
 	

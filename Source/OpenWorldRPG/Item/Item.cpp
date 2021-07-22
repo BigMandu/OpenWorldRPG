@@ -5,6 +5,10 @@
 //#include "InventoryComponent.h"
 #include "OpenWorldRPG/MainCharacter.h"
 
+AItem::AItem()
+{
+	ItemState = EItemState::EIS_Spawn;
+}
 
 void AItem::Pickup(class AActor* Actor)
 {
@@ -13,12 +17,12 @@ void AItem::Pickup(class AActor* Actor)
 	if (Main)
 	{
 		//UE_LOG(LogTemp, Warning, TEXT("AItem::Add To Inventory"));
+		
+		Mesh->SetHiddenInGame(true);	//Mesh->bHiddenInGame = true;
+		Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 		Main->Inventory->AddItem(this); //OwningInventory세팅 및 Tarray에 넣어줌.
-		
-		Mesh->SetHiddenInGame(true);
-		//Mesh->bHiddenInGame = true;
-		Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		SetItemState(EItemState::EIS_Pickup);
 	}
 	
 }
@@ -28,6 +32,8 @@ void AItem::Drop()
 	if (OwningInventory)
 	{
 		OwningInventory->RemoveItem(this);
+		SetItemState(EItemState::EIS_Spawn);
+
 		Mesh->SetHiddenInGame(false);
 		Mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	}

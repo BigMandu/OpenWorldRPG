@@ -58,25 +58,6 @@ void AInteractable::Interaction(class AActor* Actor)
 			{
 				Weapon->Equip(Actor); //Weapon으로 cast, equip함수 호출
 			}
-			/*
-			
-			if (Main->EquippedWeapon == false) //장착한 Weapon이 없으면
-			{
-				AWeapon* Weapon = Cast<AWeapon>(this);
-				if (Weapon)
-				{
-					Weapon->Equip(Actor); //Weapon으로 cast, equip함수 호출
-				}
-			}
-			else //장착한 Weapon이 있으면
-			{
-				AItem* Item = Cast<AItem>(this);
-				if (Item)
-				{
-					Item->Pickup(Actor); //Item으로 Cast, Pickup함수 호출
-				}
-			}
-			*/
 		}
 
 		break;
