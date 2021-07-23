@@ -32,6 +32,9 @@ UCLASS()
 class OPENWORLDRPG_API AWeapon : public AItem
 {
 	GENERATED_BODY()
+private:
+	void GunAttachToMesh(AMainCharacter* Main);
+
 public:
 	AWeapon();
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Item)
@@ -49,6 +52,5 @@ public:
 	void Equip(AActor* Char);
 
 	void CheckSendToInventory(AMainCharacter* Main);
-
-	void AttachToMesh(AMainCharacter* Main);
+	
 };

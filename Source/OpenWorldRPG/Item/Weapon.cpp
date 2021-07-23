@@ -30,12 +30,13 @@ void AWeapon::Equip(AActor* Char)
 		switch (WeaponType)
 		{
 		case EWeaponType::EWT_Rifle:
+		case EWeaponType::EWT_Pistol:
 				CheckSendToInventory(Main);
 				
 				//무작정 붙이면 안된다. 1,2,3 (주무기, 부무기, 권총)키를 눌렀을때 Attach시켜야함.
 				if (Main->EquippedWeapon == nullptr)
 				{
-					AttachToMesh(Main); 
+					GunAttachToMesh(Main); 
 				}
 				else
 				{
@@ -59,7 +60,7 @@ void AWeapon::Equip(AActor* Char)
 
 				}
 				//카메라 모드에 따라 1인칭, 3인칭 Mesh에 부착시킨다.
-				AttachToMesh(Main); //아래코드를 함수로 대체.
+				GunAttachToMesh(Main); //아래코드를 함수로 대체.
 				*/
 				/*if (Main->CameraMode == ECameraMode::ECM_FPS)
 				{
@@ -76,28 +77,6 @@ void AWeapon::Equip(AActor* Char)
 					UGameplayStatics::PlaySoundAtLocation(GetWorld(), EquippedSound, Main->GetActorLocation());
 				}*/
 				break;
-
-		case EWeaponType::EWT_Pistol:
-				CheckSendToInventory(Main);
-
-				//무작정 붙이면 안된다. 1,2,3 (주무기, 부무기, 권총)키를 눌렀을때 Attach시켜야함.
-				if (Main->EquippedWeapon == nullptr)
-				{
-					AttachToMesh(Main);
-				}
-				else
-				{
-					SKMesh->SetHiddenInGame(true);
-				}
-				/*if (EquippedSound)
-				{
-					UGameplayStatics::PlaySoundAtLocation(GetWorld(), EquippedSound, Main->GetActorLocation());
-				}*/
-
-				//EquippedWeapon은 현재 들고 있는 무기로 지정한다. 
-				//Main->EquippedWeapon = this;
-				break;
-
 		case EWeaponType::EWT_Helmet:
 			CheckSendToInventory(Main);
 			SKMesh->bHiddenInGame = true; //임시로 해둔것임.
@@ -143,7 +122,7 @@ void AWeapon::CheckSendToInventory(AMainCharacter* Main)
 	}
 }
 
-void AWeapon::AttachToMesh(AMainCharacter* Main)
+void AWeapon::GunAttachToMesh(AMainCharacter* Main)
 {
 	if (Main)
 	{
