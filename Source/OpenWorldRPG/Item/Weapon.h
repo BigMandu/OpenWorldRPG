@@ -51,6 +51,6 @@ public:
 
 	void Equip(AActor* Char);
 
-	void CheckSendToInventory(AMainCharacter* Main);
+	bool CheckSendToInventory(AMainCharacter* Main);
 	
 };
