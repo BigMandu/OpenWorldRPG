@@ -55,12 +55,17 @@ bool UInventoryComponent::RemoveItem(class AItem* Item)
 		InventoryItems.RemoveSingle(Item);
 
 		OnInventoryUpdated.Broadcast();
+
+		/*FTransform form;
+		form.SetLocation(GetOwner()->GetActorLocation() + GetOwner()->GetActorForwardVector() * 100.f);
+		AActor* rmActor = GetWorld()->SpawnActor<AActor>(Item);*/
+		
+
+
+
 		return true;
 	}
 	return false;
-
-
-
 
 	/*
 	* index로 찾는 방법도 있다.

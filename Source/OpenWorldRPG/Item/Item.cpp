@@ -31,11 +31,20 @@ void AItem::Drop()
 {
 	if (OwningInventory)
 	{
-		OwningInventory->RemoveItem(this);
-		SetItemState(EItemState::EIS_Spawn);
+		SetItemState(EItemState::EIS_Drop);
 
-		Mesh->SetHiddenInGame(false);
-		Mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		if (OwningInventory->RemoveItem(this))
+		{
+
+			Mesh->SetHiddenInGame(false);
+			Mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+
+			UE_LOG(LogTemp, Warning, TEXT("AItem::Drop success"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("AItem::Drop fail"));
+		}
 	}
 }
 
