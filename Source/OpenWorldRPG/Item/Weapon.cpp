@@ -8,8 +8,9 @@
 #include "Sound/SoundCue.h"
 #include "EquipmentComponent.h"
 
-AWeapon::AWeapon()
+AWeapon::AWeapon():Super()
 {
+
 	SKMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMesh"));
 	RootComponent = SKMesh;
 	Mesh->SetupAttachment(GetRootComponent());
@@ -23,20 +24,16 @@ void AWeapon::Equip(AActor* Char)
 	bool bFlag = false;
 	if (Main)
 	{
-		Mesh->SetHiddenInGame(true); //Static Mesh를 안보이게 하고, Collision을 끈다.
-		Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
-		
+		if (CheckSendToInventory(Main)) //인벤토리로 보냈으면
+		{
+			bFlag = true;
+		}
 
 		switch (WeaponType)
 		{
 		case EWeaponType::EWT_Rifle:
 		case EWeaponType::EWT_Pistol:
-			if (CheckSendToInventory(Main)) //Inventory로 보냈으면
-			{
-				bFlag = true;
-			}
-			else //inventory로 보내지 않았으면 장착시킨다.
+			if (!bFlag) //Inventory로 보내지 않았으면 장착 시킨다.
 			{
 				//무작정 붙이면 안된다. 1,2,3 (주무기, 부무기, 권총)키를 눌렀을때 Attach시켜야함.
 				if (Main->EquippedWeapon == nullptr)
@@ -84,25 +81,16 @@ void AWeapon::Equip(AActor* Char)
 			}
 			break;
 		case EWeaponType::EWT_Helmet:
-			if(CheckSendToInventory(Main))
+			if(!bFlag)
 			{
-				bFlag = true;
-				
-			}
-			else
-			{
+				//장착
 				SKMesh->SetHiddenInGame(true); //임시로 해둔것임.
 			}
 			break;
-
 		case EWeaponType::EWT_Vest:
-			if (CheckSendToInventory(Main))
+			if (!bFlag)
 			{
-				bFlag = true;
-				
-			}
-			else
-			{
+				//장착
 				SKMesh->SetHiddenInGame(true); //임시로 해둔것임.
 			}
 			break;
@@ -111,8 +99,16 @@ void AWeapon::Equip(AActor* Char)
 		
 		if (!bFlag) //Inventory로 보내지 않았으면
 		{
+			UE_LOG(LogTemp, Warning, TEXT("AWeapon::Equip Success"));
+
 			//Main에 있는 Equipment에 Add해준다.
 			Main->Equipment->AddEquipment(this);
+
+			Mesh->SetSimulatePhysics(false);
+			Mesh->SetEnableGravity(false);
+
+			Mesh->SetHiddenInGame(true); //Static Mesh를 안보이게 하고, Collision을 끈다.
+			Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		}
 	}
 }
@@ -124,7 +120,7 @@ bool AWeapon::CheckSendToInventory(AMainCharacter* Main)
 	//이 무기와 같은 타입의 무기가 이미 장착되어있고 (Rifle인 경우 2개 장착가능)
 	if (Main->Equipment->IsWeaponExist(this))
 	{
-		if (GetItemState() == EItemState::EIS_Spawn) //월드에 있는 무기면
+		if (GetItemState() == EItemState::EIS_Spawn || GetItemState() == EItemState::EIS_Drop) //월드에 있는 무기면
 		{
 			//OwningEquipment를 null로 설정해준다.
 			OwningEquipment = nullptr;
@@ -139,9 +135,9 @@ bool AWeapon::CheckSendToInventory(AMainCharacter* Main)
 			if (Beforeweapon != nullptr)
 			{
 				Beforeweapon->OwningEquipment = nullptr;
-				Beforeweapon->Pickup(Main); //기존 무기를 Inventory로
+				Beforeweapon->Pickup(Main); //기존 무기를 Inventory로 보낸다. 
 			}
-			UE_LOG(LogTemp, Warning, TEXT("Weapon::DecideEquipOrInventory. something wrong."));
+			UE_LOG(LogTemp, Warning, TEXT("Weapon::CheckSendToInventory. something wrong."));
 			return false;
 		}
 	}
@@ -171,4 +167,19 @@ void AWeapon::GunAttachToMesh(AMainCharacter* Main)
 		}
 
 	}
+}
+
+void AWeapon::Drop()
+{
+	Super::Drop();
+
+	/* Weapon Rifle이 드랍될때
+	*  몇개씩 땅 밑으로 꺼진다... 디버깅 해봐도 collision은 제대로 세팅되는데도
+	*  꺼진다. - 원인파악 불가.
+	*/
+	UE_LOG(LogTemp, Warning, TEXT("AWeapon::Drop"));
+	SKMesh->SetHiddenInGame(true);
+	OwningEquipment = false;
+	
+	
 }

@@ -52,5 +52,7 @@ public:
 	void Equip(AActor* Char);
 
 	bool CheckSendToInventory(AMainCharacter* Main);
+
+	virtual void Drop() override;
 	
 };

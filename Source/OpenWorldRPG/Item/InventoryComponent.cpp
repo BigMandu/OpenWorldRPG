@@ -42,6 +42,7 @@ bool UInventoryComponent::AddItem(class AItem* Item)
 	Item->OwningInventory = this;
 	InventoryItems.Add(Item);
 
+	
 	OnInventoryUpdated.Broadcast();
 
 	return true;
@@ -51,7 +52,7 @@ bool UInventoryComponent::RemoveItem(class AItem* Item)
 {
 	if (Item)
 	{
-		Item->OwningInventory = nullptr;
+		//Item->OwningInventory = nullptr;
 		InventoryItems.RemoveSingle(Item);
 
 		OnInventoryUpdated.Broadcast();

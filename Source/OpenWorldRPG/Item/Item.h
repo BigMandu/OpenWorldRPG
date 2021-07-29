@@ -47,9 +47,11 @@ public:
 
 	FORCEINLINE void SetItemState(EItemState State) { ItemState = State; }
 
-	void Pickup(class AActor* Actor);
+	void Pickup(AActor* Actor);
 	
-	void Drop();
+	UFUNCTION(BlueprintCallable)
+	virtual void Drop();
 
-	void Use(class AMainChrarcter* Main);
+	UFUNCTION(BlueprintCallable)
+	void Use(AActor* Actor);
 };
