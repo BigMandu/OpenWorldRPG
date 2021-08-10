@@ -28,31 +28,91 @@ enum class EWeaponType : uint8
 };
 
 
-UCLASS()
+//단발, 점사, 연사를 구분
+UENUM(BlueprintType)
+enum class EWeaponFiringMode : uint8
+{
+	EWFM_Safe		UMETA(DisplayName = "Safe"),
+	EWFM_SemiAuto	UMETA(DisplayName = "SemiAuto"),
+	EWFM_Burst		UMETA(DisplayName = "Burst"),
+	EWFM_FullAuto	UMETA(DisplayName = "FullAuto"),
+
+	EWFM_MAX		UMETA(DisplayName = "DefaultMAX")
+};
+
+USTRUCT()
+struct FWeaponStat
+{
+	GENERATED_BODY()
+
+	//Magazine의 최대 탄알수, 연발 속도
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
+	int32 AmmoPerMag;
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
+	float RateofFire;
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
+	float WeaponRange;
+
+	/* FWeaponStat Defaults */
+	FWeaponStat()
+	{
+		AmmoPerMag = 30;
+		RateofFire = 0.2;
+		WeaponRange = 500.f;
+	}
+
+};
+
+UCLASS()//Abstract, Blueprintable)
 class OPENWORLDRPG_API AWeapon : public AItem
 {
 	GENERATED_BODY()
-private:
-	void GunAttachToMesh(AMainCharacter* Main);
-
+	
 public:
-	AWeapon();
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Item)
+	AWeapon(const FObjectInitializer& ObjectInitializer);
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	USkeletalMeshComponent* SKMesh;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Enums")
-	EWeaponType WeaponType;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Item | Weapon")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapon")
 	USoundCue* EquippedSound;
 
-
 	UEquipmentComponent* OwningEquipment;
+	AMainCharacter* OwningPlayer;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	EWeaponType WeaponType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	EWeaponFiringMode WeaponFiringMode;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	FWeaponStat WeaponStat;
+
+	bool bIsFiring;
+
+	int32 FireCount;
+
+	void SetOwningPlayer(AMainCharacter* Main);
 
 	void Equip(AActor* Char);
+	
+	void GunAttachToMesh(AMainCharacter* Main);
 
 	bool CheckSendToInventory(AMainCharacter* Main);
 
 	virtual void Drop() override;
 	
+	void SetWeaponFiringMode();
+	
+	/* from Player input */
+	void StartFire();
+	void StopFire();
+
+	void Firing();
+	void ReFiring();
+
+	virtual void BulletOut();// PURE_VIRTUAL(AWeapon::BulletOut, );
+	
+	virtual FTransform GetCamLocRot();
+
 };

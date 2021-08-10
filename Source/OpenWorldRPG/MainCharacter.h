@@ -71,7 +71,8 @@ public:
 
 	/************ Socket Name ************/
 	FName HeadSocketName;
-	FName WeaponGripSocketName;
+	FName GripSocketName;
+	FName WeaponLeftHandSocketName;
 
 	/**********   카메라 *************/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
@@ -152,18 +153,35 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Sounds)
 	USoundCue* StepSoundCue;
 
-	/**********  Item & Combat 관련 ************/
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
+	/**********  Interactive 관련 ************/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item | ")
 	float ActiveInteractDistance;
 
 	FVector Interact_LineTrace_StartLocation;
 	FVector Interact_LineTrace_EndLocation;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item |")
+	AActor* InteractActor;
+
+	/************* Weapon 관련 ***************/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Weapon")
+	FTransform RifleRelativeLoRo;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Weapon")
+	FTransform PistolRelativeLoRo;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item | Weapon")
 	AWeapon* EquippedWeapon;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item")
-	AActor* InteractActor;
+	/* Weapon Quick Swap */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item | Weapon")
+	AWeapon* PrimaryWeapon;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item | Weapon")
+	AWeapon* SubWeapon;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item | Weapon")
+	AWeapon* PistolWeapon;
+
 	
 protected:
 	// Called when the game starts or when spawned
@@ -205,20 +223,30 @@ public:
 
 	/************ Input **********/
 	void EKeyDown();
-	void EKeyUp();
+	
+	void LMBDown();
+	void LMBUp();
 
 	void RMBDown();
 	void RMBUp();
 
 	void TabKeyDown();
 
-	/********** Sounds ********/
-	void StepSound();
 
-	/********** Perception ********/
-	virtual bool CanBeSeenFrom(const FVector& ObserverLocation, FVector& OutSeenLocation, int32& NumberOfLoSChecksPerformed, float& OutSightStrength, const AActor* IgnoreActor) const;
+	/* Item & Weapon 관련 */
+	void ChangePrimaryWeapon();
+	void ChangeSubWeapon();
+	void ChangePistolWeapon();
 
-	
+	void ChangeWeapon(int32 index);
+
+	UFUNCTION(BlueprintCallable)
+	void UseItem(AActor* Item);
+
+	/********  Hand ik ******/
+	UFUNCTION(BlueprintCallable)
+	FTransform LeftHandik();
+
 
 	/********  Interaction 관련 ******/
 
@@ -228,13 +256,12 @@ public:
 
 	void UnsetInteractActor();
 
-	UFUNCTION(BlueprintCallable)
-	void UseItem(AActor* Item);
-
 	void Interactive();
 
-	/********  Hand ik ******/
-	UFUNCTION(BlueprintCallable)
-	FTransform LeftHandik();
+	/********** Sounds ********/
+	void StepSound();
+
+	/********** Perception ********/
+	virtual bool CanBeSeenFrom(const FVector& ObserverLocation, FVector& OutSeenLocation, int32& NumberOfLoSChecksPerformed, float& OutSightStrength, const AActor* IgnoreActor) const;
 
 };

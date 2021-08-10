@@ -24,5 +24,5 @@ class OPENWORLDRPG_API IInteractive_Interface
 public:
 	//Force implement function.
 	virtual void Interaction(class AActor* Actor) = 0;// { return nullptr; }
-
+	
 };

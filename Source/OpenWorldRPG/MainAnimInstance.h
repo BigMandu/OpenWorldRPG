@@ -41,6 +41,8 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 	class AMainCharacter* Player;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
+	int32 WeaponTypeNumber;
 
 	virtual void NativeInitializeAnimation() override;
 

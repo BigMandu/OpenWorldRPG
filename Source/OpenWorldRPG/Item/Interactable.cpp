@@ -65,13 +65,12 @@ void AInteractable::Interaction(class AActor* Actor)
 	default:
 		break;
 	}
-	
-
 }
 
 void AInteractable::SetOutline_Implementation()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Interactable::enable outline"));
+	
 	//Mesh->SetRenderCustomDepth(true);
 }
 
