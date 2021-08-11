@@ -320,12 +320,6 @@ void AWeapon::ReFiring()
 	Firing();
 }
 
-
-void AWeapon::BulletOut()
-{
-	UE_LOG(LogTemp, Warning, TEXT("Weap::BulletOut"));
-}
-
 FTransform AWeapon::GetCamLocRot()
 {
 	/*

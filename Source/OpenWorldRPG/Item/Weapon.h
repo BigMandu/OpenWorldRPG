@@ -63,7 +63,7 @@ struct FWeaponStat
 
 };
 
-UCLASS()//Abstract, Blueprintable)
+UCLASS(Abstract, Blueprintable)
 class OPENWORLDRPG_API AWeapon : public AItem
 {
 	GENERATED_BODY()
@@ -85,7 +85,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	EWeaponFiringMode WeaponFiringMode;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	UPROPERTY(EditDefaultsOnly, Category = "WeaponStat")
 	FWeaponStat WeaponStat;
 
 	bool bIsFiring;
@@ -111,7 +111,7 @@ public:
 	void Firing();
 	void ReFiring();
 
-	virtual void BulletOut();// PURE_VIRTUAL(AWeapon::BulletOut, );
+	virtual void BulletOut() PURE_VIRTUAL(AWeapon::BulletOut);
 	
 	virtual FTransform GetCamLocRot();
 

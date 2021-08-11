@@ -14,7 +14,7 @@ AWeapon_Instant::AWeapon_Instant(const FObjectInitializer& ObjectInitializer) : 
 void AWeapon_Instant::BulletOut()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Weap_Instant::BulletOut"));
-	/*
+	
 	FTransform form = GetCamLocRot();
 	FVector StartTrace = form.GetLocation();
 	FVector Direction = form.GetRotation().Vector();
@@ -22,17 +22,17 @@ void AWeapon_Instant::BulletOut()
 
 	FHitResult Hit = BulletTrace(StartTrace, EndTrace);
 	CheckHit(Hit);
-	*/
-	//if (Hit.GetActor())
-	//{
-	//	UE_LOG(LogTemp, Warning, TEXT("Hit Actor name : %s"), *Hit.GetActor()->GetFName().ToString());
-	//}
 }
 
 FHitResult AWeapon_Instant::BulletTrace(FVector& StartTrace, FVector& EndTrace)
 {
 	FHitResult Hit;
-	GetWorld()->LineTraceSingleByChannel(Hit, StartTrace, EndTrace, ECollisionChannel::ECC_Pawn);
+	
+	FCollisionQueryParams params;
+	params.AddIgnoredActor(this);
+	
+	
+	GetWorld()->LineTraceSingleByChannel(Hit, StartTrace, EndTrace, ECollisionChannel::ECC_Pawn,params);
 
 	/* debug */
 	DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor::Green);

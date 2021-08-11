@@ -14,7 +14,7 @@ struct FBulletData
 {
 	GENERATED_BODY()
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
+	UPROPERTY(EditDefaultsOnly, Category = "WeaponStat")
 	int32 Damage;
 
 	/* FBulletData Defaults */
@@ -32,6 +32,9 @@ class OPENWORLDRPG_API AWeapon_Instant : public AWeapon
 public:
 	AWeapon_Instant(const FObjectInitializer& ObjectInitializer);
 	
+	UPROPERTY(EditDefaultsOnly, Category = "WeaponStat")
+	FBulletData BulletStat;
+
 	virtual void BulletOut() override;
 	FHitResult BulletTrace(FVector& StartTrace, FVector& EndTrace);
 
