@@ -24,13 +24,13 @@ struct FBulletData
 	}
 };
 
-UCLASS(Abstract)
+UCLASS()
 class OPENWORLDRPG_API AWeapon_Instant : public AWeapon
 {
 	GENERATED_BODY()
 	
 public:
-	AWeapon_Instant(const FObjectInitializer& ObjectInitializer);
+	AWeapon_Instant();
 	
 	UPROPERTY(EditDefaultsOnly, Category = "WeaponStat")
 	FBulletData BulletStat;

@@ -9,7 +9,7 @@
 #include "Sound/SoundCue.h"
 #include "EquipmentComponent.h"
 
-AWeapon::AWeapon(const FObjectInitializer& ObjectInitializer) : Super()
+AWeapon::AWeapon() : Super()
 {
 	SKMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMesh"));
 
@@ -25,6 +25,7 @@ void AWeapon::SetOwningPlayer(AMainCharacter* Main)
 {
 	if (OwningPlayer != Main)
 	{
+		SetInstigator(Main); //Instigator 설정.
 		OwningPlayer = Main;
 	}
 }
@@ -309,9 +310,9 @@ void AWeapon::Firing()
 	/*
 		ammo 체크, FireCount 증가, 함수 끝에 Timer기록 (마지막 발사 시간 기록용)
 		계속해서 사격중이라면 ReFiring함수 호출
-	*/
-
+	*/	
 	BulletOut(); //Weapon Instant에 구현함.
+	
 }
 
 void AWeapon::ReFiring()

@@ -601,7 +601,7 @@ void AMainCharacter::LMBUp()
 {
 	if (EquippedWeapon)
 	{
-
+		EquippedWeapon->StopFire();
 	}
 }
 

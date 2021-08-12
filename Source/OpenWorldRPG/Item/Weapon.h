@@ -11,6 +11,7 @@
 /**
  * 
  */
+#define COLLISION_WEAPON_INST	ECC_GameTraceChannel1
 
 class USoundCue;
 class USkeletalMeshComponent;
@@ -63,13 +64,13 @@ struct FWeaponStat
 
 };
 
-UCLASS(Abstract, Blueprintable)
+UCLASS(Abstract)
 class OPENWORLDRPG_API AWeapon : public AItem
 {
 	GENERATED_BODY()
 	
 public:
-	AWeapon(const FObjectInitializer& ObjectInitializer);
+	AWeapon();
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	USkeletalMeshComponent* SKMesh;
 

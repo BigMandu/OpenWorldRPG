@@ -5,7 +5,7 @@
 #include "DrawDebugHelpers.h" //디버깅용
 
 
-AWeapon_Instant::AWeapon_Instant(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+AWeapon_Instant::AWeapon_Instant() : Super()
 {
 	
 }
@@ -26,16 +26,20 @@ void AWeapon_Instant::BulletOut()
 
 FHitResult AWeapon_Instant::BulletTrace(FVector& StartTrace, FVector& EndTrace)
 {
-	FHitResult Hit;
+	FHitResult Hit(ForceInit);
 	
-	FCollisionQueryParams params;
-	params.AddIgnoredActor(this);
+	FCollisionQueryParams params(NAME_None, true, GetInstigator()); //Instigator를 IgnoreActor로 하면된다.
 	
-	
-	GetWorld()->LineTraceSingleByChannel(Hit, StartTrace, EndTrace, ECollisionChannel::ECC_Pawn,params);
+	GetWorld()->LineTraceSingleByChannel(Hit, StartTrace, EndTrace, COLLISION_WEAPON_INST,params);
 
 	/* debug */
-	DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor::Green);
+	/*if (GetInstigator())
+	{
+		FString str = GetInstigator()->GetFName().ToString();
+		UE_LOG(LogTemp, Warning, TEXT("Isnt : GetInstigator: %s"), *str);
+	}*/
+	//
+	DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor::Green,false,2.f,(uint8)nullptr,2.f);
 
 	return Hit;
 }
