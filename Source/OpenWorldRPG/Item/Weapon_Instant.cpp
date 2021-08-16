@@ -15,12 +15,13 @@ void AWeapon_Instant::BulletOut()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Weap_Instant::BulletOut"));
 	
-	FTransform form = GetCamLocRot();
-	FVector StartTrace = form.GetLocation();
-	FVector Direction = form.GetRotation().Vector();
-	FVector EndTrace = StartTrace + Direction * WeaponStat.WeaponRange;
+	//FTransform form = GetCamLocRot();
+	FVector Dir = GetAimRotation();
 
-	FHitResult Hit = BulletTrace(StartTrace, EndTrace);
+	FVector StartTrace = GetTraceStartLocation(Dir);//form.GetLocation();
+	FVector EndTrace = StartTrace + Dir * WeaponStat.WeaponRange;
+
+	FHitResult Hit = BulletTrace(StartTrace, EndTrace); 
 	CheckHit(Hit);
 }
 

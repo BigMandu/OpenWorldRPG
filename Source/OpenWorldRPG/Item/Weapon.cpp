@@ -8,6 +8,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
 #include "EquipmentComponent.h"
+#include "DrawDebugHelpers.h" //µð¹ö±ë¿ë
+#include "Camera/CameraComponent.h"
 
 AWeapon::AWeapon() : Super()
 {
@@ -321,25 +323,53 @@ void AWeapon::ReFiring()
 	Firing();
 }
 
-FTransform AWeapon::GetCamLocRot()
+FVector AWeapon::GetAimRotation()
 {
-	/*
-	AMainController* MainCon;
-	if (OwningPlayer)
-	{
-		MainCon = Cast<AMainController>(OwningPlayer->MainController);
-	}
-	*/
 	AMainController* MainCon = OwningPlayer ? Cast<AMainController>(OwningPlayer->MainController) : nullptr;
-	FTransform form;
+	FVector ReturnAim = FVector::ZeroVector;
+
 	if (MainCon)
 	{
-		FVector Loc = FVector::ZeroVector;
-		FRotator Rot = FRotator::ZeroRotator;
-		MainCon->GetPlayerViewPoint(Loc, Rot);
-		form.SetLocation(Loc);
-		form.SetRotation(Rot.Quaternion());
+		FVector AimLoc = FVector::ZeroVector;
+		FRotator AimRot = FRotator::ZeroRotator;
+		MainCon->GetPlayerViewPoint(AimLoc, AimRot);
 
+		ReturnAim = AimRot.Vector();
 	}
-	return form;
+
+	return ReturnAim;
+}
+
+FVector AWeapon::GetTraceStartLocation(FVector& Dir)
+{
+	AMainController* MainCon = OwningPlayer ? Cast<AMainController>(OwningPlayer->MainController) : nullptr;
+	FVector ReturnLocation = FVector::ZeroVector;
+
+	if (MainCon)
+	{
+		FRotator Rot;
+		MainCon->GetPlayerViewPoint(ReturnLocation, Rot);
+
+		FVector CalcDistance = OwningPlayer->GetActorLocation() - ReturnLocation;
+		
+		UE_LOG(LogTemp, Warning, TEXT("======================================="));
+		UE_LOG(LogTemp, Warning, TEXT("ViewPoint Loc : %s , ViewPoint Rot : %s"), *ReturnLocation.ToString(), *Dir.ToString());
+		UE_LOG(LogTemp, Warning, TEXT("ActorLocation : %s"), *OwningPlayer->GetActorLocation().ToString());
+		UE_LOG(LogTemp, Warning, TEXT("ActorLocation - ViewPoint Loc  = %s"), *CalcDistance.ToString());
+		UE_LOG(LogTemp, Warning, TEXT("---------------------------------------"));
+		//UE_LOG(LogTemp, Warning, TEXT("Result not - ViewPoint Loc= %s"), *(ReturnLocation + Dir * OwningPlayer->GetActorLocation()).ToString());
+		UE_LOG(LogTemp, Warning, TEXT("Result NOT | operation = %s"), *(ReturnLocation + Dir * CalcDistance).ToString());
+		
+		FVector tempLocation = ReturnLocation + Dir * (OwningPlayer->GetActorLocation() - ReturnLocation);
+		FVector NewTempLocation = ReturnLocation + Dir * 700;
+		ReturnLocation = ReturnLocation + Dir * (OwningPlayer->GetActorLocation() - ReturnLocation | Dir );
+		
+		DrawDebugSphere(GetWorld(), ReturnLocation, 12.f, 6, FColor::Green, true, 2.f, (uint8)nullptr, 2.f);
+		DrawDebugSphere(GetWorld(), tempLocation, 12.f, 6, FColor::Red, true, 2.f, (uint8)nullptr, 2.f);
+		DrawDebugSphere(GetWorld(), NewTempLocation, 12.f, 6, FColor::Blue, true, 2.f, (uint8)nullptr, 2.f);
+
+		UE_LOG(LogTemp, Warning, TEXT("         Final Result = %s"), *ReturnLocation.ToString());
+	}
+	
+	return ReturnLocation;
 }

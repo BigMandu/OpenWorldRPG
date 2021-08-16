@@ -105,7 +105,7 @@ public:
 	
 	void SetWeaponFiringMode();
 	
-	/* from Player input */
+	/* Attack */
 	void StartFire();
 	void StopFire();
 
@@ -114,6 +114,6 @@ public:
 
 	virtual void BulletOut() PURE_VIRTUAL(AWeapon::BulletOut);
 	
-	virtual FTransform GetCamLocRot();
-
+	FVector GetAimRotation();
+	FVector GetTraceStartLocation(FVector& Dir);
 };
