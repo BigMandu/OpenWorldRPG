@@ -223,21 +223,23 @@ public:
 
 	/************ Input **********/
 	void EKeyDown();
-	
+	void TabKeyDown();
+
 	void LMBDown();
 	void LMBUp();
 
+	/* Item & Weapon 관련 */
 	void RMBDown();
 	void RMBUp();
-
-	void TabKeyDown();
-
-
-	/* Item & Weapon 관련 */
+	
 	void ChangePrimaryWeapon();
 	void ChangeSubWeapon();
 	void ChangePistolWeapon();
 
+	/* Change Weapon Firing Mode*/
+	void ChangeSafetyLever();
+
+	/***************************/
 	void ChangeWeapon(int32 index);
 
 	UFUNCTION(BlueprintCallable)

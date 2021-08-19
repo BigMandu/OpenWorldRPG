@@ -33,12 +33,23 @@ enum class EWeaponType : uint8
 UENUM(BlueprintType)
 enum class EWeaponFiringMode : uint8
 {
-	EWFM_Safe		UMETA(DisplayName = "Safe"),
-	EWFM_SemiAuto	UMETA(DisplayName = "SemiAuto"),
-	EWFM_Burst		UMETA(DisplayName = "Burst"),
-	EWFM_FullAuto	UMETA(DisplayName = "FullAuto"),
+	EWFM_Safe		UMETA(DisplayName = "Safe"), //안전
+	EWFM_SemiAuto	UMETA(DisplayName = "SemiAuto"), //단발
+	EWFM_Burst		UMETA(DisplayName = "Burst"), //점사
+	EWFM_FullAuto	UMETA(DisplayName = "FullAuto"), //연발
 
 	EWFM_MAX		UMETA(DisplayName = "DefaultMAX")
+};
+
+//Weapon의 상태
+UENUM(BlueprintType)
+enum class EWeaponState : uint8
+{
+	EWS_Idle		UMETA(DisplayName = "Idle"),
+	EWS_Reloading	UMETA(DisplayName = "Reloading"),
+	EWS_Firing		UMETA(DisPlayName = "Firing"),
+	
+	EWS_MAX			UMETA(DisplayName = "DefaultsMAX")
 };
 
 USTRUCT()
@@ -53,13 +64,20 @@ struct FWeaponStat
 	float RateofFire;
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
 	float WeaponRange;
-
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
+	bool bHasBurstMode;
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
+	int32 BurstRound;
 	/* FWeaponStat Defaults */
 	FWeaponStat()
 	{
+		bHasBurstMode = true;
+		BurstRound = 3;
+
+		WeaponRange = 500.f;
 		AmmoPerMag = 30;
 		RateofFire = 0.2;
-		WeaponRange = 500.f;
+		
 	}
 
 };
@@ -71,29 +89,46 @@ class OPENWORLDRPG_API AWeapon : public AItem
 	
 public:
 	AWeapon();
+
+	UEquipmentComponent* OwningEquipment;
+	AMainCharacter* OwningPlayer;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	USkeletalMeshComponent* SKMesh;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapon")
 	USoundCue* EquippedSound;
 
-	UEquipmentComponent* OwningEquipment;
-	AMainCharacter* OwningPlayer;
+	UPROPERTY(EditDefaultsOnly, Category = "WeaponStat")
+	FWeaponStat WeaponStat;
 
+	/* Enums */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	EWeaponType WeaponType;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	EWeaponFiringMode WeaponFiringMode;
 
-	UPROPERTY(EditDefaultsOnly, Category = "WeaponStat")
-	FWeaponStat WeaponStat;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+		EWeaponState CurrentWeaponState;
+
+	
+private:
+
+	//for gun spread
+	int32 FireCount;
+
+	bool bLMBDown;
 
 	bool bIsFiring;
 
-	int32 FireCount;
+	float LastFireTime;
 
-	void SetOwningPlayer(AMainCharacter* Main);
+	FTimerHandle FiringTimer;
+	
+public:
+
+	void SetOwningPlayer(AActor * Actor);
 
 	void Equip(AActor* Char);
 	
@@ -103,17 +138,27 @@ public:
 
 	virtual void Drop() override;
 	
-	void SetWeaponFiringMode();
+	void ChangeSafetyLever();
 	
 	/* Attack */
 	void StartFire();
 	void StopFire();
 
+	void ControlFiring();
 	void Firing();
 	void ReFiring();
+	void EndFiring();
+
+	bool CheckRefire();
 
 	virtual void BulletOut() PURE_VIRTUAL(AWeapon::BulletOut);
 	
 	FVector GetAimRotation();
 	FVector GetTraceStartLocation(FVector& Dir);
+
+	/* Setting New Weapon State, And Call SetWeaponState func */
+	void TempNewWeaponState();
+	
+	/* Compare Preview State, And Setting State , And Call Firing func */
+	void SetWeaponState(EWeaponState NewState);
 };

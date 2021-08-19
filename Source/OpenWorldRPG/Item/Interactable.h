@@ -58,10 +58,7 @@ protected:
 public:	
 	virtual void Interaction(AActor* Actor) override;
 
-	UFUNCTION(BlueprintNativeEvent)
 	void SetOutline();
-
-	UFUNCTION(BlueprintNativeEvent)
 	void UnsetOutline();
 
 

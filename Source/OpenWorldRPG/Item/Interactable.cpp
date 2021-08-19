@@ -67,7 +67,7 @@ void AInteractable::Interaction(class AActor* Actor)
 	}
 }
 
-void AInteractable::SetOutline_Implementation()
+void AInteractable::SetOutline()
 {
 	//UE_LOG(LogTemp, Warning, TEXT("Interactable::enable outline"));
 	
@@ -75,7 +75,7 @@ void AInteractable::SetOutline_Implementation()
 }
 
 
-void AInteractable::UnsetOutline_Implementation()
+void AInteractable::UnsetOutline()//_Implementation()
 {
 	//UE_LOG(LogTemp, Warning, TEXT("Interactable::disable outline"));
 	Mesh->SetRenderCustomDepth(false);

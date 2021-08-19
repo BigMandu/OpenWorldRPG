@@ -13,13 +13,15 @@ AWeapon_Instant::AWeapon_Instant() : Super()
 
 void AWeapon_Instant::BulletOut()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Weap_Instant::BulletOut"));
+	//UE_LOG(LogTemp, Warning, TEXT("Weap_Instant::BulletOut"));
 	
-	//FTransform form = GetCamLocRot();
 	FVector Dir = GetAimRotation();
 
-	FVector StartTrace = GetTraceStartLocation(Dir);//form.GetLocation();
+	FVector StartTrace = GetTraceStartLocation(Dir);
 	FVector EndTrace = StartTrace + Dir * WeaponStat.WeaponRange;
+
+	/*float Dotp = (StartTrace | GetActorForwardVector());
+	UE_LOG(LogTemp, Warning, TEXT("dot : %f"), Dotp);*/
 
 	FHitResult Hit = BulletTrace(StartTrace, EndTrace); 
 	CheckHit(Hit);
@@ -27,7 +29,7 @@ void AWeapon_Instant::BulletOut()
 
 FHitResult AWeapon_Instant::BulletTrace(FVector& StartTrace, FVector& EndTrace)
 {
-	FHitResult Hit(ForceInit);
+	FHitResult Hit;
 	
 	FCollisionQueryParams params(NAME_None, true, GetInstigator()); //Instigator를 IgnoreActor로 하면된다.
 	

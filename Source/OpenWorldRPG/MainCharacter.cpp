@@ -130,12 +130,6 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAxis("TurnRate", this, &AMainCharacter::TurnAtRate);
 	PlayerInputComponent->BindAxis("LookUpRate", this, &AMainCharacter::LookUpAtRate);
 
-	PlayerInputComponent->BindAction("LMB", IE_Pressed, this, &AMainCharacter::LMBDown);
-	PlayerInputComponent->BindAction("LMB", IE_Released, this, &AMainCharacter::LMBUp);
-
-	PlayerInputComponent->BindAction("RMB", IE_Pressed, this, &AMainCharacter::RMBDown);
-	PlayerInputComponent->BindAction("RMB", IE_Released, this, &AMainCharacter::RMBUp);
-
 	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &AMainCharacter::MyCrouch);
 	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &AMainCharacter::MyUnCrouch);
 
@@ -146,6 +140,14 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAction("ScrollUP", IE_Pressed, this, &AMainCharacter::ScrollUP);
 
 	PlayerInputComponent->BindAction("Camera", IE_Pressed, this, &AMainCharacter::VKeyDN);
+
+	PlayerInputComponent->BindAction("LMB", IE_Pressed, this, &AMainCharacter::LMBDown);
+	PlayerInputComponent->BindAction("LMB", IE_Released, this, &AMainCharacter::LMBUp);
+
+	PlayerInputComponent->BindAction("RMB", IE_Pressed, this, &AMainCharacter::RMBDown);
+	PlayerInputComponent->BindAction("RMB", IE_Released, this, &AMainCharacter::RMBUp);
+
+	PlayerInputComponent->BindAction("ChangeSafetyLever", IE_Pressed, this, &AMainCharacter::ChangeSafetyLever);
 
 	/******** Weapon Quick Swap ***********/
 	PlayerInputComponent->BindAction("Primary", IE_Pressed, this, &AMainCharacter::ChangePrimaryWeapon);
@@ -664,6 +666,14 @@ void AMainCharacter::UseItem(class AActor* Item)
 	if (Item)
 	{
 		//Item->Use(this);
+	}
+}
+
+void AMainCharacter::ChangeSafetyLever()
+{
+	if (EquippedWeapon)
+	{
+		EquippedWeapon->ChangeSafetyLever();
 	}
 }
 
