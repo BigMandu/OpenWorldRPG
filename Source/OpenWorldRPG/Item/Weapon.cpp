@@ -2,14 +2,17 @@
 
 
 #include "Weapon.h"
+#include "EquipmentComponent.h"
 #include "OpenWorldRPG/MainCharacter.h"
 #include "OpenWorldRPG/MainController.h"
 #include "Engine/SkeletalMeshSocket.h"
+#include "Camera/CameraComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
-#include "EquipmentComponent.h"
+#include "Particles/ParticleSystem.h"
+#include "Particles/ParticleSystemComponent.h"
 #include "DrawDebugHelpers.h" //디버깅용
-#include "Camera/CameraComponent.h"
+
 
 AWeapon::AWeapon() : Super()
 {
@@ -21,6 +24,10 @@ AWeapon::AWeapon() : Super()
 
 	bIsFiring = false;
 	bLMBDown = false;
+
+	MuzzleEffectComp = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("MuzzleEffectComp"));
+	MuzzleEffectComp->SetupAttachment(GetRootComponent());
+	MuzzleFlashSocketName = FName("muzzleflash");
 
 	WeaponFiringMode = EWeaponFiringMode::EWFM_SemiAuto;
 	CurrentWeaponState = EWeaponState::EWS_Idle;
@@ -409,7 +416,7 @@ void AWeapon::Firing()
 		ammo 체크, FireCount 증가, 함수 끝에 Timer기록 (마지막 발사 시간 기록용)
 		계속해서 사격중이라면 ReFiring함수 호출
 	*/
-
+	WeaponFX();
 	BulletOut(); //Weapon Instant에 구현함.
 	
 	FireCount++;
@@ -529,3 +536,29 @@ FVector AWeapon::GetTraceStartLocation(FVector& Dir)
 	return ReturnLocation;
 }
 
+
+void AWeapon::WeaponFX()
+{
+	if (FireSound)
+	{
+	
+		//PlaySound2D를 쓰면 Actor의 위치에서 소리가 나는게 아니라 게임플레이어 한테 들린다.
+		//UWorld* world = GetWorld();
+		//UGameplayStatics::PlaySound2D(world, FireSound);
+		UGameplayStatics::SpawnSoundAttached(FireSound, OwningPlayer->GetRootComponent());
+	}
+
+	if (FireMuzzleEffect)
+	{
+		const USkeletalMeshSocket* MuzzleSocket = SKMesh->GetSocketByName(MuzzleFlashSocketName);
+		
+		if (MuzzleSocket)
+		{
+			SKMesh->GetSocketLocation(MuzzleFlashSocketName);
+			FVector MuzzleLocation = SKMesh->GetSocketLocation(MuzzleFlashSocketName);
+			FRotator MuzzleRotation = SKMesh->GetSocketRotation(MuzzleFlashSocketName);
+
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), FireMuzzleEffect, MuzzleLocation, MuzzleRotation);
+		}
+	}
+}

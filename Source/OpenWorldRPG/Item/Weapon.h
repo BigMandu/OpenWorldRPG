@@ -14,8 +14,11 @@
 #define COLLISION_WEAPON_INST	ECC_GameTraceChannel1
 
 class USoundCue;
+class UParticleSystem;
+class UParticleSystemComponent;
 class USkeletalMeshComponent;
 class AMainCharacter;
+
 
 UENUM(BlueprintType)
 enum class EWeaponType : uint8
@@ -74,9 +77,10 @@ struct FWeaponStat
 		bHasBurstMode = true;
 		BurstRound = 3;
 
-		WeaponRange = 500.f;
+		WeaponRange = 5000.f;
 		AmmoPerMag = 30;
-		RateofFire = 0.2;
+		//m4a1은 분당 700~950발.분당 950으로 잡고 분당 15.8발을 쏘면됨. 0.06초당 한발씩.
+		RateofFire = 0.06; 
 		
 	}
 
@@ -96,9 +100,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	USkeletalMeshComponent* SKMesh;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapon")
-	USoundCue* EquippedSound;
-
 	UPROPERTY(EditDefaultsOnly, Category = "WeaponStat")
 	FWeaponStat WeaponStat;
 
@@ -110,9 +111,20 @@ public:
 	EWeaponFiringMode WeaponFiringMode;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-		EWeaponState CurrentWeaponState;
+	EWeaponState CurrentWeaponState;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Sound")
+	USoundCue* EquippedSound;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Sound")
+	USoundCue* FireSound;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "FX")
+	UParticleSystem* FireMuzzleEffect;
 	
+	UParticleSystemComponent* MuzzleEffectComp;
+
+	FName MuzzleFlashSocketName;
 private:
 
 	//for gun spread
@@ -161,4 +173,6 @@ public:
 	
 	/* Compare Preview State, And Setting State , And Call Firing func */
 	void SetWeaponState(EWeaponState NewState);
+
+	void WeaponFX();
 };

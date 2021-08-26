@@ -92,7 +92,7 @@ public:
 	const FVector TPSCam_Rel_Location = FVector(0.f, 30.f, 20.f);
 
 	const float MAXCameraLength = 600.f;
-	const float MINCameraLength = 250.f;
+	const float MINCameraLength = 100.f;
 	float BeforeCameraLength;
 
 	/********** enum **********/
@@ -154,6 +154,7 @@ public:
 	USoundCue* StepSoundCue;
 
 	/**********  Interactive ฐüทร ************/
+	//Minimum value of Active Interaction Distance.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item | ")
 	float ActiveInteractDistance;
 
