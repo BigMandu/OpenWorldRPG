@@ -91,11 +91,11 @@ AMainCharacter::AMainCharacter()
 	FVector(-2.999811, 5.476199, -1.011013));
 	FRotator(8.32585, -105.164108, 10.820496).Quaternion()); //->Rifle을 X축에 맞춘 Mesh를 사용하지 않음.
 	*/
-	RifleRelativeLoRo.SetLocation(FVector(0, 0, 0));
-	RifleRelativeLoRo.SetRotation(FRotator(200, 200, 200).Quaternion());
+	/*RifleRelativeLoRo.SetLocation(FVector(0, 0, 0));
+	RifleRelativeLoRo.SetRotation(FRotator(200, 200, 200).Quaternion());*/
 	
-	PistolRelativeLoRo.SetLocation(FVector(-3.271253, 5.217403, -1.969826));
-	PistolRelativeLoRo.SetRotation(FRotator(10.704832, 163.24559, -8.476412).Quaternion());
+	/*PistolRelativeLoRo.SetLocation(FVector(-3.271253, 5.217403, -1.969826));
+	PistolRelativeLoRo.SetRotation(FRotator(10.704832, 163.24559, -8.476412).Quaternion());*/
 
 	/****** Item ****/
 	Inventory = CreateDefaultSubobject<UInventoryComponent>(TEXT("Inventory"));
@@ -166,12 +166,18 @@ void AMainCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	MainAnimInstance = Cast<UMainAnimInstance>(GetMesh()->GetAnimInstance()); //Player의 AnimInstance를 불러온다.
-	if (MainAnimInstance)
-	{
-		MainAnimInstance->StepSound.AddUObject(this, &AMainCharacter::StepSound); //AnimInstance의 StepSound_Notify에서 호출.
+	/* Player의 AnimInstance를 불러온다. */
+	TPAnimInstance = Cast<UMainAnimInstance>(GetMesh()->GetAnimInstance()); 
+	FPAnimInstance = Cast<UMainAnimInstance>(FPMesh->GetAnimInstance());
 
-		MainAnimInstance->WeaponTypeNumber = 0;
+	if (TPAnimInstance && FPAnimInstance)
+	{
+		/* 사운드는 TP Animation을 기준으로 출력한다. */ //AnimInstance의 StepSound_Notify에서 호출.
+		TPAnimInstance->StepSound.AddUObject(this, &AMainCharacter::StepSound); 
+
+
+		TPAnimInstance->WeaponTypeNumber = 0;
+		FPAnimInstance->WeaponTypeNumber = 0;
 	}
 
 	/**** Perception StimuliSource 제공 (Sight, Hearing Sense) ****/	
@@ -181,6 +187,12 @@ void AMainCharacter::PostInitializeComponents()
 
 
 	FPMesh->SetHiddenInGame(true);
+
+	/* FPS Aim관련 기본 설정 값 저장*/
+	BaseCamFPSfov = CameraFPS->FieldOfView;
+	BaseFPMeshTransform = FPMesh->GetRelativeTransform();
+	
+
 }
 
 // Called when the game starts or when spawned
@@ -224,6 +236,23 @@ void AMainCharacter::Tick(float DeltaTime)
 		break;
 	}
 
+	/* 3인칭 모드에서 총이 있고 움직이고 있으면 시점을 방향으로 지정한다.*/
+	if (EquippedWeapon && CameraMode == ECameraMode::ECM_TPS)
+	{
+		if (AimMode == EAimMode::EAM_NotAim) //Not Aim모드 일때만
+		{
+			if (bIsAccelerating)
+			{
+				bUseControllerRotationYaw = true;
+				GetCharacterMovement()->bOrientRotationToMovement = false;
+			}
+			else
+			{
+				bUseControllerRotationYaw = false;
+				GetCharacterMovement()->bOrientRotationToMovement = true;
+			}
+		}
+	}
 	
 	/* Static FHitResult를 리턴받아서 Interface 변환, 성공하면 Outline과 TEXT를 띄움.*/
 	AActor* HitActor = InteractableLineTrace(Interact_LineTrace_StartLocation, Interact_LineTrace_EndLocation).GetActor();
@@ -254,7 +283,7 @@ void AMainCharacter::Tick(float DeltaTime)
 	{
 		UnsetInteractActor();
 	}
-	//InteractActor가 다를경우 UnsetInteractActor 호출하자. (Outline이 안없어지는 버그가 있음.)
+	//InteractActor가 다를경우 UnsetInteractActor 호출하자. (Outline이 안없어지는 버그가 있음.) -> 해결함.
 }
 
 
@@ -369,42 +398,61 @@ void AMainCharacter::SetCameraMode(ECameraMode Type) //플레이어 시점 상태 -> VKe
 void AMainCharacter::SetAimMode(EAimMode Mode)
 {
 	AimMode = Mode;
-	switch (AimMode)
+	if (EquippedWeapon)
 	{
-	case EAimMode::EAM_Aim:
-	{
-		bIsAim = true;
-		GetCharacterMovement()->MaxWalkSpeed = MinWalkSpeed;
-		if (CameraMode == ECameraMode::ECM_TPS)
+		switch (AimMode)
 		{
-			GetCharacterMovement()->bOrientRotationToMovement = false; //움직인 방향을 진행방향으로 설정하지 않는다.
-
-			bUseControllerRotationYaw = true; //3인칭에 Aim상태면 Yaw를 잡아준다.
-
-			//TPS모드 + Aim상태일때 카메라를 살짝 앞으로 땡겨준다.
-			BeforeCameraLength = CameraBoom->TargetArmLength; //현재 SprintArm의 길이를 저장한다.
-			//float CameraLength = FMath::FInterpTo(BeforeCameraLength, MINCameraLength, GetWorld()->GetDeltaSeconds(), 15.f);
-			CameraBoom->TargetArmLength = MINCameraLength;
-		}
-		break;
-	}
-	case EAimMode::EAM_NotAim:
-	{
-		bIsAim = false;
-		GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
-		if (CameraMode == ECameraMode::ECM_TPS)
+		case EAimMode::EAM_Aim:
 		{
-			GetCharacterMovement()->bOrientRotationToMovement = true; //움직인 방향 = 진행방향으로 설정
-			bUseControllerRotationYaw = false; //3인칭에 Aim상태가 아니면, Yaw를 풀어준다.
-			//땡긴 카메라를 다시 원복 시킨다.
-			/*float CurrentLength = CameraBoom->TargetArmLength;
-			float CameraLength = FMath::FInterpTo(CurrentLength, BeforeCameraLength, GetWorld()->GetDeltaSeconds(), 15.f);*/
-			CameraBoom->TargetArmLength = BeforeCameraLength;
+			bIsAim = true;
+			EquippedWeapon->bIsAiming = true;
+			GetCharacterMovement()->MaxWalkSpeed = MinWalkSpeed;
+			if (CameraMode == ECameraMode::ECM_TPS)
+			{
+				GetCharacterMovement()->bOrientRotationToMovement = false; //움직인 방향을 진행방향으로 설정하지 않는다.
+
+				bUseControllerRotationYaw = true; //3인칭에 Aim상태면 Yaw를 잡아준다.
+
+				//TPS모드 + Aim상태일때 카메라를 살짝 앞으로 땡겨준다.
+				BeforeCameraLength = CameraBoom->TargetArmLength; //현재 SprintArm의 길이를 저장한다.
+				//float CameraLength = FMath::FInterpTo(BeforeCameraLength, MINCameraLength, GetWorld()->GetDeltaSeconds(), 15.f);
+				CameraBoom->TargetArmLength = MINCameraLength;
+			}
+			else if (CameraMode == ECameraMode::ECM_FPS)
+			{
+				/* Aim mode + FPS모드 전용의 소켓을 추가,
+				   해당소켓으로 부착시켜 주기 위해 함수를 호출한다.*/
+				EquippedWeapon->FPS_AimAttachToMesh(this);
+				FPSAimLocationAdjust();
+			}
+			break;
 		}
-		break;
-	}
-	default:
-		break;
+		case EAimMode::EAM_NotAim:
+		{
+			bIsAim = false;
+			EquippedWeapon->bIsAiming = false;
+			GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
+			if (CameraMode == ECameraMode::ECM_TPS)
+			{
+				GetCharacterMovement()->bOrientRotationToMovement = true; //움직인 방향 = 진행방향으로 설정
+				bUseControllerRotationYaw = false; //3인칭에 Aim상태가 아니면, Yaw를 풀어준다.
+				//땡긴 카메라를 다시 원복 시킨다.
+				/*float CurrentLength = CameraBoom->TargetArmLength;
+				float CameraLength = FMath::FInterpTo(CurrentLength, BeforeCameraLength, GetWorld()->GetDeltaSeconds(), 15.f);*/
+				CameraBoom->TargetArmLength = BeforeCameraLength;
+			}
+			else if (CameraMode == ECameraMode::ECM_FPS)
+			{
+				/* Aim mode + FPS모드 전용의 소켓을 추가, 부착 시켰기 때문에
+				원복을 해준다.*/
+				EquippedWeapon->FPS_AimAttachToMesh(this);
+				FPSAimLocationAdjust();
+			}
+			break;
+		}
+		default:
+			break;
+		}
 	}
 }
 
@@ -587,7 +635,28 @@ void AMainCharacter::VKeyDN()
 	}
 }
 
-
+void AMainCharacter::FPSAimLocationAdjust()
+{
+	if (CameraFPS)
+	{
+		if (bIsAim)
+		{
+			//총에 맞는 위치를 쉽게 하기 위해 Weapon에 해당 변수를 줬다.
+			const FTransform NewFPMeshTransform = EquippedWeapon->CharFPMeshTransform;
+			const FTransform NewWeaponTransform = EquippedWeapon->WeapSKMeshTransform;
+			CameraFPS->SetFieldOfView(70.f);
+			//FPMesh->SetRelativeLocation(NewFPMeshLocation);
+			FPMesh->SetRelativeTransform(NewFPMeshTransform);
+			EquippedWeapon->SKMesh->SetRelativeTransform(NewWeaponTransform);
+		}
+		else
+		{
+			CameraFPS->SetFieldOfView(BaseCamFPSfov);
+			FPMesh->SetRelativeTransform(BaseFPMeshTransform);
+			EquippedWeapon->SKMesh->SetRelativeTransform(BaseWeapTransform);
+		}
+	}
+}
 
 
 /************** Interactive & Inventory Key bind 함수 ***********/
@@ -685,9 +754,10 @@ void AMainCharacter::ChangeWeapon(int32 index)
 		if (PrimaryWeapon)
 		{
 			PrimaryWeapon->GunAttachToMesh(this);
-			if (MainAnimInstance)
+			if (TPAnimInstance && FPAnimInstance)
 			{
-				MainAnimInstance->WeaponTypeNumber = 1;
+				TPAnimInstance->WeaponTypeNumber = 1;
+				FPAnimInstance->WeaponTypeNumber = 1;
 			}
 		}
 		break;
@@ -695,14 +765,22 @@ void AMainCharacter::ChangeWeapon(int32 index)
 		if (SubWeapon)
 		{
 			SubWeapon->GunAttachToMesh(this);
-			MainAnimInstance->WeaponTypeNumber = 1;
+			if (TPAnimInstance && FPAnimInstance)
+			{
+				TPAnimInstance->WeaponTypeNumber = 1;
+				FPAnimInstance->WeaponTypeNumber = 1;
+			}
 		}
 		break;
 	case 3:
 		if (PistolWeapon)
 		{
 			PistolWeapon->GunAttachToMesh(this);
-			MainAnimInstance->WeaponTypeNumber = 2;
+			if (TPAnimInstance && FPAnimInstance)
+			{
+				TPAnimInstance->WeaponTypeNumber = 2;
+				FPAnimInstance->WeaponTypeNumber = 2;
+			}
 		}
 		break;
 	}

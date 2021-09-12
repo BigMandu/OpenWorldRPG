@@ -62,7 +62,8 @@ class OPENWORLDRPG_API AMainCharacter : public ACharacter, public IAISightTarget
 public:
 	AMainCharacter();
 	
-	UMainAnimInstance* MainAnimInstance;
+	UMainAnimInstance* TPAnimInstance;
+	UMainAnimInstance* FPAnimInstance;
 
 	AMainController* MainController;
 
@@ -94,6 +95,11 @@ public:
 	const float MAXCameraLength = 600.f;
 	const float MINCameraLength = 100.f;
 	float BeforeCameraLength;
+
+	/* FPS Aim을 위한 저장값*/
+	float BaseCamFPSfov;
+	FTransform BaseFPMeshTransform;
+	FTransform BaseWeapTransform;
 
 	/********** enum **********/
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Enums")
@@ -165,10 +171,10 @@ public:
 	AActor* InteractActor;
 
 	/************* Weapon 관련 ***************/
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Weapon")
-	FTransform RifleRelativeLoRo;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Weapon")
-	FTransform PistolRelativeLoRo;
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Weapon")
+	//FTransform RifleRelativeLoRo;
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Weapon")
+	//FTransform PistolRelativeLoRo;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item | Weapon")
 	AWeapon* EquippedWeapon;
@@ -233,6 +239,8 @@ public:
 	void RMBDown();
 	void RMBUp();
 	
+	void FPSAimLocationAdjust();
+
 	void ChangePrimaryWeapon();
 	void ChangeSubWeapon();
 	void ChangePistolWeapon();
@@ -240,7 +248,6 @@ public:
 	/* Change Weapon Firing Mode*/
 	void ChangeSafetyLever();
 
-	/***************************/
 	void ChangeWeapon(int32 index);
 
 	UFUNCTION(BlueprintCallable)

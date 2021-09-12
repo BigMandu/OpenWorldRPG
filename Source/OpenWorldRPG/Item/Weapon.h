@@ -95,13 +95,22 @@ public:
 	AWeapon();
 
 	UEquipmentComponent* OwningEquipment;
-	AMainCharacter* OwningPlayer;
+	AActor* OwningPlayer;
+	
+	bool bIsAiming; //Main에서 값을 단순히 넣어주기만 한다.
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	USkeletalMeshComponent* SKMesh;
 
 	UPROPERTY(EditDefaultsOnly, Category = "WeaponStat")
 	FWeaponStat WeaponStat;
+
+	/* FPS Aim모드 일때 위치값 저장*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AimLocation")
+	FTransform CharFPMeshTransform;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AimLocation")
+	FTransform WeapSKMeshTransform;
 
 	/* Enums */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
@@ -113,6 +122,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	EWeaponState CurrentWeaponState;
 
+	/* FX */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Sound")
 	USoundCue* EquippedSound;
 
@@ -122,10 +132,12 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "FX")
 	UParticleSystem* FireMuzzleEffect;
 	
-	UParticleSystemComponent* MuzzleEffectComp;
+	//UParticleSystemComponent* MuzzleEffectComp;
 
 	FName MuzzleFlashSocketName;
-private:
+	
+	
+protected:
 
 	//for gun spread
 	int32 FireCount;
@@ -137,6 +149,8 @@ private:
 	float LastFireTime;
 
 	FTimerHandle FiringTimer;
+
+	
 	
 public:
 
@@ -145,6 +159,8 @@ public:
 	void Equip(AActor* Char);
 	
 	void GunAttachToMesh(AMainCharacter* Main);
+
+	void FPS_AimAttachToMesh(AMainCharacter* Main);
 
 	bool CheckSendToInventory(AMainCharacter* Main);
 
@@ -163,11 +179,13 @@ public:
 
 	bool CheckRefire();
 
+	bool CanFire();
+
 	virtual void BulletOut() PURE_VIRTUAL(AWeapon::BulletOut);
 	
 	FVector GetAimRotation();
 	FVector GetTraceStartLocation(FVector& Dir);
-
+	FHitResult BulletTrace(FVector& StartTrace, FVector& EndTrace);
 	/* Setting New Weapon State, And Call SetWeaponState func */
 	void TempNewWeaponState();
 	

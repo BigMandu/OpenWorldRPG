@@ -11,6 +11,7 @@
 #include "Sound/SoundCue.h"
 #include "Particles/ParticleSystem.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "Math/UnrealMathUtility.h"
 #include "DrawDebugHelpers.h" //디버깅용
 
 
@@ -25,8 +26,8 @@ AWeapon::AWeapon() : Super()
 	bIsFiring = false;
 	bLMBDown = false;
 
-	MuzzleEffectComp = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("MuzzleEffectComp"));
-	MuzzleEffectComp->SetupAttachment(GetRootComponent());
+	//MuzzleEffectComp = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("MuzzleEffectComp"));
+	//MuzzleEffectComp->SetupAttachment(GetRootComponent());
 	MuzzleFlashSocketName = FName("muzzleflash");
 
 	WeaponFiringMode = EWeaponFiringMode::EWFM_SemiAuto;
@@ -210,6 +211,11 @@ void AWeapon::GunAttachToMesh(AMainCharacter* Main)
 				//AttachToActor(Main,)
 				if (FPSocket->AttachActor(this, Main->FPMesh))
 				{
+					Main->BaseWeapTransform = SKMesh->GetRelativeTransform();
+					/*if (Main->bIsAim)
+					{
+						FPS_AimAttachToMesh(Main);
+					}*/
 					/*if (WeaponType == EWeaponType::EWT_Rifle)
 					{
 						SetActorRelativeLocation(Main->RifleRelativeLoRo.GetLocation());
@@ -255,6 +261,29 @@ void AWeapon::GunAttachToMesh(AMainCharacter* Main)
 }
 
 
+void AWeapon::FPS_AimAttachToMesh(AMainCharacter* Main)
+{
+	if (Main && Main->EquippedWeapon)
+	{
+		if (Main->CameraMode == ECameraMode::ECM_FPS)
+		{
+			const USkeletalMeshSocket* FP_HipSocket = Main->FPMesh->GetSocketByName("WeaponGrip");
+			const USkeletalMeshSocket* FP_AimSocket = Main->FPMesh->GetSocketByName("WeaponAimGrip");
+			if (FP_HipSocket && FP_AimSocket)
+			{
+				switch (Main->AimMode)
+				{
+				case EAimMode::EAM_Aim:
+					FP_AimSocket->AttachActor(this, Main->FPMesh);
+					break;
+				case EAimMode::EAM_NotAim:
+					FP_HipSocket->AttachActor(this, Main->FPMesh);
+					break;
+				}
+			}
+		}
+	}
+}
 
 void AWeapon::Drop()
 {
@@ -303,14 +332,22 @@ void AWeapon::TempNewWeaponState()
 	//UE_LOG(LogTemp, Warning, TEXT("AWeapon::TempNewWeaponState"));
 	EWeaponState State = EWeaponState::EWS_Idle;
 
-	//나중에 Equip, reload상태를 추가 하자.
-
 	//이 if문 조건에 향후 CanFire함수를 추가 하자.
 	if (bLMBDown)
 	{
-		//발사를 할 수 있다면, Firing으로 상태를 변경한다.
-		//UE_LOG(LogTemp, Warning, TEXT("TempState -> Firing"));
-		State = EWeaponState::EWS_Firing;
+		if (CanFire())//발사를 할 수 있다면, Firing으로 상태를 변경한다.
+		{
+			UE_LOG(LogTemp, Warning, TEXT("TempState -> Firing"));
+			State = EWeaponState::EWS_Firing;
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("TempState -> Idle")); //debug
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("TempState -> Idle")); //debug
 	}
 	
 
@@ -324,19 +361,81 @@ void AWeapon::SetWeaponState(EWeaponState NewState)
 	//기존에 발사중이었고, 더이상 LMB를 누르지 않는다면
 	if (CurrentWeaponState == EWeaponState::EWS_Firing && NewState != EWeaponState::EWS_Firing)
 	{
-		//UE_LOG(LogTemp, Warning, TEXT("End Firing"));
-		//사격을 멈춘다.
-		CurrentWeaponState = NewState;
-		EndFiring();
+		
+
+		/* 점사면 끝내도 지정된 몇발 이상 안쐈으면 사격되도록 함. */
+		bool bCanEndFire = true;
+		if (WeaponFiringMode == EWeaponFiringMode::EWFM_Burst)
+		{
+			if (FireCount < WeaponStat.BurstRound)
+			{
+				/*UE_LOG(LogTemp, Warning, TEXT(" SetWeaponState, burst mode. can't EndFiring."));
+				UE_LOG(LogTemp, Warning, TEXT(" FireCount : %d"), FireCount);*/
+				bCanEndFire = false;
+				UE_LOG(LogTemp, Warning, TEXT("Burst mode , can not end firing"));
+			}
+		}
+
+
+		/* 사격이 중단되어야 할때 EndFiring호출 
+		 점사일때는 냅둔다, Check Firing함수에서 Firing을 호출하도록 함.*/
+
+		if (bCanEndFire)
+		{
+			CurrentWeaponState = NewState;
+			EndFiring();
+			UE_LOG(LogTemp, Warning, TEXT("End Firing"));
+		}
+		
 	}
 	//기존에 발사하지 않았고, LMB를 눌렀다면
 	else if (CurrentWeaponState != EWeaponState::EWS_Firing && NewState == EWeaponState::EWS_Firing)
 	{
-		//UE_LOG(LogTemp, Warning, TEXT("Firing"));
-		//사격을 시작한다.
-		CurrentWeaponState = NewState;
-		ControlFiring();
+		/*bool bCanFire = false;
+		if (WeaponFiringMode == EWeaponFiringMode::EWFM_Burst)
+		{
+			if (FireCount <= 0)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Burstmode, FireCount is under 0, Can Fire."));
+				bCanFire = true;
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Burstmode, FireCount is over 0, Can't Fire."));
+			}
+		}*/
+
+		//if (bCanFire)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Call Control Firing"));
+			//사격을 시작한다.
+			CurrentWeaponState = NewState;
+			ControlFiring();
+		}
 	}
+}
+
+bool AWeapon::CanFire()
+{
+	bool bCanFire = false;
+	
+	/*
+	* 쏠 수 있는 조건
+	* 조정간 안전이 아니어야한다.
+	* 장전중, 사격중이 아니어야 한다. 
+	* 탄약이 한발이상 있어야 한다.
+	* 
+	* 장착중이 아니어야 한다. //미구현.
+	* 스프린트 중이 아니어야 한다. //미구현
+	*/
+	if (WeaponFiringMode != EWeaponFiringMode::EWFM_Safe && CurrentWeaponState != EWeaponState::EWS_Reloading)
+	{
+		//if (CurrentWeaponState != EWeaponState::EWS_Firing)
+		{
+			bCanFire = true;
+		}
+	}
+	return bCanFire;
 }
 
 void AWeapon::StartFire()
@@ -393,17 +492,34 @@ void AWeapon::ControlFiring()
 	*/
 	//UE_LOG(LogTemp, Warning, TEXT("AWeapon::ControlFiring"));
 	float WorldTime = GetWorld()->GetTimeSeconds();
-
-	if(LastFireTime > 0 && LastFireTime + WeaponStat.RateofFire > WorldTime)
+	
+	/* 점사 모드일때는 강제로 시간을 더 추가한다. */
+	bool bIsBurstmode = false;
+	if (WeaponFiringMode == EWeaponFiringMode::EWFM_Burst)
 	{
-		//UE_LOG(LogTemp, Warning, TEXT("SetTimer"));
+		bIsBurstmode = true;
+	}
+
+	if((bIsBurstmode && LastFireTime > 0) || (LastFireTime > 0 && LastFireTime + WeaponStat.RateofFire > WorldTime))
+	{
 		//발사 가능시간을 구한다. 
-		float RemainingTime = LastFireTime + WeaponStat.RateofFire - WorldTime;
-		GetWorldTimerManager().SetTimer(FiringTimer,this, &AWeapon::Firing, RemainingTime, false);
+		if (GetWorldTimerManager().IsTimerActive(FiringTimer) == false)
+		{
+			float RemainingTime = LastFireTime + WeaponStat.RateofFire - WorldTime;
+			if (bIsBurstmode)
+			{
+				if (RemainingTime < 0)
+				{
+					RemainingTime = WeaponStat.RateofFire * 4;
+					UE_LOG(LogTemp, Warning, TEXT("Burst mode, RemainingTime : %f"), RemainingTime);
+				}
+			}
+			GetWorldTimerManager().SetTimer(FiringTimer, this, &AWeapon::Firing, RemainingTime, false);
+		}
 	}
 	else
 	{
-		//UE_LOG(LogTemp, Warning, TEXT("No timer, Call firing func"));
+		UE_LOG(LogTemp, Warning, TEXT("No time, Call firing directly"));
 		Firing();
 	}
 	
@@ -421,14 +537,37 @@ void AWeapon::Firing()
 	
 	FireCount++;
 	
+	UE_LOG(LogTemp, Warning, TEXT("Fire cnt : %d"), FireCount);
+	//UE_LOG(LogTemp, Warning, TEXT("LastFiretime : %f"), LastFireTime);
+	
 
 	bool bCanReFire = CheckRefire();
 	if (bCanReFire)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("Firing:: Can Re Fire"));
 		GetWorldTimerManager().SetTimer(FiringTimer,this, &AWeapon::Firing, WeaponStat.RateofFire, false);
 	}
+	else
+	{
+		//Out of Ammo
+		/* Check Ammo를 따로 한번 더 한다. 
+		* Burst mode일때는 탄이 충분해도, 격발 횟수에 따라 재사격을 못할때도 생기니, 
+		* Out of Ammo함수를 무조건 호출하는건 옳치 않음.
+		* 
+		* Burst mode일때는 탄약 체크를 한번 더 해야함.
+		*/
+		if (WeaponFiringMode == EWeaponFiringMode::EWFM_Burst)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Firing:: Can NOT Re Fire, Call EndFiring"));
+			EndFiring();
+			//CurrentWeaponState = EWeaponState::EWS_Idle;
+		}
+		
+	}	
 
 	LastFireTime = GetWorld()->GetTimeSeconds();
+	
+
 }
 
 void AWeapon::ReFiring()
@@ -442,7 +581,7 @@ void AWeapon::EndFiring()
 	/* Firing이 끝나면 각종 변수들을 초기화 시켜준다. */
 	GetWorldTimerManager().ClearTimer(FiringTimer);
 	FireCount = 0;
-
+	CurrentWeaponState = EWeaponState::EWS_Idle;
 	//LastFireTime = 0.f; 얘를 초기화 시키면 단발이 엄청빠르게 나감. 얘는 초기화 시키면 안됨.
 }
 
@@ -450,25 +589,39 @@ bool AWeapon::CheckRefire()
 {
 	//UE_LOG(LogTemp, Warning, TEXT("AWeapon::CheckRefire"));
 	bool bFlag = false;
-	if (CurrentWeaponState == EWeaponState::EWS_Firing)
+	if (CanFire())
 	{
-		switch (WeaponFiringMode)
+		if (CurrentWeaponState == EWeaponState::EWS_Firing)
 		{
-		case EWeaponFiringMode::EWFM_Safe:
-		case EWeaponFiringMode::EWFM_SemiAuto:
-			//UE_LOG(LogTemp, Warning, TEXT("Check confirm, Can NOT Refire"));
-			break;
-		case EWeaponFiringMode::EWFM_Burst:
-			if (FireCount < WeaponStat.BurstRound)
+			switch (WeaponFiringMode)
 			{
+			case EWeaponFiringMode::EWFM_Safe:
+			case EWeaponFiringMode::EWFM_SemiAuto:
+				//UE_LOG(LogTemp, Warning, TEXT("Check confirm, Can NOT Refire"));
+				break;
+			case EWeaponFiringMode::EWFM_Burst:
+				if (FireCount > 0 && FireCount < WeaponStat.BurstRound)
+				{
+					//UE_LOG(LogTemp, Warning, TEXT("Check confirm, Can Refire"));
+					bFlag = true;
+				}
+				break;
+			case EWeaponFiringMode::EWFM_FullAuto:
 				//UE_LOG(LogTemp, Warning, TEXT("Check confirm, Can Refire"));
 				bFlag = true;
+				break;
 			}
-			break;
-		case EWeaponFiringMode::EWFM_FullAuto:
-			//UE_LOG(LogTemp, Warning, TEXT("Check confirm, Can Refire"));
-			bFlag = true;
-			break;
+		}
+		else if (CurrentWeaponState != EWeaponState::EWS_Firing)
+		{
+			if (WeaponFiringMode == EWeaponFiringMode::EWFM_Burst)
+			{
+				if (FireCount < WeaponStat.BurstRound)
+				{
+					UE_LOG(LogTemp, Warning, TEXT("Check confirm, Can Refire"));
+					bFlag = true;
+				}
+			}
 		}
 	}
 	return bFlag;
@@ -476,9 +629,12 @@ bool AWeapon::CheckRefire()
 
 FVector AWeapon::GetAimRotation()
 {
-	AMainController* MainCon = OwningPlayer ? Cast<AMainController>(OwningPlayer->MainController) : nullptr;
-	FVector ReturnAim = FVector::ZeroVector;
+	check(OwningPlayer)
+	AMainCharacter* MainChar = Cast<AMainCharacter>(OwningPlayer);
 
+	AMainController* MainCon = MainChar ? Cast<AMainController>(MainChar->MainController) : nullptr;
+	FVector ReturnAim = FVector::ZeroVector;
+	
 	if (MainCon)
 	{
 		FVector AimLoc = FVector::ZeroVector;
@@ -493,7 +649,10 @@ FVector AWeapon::GetAimRotation()
 
 FVector AWeapon::GetTraceStartLocation(FVector& Dir)
 {
-	AMainController* MainCon = OwningPlayer ? Cast<AMainController>(OwningPlayer->MainController) : nullptr;
+	check(OwningPlayer)
+	AMainCharacter* MainChar = Cast<AMainCharacter>(OwningPlayer);
+	
+	AMainController* MainCon = MainChar ? Cast<AMainController>(MainChar->MainController) : nullptr;
 	FVector ReturnLocation = FVector::ZeroVector;
 
 	if (MainCon)
@@ -562,3 +721,27 @@ void AWeapon::WeaponFX()
 		}
 	}
 }
+
+
+FHitResult AWeapon::BulletTrace(FVector& StartTrace, FVector& EndTrace)
+{
+	FHitResult Hit;
+
+	FCollisionQueryParams params(NAME_None, true, GetInstigator()); //Instigator를 IgnoreActor로 하면된다.
+
+	
+	GetWorld()->LineTraceSingleByChannel(Hit, StartTrace, EndTrace, COLLISION_WEAPON_INST, params);
+
+
+	/* debug */
+	/*if (GetInstigator())
+	{
+		FString str = GetInstigator()->GetFName().ToString();
+		UE_LOG(LogTemp, Warning, TEXT("Isnt : GetInstigator: %s"), *str);
+	}
+	//DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor::Green,false,2.f,(uint8)nullptr,2.f);
+	*/	
+
+	return Hit;
+}
+
