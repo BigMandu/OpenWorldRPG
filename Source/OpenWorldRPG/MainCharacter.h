@@ -10,6 +10,7 @@
 class AActor;
 class AMainController;
 class AWeapon;
+class ALootBox;
 
 class UAISense_Sight;
 class UAISense_Hearing;
@@ -148,7 +149,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Item)
 	UEquipmentComponent* Equipment;
-	
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interactive")
+	ALootBox* InteractLootBox;
 
 	/**************    Perception Source 관련   ******************/
 	UAIPerceptionStimuliSourceComponent* StimuliSourceComp;
@@ -161,13 +164,13 @@ public:
 
 	/**********  Interactive 관련 ************/
 	//Minimum value of Active Interaction Distance.
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item | ")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interactive")
 	float ActiveInteractDistance;
 
 	FVector Interact_LineTrace_StartLocation;
 	FVector Interact_LineTrace_EndLocation;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item |")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interactive")
 	AActor* InteractActor;
 
 	/************* Weapon 관련 ***************/
@@ -272,6 +275,7 @@ public:
 	void StepSound();
 
 	/********** Perception ********/
-	virtual bool CanBeSeenFrom(const FVector& ObserverLocation, FVector& OutSeenLocation, int32& NumberOfLoSChecksPerformed, float& OutSightStrength, const AActor* IgnoreActor) const;
+	virtual bool CanBeSeenFrom(const FVector& ObserverLocation, FVector& OutSeenLocation, int32& NumberOfLoSChecksPerformed, float& OutSightStrength, const AActor* IgnoreActor, const bool* bWasVisible, int32* UserData) const;
+	//virtual bool CanBeSeenFrom(const FVector& ObserverLocation, FVector& OutSeenLocation, int32& NumberOfLoSChecksPerformed, float& OutSightStrength, const AActor* IgnoreActor) const;
 
 };

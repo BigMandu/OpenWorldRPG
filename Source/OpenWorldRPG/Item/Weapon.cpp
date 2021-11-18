@@ -340,17 +340,8 @@ void AWeapon::TempNewWeaponState()
 			UE_LOG(LogTemp, Warning, TEXT("TempState -> Firing"));
 			State = EWeaponState::EWS_Firing;
 		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("TempState -> Idle")); //debug
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("TempState -> Idle")); //debug
 	}
 	
-
 	//이 임시저장한 State를 Setting하기 위해 SetWeaponState함수를 호출한다.
 	SetWeaponState(State);
 }
@@ -367,51 +358,25 @@ void AWeapon::SetWeaponState(EWeaponState NewState)
 		bool bCanEndFire = true;
 		if (WeaponFiringMode == EWeaponFiringMode::EWFM_Burst)
 		{
-			if (FireCount < WeaponStat.BurstRound)
-			{
-				/*UE_LOG(LogTemp, Warning, TEXT(" SetWeaponState, burst mode. can't EndFiring."));
-				UE_LOG(LogTemp, Warning, TEXT(" FireCount : %d"), FireCount);*/
-				bCanEndFire = false;
-				UE_LOG(LogTemp, Warning, TEXT("Burst mode , can not end firing"));
-			}
+			bCanEndFire = false;
 		}
 
 
 		/* 사격이 중단되어야 할때 EndFiring호출 
 		 점사일때는 냅둔다, Check Firing함수에서 Firing을 호출하도록 함.*/
-
 		if (bCanEndFire)
 		{
 			CurrentWeaponState = NewState;
 			EndFiring();
-			UE_LOG(LogTemp, Warning, TEXT("End Firing"));
 		}
 		
 	}
 	//기존에 발사하지 않았고, LMB를 눌렀다면
 	else if (CurrentWeaponState != EWeaponState::EWS_Firing && NewState == EWeaponState::EWS_Firing)
 	{
-		/*bool bCanFire = false;
-		if (WeaponFiringMode == EWeaponFiringMode::EWFM_Burst)
-		{
-			if (FireCount <= 0)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("Burstmode, FireCount is under 0, Can Fire."));
-				bCanFire = true;
-			}
-			else
-			{
-				UE_LOG(LogTemp, Warning, TEXT("Burstmode, FireCount is over 0, Can't Fire."));
-			}
-		}*/
-
-		//if (bCanFire)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Call Control Firing"));
-			//사격을 시작한다.
-			CurrentWeaponState = NewState;
-			ControlFiring();
-		}
+		//사격을 시작한다.
+		CurrentWeaponState = NewState;
+		ControlFiring();	
 	}
 }
 
@@ -500,26 +465,24 @@ void AWeapon::ControlFiring()
 		bIsBurstmode = true;
 	}
 
-	if((bIsBurstmode && LastFireTime > 0) || (LastFireTime > 0 && LastFireTime + WeaponStat.RateofFire > WorldTime))
+	//점사모드면 다시 발사 가능시간을 늦춰준다.
+	if((bIsBurstmode && LastFireTime > 0 && LastFireTime + WeaponStat.RateofFire*4 >WorldTime) || 
+		(LastFireTime > 0 && LastFireTime + WeaponStat.RateofFire > WorldTime))
 	{
 		//발사 가능시간을 구한다. 
-		if (GetWorldTimerManager().IsTimerActive(FiringTimer) == false)
+		float RemainingTime = LastFireTime + WeaponStat.RateofFire - WorldTime;
+
+		if (bIsBurstmode) 
 		{
-			float RemainingTime = LastFireTime + WeaponStat.RateofFire - WorldTime;
-			if (bIsBurstmode)
-			{
-				if (RemainingTime < 0)
-				{
-					RemainingTime = WeaponStat.RateofFire * 4;
-					UE_LOG(LogTemp, Warning, TEXT("Burst mode, RemainingTime : %f"), RemainingTime);
-				}
-			}
-			GetWorldTimerManager().SetTimer(FiringTimer, this, &AWeapon::Firing, RemainingTime, false);
+			//점사 모드면 RateOfFire에 4를 곱한 값.
+			RemainingTime = (LastFireTime + WeaponStat.RateofFire * 4) - WorldTime;
 		}
+		GetWorldTimerManager().SetTimer(FiringTimer, this, &AWeapon::Firing, RemainingTime, false);
+		
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("No time, Call firing directly"));
+		//UE_LOG(LogTemp, Warning, TEXT("No time, Call firing directly"));
 		Firing();
 	}
 	
@@ -544,7 +507,7 @@ void AWeapon::Firing()
 	bool bCanReFire = CheckRefire();
 	if (bCanReFire)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Firing:: Can Re Fire"));
+		//UE_LOG(LogTemp, Warning, TEXT("Firing:: Can Refire"));
 		GetWorldTimerManager().SetTimer(FiringTimer,this, &AWeapon::Firing, WeaponStat.RateofFire, false);
 	}
 	else
@@ -558,7 +521,7 @@ void AWeapon::Firing()
 		*/
 		if (WeaponFiringMode == EWeaponFiringMode::EWFM_Burst)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Firing:: Can NOT Re Fire, Call EndFiring"));
+			//UE_LOG(LogTemp, Warning, TEXT("Firing:: Can NOT Refire, Call EndFiring"));
 			EndFiring();
 			//CurrentWeaponState = EWeaponState::EWS_Idle;
 		}
@@ -581,8 +544,7 @@ void AWeapon::EndFiring()
 	/* Firing이 끝나면 각종 변수들을 초기화 시켜준다. */
 	GetWorldTimerManager().ClearTimer(FiringTimer);
 	FireCount = 0;
-	CurrentWeaponState = EWeaponState::EWS_Idle;
-	//LastFireTime = 0.f; 얘를 초기화 시키면 단발이 엄청빠르게 나감. 얘는 초기화 시키면 안됨.
+	CurrentWeaponState = EWeaponState::EWS_Idle; //Burst mode를 위함
 }
 
 bool AWeapon::CheckRefire()
@@ -605,22 +567,15 @@ bool AWeapon::CheckRefire()
 					//UE_LOG(LogTemp, Warning, TEXT("Check confirm, Can Refire"));
 					bFlag = true;
 				}
+				else
+				{
+					//UE_LOG(LogTemp, Warning, TEXT("Check confirm, Can NOT Refire"));
+				}
 				break;
 			case EWeaponFiringMode::EWFM_FullAuto:
 				//UE_LOG(LogTemp, Warning, TEXT("Check confirm, Can Refire"));
 				bFlag = true;
 				break;
-			}
-		}
-		else if (CurrentWeaponState != EWeaponState::EWS_Firing)
-		{
-			if (WeaponFiringMode == EWeaponFiringMode::EWFM_Burst)
-			{
-				if (FireCount < WeaponStat.BurstRound)
-				{
-					UE_LOG(LogTemp, Warning, TEXT("Check confirm, Can Refire"));
-					bFlag = true;
-				}
 			}
 		}
 	}
@@ -696,33 +651,6 @@ FVector AWeapon::GetTraceStartLocation(FVector& Dir)
 }
 
 
-void AWeapon::WeaponFX()
-{
-	if (FireSound)
-	{
-	
-		//PlaySound2D를 쓰면 Actor의 위치에서 소리가 나는게 아니라 게임플레이어 한테 들린다.
-		//UWorld* world = GetWorld();
-		//UGameplayStatics::PlaySound2D(world, FireSound);
-		UGameplayStatics::SpawnSoundAttached(FireSound, OwningPlayer->GetRootComponent());
-	}
-
-	if (FireMuzzleEffect)
-	{
-		const USkeletalMeshSocket* MuzzleSocket = SKMesh->GetSocketByName(MuzzleFlashSocketName);
-		
-		if (MuzzleSocket)
-		{
-			SKMesh->GetSocketLocation(MuzzleFlashSocketName);
-			FVector MuzzleLocation = SKMesh->GetSocketLocation(MuzzleFlashSocketName);
-			FRotator MuzzleRotation = SKMesh->GetSocketRotation(MuzzleFlashSocketName);
-
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), FireMuzzleEffect, MuzzleLocation, MuzzleRotation);
-		}
-	}
-}
-
-
 FHitResult AWeapon::BulletTrace(FVector& StartTrace, FVector& EndTrace)
 {
 	FHitResult Hit;
@@ -745,3 +673,54 @@ FHitResult AWeapon::BulletTrace(FVector& StartTrace, FVector& EndTrace)
 	return Hit;
 }
 
+void AWeapon::WeaponFX()
+{
+	//사운드
+	if (FireSound)
+	{
+
+		//PlaySound2D를 쓰면 Actor의 위치에서 소리가 나는게 아니라 게임플레이어 한테 들린다.
+		//UWorld* world = GetWorld();
+		//UGameplayStatics::PlaySound2D(world, FireSound);
+		UGameplayStatics::SpawnSoundAttached(FireSound, OwningPlayer->GetRootComponent());
+	}
+
+	//총구 이펙트
+	if (FireMuzzleEffect)
+	{
+		const USkeletalMeshSocket* MuzzleSocket = SKMesh->GetSocketByName(MuzzleFlashSocketName);
+
+		if (MuzzleSocket)
+		{
+			SKMesh->GetSocketLocation(MuzzleFlashSocketName);
+			FVector MuzzleLocation = SKMesh->GetSocketLocation(MuzzleFlashSocketName);
+			FRotator MuzzleRotation = SKMesh->GetSocketRotation(MuzzleFlashSocketName);
+
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), FireMuzzleEffect, MuzzleLocation, MuzzleRotation);
+		}
+	}
+
+	//Animatoin 재생.
+	PlayWeaponAnimAndCamShake(FireAnimaton);
+}
+
+void AWeapon::PlayWeaponAnimAndCamShake(FWeaponAnim& Anim)
+{
+	check(OwningPlayer)
+	AMainCharacter* MainChar = Cast<AMainCharacter>(OwningPlayer); 
+	if (MainChar && CamShake)
+	{
+		if (MainChar->CameraMode == ECameraMode::ECM_FPS)
+		{
+			MainChar->PlayAnimMontage(Anim.FPSAnim);
+			MainChar->MainController->ClientStartCameraShake(CamShake, 0.7f);
+			//MainChar->MainController->ClientPlayCameraShake(CamShake, 0.7f);
+		}
+		else
+		{
+			MainChar->PlayAnimMontage(Anim.TPSAnim);
+			MainChar->MainController->ClientStartCameraShake(CamShake, 1.0f);
+			//MainChar->MainController->ClientPlayCameraShake(CamShake, 1.0f);
+		}
+	}
+}

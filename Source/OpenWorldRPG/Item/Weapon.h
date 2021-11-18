@@ -13,10 +13,13 @@
  */
 #define COLLISION_WEAPON_INST	ECC_GameTraceChannel1
 
+class UMatineeCameraShake;
+class UCameraShake;
 class USoundCue;
 class UParticleSystem;
 class UParticleSystemComponent;
 class USkeletalMeshComponent;
+class UAnimMontage;
 class AMainCharacter;
 
 
@@ -56,6 +59,17 @@ enum class EWeaponState : uint8
 };
 
 USTRUCT()
+struct FWeaponAnim
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	UAnimMontage* FPSAnim;
+	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	UAnimMontage* TPSAnim;
+};
+
+USTRUCT()
 struct FWeaponStat
 {
 	GENERATED_BODY()
@@ -83,7 +97,6 @@ struct FWeaponStat
 		RateofFire = 0.06; 
 		
 	}
-
 };
 
 UCLASS(Abstract)
@@ -104,6 +117,8 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = "WeaponStat")
 	FWeaponStat WeaponStat;
+
+	FName MuzzleFlashSocketName;
 
 	/* FPS Aim모드 일때 위치값 저장*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AimLocation")
@@ -132,9 +147,14 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "FX")
 	UParticleSystem* FireMuzzleEffect;
 	
-	//UParticleSystemComponent* MuzzleEffectComp;
+	UPROPERTY(EditDefaultsOnly, Category = "FX")
+	TSubclassOf<UCameraShakeBase> CamShake;
 
-	FName MuzzleFlashSocketName;
+	/* Animation */
+	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	FWeaponAnim FireAnimaton;
+
+	
 	
 	
 protected:
@@ -178,14 +198,15 @@ public:
 	void EndFiring();
 
 	bool CheckRefire();
-
 	bool CanFire();
 
 	virtual void BulletOut() PURE_VIRTUAL(AWeapon::BulletOut);
 	
+
 	FVector GetAimRotation();
 	FVector GetTraceStartLocation(FVector& Dir);
 	FHitResult BulletTrace(FVector& StartTrace, FVector& EndTrace);
+	
 	/* Setting New Weapon State, And Call SetWeaponState func */
 	void TempNewWeaponState();
 	
@@ -193,4 +214,5 @@ public:
 	void SetWeaponState(EWeaponState NewState);
 
 	void WeaponFX();
+	void PlayWeaponAnimAndCamShake(FWeaponAnim& Anim);
 };

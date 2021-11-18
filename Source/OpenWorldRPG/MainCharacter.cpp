@@ -10,6 +10,7 @@
 #include "Components/PawnNoiseEmitterComponent.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "Engine/EngineTypes.h"
+#include "Perception/AISightTargetInterface.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "Perception/AISense_Sight.h"
 #include "Perception/AISense_Hearing.h"
@@ -914,8 +915,9 @@ void AMainCharacter::StepSound()
 
 }
 
+//bool AMainCharacter::CanBeSeenFrom(const FVector& ObserverLocation, FVector& OutSeenLocation, int32& NumberOfLoSChecksPerformed, float& OutSightStrength, const AActor* IgnoreActor) const
 
-bool AMainCharacter::CanBeSeenFrom(const FVector& ObserverLocation, FVector& OutSeenLocation, int32& NumberOfLoSChecksPerformed, float& OutSightStrength, const AActor* IgnoreActor) const
+bool AMainCharacter::CanBeSeenFrom(const FVector& ObserverLocation, FVector& OutSeenLocation, int32& NumberOfLoSChecksPerformed, float& OutSightStrength, const AActor* IgnoreActor, const bool* bWasVisible, int32* UserData) const
 {
 	FHitResult HitResult;
 	FVector PlayerLocation;

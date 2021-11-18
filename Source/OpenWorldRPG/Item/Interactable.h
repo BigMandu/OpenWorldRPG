@@ -17,6 +17,7 @@ enum class EInteractType : uint8
 	EIT_Gizmo	UMETA(DisplayName = "EIT_Gizmo"),
 	EIT_Item	UMETA(DisplayName = "EIT_Item"),
 	EIT_Weapon	UMETA(DisplayName = "EIT_Weapon"),
+	EIT_LootBox	UMETA(DisplayName = "EIT_LootBox"),
 
 	EIT_MAX		UMETA(DisplayName = "DefaultMAX")
 };

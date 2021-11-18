@@ -57,25 +57,48 @@ FVector AWeapon_Instant::BulletSpread(FVector Vec)
 	/* 초탄은 무조건 원하는 지점으로 가게 한다. */
 	if (Main)
 	{
-		if (FireCount >= 1)
+		if (FireCount > 0)
 		{
-			float randX;
-			float randY;
-			float NewZ;
-			if (bIsAiming)
+			float randX = 0.0f;
+			float randY = 0.0f;
+			float NewZ = 0.0f;
+			if (FireCount < 3)
 			{
-				randX = FMath::RandRange(-1 * BulletStat.AimBulletSpread, BulletStat.AimBulletSpread);
-				randY = FMath::RandRange(-1 * BulletStat.AimBulletSpread, BulletStat.AimBulletSpread);
+				if (bIsAiming)
+				{
+					//randX = FMath::RandRange(-1 * BulletStat.AimBulletSpread, BulletStat.AimBulletSpread);
+					//randY = FMath::RandRange(-1 * BulletStat.AimBulletSpread, BulletStat.AimBulletSpread);
 
-				NewZ = FireCount * (FireCount / 8.5) * (BulletStat.AimBulletSpread / 10);
+					NewZ = FireCount * BulletStat.AimBulletSpread;
+					LastZpos = NewZ;
+				}
+				else
+				{
+					//randX = FMath::RandRange(-1 * BulletStat.HipBulletSpread, BulletStat.HipBulletSpread);
+					//randY = FMath::RandRange(-1 * BulletStat.HipBulletSpread, BulletStat.HipBulletSpread);
+
+					NewZ = FireCount * BulletStat.HipBulletSpread/3;
+					LastZpos = NewZ;
+				}
 			}
 			else
 			{
-				randX = FMath::RandRange(-1 * BulletStat.HipBulletSpread, BulletStat.HipBulletSpread);
-				randY = FMath::RandRange(-1 * BulletStat.HipBulletSpread, BulletStat.HipBulletSpread);
+				if (bIsAiming)
+				{
+					randX = FMath::RandRange(-1 * BulletStat.AimBulletSpread, BulletStat.AimBulletSpread);
+					randY = FMath::RandRange(-1 * BulletStat.AimBulletSpread, BulletStat.AimBulletSpread);
 
-				NewZ = FireCount * (FireCount / 8.5) * (BulletStat.HipBulletSpread / 10);
+					NewZ = FireCount * (FireCount / 8.5) * (BulletStat.AimBulletSpread / 10) + LastZpos;
+				}
+				else
+				{
+					randX = FMath::RandRange(-1 * BulletStat.HipBulletSpread, BulletStat.HipBulletSpread);
+					randY = FMath::RandRange(-1 * BulletStat.HipBulletSpread, BulletStat.HipBulletSpread);
+
+					NewZ = FireCount * (FireCount / 8.5) * (BulletStat.HipBulletSpread / 10) + LastZpos;
+				}
 			}
+			
 			TempVector = FVector(Vec.X + randX, Vec.Y + randY, Vec.Z + NewZ);
 		}
 	}

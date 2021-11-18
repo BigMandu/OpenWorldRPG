@@ -3,6 +3,7 @@
 
 #include "MainController.h"
 #include "MainCharacter.h"
+#include "Item/LootBox.h"
 #include "GameFramework/PlayerController.h"
 #include "Blueprint/UserWidget.h"
 
@@ -37,6 +38,26 @@ void AMainController::BeginPlay()
 			Inventory->SetVisibility(ESlateVisibility::Hidden);
 		}
 	}
+
+	/* Loot Box Widget TEST */
+	/*
+	if (WLootBoxInvWidget)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("WLootBoxWidget is valid"));
+		LootBoxInvWidget = CreateWidget<UUserWidget>(this, WLootBoxInvWidget);
+		if (LootBoxInvWidget)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("LootBoxWidget is valid"));
+
+			
+			//LootBoxInvWidget->SetPositionInViewport(FVector2D(500.f, 300.f));
+			LootBoxInvWidget->SetAnchorsInViewport(FAnchors(1000.f, 500.f));
+			LootBoxInvWidget->SetDesiredSizeInViewport(FVector2D(500.f));
+			LootBoxInvWidget->AddToViewport();
+			LootBoxInvWidget->SetVisibility(ESlateVisibility::Hidden);
+		}
+	}
+	*/
 }
 
 void AMainController::ShowInteractText_Implementation()
@@ -85,6 +106,12 @@ void AMainController::ShowInventory_Implementation()
 		{
 			//Main->DisableInput(this); //Player의 움직임 제한. -> 입력자체를 막아버리기 때문에 Toggle을 할 수 없음.
 			Main->bDisableInput = true;
+
+			if (Main->InteractLootBox)
+			{
+
+			}
+			
 		}
 		SetIgnoreMoveInput(true);
 		SetIgnoreLookInput(true);
@@ -105,8 +132,19 @@ void AMainController::HideInventory_Implementation()
 
 		if (Main)
 		{
+			/* 
+				LootBox와 상호작용 했었다면 
+				상호작용 중인 LootBox에서 Close Box를 호출한다.
+			*/
+			if (Main->InteractLootBox)
+			{
+				//Main->InteractLootBox->CloseBox(Main);
+			}
+
 			//Main->DisableInput(this); //Player의 움직임 제한. -> 입력자체를 막아버리기 때문에 Toggle을 할 수 없음.
 			Main->bDisableInput = false;
+
+		
 		}
 		SetIgnoreMoveInput(false);
 		SetIgnoreLookInput(false);
@@ -115,3 +153,38 @@ void AMainController::HideInventory_Implementation()
 	}
 }
 
+void AMainController::CreateLootWidget()
+{
+	if (WLootBoxInvWidget)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("WLootBoxWidget is valid"));
+		LootBoxInvWidget = CreateWidget<UUserWidget>(this, WLootBoxInvWidget);
+		if (LootBoxInvWidget)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("LootBoxWidget is valid"));
+
+
+			//LootBoxInvWidget->SetPositionInViewport(FVector2D(500.f, 300.f));
+			LootBoxInvWidget->SetAnchorsInViewport(FAnchors(1000.f, 500.f));
+			LootBoxInvWidget->SetDesiredSizeInViewport(FVector2D(500.f));
+			LootBoxInvWidget->AddToViewport();
+			LootBoxInvWidget->SetVisibility(ESlateVisibility::Hidden);
+		}
+	}
+}
+
+void AMainController::ShowLootBox()
+{
+	if (LootBoxInvWidget)
+	{
+		LootBoxInvWidget->SetVisibility(ESlateVisibility::Visible);
+	}
+}
+void AMainController::HideLootBox()
+{
+	if (LootBoxInvWidget)
+	{
+		LootBoxInvWidget->SetVisibility(ESlateVisibility::Hidden);
+	}
+	
+}

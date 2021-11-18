@@ -36,6 +36,16 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets | Inventory")
 	UUserWidget* Inventory;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets | Inventory")
+	TSubclassOf<UUserWidget> WInventoryItems;
+
+	/* Loot Box TEST */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets | LootBox")
+	TSubclassOf<UUserWidget> WLootBoxInvWidget;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets | LootBox")
+	UUserWidget* LootBoxInvWidget;
+
 	bool bIsInventoryVisible;
 
 protected:
@@ -56,4 +66,7 @@ public:
 
 	void ToggleInventory();
 
+	void CreateLootWidget();
+	void ShowLootBox();
+	void HideLootBox();
 };

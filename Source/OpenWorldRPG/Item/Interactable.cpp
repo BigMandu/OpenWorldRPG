@@ -4,6 +4,7 @@
 #include "Interactable.h"
 #include "Item.h"
 #include "Weapon.h"
+#include "LootBox.h"
 #include "OpenWorldRPG/MainCharacter.h"
 #include "Components/StaticMeshComponent.h"
 
@@ -49,18 +50,21 @@ void AInteractable::Interaction(class AActor* Actor)
 	}
 	case EInteractType::EIT_Weapon:
 	{
-		AMainCharacter* Main = Cast<AMainCharacter>(Actor);
-		if (Main)
+		//여기서 Weapon을 검사하지 말고, 걍 바로 Equip을 호출해야함.
+		AWeapon* Weapon = Cast<AWeapon>(this);
+		if (Weapon)
 		{
-			//여기서 Weapon을 검사하지 말고, 걍 바로 Equip을 호출해야함.
-			AWeapon* Weapon = Cast<AWeapon>(this);
-			if (Weapon)
-			{
-				Weapon->Equip(Actor); //Weapon으로 cast, equip함수 호출
-			}
+			Weapon->Equip(Actor); //Weapon으로 cast, equip함수 호출
 		}
-
 		break;
+	}
+	case EInteractType::EIT_LootBox:
+	{
+		ALootBox* Box = Cast<ALootBox>(this);
+		if (Box)
+		{	
+			Box->OpenBox(Actor);
+		}
 	}
 	default:
 		break;

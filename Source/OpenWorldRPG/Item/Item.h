@@ -26,7 +26,6 @@ class OPENWORLDRPG_API AItem : public AInteractable
 {
 	GENERATED_BODY()
 	//GENERATED_UCLASS_BODY()
-
 public:
 
 	AItem();
