@@ -34,6 +34,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets | Inventory")
 	UUserWidget* InventoryItemsWidget;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets | Inventory")
+	UUserWidget* ChestWidget;
+
 protected:
 	UWidget* Primary;
 	UWidget* Sub;

@@ -79,7 +79,6 @@ void ALootBox::OpenBox(AActor* Actor)
 			Main->MainController->ShowLootBox();
 		}
 	}
-
 }
 
 void ALootBox::CloseBox(AActor* Actor)
