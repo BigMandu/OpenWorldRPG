@@ -12,7 +12,7 @@
 
 bool ULootBoxWidget::Initialize()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Initialize LootBox widget"));
+	UE_LOG(LogTemp, Warning, TEXT("LootBoxWidget::Initialize LootBox widget"));
 	bool bReturn = Super::Initialize();
 
 	AMainCharacter* TMain = Cast<AMainCharacter>(GetOwningPlayerPawn());
@@ -23,12 +23,12 @@ bool ULootBoxWidget::Initialize()
 	{
 		if (Main->InteractLootBox)//수정 해야함
 		{
-			UE_LOG(LogTemp, Warning, TEXT("LootBox valid"));
+			UE_LOG(LogTemp, Warning, TEXT("LootBoxWidget::LootBox valid"));
 			InteractBox = Main->InteractLootBox;
 			if (InteractBox)
 			{
 				InteractBox->BoxInvComp->OnInventoryUpdated.AddDynamic(this, &ULootBoxWidget::InitLootBox);
-				UE_LOG(LogTemp, Warning, TEXT("call InitLootBox func"));
+				UE_LOG(LogTemp, Warning, TEXT("LootBoxWidget::call InitLootBox func"));
 				InitLootBox();
 			}
 		}
@@ -40,12 +40,12 @@ bool ULootBoxWidget::Initialize()
 
 void ULootBoxWidget::InitLootBox()
 {
-	UE_LOG(LogTemp, Warning, TEXT("init lootbox"));
-	UWrapBox* LootWrapBox = Cast<UWrapBox>(GetWidgetFromName(TEXT("LootWarpBox")));
-	if (LootWrapBox)
+	UE_LOG(LogTemp, Warning, TEXT("LootBoxWidget::init lootbox"));
+	UWrapBox* LootWrap = Cast<UWrapBox>(GetWidgetFromName(TEXT("LootWarpBox"))); //null값 리턴
+	if (LootWrap)
 	{
-		LootWrapBox->ClearChildren();
-
+		LootWrap->ClearChildren();
+		
 		
 		for (auto InvItem : InteractBox->BoxInvComp->InventoryItems)
 		{
@@ -64,13 +64,13 @@ void ULootBoxWidget::InitLootBox()
 					if (Obj != nullptr)
 					{
 						Obj->SetPropertyValue_InContainer(InventoryItemsWidget, Item);
-						LootWrapBox->AddChildToWrapBox(InventoryItemsWidget);
+						LootWrap->AddChildToWrapBox(InventoryItemsWidget);
 					}
 				}
 			}
 			else
 			{
-				UE_LOG(LogTemp, Warning, TEXT("Cast fail"));
+				UE_LOG(LogTemp, Warning, TEXT("LootBoxWidget::Cast fail"));
 			}
 		}
 	}

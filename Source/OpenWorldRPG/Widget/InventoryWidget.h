@@ -13,8 +13,11 @@ class AMainCharacter;
 class AWeapon;
 class ALootBox;
 class UWidget;
+class UOverlay;
+class UTextBlock;
 class UInventoryComponent;
 class UEquipmentComponent;
+
 
 UCLASS()
 class OPENWORLDRPG_API UInventoryWidget : public UUserWidget
@@ -27,7 +30,6 @@ public:
 	TWeakObjectPtr<UInventoryComponent>InventoryComp;
 	TWeakObjectPtr<UEquipmentComponent>EquipmentComp;
 
-	ALootBox* LootBox;
 	//UInventoryComponent* InventoryComp;
 	//UEquipmentComponent* EquipmentComp;
 	
@@ -36,6 +38,10 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets | Inventory")
 	UUserWidget* ChestWidget;
+
+	ALootBox* LootBox;
+	UOverlay* LootOverlay;
+	UTextBlock* LootBoxTEXT;
 
 protected:
 	UWidget* Primary;
@@ -60,5 +66,5 @@ public:
 
 	void SetEquipmentSlot(UWidget* EquipSlot, AWeapon* Weap);
 	
-	void SetLootBox();
+	void SetLootBoxWidget();
 };

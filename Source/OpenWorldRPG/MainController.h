@@ -41,10 +41,12 @@ public:
 
 	/* Loot Box TEST */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets | LootBox")
-	TSubclassOf<UUserWidget> WLootBoxInvWidget;
+	TSubclassOf<UUserWidget> WLootBoxWidget;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets | LootBox")
-	UUserWidget* LootBoxInvWidget;
+	UUserWidget* LootBoxWidget;
+
+
 
 	bool bIsInventoryVisible;
 
@@ -67,6 +69,6 @@ public:
 	void ToggleInventory();
 
 	void CreateLootWidget();
-	void ShowLootBox();
-	void HideLootBox();
+	void ShowLootBoxWidget();
+	void HideLootBoxWidget();
 };

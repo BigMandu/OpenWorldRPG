@@ -8,6 +8,7 @@
 #include "Blueprint/UserWidget.h"
 
 
+
 AMainController::AMainController()
 {
 	bIsInventoryVisible = false;
@@ -109,7 +110,7 @@ void AMainController::ShowInventory_Implementation()
 
 			if (Main->InteractLootBox)
 			{
-
+				ShowLootBoxWidget();
 			}
 			
 		}
@@ -138,7 +139,8 @@ void AMainController::HideInventory_Implementation()
 			*/
 			if (Main->InteractLootBox)
 			{
-				//Main->InteractLootBox->CloseBox(Main);
+				HideLootBoxWidget();
+				Main->InteractLootBox->CloseBox(Main);
 			}
 
 			//Main->DisableInput(this); //Player의 움직임 제한. -> 입력자체를 막아버리기 때문에 Toggle을 할 수 없음.
@@ -155,36 +157,37 @@ void AMainController::HideInventory_Implementation()
 
 void AMainController::CreateLootWidget()
 {
-	if (WLootBoxInvWidget)
+	if (WLootBoxWidget)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("WLootBoxWidget is valid"));
-		LootBoxInvWidget = CreateWidget<UUserWidget>(this, WLootBoxInvWidget);
-		if (LootBoxInvWidget)
+		LootBoxWidget = CreateWidget<UUserWidget>(this, WLootBoxWidget);
+		if (LootBoxWidget)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("LootBoxWidget is valid"));
 
-
+			UE_LOG(LogTemp, Warning, TEXT("MainCon::CreateLootWidget() is success"));
 			//LootBoxInvWidget->SetPositionInViewport(FVector2D(500.f, 300.f));
-			LootBoxInvWidget->SetAnchorsInViewport(FAnchors(1000.f, 500.f));
-			LootBoxInvWidget->SetDesiredSizeInViewport(FVector2D(500.f));
-			LootBoxInvWidget->AddToViewport();
-			LootBoxInvWidget->SetVisibility(ESlateVisibility::Hidden);
+			//LootBoxInvWidget->SetAnchorsInViewport(FAnchors(1000.f, 500.f));
+			//LootBoxInvWidget->SetDesiredSizeInViewport(FVector2D(500.f));
+			//LootBoxInvWidget->AddToViewport();
+			LootBoxWidget->SetVisibility(ESlateVisibility::Hidden);
+			//LootBoxWidget->Initialize();
 		}
 	}
 }
 
-void AMainController::ShowLootBox()
+void AMainController::ShowLootBoxWidget()
 {
-	if (LootBoxInvWidget)
+	if (LootBoxWidget)
 	{
-		LootBoxInvWidget->SetVisibility(ESlateVisibility::Visible);
+		LootBoxWidget->SetVisibility(ESlateVisibility::Visible);
 	}
 }
-void AMainController::HideLootBox()
+void AMainController::HideLootBoxWidget()
 {
-	if (LootBoxInvWidget)
+	if (LootBoxWidget)
 	{
-		LootBoxInvWidget->SetVisibility(ESlateVisibility::Hidden);
+		LootBoxWidget->SetVisibility(ESlateVisibility::Hidden);
 	}
 	
 }

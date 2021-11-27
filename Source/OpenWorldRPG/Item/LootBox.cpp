@@ -7,6 +7,7 @@
 #include "Blueprint/UserWidget.h"
 #include "OpenWorldRPG/MainCharacter.h"
 #include "OpenWorldRPG/MainController.h"
+#include "OpenWorldRPG/Widget/InventoryWidget.h"
 
 ALootBox::ALootBox()
 {
@@ -74,9 +75,18 @@ void ALootBox::OpenBox(AActor* Actor)
 		//LootBoxOpen.Broadcast();
 		if (Main->MainController)
 		{
+			AMainController* MainCon = Main->MainController;
 			UE_LOG(LogTemp, Warning, TEXT("LootBox::show Loot Box"));
+			WidgetInv = Cast<UInventoryWidget>(MainCon->Inventory);
 			
-			Main->MainController->ShowLootBox();
+			if(WidgetInv)
+			{
+				WidgetInv->SetLootBoxWidget();
+				MainCon->LootBoxWidget->Initialize();
+				MainCon->ToggleInventory();
+			}
+			/*Main->MainController->CreateLootWidget();
+			Main->MainController->ShowLootBox();*/
 		}
 	}
 }
@@ -91,8 +101,15 @@ void ALootBox::CloseBox(AActor* Actor)
 		Main->InteractLootBox = nullptr;
 		if (Main->MainController)
 		{
+			AMainController* MainCon = Main->MainController;
 			UE_LOG(LogTemp, Warning, TEXT("LootBox::hide Loot Box"));
-			Main->MainController->HideLootBox();
+			WidgetInv = Cast<UInventoryWidget>(MainCon->Inventory);
+			if (WidgetInv)
+			{
+				WidgetInv->SetLootBoxWidget();
+				//MainCon->ToggleInventory();
+			}
+			
 		}
 	}
 }

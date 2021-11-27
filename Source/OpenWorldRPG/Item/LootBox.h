@@ -7,9 +7,11 @@
 #include "LootBox.generated.h"
 
 class UInventoryComponent;
+class UInventoryWidget;
+class UUserWidget;
 class AItem;
 class AMainCharacter;
-class UUserWidget;
+
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FLootBoxOpen);
 
@@ -39,6 +41,7 @@ public:
 	TArray<TSubclassOf<AItem>> BoxItem;
 
 
+	UInventoryWidget* WidgetInv;
 
 	AMainCharacter* Main;
 

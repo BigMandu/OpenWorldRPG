@@ -10,6 +10,7 @@
 #include "OpenWorldRPG/Item/EquipmentComponent.h"
 #include "OpenWorldRPG/Item/LootBox.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/Overlay.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
 #include "Components/WrapBox.h"
@@ -181,16 +182,35 @@ void UInventoryWidget::SetEquipmentSlot(UWidget* EquipSlot, AWeapon* Weap)
 	}
 }
 
-void UInventoryWidget::SetLootBox()
+void UInventoryWidget::SetLootBoxWidget()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Setting Lootbox"));
+	UE_LOG(LogTemp, Warning, TEXT("InvWidget::SetLootBoxWidget"));
+
+	LootBoxTEXT = Cast<UTextBlock>(GetWidgetFromName(FName("NoInteractTEXT")));
+
 	if (Main->InteractLootBox)
 	{
 		LootBox = Main->InteractLootBox;
-	}
+		if (Main->MainController)
+		{
+			AMainController* MainCon = Main->MainController;
+			MainCon->CreateLootWidget();
 
-	if (LootBox)
+			if (MainCon->LootBoxWidget)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("InvWidget::Get LootBox Overlay Widget..."));
+				LootOverlay = Cast<UOverlay>(GetWidgetFromName(FName("LootBoxOverlay")));
+				if (LootOverlay != nullptr && LootBoxTEXT)
+				{
+					UE_LOG(LogTemp, Warning, TEXT("InvWidget::Success, AddChild LootBox Widget To Overlay"));
+					LootBoxTEXT->SetVisibility(ESlateVisibility::Hidden);
+					LootOverlay->AddChildToOverlay(MainCon->LootBoxWidget);
+				}
+			}
+		}
+	}	
+	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Setting Lootbox, LootBox is valid"));
+		LootBoxTEXT->SetVisibility(ESlateVisibility::Visible);
 	}
 }
