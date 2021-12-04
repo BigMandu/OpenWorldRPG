@@ -11,7 +11,6 @@
  */
 
 class AMainCharacter;
-class ALootbox;
 class UInventoryComponent;
 class UUserWidget;
 
@@ -23,9 +22,11 @@ class OPENWORLDRPG_API ULootBoxWidget : public UUserWidget
 
 public:
 
+	class ALootBox* InteractBox;
+
 	AMainCharacter* Main;
 	
-	class ALootBox* InteractBox;
+	TWeakObjectPtr<UInventoryComponent>BoxInventory;
 
 //	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets | Inventory")
 	UUserWidget* InventoryItemsWidget;

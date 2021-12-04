@@ -99,7 +99,10 @@ FVector AWeapon_Instant::BulletSpread(FVector Vec)
 				}
 			}
 			
+			UE_LOG(LogTemp, Warning, TEXT("NewZ : %f"), NewZ);
 			TempVector = FVector(Vec.X + randX, Vec.Y + randY, Vec.Z + NewZ);
+			Main->AddControllerPitchInput(-0.1);
+			//Main->AddControllerYawInput(0.1);
 		}
 	}
 	return TempVector;

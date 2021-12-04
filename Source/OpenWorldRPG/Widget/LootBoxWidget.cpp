@@ -25,9 +25,11 @@ bool ULootBoxWidget::Initialize()
 		{
 			UE_LOG(LogTemp, Warning, TEXT("LootBoxWidget::LootBox valid"));
 			InteractBox = Main->InteractLootBox;
-			if (InteractBox)
+			if (InteractBox != nullptr && InteractBox->BoxInvComp)
 			{
-				InteractBox->BoxInvComp->OnInventoryUpdated.AddDynamic(this, &ULootBoxWidget::InitLootBox);
+				/*BoxInventory = InteractBox->BoxInvComp;
+				BoxInventory->OnInventoryUpdated.AddDynamic(this, &ULootBoxWidget::InitLootBox);*/
+				//InteractBox->BoxInvComp->OnInventoryUpdated.AddDynamic(this, &ULootBoxWidget::InitLootBox);
 				UE_LOG(LogTemp, Warning, TEXT("LootBoxWidget::call InitLootBox func"));
 				InitLootBox();
 			}
@@ -41,7 +43,8 @@ bool ULootBoxWidget::Initialize()
 void ULootBoxWidget::InitLootBox()
 {
 	UE_LOG(LogTemp, Warning, TEXT("LootBoxWidget::init lootbox"));
-	UWrapBox* LootWrap = Cast<UWrapBox>(GetWidgetFromName(TEXT("LootWarpBox"))); //null값 리턴
+	
+	UWrapBox* LootWrap = Cast<UWrapBox>(this->GetWidgetFromName(TEXT("LootWrapBox"))); //null값 리턴
 	if (LootWrap)
 	{
 		LootWrap->ClearChildren();
@@ -73,5 +76,9 @@ void ULootBoxWidget::InitLootBox()
 				UE_LOG(LogTemp, Warning, TEXT("LootBoxWidget::Cast fail"));
 			}
 		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("LootBoxWidget::Can NOT get LootWrapBox widget"));
 	}
 }
