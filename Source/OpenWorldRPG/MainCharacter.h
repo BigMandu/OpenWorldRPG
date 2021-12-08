@@ -128,6 +128,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement)
 	bool bIsWalking;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement)
+	bool bIsLookInput;
+
 
 	/********* 입력 막아주기 *********/
 	bool bDisableInput; //Widget을 보고 있을때 true로 만들어 특정키 입력을 막는다.

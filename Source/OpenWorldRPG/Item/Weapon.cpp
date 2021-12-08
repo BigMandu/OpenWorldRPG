@@ -495,9 +495,16 @@ void AWeapon::Firing()
 		ammo 체크, FireCount 증가, 함수 끝에 Timer기록 (마지막 발사 시간 기록용)
 		계속해서 사격중이라면 ReFiring함수 호출
 	*/
+	bIsFiring = true;
 	WeaponFX();
 	BulletOut(); //Weapon Instant에 구현함.
 	
+	/* 첫 발사면 ControlRotation값을 저장한다. -> 사격 종료시 원복하기 위함 */
+	if (FireCount == 0)
+	{
+		StartFiringRotation = GetInstigatorController()->GetControlRotation();
+	}
+
 	FireCount++;
 	
 	UE_LOG(LogTemp, Warning, TEXT("Fire cnt : %d"), FireCount);
@@ -542,9 +549,13 @@ void AWeapon::ReFiring()
 void AWeapon::EndFiring()
 {
 	/* Firing이 끝나면 각종 변수들을 초기화 시켜준다. */
+	bIsFiring = false;
 	GetWorldTimerManager().ClearTimer(FiringTimer);
 	FireCount = 0;
 	CurrentWeaponState = EWeaponState::EWS_Idle; //Burst mode를 위함
+
+	/* 사격을 끝냈을때 첫 사격 에임으로 되돌아 오는 기능*/
+	AimInitialize();
 }
 
 bool AWeapon::CheckRefire()
@@ -723,4 +734,22 @@ void AWeapon::PlayWeaponAnimAndCamShake(FWeaponAnim& Anim)
 			//MainChar->MainController->ClientPlayCameraShake(CamShake, 1.0f);
 		}
 	}
+}
+
+void AWeapon::AimInitialize()
+{
+	EndFiringRotation = GetInstigatorController()->GetControlRotation();
+	Time = 0.f;
+	AlphaTime = 0.f;
+	GetWorldTimerManager().SetTimer(AimInitHandle, [=] {
+		Time += GetWorld()->GetDeltaSeconds();
+		AlphaTime = Time / 1.f; // Time/되돌아오는 시간 (스텟)
+		FRotator LerpAimRotation = FMath::Lerp(EndFiringRotation, StartFiringRotation, AlphaTime);
+		GetInstigatorController()->SetControlRotation(LerpAimRotation);
+		/*UE_LOG(LogTemp, Warning, TEXT("Time : %f"), Time);
+		UE_LOG(LogTemp, Warning, TEXT("AlphaTime : %f"), AlphaTime);
+		UE_LOG(LogTemp, Warning, TEXT("StartFiringRotation : %s"), *StartFiringRotation.ToString());
+		UE_LOG(LogTemp, Warning, TEXT("EndFiringRotation : %s"), *EndFiringRotation.ToString());
+		UE_LOG(LogTemp, Warning, TEXT("LerpRotation : %s"), *LerpAimRotation.ToString());*/
+		},GetWorld()->GetDeltaSeconds(),true);
 }

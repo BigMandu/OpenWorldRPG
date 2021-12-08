@@ -53,7 +53,7 @@ FVector AWeapon_Instant::BulletSpread(FVector Vec)
 	/* Random을 이용한 Weapon Spread */
 	FVector TempVector = Vec;
 	AMainCharacter* Main = Cast<AMainCharacter>(OwningPlayer);
-
+	float RecoilValue = 0.f;
 	/* 초탄은 무조건 원하는 지점으로 가게 한다. */
 	if (Main)
 	{
@@ -62,7 +62,7 @@ FVector AWeapon_Instant::BulletSpread(FVector Vec)
 			float randX = 0.0f;
 			float randY = 0.0f;
 			float NewZ = 0.0f;
-			if (FireCount < 3)
+			if (FireCount < 5)
 			{
 				if (bIsAiming)
 				{
@@ -80,6 +80,7 @@ FVector AWeapon_Instant::BulletSpread(FVector Vec)
 					NewZ = FireCount * BulletStat.HipBulletSpread/3;
 					LastZpos = NewZ;
 				}
+				RecoilValue = -1 * (float)FireCount / 10;
 			}
 			else
 			{
@@ -88,20 +89,30 @@ FVector AWeapon_Instant::BulletSpread(FVector Vec)
 					randX = FMath::RandRange(-1 * BulletStat.AimBulletSpread, BulletStat.AimBulletSpread);
 					randY = FMath::RandRange(-1 * BulletStat.AimBulletSpread, BulletStat.AimBulletSpread);
 
-					NewZ = FireCount * (FireCount / 8.5) * (BulletStat.AimBulletSpread / 10) + LastZpos;
+					//NewZ = FireCount * (FireCount / 8.5) * (BulletStat.AimBulletSpread / 10);
+					
+					NewZ = FireCount * (BulletStat.AimBulletSpread / 30) + LastZpos;
+					LastZpos = NewZ;
 				}
 				else
 				{
 					randX = FMath::RandRange(-1 * BulletStat.HipBulletSpread, BulletStat.HipBulletSpread);
 					randY = FMath::RandRange(-1 * BulletStat.HipBulletSpread, BulletStat.HipBulletSpread);
 
-					NewZ = FireCount * (FireCount / 8.5) * (BulletStat.HipBulletSpread / 10) + LastZpos;
+					//NewZ = FireCount * (FireCount / 8.5) * (BulletStat.HipBulletSpread / 10);
+					
+					NewZ = FireCount * (BulletStat.HipBulletSpread / 30) + LastZpos;
+					LastZpos = NewZ;
 				}
+				RecoilValue = -1 * (float)FireCount / 20;
 			}
-			
+			UE_LOG(LogTemp, Warning, TEXT("Test Value : %.4f"), (float)FireCount / 20);
 			UE_LOG(LogTemp, Warning, TEXT("NewZ : %f"), NewZ);
 			TempVector = FVector(Vec.X + randX, Vec.Y + randY, Vec.Z + NewZ);
-			Main->AddControllerPitchInput(-0.1);
+			Main->AddControllerPitchInput(RecoilValue);
+			
+			//float lerprecoil = FMath::Lerp(0.f, RecoilValue,GetWorld()->GetDeltaSeconds()/0.5f);
+			
 			//Main->AddControllerYawInput(0.1);
 		}
 	}

@@ -57,6 +57,7 @@ AMainCharacter::AMainCharacter()
 
 	bIsAim = false;
 	bTabKeyDown = false;
+	bIsLookInput = false;
 
 	/* 카메라 관련 */
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
@@ -208,6 +209,18 @@ void AMainCharacter::BeginPlay()
 void AMainCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	
+	//bIsLookInput 세팅
+	float turnvalue = GetInputAxisValue("Turn");
+	float lookvalue = GetInputAxisValue("LookUp");
+	if (turnvalue == 0.f && lookvalue == 0.f)
+	{
+		bIsLookInput = false;
+	}
+	else
+	{
+		bIsLookInput = true;
+	}
 
 	//bIsAccelerating 세팅.
 	FVector VecLength = FVector(0.f);
@@ -255,6 +268,8 @@ void AMainCharacter::Tick(float DeltaTime)
 		}
 	}
 	
+
+	/* 상호작용 텍스트를 띄움 */
 	/* Static FHitResult를 리턴받아서 Interface 변환, 성공하면 Outline과 TEXT를 띄움.*/
 	AActor* HitActor = InteractableLineTrace(Interact_LineTrace_StartLocation, Interact_LineTrace_EndLocation).GetActor();
 	if (HitActor)
@@ -285,6 +300,17 @@ void AMainCharacter::Tick(float DeltaTime)
 		UnsetInteractActor();
 	}
 	//InteractActor가 다를경우 UnsetInteractActor 호출하자. (Outline이 안없어지는 버그가 있음.) -> 해결함.
+
+	/* Weapon의 AimInitialize함수에서 사용하는 Timer 해제용 */
+	if (EquippedWeapon)
+	{
+		if (bIsLookInput || EquippedWeapon->AlphaTime >= 1.f )
+		{
+			GetWorldTimerManager().ClearTimer(EquippedWeapon->AimInitHandle);
+		}
+	}
+	
+	
 }
 
 

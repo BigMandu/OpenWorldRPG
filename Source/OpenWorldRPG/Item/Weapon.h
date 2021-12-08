@@ -154,8 +154,8 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
 	FWeaponAnim FireAnimaton;
 
-	
-	
+	float AlphaTime;
+	FTimerHandle AimInitHandle;
 	
 protected:
 
@@ -170,6 +170,12 @@ protected:
 
 	FTimerHandle FiringTimer;
 
+	/* Aim Initialize에서 사용 */
+	FRotator StartFiringRotation;
+	FRotator EndFiringRotation;
+
+	float Time;
+	
 	
 	
 public:
@@ -215,4 +221,6 @@ public:
 
 	void WeaponFX();
 	void PlayWeaponAnimAndCamShake(FWeaponAnim& Anim);
+
+	void AimInitialize();
 };
