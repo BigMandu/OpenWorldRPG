@@ -66,21 +66,15 @@ FVector AWeapon_Instant::BulletSpread(FVector Vec)
 			{
 				if (bIsAiming)
 				{
-					//randX = FMath::RandRange(-1 * BulletStat.AimBulletSpread, BulletStat.AimBulletSpread);
-					//randY = FMath::RandRange(-1 * BulletStat.AimBulletSpread, BulletStat.AimBulletSpread);
-
 					NewZ = FireCount * BulletStat.AimBulletSpread;
 					LastZpos = NewZ;
 				}
 				else
 				{
-					//randX = FMath::RandRange(-1 * BulletStat.HipBulletSpread, BulletStat.HipBulletSpread);
-					//randY = FMath::RandRange(-1 * BulletStat.HipBulletSpread, BulletStat.HipBulletSpread);
-
 					NewZ = FireCount * BulletStat.HipBulletSpread/3;
 					LastZpos = NewZ;
 				}
-				RecoilValue = -1 * (float)FireCount / 10;
+				//RecoilValue = -1 * (float)FireCount / 10;
 			}
 			else
 			{
@@ -104,16 +98,13 @@ FVector AWeapon_Instant::BulletSpread(FVector Vec)
 					NewZ = FireCount * (BulletStat.HipBulletSpread / 30) + LastZpos;
 					LastZpos = NewZ;
 				}
-				RecoilValue = -1 * (float)FireCount / 20;
+				//RecoilValue = -1 * (float)FireCount / 20;
 			}
 			UE_LOG(LogTemp, Warning, TEXT("Test Value : %.4f"), (float)FireCount / 20);
 			UE_LOG(LogTemp, Warning, TEXT("NewZ : %f"), NewZ);
 			TempVector = FVector(Vec.X + randX, Vec.Y + randY, Vec.Z + NewZ);
 			Main->AddControllerPitchInput(RecoilValue);
 			
-			//float lerprecoil = FMath::Lerp(0.f, RecoilValue,GetWorld()->GetDeltaSeconds()/0.5f);
-			
-			//Main->AddControllerYawInput(0.1);
 		}
 	}
 	return TempVector;
@@ -142,3 +133,12 @@ void AWeapon_Instant::CheckHit(FHitResult& Hit)
 	
 }
 
+float AWeapon_Instant::PitchRecoilValue(float Zvalue)
+{
+
+}
+
+float AWeapon_Instant::YawRecoilValue(FVector Vec)
+{
+
+}

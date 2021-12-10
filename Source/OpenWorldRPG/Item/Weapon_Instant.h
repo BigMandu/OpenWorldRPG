@@ -54,4 +54,6 @@ public:
 	FVector BulletSpread(FVector Vec);
 
 	void CheckHit(FHitResult& Hit);
+	float PitchRecoilValue(float Zvalue);
+	float YawRecoilValue(FVector Vec);
 };

@@ -66,6 +66,7 @@ public:
 	UMainAnimInstance* TPAnimInstance;
 	UMainAnimInstance* FPAnimInstance;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Character)
 	AMainController* MainController;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Character)
