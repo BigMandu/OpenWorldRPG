@@ -50,10 +50,16 @@ public:
 	//1~3발 동안 탄착지점을 올린뒤, 이후 탄착점을 위함.
 	float LastZpos;
 
+
+	FVector PreviousSpread;
+	FVector NextSpread;
+
 	virtual void BulletOut() override;
 	FVector BulletSpread(FVector Vec);
 
 	void CheckHit(FHitResult& Hit);
+
+	void CalcRecoil(FVector *PreSpread, FVector *NexSpread);
 	float PitchRecoilValue(float Zvalue);
 	float YawRecoilValue(FVector Vec);
 };

@@ -39,9 +39,12 @@ void AWeapon_Instant::BulletOut()
 	
 	FVector EndTrace = StartTrace + Dir * WeaponStat.WeaponRange;
 	FVector SpreadPoint = BulletSpread(EndTrace);
+	
+	NextSpread = SpreadPoint;
+	CalcRecoil(&PreviousSpread, &NextSpread);
+	PreviousSpread = NextSpread;
 
 	FHitResult Hit = BulletTrace(StartTrace, SpreadPoint);
-
 	DrawDebugPoint(GetWorld(), Hit.Location, 10.f, FColor::Blue, false, 2.f);
 	CheckHit(Hit);
 
@@ -100,10 +103,11 @@ FVector AWeapon_Instant::BulletSpread(FVector Vec)
 				}
 				//RecoilValue = -1 * (float)FireCount / 20;
 			}
-			UE_LOG(LogTemp, Warning, TEXT("Test Value : %.4f"), (float)FireCount / 20);
-			UE_LOG(LogTemp, Warning, TEXT("NewZ : %f"), NewZ);
+			//UE_LOG(LogTemp, Warning, TEXT("Test Value : %.4f"), (float)FireCount / 20);
+			//UE_LOG(LogTemp, Warning, TEXT("NewZ : %f"), NewZ);
 			TempVector = FVector(Vec.X + randX, Vec.Y + randY, Vec.Z + NewZ);
-			Main->AddControllerPitchInput(RecoilValue);
+			//OwningPlayer->GetInstigatorController()->SetControlRotation(RotVector.Rotation());
+			//Main->AddControllerPitchInput(RecoilValue);
 			
 		}
 	}
@@ -133,12 +137,28 @@ void AWeapon_Instant::CheckHit(FHitResult& Hit)
 	
 }
 
+void AWeapon_Instant::CalcRecoil(FVector *PreSpread, FVector *NexSpread)
+{
+	UE_LOG(LogTemp, Warning, TEXT("PreSpread : %s"), *(PreSpread->ToString()));
+	UE_LOG(LogTemp, Warning, TEXT("NexSpread : %s"), *(NexSpread->ToString()));
+
+	float X = (PreSpread->X - NexSpread->X);
+	float Y = (PreSpread->Y - NexSpread->Y);
+	float Z = (PreSpread->Z - NexSpread->Z);
+
+	UE_LOG(LogTemp, Warning, TEXT("X : %f"), X);
+	UE_LOG(LogTemp, Warning, TEXT("Y : %f"), Y);
+	UE_LOG(LogTemp, Warning, TEXT("Y : %f"), Z);
+
+
+}
+
 float AWeapon_Instant::PitchRecoilValue(float Zvalue)
 {
-
+	return 0.0f;
 }
 
 float AWeapon_Instant::YawRecoilValue(FVector Vec)
 {
-
+	return 0.0f;
 }
