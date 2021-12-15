@@ -139,6 +139,11 @@ void AWeapon_Instant::CheckHit(FHitResult& Hit)
 
 void AWeapon_Instant::CalcRecoil(FVector *PreSpread, FVector *NexSpread)
 {
+	if (FireCount < 1)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("FireCnt is under 1, no calc recoil."));
+		return;
+	}
 	UE_LOG(LogTemp, Warning, TEXT("PreSpread : %s"), *(PreSpread->ToString()));
 	UE_LOG(LogTemp, Warning, TEXT("NexSpread : %s"), *(NexSpread->ToString()));
 
@@ -146,9 +151,38 @@ void AWeapon_Instant::CalcRecoil(FVector *PreSpread, FVector *NexSpread)
 	float Y = (PreSpread->Y - NexSpread->Y);
 	float Z = (PreSpread->Z - NexSpread->Z);
 
-	UE_LOG(LogTemp, Warning, TEXT("X : %f"), X);
-	UE_LOG(LogTemp, Warning, TEXT("Y : %f"), Y);
-	UE_LOG(LogTemp, Warning, TEXT("Y : %f"), Z);
+	//UE_LOG(LogTemp, Warning, TEXT("X : %f"), X);
+	//UE_LOG(LogTemp, Warning, TEXT("Y : %f"), Y);
+	//UE_LOG(LogTemp, Warning, TEXT("Y : %f"), Z);
+
+	FVector CrossVec = FVector::CrossProduct(*PreSpread, *NexSpread);
+	DrawDebugLine(GetWorld(), GetActorLocation(), CrossVec, FColor::Green, false, 3.f, (uint8)nullptr, 2.f);
+	float JudgeValue = FVector::DotProduct(CrossVec, GetInstigator()->GetActorUpVector());
+
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(1, 2.f, FColor::Green, TEXT("Judge : %f"), JudgeValue);
+
+		if (JudgeValue >= 0.f)
+		{
+			GEngine->AddOnScreenDebugMessage(1, 2.f, FColor::Green, TEXT("Left"));
+		}
+		else
+		{
+			GEngine->AddOnScreenDebugMessage(1, 2.f, FColor::Green, TEXT("Right"));
+		}
+	}
+
+	/*UE_LOG(LogTemp, Warning, TEXT("Judge : %f"), JudgeValue);
+	if (JudgeValue >= 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("LEFT"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Right"));
+	}*/
+
 
 
 }
