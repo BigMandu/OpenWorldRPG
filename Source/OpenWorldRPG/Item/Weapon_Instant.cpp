@@ -1,5 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
+#pragma warning(disable : 4800)
 
 #include "Weapon_Instant.h"
 #include "OpenWorldRPG/MainCharacter.h"
@@ -41,7 +41,7 @@ void AWeapon_Instant::BulletOut()
 	FVector SpreadPoint = BulletSpread(EndTrace);
 	
 	NextSpread = SpreadPoint;
-	CalcRecoil(&PreviousSpread, &NextSpread);
+	CalcRecoilNApply(&PreviousSpread, &NextSpread);
 	PreviousSpread = NextSpread;
 
 	FHitResult Hit = BulletTrace(StartTrace, SpreadPoint);
@@ -137,54 +137,78 @@ void AWeapon_Instant::CheckHit(FHitResult& Hit)
 	
 }
 
-void AWeapon_Instant::CalcRecoil(FVector *PreSpread, FVector *NexSpread)
+void AWeapon_Instant::CalcRecoilNApply(FVector *PreSpread, FVector *NexSpread)
 {
 	if (FireCount < 1)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("FireCnt is under 1, no calc recoil."));
 		return;
 	}
+
 	UE_LOG(LogTemp, Warning, TEXT("PreSpread : %s"), *(PreSpread->ToString()));
 	UE_LOG(LogTemp, Warning, TEXT("NexSpread : %s"), *(NexSpread->ToString()));
 
-	float X = (PreSpread->X - NexSpread->X);
+	/*float X = (PreSpread->X - NexSpread->X);
 	float Y = (PreSpread->Y - NexSpread->Y);
-	float Z = (PreSpread->Z - NexSpread->Z);
+	float Z = (PreSpread->Z - NexSpread->Z);*/
 
 	//UE_LOG(LogTemp, Warning, TEXT("X : %f"), X);
 	//UE_LOG(LogTemp, Warning, TEXT("Y : %f"), Y);
 	//UE_LOG(LogTemp, Warning, TEXT("Y : %f"), Z);
 
-	FVector CrossVec = FVector::CrossProduct(*PreSpread, *NexSpread);
-	DrawDebugLine(GetWorld(), GetActorLocation(), CrossVec, FColor::Green, false, 3.f, (uint8)nullptr, 2.f);
-	float JudgeValue = FVector::DotProduct(CrossVec, GetInstigator()->GetActorUpVector());
+	/* Left & Right 계산*/
+	FVector CrossVec = FVector::CrossProduct(*PreSpread - GetInstigator()->GetActorLocation(), *NexSpread- GetInstigator()->GetActorLocation());
+	//FVector CrossVec = FVector::CrossProduct(*PreSpread, *NexSpread);
+	DrawDebugLine(GetWorld(), GetActorLocation(), CrossVec, FColor::Green, false, 1.f, (uint8)nullptr, 2.f);
+	float YawJudge = FVector::DotProduct(CrossVec.GetSafeNormal(), GetInstigator()->GetActorUpVector());
+	
+	/* Up & Down 계산*/
+	float TESTPITCH = CrossVec.Z;//FVector::DotProduct(CrossVec, GetInstigator()->GetActorUpVector()); //test용
+
+	float PitchJudge = FVector::DotProduct(*PreSpread, *NexSpread);
+	float SizeValue = PreSpread->Size() * NexSpread->Size();
+	float PitchAngle = FMath::Acos(PitchJudge / SizeValue);
 
 	if (GEngine)
 	{
-		GEngine->AddOnScreenDebugMessage(1, 2.f, FColor::Green, TEXT("Judge : %f"), JudgeValue);
-
-		if (JudgeValue >= 0.f)
+		//GEngine->AddOnScreenDebugMessage(1, 2.f, FColor::Green, TEXT("Judge : %f"), JudgeValue);
+		if (YawJudge >= -0.05f && YawJudge <= 0.05f)
 		{
-			GEngine->AddOnScreenDebugMessage(1, 2.f, FColor::Green, TEXT("Left"));
+			GEngine->AddOnScreenDebugMessage(1, 2.f, FColor::Green, TEXT("Nothing"));
+			UE_LOG(LogTemp, Warning, TEXT("Nothing"));
 		}
 		else
 		{
-			GEngine->AddOnScreenDebugMessage(1, 2.f, FColor::Green, TEXT("Right"));
+			if (YawJudge > 0.f)
+			{
+				GEngine->AddOnScreenDebugMessage(1, 2.f, FColor::Green, TEXT("right"));
+				UE_LOG(LogTemp, Warning, TEXT("Right"));
+			}
+			else
+			{
+				GEngine->AddOnScreenDebugMessage(1, 2.f, FColor::Green, TEXT("left"));
+				UE_LOG(LogTemp, Warning, TEXT("LEFT"));
+			}
 		}
+
+		if (CrossVec.Z > 0.f)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Up"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Down"));
+		}
+
+		
 	}
-
-	/*UE_LOG(LogTemp, Warning, TEXT("Judge : %f"), JudgeValue);
-	if (JudgeValue >= 0)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("LEFT"));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Right"));
-	}*/
-
-
-
+	UE_LOG(LogTemp, Warning, TEXT("Yaw Judge : %f"), YawJudge);
+	UE_LOG(LogTemp, Warning, TEXT("Pitch Judge : %f"), PitchAngle);
+	UE_LOG(LogTemp, Warning, TEXT("CrossVec : %s"), *CrossVec.ToString());
+	UE_LOG(LogTemp, Warning, TEXT("TESTPITCH : %f"), TESTPITCH);
+	
+	//AMainCharacter* Main = Cast<AMainCharacter>(OwningPlayer);
+	
 }
 
 float AWeapon_Instant::PitchRecoilValue(float Zvalue)

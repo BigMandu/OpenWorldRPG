@@ -59,7 +59,7 @@ public:
 
 	void CheckHit(FHitResult& Hit);
 
-	void CalcRecoil(FVector *PreSpread, FVector *NexSpread);
+	void CalcRecoilNApply(FVector *PreSpread, FVector *NexSpread);
 	float PitchRecoilValue(float Zvalue);
 	float YawRecoilValue(FVector Vec);
 };
