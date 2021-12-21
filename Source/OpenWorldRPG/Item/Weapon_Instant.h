@@ -51,8 +51,8 @@ public:
 	float LastZpos;
 
 
-	FVector PreviousSpread;
-	FVector NextSpread;
+	/*FVector PreviousSpread;
+	FVector NextSpread;*/
 
 	virtual void BulletOut() override;
 	FVector BulletSpread(FVector Vec);

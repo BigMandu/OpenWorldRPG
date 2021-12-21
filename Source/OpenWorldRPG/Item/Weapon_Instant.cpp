@@ -44,6 +44,8 @@ void AWeapon_Instant::BulletOut()
 	CalcRecoilNApply(&PreviousSpread, &NextSpread);
 	PreviousSpread = NextSpread;
 
+	UE_LOG(LogTemp, Warning, TEXT("Spread Point : %s"), *SpreadPoint.ToString());
+
 	FHitResult Hit = BulletTrace(StartTrace, SpreadPoint);
 	DrawDebugPoint(GetWorld(), Hit.Location, 10.f, FColor::Blue, false, 2.f);
 	CheckHit(Hit);
@@ -56,7 +58,7 @@ FVector AWeapon_Instant::BulletSpread(FVector Vec)
 	/* Random을 이용한 Weapon Spread */
 	FVector TempVector = Vec;
 	AMainCharacter* Main = Cast<AMainCharacter>(OwningPlayer);
-	float RecoilValue = 0.f;
+	
 	/* 초탄은 무조건 원하는 지점으로 가게 한다. */
 	if (Main)
 	{
@@ -87,9 +89,9 @@ FVector AWeapon_Instant::BulletSpread(FVector Vec)
 					randY = FMath::RandRange(-1 * BulletStat.AimBulletSpread, BulletStat.AimBulletSpread);
 
 					//NewZ = FireCount * (FireCount / 8.5) * (BulletStat.AimBulletSpread / 10);
-					
-					NewZ = FireCount * (BulletStat.AimBulletSpread / 30) + LastZpos;
-					LastZpos = NewZ;
+					NewZ = 0.f;
+					//NewZ = BulletStat.AimBulletSpread / 100; //FireCount* (BulletStat.AimBulletSpread / 100) +LastZpos;
+					//LastZpos = NewZ;
 				}
 				else
 				{
@@ -97,14 +99,15 @@ FVector AWeapon_Instant::BulletSpread(FVector Vec)
 					randY = FMath::RandRange(-1 * BulletStat.HipBulletSpread, BulletStat.HipBulletSpread);
 
 					//NewZ = FireCount * (FireCount / 8.5) * (BulletStat.HipBulletSpread / 10);
-					
-					NewZ = FireCount * (BulletStat.HipBulletSpread / 30) + LastZpos;
-					LastZpos = NewZ;
+					NewZ = 0.f;
+					//NewZ = BulletStat.HipBulletSpread * 0.05; //FireCount * (BulletStat.HipBulletSpread / 50);// +LastZpos;
+					//LastZpos = NewZ;
 				}
 				//RecoilValue = -1 * (float)FireCount / 20;
 			}
 			//UE_LOG(LogTemp, Warning, TEXT("Test Value : %.4f"), (float)FireCount / 20);
 			//UE_LOG(LogTemp, Warning, TEXT("NewZ : %f"), NewZ);
+			GetInstigator()->AddControllerPitchInput(NewZ* -0.005);
 			TempVector = FVector(Vec.X + randX, Vec.Y + randY, Vec.Z + NewZ);
 			//OwningPlayer->GetInstigatorController()->SetControlRotation(RotVector.Rotation());
 			//Main->AddControllerPitchInput(RecoilValue);
@@ -139,35 +142,32 @@ void AWeapon_Instant::CheckHit(FHitResult& Hit)
 
 void AWeapon_Instant::CalcRecoilNApply(FVector *PreSpread, FVector *NexSpread)
 {
-	if (FireCount < 1)
+	if (FireCount < 1)// || PreviousSpread != FVector::ZeroVector)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("FireCnt is under 1, no calc recoil."));
 		return;
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("PreSpread : %s"), *(PreSpread->ToString()));
-	UE_LOG(LogTemp, Warning, TEXT("NexSpread : %s"), *(NexSpread->ToString()));
-
-	/*float X = (PreSpread->X - NexSpread->X);
-	float Y = (PreSpread->Y - NexSpread->Y);
-	float Z = (PreSpread->Z - NexSpread->Z);*/
-
-	//UE_LOG(LogTemp, Warning, TEXT("X : %f"), X);
-	//UE_LOG(LogTemp, Warning, TEXT("Y : %f"), Y);
-	//UE_LOG(LogTemp, Warning, TEXT("Y : %f"), Z);
+	/*UE_LOG(LogTemp, Warning, TEXT("PreSpread : %s"), *(PreSpread->ToString()));
+	UE_LOG(LogTemp, Warning, TEXT("NexSpread : %s"), *(NexSpread->ToString()));*/
 
 	/* Left & Right 계산*/
-	FVector CrossVec = FVector::CrossProduct(*PreSpread - GetInstigator()->GetActorLocation(), *NexSpread- GetInstigator()->GetActorLocation());
-	//FVector CrossVec = FVector::CrossProduct(*PreSpread, *NexSpread);
-	DrawDebugLine(GetWorld(), GetActorLocation(), CrossVec, FColor::Green, false, 1.f, (uint8)nullptr, 2.f);
+	//FVector CrossVec = FVector::CrossProduct(*PreSpread, *NexSpread).GetSafeNormal();
+	FVector CrossVec = FVector::CrossProduct(*PreSpread - GetInstigator()->GetActorLocation(), *NexSpread - GetInstigator()->GetActorLocation());
 	float YawJudge = FVector::DotProduct(CrossVec.GetSafeNormal(), GetInstigator()->GetActorUpVector());
-	
-	/* Up & Down 계산*/
-	float TESTPITCH = CrossVec.Z;//FVector::DotProduct(CrossVec, GetInstigator()->GetActorUpVector()); //test용
+	//DrawDebugLine(GetWorld(), GetActorLocation(), CrossVec, FColor::Green, false, 1.f, (uint8)nullptr, 2.f);
 
-	float PitchJudge = FVector::DotProduct(*PreSpread, *NexSpread);
+
+	/* Up & Down 계산*/
+	FVector PitchVector = FVector::CrossProduct(CrossVec - GetInstigator()->GetActorLocation(), GetInstigator()->GetActorUpVector());
+	float PitchJudge = FVector::DotProduct(PitchVector.GetSafeNormal(), GetInstigator()->GetActorForwardVector());
+	//DrawDebugLine(GetWorld(), GetActorLocation(), PitchVector, FColor::Green, false, 1.f, (uint8)nullptr, 2.f);
+	
+
+	/* 각도 계산 */
+	float VectorAngle = FVector::DotProduct(*PreSpread, *NexSpread);
 	float SizeValue = PreSpread->Size() * NexSpread->Size();
-	float PitchAngle = FMath::Acos(PitchJudge / SizeValue);
+	float PitchAngle = FMath::Acos(VectorAngle / SizeValue);
 
 	if (GEngine)
 	{
@@ -181,31 +181,40 @@ void AWeapon_Instant::CalcRecoilNApply(FVector *PreSpread, FVector *NexSpread)
 		{
 			if (YawJudge > 0.f)
 			{
-				GEngine->AddOnScreenDebugMessage(1, 2.f, FColor::Green, TEXT("right"));
-				UE_LOG(LogTemp, Warning, TEXT("Right"));
+				/*GEngine->AddOnScreenDebugMessage(1, 2.f, FColor::Green, TEXT("right"));
+				UE_LOG(LogTemp, Warning, TEXT("Right"));*/
+				
 			}
 			else
 			{
-				GEngine->AddOnScreenDebugMessage(1, 2.f, FColor::Green, TEXT("left"));
-				UE_LOG(LogTemp, Warning, TEXT("LEFT"));
+				/*GEngine->AddOnScreenDebugMessage(1, 2.f, FColor::Green, TEXT("left"));
+				UE_LOG(LogTemp, Warning, TEXT("LEFT"));*/
+				
 			}
+			GetInstigator()->AddControllerYawInput(YawJudge/5.f);
 		}
 
-		if (CrossVec.Z > 0.f)
+		if (PitchJudge < 0.f)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Up"));
+			/*UE_LOG(LogTemp, Warning, TEXT("Up"));
+			UE_LOG(LogTemp, Warning, TEXT("Pitch Angle : %f"), PitchAngle);*/
+			//GetInstigator()->AddControllerPitchInput(PitchAngle *-20);
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Down"));
+			/*UE_LOG(LogTemp, Warning, TEXT("Down"));
+			UE_LOG(LogTemp, Warning, TEXT("Pitch Angle : %f"), PitchAngle * -1);*/
+			//GetInstigator()->AddControllerPitchInput(PitchAngle);
 		}
 
 		
 	}
-	UE_LOG(LogTemp, Warning, TEXT("Yaw Judge : %f"), YawJudge);
-	UE_LOG(LogTemp, Warning, TEXT("Pitch Judge : %f"), PitchAngle);
+	/*UE_LOG(LogTemp, Warning, TEXT("Yaw Judge : %f"), YawJudge);
+	UE_LOG(LogTemp, Warning, TEXT("Pitch Judge : %f"), PitchJudge);*/
+	/*UE_LOG(LogTemp, Warning, TEXT("Pitch Judge : %f"), PitchJudge);
 	UE_LOG(LogTemp, Warning, TEXT("CrossVec : %s"), *CrossVec.ToString());
-	UE_LOG(LogTemp, Warning, TEXT("TESTPITCH : %f"), TESTPITCH);
+	UE_LOG(LogTemp, Warning, TEXT("PitchVector : %s"), *PitchVector.ToString());*/
+	
 	
 	//AMainCharacter* Main = Cast<AMainCharacter>(OwningPlayer);
 	

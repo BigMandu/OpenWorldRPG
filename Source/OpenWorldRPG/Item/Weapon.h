@@ -175,6 +175,9 @@ protected:
 	FRotator EndFiringRotation;
 
 	float Time;
+
+	FVector PreviousSpread;
+	FVector NextSpread;
 	
 	
 	

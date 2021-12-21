@@ -553,7 +553,7 @@ void AWeapon::EndFiring()
 	GetWorldTimerManager().ClearTimer(FiringTimer);
 	FireCount = 0;
 	CurrentWeaponState = EWeaponState::EWS_Idle; //Burst mode를 위함
-
+	PreviousSpread = FVector::ZeroVector;
 	/* 사격을 끝냈을때 첫 사격 에임으로 되돌아 오는 기능*/
 	AimInitialize();
 }
