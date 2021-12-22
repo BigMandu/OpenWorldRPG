@@ -191,7 +191,7 @@ void AWeapon_Instant::CalcRecoilNApply(FVector *PreSpread, FVector *NexSpread)
 				UE_LOG(LogTemp, Warning, TEXT("LEFT"));*/
 				
 			}
-			GetInstigator()->AddControllerYawInput(YawJudge/5.f);
+			GetInstigator()->AddControllerYawInput(YawJudge);
 		}
 
 		if (PitchJudge < 0.f)
