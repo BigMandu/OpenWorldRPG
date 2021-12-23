@@ -54,7 +54,9 @@ public:
 	/*FVector PreviousSpread;
 	FVector NextSpread;*/
 
+
 	virtual void BulletOut() override;
+	virtual void New_BulletOut() override;
 	FVector BulletSpread(FVector Vec);
 
 	void CheckHit(FHitResult& Hit);

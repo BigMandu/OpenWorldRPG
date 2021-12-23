@@ -21,6 +21,7 @@ class UParticleSystemComponent;
 class USkeletalMeshComponent;
 class UAnimMontage;
 class AMainCharacter;
+class UCurveFloat;
 
 
 UENUM(BlueprintType)
@@ -78,13 +79,21 @@ struct FWeaponStat
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
 	int32 AmmoPerMag;
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
-	float RateofFire;
+	float FireRatePerSec;
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
 	float WeaponRange;
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
 	bool bHasBurstMode;
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
 	int32 BurstRound;
+
+	/* Recoil */
+	UPROPERTY(EditDefaultsOnly, Category = "Recoil")
+	UCurveFloat* Recoil_X;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Recoil")
+	UCurveFloat* Recoil_Y;
+
 	/* FWeaponStat Defaults */
 	FWeaponStat()
 	{
@@ -93,8 +102,9 @@ struct FWeaponStat
 
 		WeaponRange = 5000.f;
 		AmmoPerMag = 30;
-		//m4a1은 분당 700~950발.분당 950으로 잡고 분당 15.8발을 쏘면됨. 0.06초당 한발씩.
-		RateofFire = 0.06; 
+
+		//m4a1은 분당 700~950발.분당 950으로 잡고 초당 15.8발을 쏘면됨. 0.06초당 한발씩.
+		FireRatePerSec = 0.06;
 		
 	}
 };

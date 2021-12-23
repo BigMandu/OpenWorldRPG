@@ -15,6 +15,11 @@ AWeapon_Instant::AWeapon_Instant() : Super()
 }
 
 
+void AWeapon_Instant::New_BulletOut()
+{
+	//WeaponStat.Recoil_X->GetFloatValue();
+}
+
 void AWeapon_Instant::BulletOut()
 {
 	//UE_LOG(LogTemp, Warning, TEXT("Weap_Instant::BulletOut"));
@@ -52,6 +57,7 @@ void AWeapon_Instant::BulletOut()
 
 	//CurFiringSpread = (10.f < CurFiringSpread + 1.f) ? 10.f : CurFiringSpread + 1.f; //RandomStream을 이용한 Spread.
 }
+
 
 FVector AWeapon_Instant::BulletSpread(FVector Vec)
 {

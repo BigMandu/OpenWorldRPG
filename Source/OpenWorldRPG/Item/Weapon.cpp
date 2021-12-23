@@ -11,6 +11,7 @@
 #include "Sound/SoundCue.h"
 #include "Particles/ParticleSystem.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "Curves/CurveFloat.h"
 #include "Math/UnrealMathUtility.h"
 #include "DrawDebugHelpers.h" //디버깅용
 
@@ -466,16 +467,16 @@ void AWeapon::ControlFiring()
 	}
 
 	//점사모드면 다시 발사 가능시간을 늦춰준다.
-	if((bIsBurstmode && LastFireTime > 0 && LastFireTime + WeaponStat.RateofFire*4 >WorldTime) || 
-		(LastFireTime > 0 && LastFireTime + WeaponStat.RateofFire > WorldTime))
+	if((bIsBurstmode && LastFireTime > 0 && LastFireTime + WeaponStat.FireRatePerSec *4 >WorldTime) ||
+		(LastFireTime > 0 && LastFireTime + WeaponStat.FireRatePerSec > WorldTime))
 	{
 		//발사 가능시간을 구한다. 
-		float RemainingTime = LastFireTime + WeaponStat.RateofFire - WorldTime;
+		float RemainingTime = LastFireTime + WeaponStat.FireRatePerSec - WorldTime;
 
 		if (bIsBurstmode) 
 		{
-			//점사 모드면 RateOfFire에 4를 곱한 값.
-			RemainingTime = (LastFireTime + WeaponStat.RateofFire * 4) - WorldTime;
+			//점사 모드면 FireRatePerSec에 4를 곱한 값.
+			RemainingTime = (LastFireTime + WeaponStat.FireRatePerSec * 4) - WorldTime;
 		}
 		GetWorldTimerManager().SetTimer(FiringTimer, this, &AWeapon::Firing, RemainingTime, false);
 		
@@ -515,7 +516,7 @@ void AWeapon::Firing()
 	if (bCanReFire)
 	{
 		//UE_LOG(LogTemp, Warning, TEXT("Firing:: Can Refire"));
-		GetWorldTimerManager().SetTimer(FiringTimer,this, &AWeapon::Firing, WeaponStat.RateofFire, false);
+		GetWorldTimerManager().SetTimer(FiringTimer,this, &AWeapon::Firing, WeaponStat.FireRatePerSec, false);
 	}
 	else
 	{
@@ -684,6 +685,7 @@ FHitResult AWeapon::BulletTrace(FVector& StartTrace, FVector& EndTrace)
 	return Hit;
 }
 
+/* 사운드와 총구 이펙트 */
 void AWeapon::WeaponFX()
 {
 	//사운드
