@@ -79,13 +79,16 @@ struct FWeaponStat
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
 	int32 AmmoPerMag;
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
-	float FireRatePerSec;
+	float FireRatePerMin;
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
 	float WeaponRange;
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
 	bool bHasBurstMode;
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
 	int32 BurstRound;
+
+	float FireRatePerSec;
+	float SecondPerBullet;
 
 	/* Recoil */
 	UPROPERTY(EditDefaultsOnly, Category = "Recoil")
@@ -104,7 +107,9 @@ struct FWeaponStat
 		AmmoPerMag = 30;
 
 		//m4a1은 분당 700~950발.분당 950으로 잡고 초당 15.8발을 쏘면됨. 0.06초당 한발씩.
-		FireRatePerSec = 0.06;
+		FireRatePerMin = 950;
+		FireRatePerSec = FireRatePerMin / 60;//0.06;
+		SecondPerBullet = 1 / FireRatePerSec;
 		
 	}
 };
@@ -184,6 +189,8 @@ protected:
 	FRotator StartFiringRotation;
 	FRotator EndFiringRotation;
 
+	float RecoilTime; //Curve float에서 사용.
+
 	float Time;
 
 	FVector PreviousSpread;
@@ -220,7 +227,7 @@ public:
 	bool CanFire();
 
 	virtual void BulletOut() PURE_VIRTUAL(AWeapon::BulletOut);
-	
+	virtual void New_BulletOut() PURE_VIRTUAL(AWeapon::New_BulletOut);
 
 	FVector GetAimRotation();
 	FVector GetTraceStartLocation(FVector& Dir);

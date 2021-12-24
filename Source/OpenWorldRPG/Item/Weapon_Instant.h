@@ -47,6 +47,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "FX")
 	UParticleSystem* BulletHitEffect;
 	
+	
 	//1~3발 동안 탄착지점을 올린뒤, 이후 탄착점을 위함.
 	float LastZpos;
 

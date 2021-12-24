@@ -17,7 +17,47 @@ AWeapon_Instant::AWeapon_Instant() : Super()
 
 void AWeapon_Instant::New_BulletOut()
 {
-	//WeaponStat.Recoil_X->GetFloatValue();
+	//rpm이 950면, rps는 15.8, 0.06초당 1발
+	/* Curve Float 값 사이를 이동하기 위해서
+	* 마지막값과 현재값을 이용해야한다.
+	* 마지막 float값에서 현재flaot값을 뺀 만큼의 pitch,yaw를 올려줘야한다.
+	*/
+	FVector Dir = GetAimRotation();
+	FVector StartTrace = GetTraceStartLocation(Dir);
+	FVector EndTrace = StartTrace + Dir * WeaponStat.WeaponRange;
+	FHitResult Hit = BulletTrace(StartTrace, EndTrace);
+	DrawDebugPoint(GetWorld(), Hit.Location, 10.f, FColor::Blue, false, 2.f);
+	CheckHit(Hit);
+
+	if (WeaponStat.Recoil_X && WeaponStat.Recoil_Y)
+	{
+		float LastRecoilTime = RecoilTime - WeaponStat.SecondPerBullet;
+		float LastRecoilValue_X = WeaponStat.Recoil_X->GetFloatValue(LastRecoilTime);
+		float NextRecoilValue_X = WeaponStat.Recoil_X->GetFloatValue(RecoilTime);
+
+		float LastRecoilValue_Y = WeaponStat.Recoil_Y->GetFloatValue(LastRecoilTime);
+		float NextRecoilValue_Y = WeaponStat.Recoil_Y->GetFloatValue(RecoilTime);
+
+		float PitchValue = (NextRecoilValue_X - LastRecoilValue_X) * 2.0;
+		float YawValue = (NextRecoilValue_Y - LastRecoilValue_Y) * 2.0;
+
+		GetInstigator()->AddControllerPitchInput(PitchValue);
+		GetInstigator()->AddControllerYawInput(YawValue);
+
+		RecoilTime = RecoilTime + WeaponStat.SecondPerBullet;
+		UE_LOG(LogTemp, Warning, TEXT("RecoilTime : %f"), RecoilTime);
+		if (RecoilTime > WeaponStat.SecondPerBullet*30)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("RecoilTime max, set 0.5"));
+			RecoilTime = 0.5f;
+		}
+
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("there is no Recoil_X, Y file"));
+	}
+
 }
 
 void AWeapon_Instant::BulletOut()

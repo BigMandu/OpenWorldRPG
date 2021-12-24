@@ -467,16 +467,16 @@ void AWeapon::ControlFiring()
 	}
 
 	//점사모드면 다시 발사 가능시간을 늦춰준다.
-	if((bIsBurstmode && LastFireTime > 0 && LastFireTime + WeaponStat.FireRatePerSec *4 >WorldTime) ||
-		(LastFireTime > 0 && LastFireTime + WeaponStat.FireRatePerSec > WorldTime))
+	if((bIsBurstmode && LastFireTime > 0 && LastFireTime + WeaponStat.SecondPerBullet *4 >WorldTime) ||
+		(LastFireTime > 0 && LastFireTime + WeaponStat.SecondPerBullet > WorldTime))
 	{
 		//발사 가능시간을 구한다. 
-		float RemainingTime = LastFireTime + WeaponStat.FireRatePerSec - WorldTime;
+		float RemainingTime = LastFireTime + WeaponStat.SecondPerBullet - WorldTime;
 
 		if (bIsBurstmode) 
 		{
-			//점사 모드면 FireRatePerSec에 4를 곱한 값.
-			RemainingTime = (LastFireTime + WeaponStat.FireRatePerSec * 4) - WorldTime;
+			//점사 모드면 SecondPerBullet에 4를 곱한 값.
+			RemainingTime = (LastFireTime + WeaponStat.SecondPerBullet * 4) - WorldTime;
 		}
 		GetWorldTimerManager().SetTimer(FiringTimer, this, &AWeapon::Firing, RemainingTime, false);
 		
@@ -498,7 +498,8 @@ void AWeapon::Firing()
 	*/
 	bIsFiring = true;
 	WeaponFX();
-	BulletOut(); //Weapon Instant에 구현함.
+	//BulletOut(); //Weapon Instant에 구현함.
+	New_BulletOut(); //Weapon Instant
 	
 	/* 첫 발사면 ControlRotation값을 저장한다. -> 사격 종료시 원복하기 위함 */
 	if (FireCount == 0)
@@ -516,7 +517,7 @@ void AWeapon::Firing()
 	if (bCanReFire)
 	{
 		//UE_LOG(LogTemp, Warning, TEXT("Firing:: Can Refire"));
-		GetWorldTimerManager().SetTimer(FiringTimer,this, &AWeapon::Firing, WeaponStat.FireRatePerSec, false);
+		GetWorldTimerManager().SetTimer(FiringTimer,this, &AWeapon::Firing, WeaponStat.SecondPerBullet, false);
 	}
 	else
 	{
@@ -555,6 +556,8 @@ void AWeapon::EndFiring()
 	FireCount = 0;
 	CurrentWeaponState = EWeaponState::EWS_Idle; //Burst mode를 위함
 	PreviousSpread = FVector::ZeroVector;
+
+	RecoilTime = 0.f;
 	/* 사격을 끝냈을때 첫 사격 에임으로 되돌아 오는 기능*/
 	AimInitialize();
 }
