@@ -233,12 +233,27 @@ void AMainCharacter::Tick(float DeltaTime)
 		bIsAccelerating = false;
 	}
 
-	/* 카메라 모드에 따라 상호작용 LineTrace 변경 */
+
+	/* 상호작용 Line Trace 변경 . ver2  아래 코드를 GetPlayerViewPoint함수를 이용해 간략화 시켰다. */
+	FRotator Rot;
+	MainController->GetPlayerViewPoint(Interact_LineTrace_StartLocation, Rot);
+	switch (CameraMode)
+	{
+	case ECameraMode::ECM_FPS:
+		Interact_LineTrace_EndLocation = Interact_LineTrace_StartLocation + Rot.Vector() * 500.f;
+		break;
+	case ECameraMode::ECM_TPS:
+		Interact_LineTrace_EndLocation = Interact_LineTrace_StartLocation + Rot.Vector() * (MAXCameraLength + 800.f); //카메라Boom길이보다 더길게 끝나야한다.
+	}
+	
+	/* 카메라 모드에 따른 상호작용 LineTrace 변경. ver 1 --> ver 2로 교체.*/
+	/*
 	switch (CameraMode)
 	{
 	case ECameraMode::ECM_FPS:
 		Interact_LineTrace_StartLocation = CameraFPS->GetComponentLocation();
 		Interact_LineTrace_EndLocation = Interact_LineTrace_StartLocation + CameraFPS->GetComponentRotation().Vector() * 500.f;
+
 		break;
 	case ECameraMode::ECM_TPS:
 	{
@@ -249,6 +264,9 @@ void AMainCharacter::Tick(float DeltaTime)
 	default:
 		break;
 	}
+	*/
+
+
 
 	/* 3인칭 모드에서 총이 있고 움직이고 있으면 시점을 방향으로 지정한다.*/
 	if (EquippedWeapon && CameraMode == ECameraMode::ECM_TPS)
@@ -304,10 +322,18 @@ void AMainCharacter::Tick(float DeltaTime)
 	/* Weapon의 AimInitialize함수에서 사용하는 Timer 해제용 */
 	if (EquippedWeapon)
 	{
-		if (bIsLookInput || EquippedWeapon->AlphaTime >= 1.f )
+		//타이머가 작동중이고
+		if (GetWorldTimerManager().IsTimerActive(EquippedWeapon->AimInitHandle))
 		{
-			GetWorldTimerManager().ClearTimer(EquippedWeapon->AimInitHandle);
+			//aim을 돌리거나, AlphaTime이 1초가 넘어가거나, 쏘는 중이라면
+			if (bIsLookInput || EquippedWeapon->AlphaTime >= 1.f || EquippedWeapon->bIsFiring)
+			{
+				//에임 초기화 타이머를 초기화 시킨다.
+				UE_LOG(LogTemp, Warning, TEXT("MainChar:: Clear AimInit Timer"));
+				GetWorldTimerManager().ClearTimer(EquippedWeapon->AimInitHandle);
+			}
 		}
+		
 	}
 	
 	

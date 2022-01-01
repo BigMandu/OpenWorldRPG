@@ -26,6 +26,7 @@ AWeapon::AWeapon() : Super()
 
 	bIsFiring = false;
 	bLMBDown = false;
+	bDetectLookInput = false;
 
 	//MuzzleEffectComp = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("MuzzleEffectComp"));
 	//MuzzleEffectComp->SetupAttachment(GetRootComponent());
@@ -333,12 +334,11 @@ void AWeapon::TempNewWeaponState()
 	//UE_LOG(LogTemp, Warning, TEXT("AWeapon::TempNewWeaponState"));
 	EWeaponState State = EWeaponState::EWS_Idle;
 
-	//이 if문 조건에 향후 CanFire함수를 추가 하자.
 	if (bLMBDown)
 	{
 		if (CanFire())//발사를 할 수 있다면, Firing으로 상태를 변경한다.
 		{
-			UE_LOG(LogTemp, Warning, TEXT("TempState -> Firing"));
+			//UE_LOG(LogTemp, Warning, TEXT("TempState -> Firing"));
 			State = EWeaponState::EWS_Firing;
 		}
 	}
@@ -368,7 +368,8 @@ void AWeapon::SetWeaponState(EWeaponState NewState)
 		if (bCanEndFire)
 		{
 			CurrentWeaponState = NewState;
-			EndFiring();
+			EndFiring(); 
+			
 		}
 		
 	}
@@ -396,12 +397,17 @@ bool AWeapon::CanFire()
 	*/
 	if (WeaponFiringMode != EWeaponFiringMode::EWFM_Safe && CurrentWeaponState != EWeaponState::EWS_Reloading)
 	{
-		//if (CurrentWeaponState != EWeaponState::EWS_Firing)
+		if (!(WeaponFiringMode == EWeaponFiringMode::EWFM_SemiAuto && FireCount > 0))
 		{
 			bCanFire = true;
 		}
 	}
 	return bCanFire;
+}
+
+bool AWeapon::CanEndFire()
+{
+	return false;
 }
 
 void AWeapon::StartFire()
@@ -466,7 +472,7 @@ void AWeapon::ControlFiring()
 		bIsBurstmode = true;
 	}
 
-	//점사모드면 다시 발사 가능시간을 늦춰준다.
+	//점사모드면 재발사 가능 시간을 늦춰준다.
 	if((bIsBurstmode && LastFireTime > 0 && LastFireTime + WeaponStat.SecondPerBullet *4 >WorldTime) ||
 		(LastFireTime > 0 && LastFireTime + WeaponStat.SecondPerBullet > WorldTime))
 	{
@@ -497,60 +503,95 @@ void AWeapon::Firing()
 		계속해서 사격중이라면 ReFiring함수 호출
 	*/
 	bIsFiring = true;
-	WeaponFX();
-	//BulletOut(); //Weapon Instant에 구현함.
-	New_BulletOut(); //Weapon Instant
-	
+
+	if (bDetectLookInput == false)
+	{
+		AMainCharacter* Main = Cast<AMainCharacter>(GetInstigator());
+		if (Main)
+		{
+			if (Main->bIsLookInput)
+			{
+				bDetectLookInput = true;
+			}
+		}
+	}
+
 	/* 첫 발사면 ControlRotation값을 저장한다. -> 사격 종료시 원복하기 위함 */
 	if (FireCount == 0)
 	{
 		StartFiringRotation = GetInstigatorController()->GetControlRotation();
+		//UE_LOG(LogTemp, Warning, TEXT("Save Start Firing Rotation"));
+		UE_LOG(LogTemp, Warning, TEXT("Start Rotating val : %s"), *StartFiringRotation.ToString());
 	}
+
+	WeaponFX();
+	//BulletOut(); //Weapon Instant에 구현함.
+	New_BulletOut(); //Weapon Instant
 
 	FireCount++;
 	
 	UE_LOG(LogTemp, Warning, TEXT("Fire cnt : %d"), FireCount);
 	//UE_LOG(LogTemp, Warning, TEXT("LastFiretime : %f"), LastFireTime);
 	
+	GetWorldTimerManager().SetTimer(FiringTimer, this, &AWeapon::ReFiring, WeaponStat.SecondPerBullet, false);
+	LastFireTime = GetWorld()->GetTimeSeconds();
 
+	/*
 	bool bCanReFire = CheckRefire();
 	if (bCanReFire)
 	{
-		//UE_LOG(LogTemp, Warning, TEXT("Firing:: Can Refire"));
-		GetWorldTimerManager().SetTimer(FiringTimer,this, &AWeapon::Firing, WeaponStat.SecondPerBullet, false);
+		UE_LOG(LogTemp, Warning, TEXT("Firing:: Can Refire. Set Timer"));
+		//GetWorldTimerManager().SetTimer(FiringTimer,this, &AWeapon::Firing, WeaponStat.SecondPerBullet, false);
+		GetWorldTimerManager().SetTimer(FiringTimer, this, &AWeapon::ReFiring, WeaponStat.SecondPerBullet, false);
 	}
 	else
 	{
 		//Out of Ammo
-		/* Check Ammo를 따로 한번 더 한다. 
-		* Burst mode일때는 탄이 충분해도, 격발 횟수에 따라 재사격을 못할때도 생기니, 
-		* Out of Ammo함수를 무조건 호출하는건 옳치 않음.
-		* 
-		* Burst mode일때는 탄약 체크를 한번 더 해야함.
-		*/
-		if (WeaponFiringMode == EWeaponFiringMode::EWFM_Burst)
+		// Check Ammo를 따로 한번 더 한다. 
+		// Burst mode일때는 탄이 충분해도, 격발 횟수에 따라 재사격을 못할때도 생기니, 
+		// Out of Ammo함수를 무조건 호출하는건 옳치 않음.
+		// 
+		// Burst mode일때는 탄약 체크를 한번 더 해야함.
+		//
+		//AimInitialize();
+		if (WeaponFiringMode == EWeaponFiringMode::EWFM_Burst)//EWeaponFiringMode::EWFM_Burst)
 		{
-			//UE_LOG(LogTemp, Warning, TEXT("Firing:: Can NOT Refire, Call EndFiring"));
+			UE_LOG(LogTemp, Warning, TEXT("Firing:: Burst mode, Can NOT Refire, Call EndFiring"));
 			EndFiring();
+			//TempNewWeaponState(); //EndFiring을 호출하지 않고 이렇게 해봄
 			//CurrentWeaponState = EWeaponState::EWS_Idle;
+		}
+		else if (WeaponFiringMode == EWeaponFiringMode::EWFM_SemiAuto)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Firing:: Semi auto, Can NOT Refire, Call EndFiring"));
+			TempNewWeaponState();
 		}
 		
 	}	
-
-	LastFireTime = GetWorld()->GetTimeSeconds();
-	
+	*/	
 
 }
 
 void AWeapon::ReFiring()
 {
 	//여기서는 격발 횟수 (FireCount)에 따라 Firing호출할지 말지 결정하자.
-	Firing();
+	bool bCanReFire = CheckRefire();
+	if (bCanReFire)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ReFiring:: Can Refire. call Firing"));
+		Firing();
+	}
+	else
+	{
+		EndFiring();
+	}
+	
 }
 
 void AWeapon::EndFiring()
 {
 	/* Firing이 끝나면 각종 변수들을 초기화 시켜준다. */
+	UE_LOG(LogTemp, Warning, TEXT("AWeapon::EndFiring"));
 	bIsFiring = false;
 	GetWorldTimerManager().ClearTimer(FiringTimer);
 	FireCount = 0;
@@ -574,21 +615,21 @@ bool AWeapon::CheckRefire()
 			{
 			case EWeaponFiringMode::EWFM_Safe:
 			case EWeaponFiringMode::EWFM_SemiAuto:
-				//UE_LOG(LogTemp, Warning, TEXT("Check confirm, Can NOT Refire"));
+				//UE_LOG(LogTemp, Warning, TEXT("CheckRefire:: Can't Refire"));
 				break;
 			case EWeaponFiringMode::EWFM_Burst:
 				if (FireCount > 0 && FireCount < WeaponStat.BurstRound)
 				{
-					//UE_LOG(LogTemp, Warning, TEXT("Check confirm, Can Refire"));
+					//UE_LOG(LogTemp, Warning, TEXT("CheckRefire:: Can Refire"));
 					bFlag = true;
 				}
 				else
 				{
-					//UE_LOG(LogTemp, Warning, TEXT("Check confirm, Can NOT Refire"));
+					//UE_LOG(LogTemp, Warning, TEXT("CheckRefire:: Can't Refire"));
 				}
 				break;
 			case EWeaponFiringMode::EWFM_FullAuto:
-				//UE_LOG(LogTemp, Warning, TEXT("Check confirm, Can Refire"));
+				//UE_LOG(LogTemp, Warning, TEXT("CheckRefire:: Can Refire"));
 				bFlag = true;
 				break;
 			}
@@ -743,10 +784,20 @@ void AWeapon::PlayWeaponAnimAndCamShake(FWeaponAnim& Anim)
 
 void AWeapon::AimInitialize()
 {
+	UE_LOG(LogTemp, Warning, TEXT("AWeapon::AimInitialize"));
+	//UE_LOG(LogTemp, Warning, TEXT("Save End Firing Location And Init"));
 	EndFiringRotation = GetInstigatorController()->GetControlRotation();
+	if (bDetectLookInput)
+	{
+		bDetectLookInput = false;
+		FRotator NewStartRot = FRotator(EndFiringRotation.Pitch - 5.f, EndFiringRotation.Yaw, EndFiringRotation.Roll);
+		StartFiringRotation = NewStartRot;
+	}
+	UE_LOG(LogTemp, Warning, TEXT("End Rotating val : %s"), *EndFiringRotation.ToString());
 	Time = 0.f;
 	AlphaTime = 0.f;
 	GetWorldTimerManager().SetTimer(AimInitHandle, [=] {
+		//UE_LOG(LogTemp, Warning, TEXT("AimInit AlphaTime : %f"), AlphaTime);
 		Time += GetWorld()->GetDeltaSeconds();
 		AlphaTime = Time / 1.f; // Time/되돌아오는 시간 (스텟)
 		FRotator LerpAimRotation = FMath::Lerp(EndFiringRotation, StartFiringRotation, AlphaTime);

@@ -108,8 +108,8 @@ struct FWeaponStat
 
 		//m4a1은 분당 700~950발.분당 950으로 잡고 초당 15.8발을 쏘면됨. 0.06초당 한발씩.
 		FireRatePerMin = 950;
-		FireRatePerSec = FireRatePerMin / 60;//0.06;
-		SecondPerBullet = 1 / FireRatePerSec;
+		FireRatePerSec = FireRatePerMin / 60;
+		SecondPerBullet = 1 / FireRatePerSec; //0.06;
 		
 	}
 };
@@ -124,7 +124,9 @@ public:
 
 	UEquipmentComponent* OwningEquipment;
 	AActor* OwningPlayer;
-	
+
+
+	bool bIsFiring;
 	bool bIsAiming; //Main에서 값을 단순히 넣어주기만 한다.
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
@@ -171,15 +173,16 @@ public:
 
 	float AlphaTime;
 	FTimerHandle AimInitHandle;
+
 	
 protected:
 
 	//for gun spread
 	int32 FireCount;
 
-	bool bLMBDown;
+	bool bDetectLookInput;
 
-	bool bIsFiring;
+	bool bLMBDown;	
 
 	float LastFireTime;
 
@@ -225,6 +228,8 @@ public:
 
 	bool CheckRefire();
 	bool CanFire();
+
+	bool CanEndFire();
 
 	virtual void BulletOut() PURE_VIRTUAL(AWeapon::BulletOut);
 	virtual void New_BulletOut() PURE_VIRTUAL(AWeapon::New_BulletOut);

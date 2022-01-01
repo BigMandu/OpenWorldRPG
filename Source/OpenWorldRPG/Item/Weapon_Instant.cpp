@@ -23,40 +23,16 @@ void AWeapon_Instant::New_BulletOut()
 	* 마지막 float값에서 현재flaot값을 뺀 만큼의 pitch,yaw를 올려줘야한다.
 	*/
 	FVector Dir = GetAimRotation();
-	FVector StartTrace = GetTraceStartLocation(Dir);
+	FVector StartTrace = GetTraceStartLocation(Dir);	
+	//FVector NewDir = GetAimRotation();
 	FVector EndTrace = StartTrace + Dir * WeaponStat.WeaponRange;
+	
 	FHitResult Hit = BulletTrace(StartTrace, EndTrace);
+
+	ApplyRecoil();
+
 	DrawDebugPoint(GetWorld(), Hit.Location, 10.f, FColor::Blue, false, 2.f);
 	CheckHit(Hit);
-
-	if (WeaponStat.Recoil_X && WeaponStat.Recoil_Y)
-	{
-		float LastRecoilTime = RecoilTime - WeaponStat.SecondPerBullet;
-		float LastRecoilValue_X = WeaponStat.Recoil_X->GetFloatValue(LastRecoilTime);
-		float NextRecoilValue_X = WeaponStat.Recoil_X->GetFloatValue(RecoilTime);
-
-		float LastRecoilValue_Y = WeaponStat.Recoil_Y->GetFloatValue(LastRecoilTime);
-		float NextRecoilValue_Y = WeaponStat.Recoil_Y->GetFloatValue(RecoilTime);
-
-		float PitchValue = (NextRecoilValue_X - LastRecoilValue_X) * 2.0;
-		float YawValue = (NextRecoilValue_Y - LastRecoilValue_Y) * 2.0;
-
-		GetInstigator()->AddControllerPitchInput(PitchValue);
-		GetInstigator()->AddControllerYawInput(YawValue);
-
-		RecoilTime = RecoilTime + WeaponStat.SecondPerBullet;
-		UE_LOG(LogTemp, Warning, TEXT("RecoilTime : %f"), RecoilTime);
-		if (RecoilTime > WeaponStat.SecondPerBullet*30)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("RecoilTime max, set 0.5"));
-			RecoilTime = 0.5f;
-		}
-
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("there is no Recoil_X, Y file"));
-	}
 
 }
 
@@ -266,12 +242,63 @@ void AWeapon_Instant::CalcRecoilNApply(FVector *PreSpread, FVector *NexSpread)
 	
 }
 
-float AWeapon_Instant::PitchRecoilValue(float Zvalue)
-{
-	return 0.0f;
-}
 
-float AWeapon_Instant::YawRecoilValue(FVector Vec)
+void AWeapon_Instant::ApplyRecoil()
 {
-	return 0.0f;
+	if (WeaponStat.Recoil_X && WeaponStat.Recoil_Y)
+	{
+		float LastRecoilTime = RecoilTime - WeaponStat.SecondPerBullet;
+		float LastRecoilValue_X = WeaponStat.Recoil_X->GetFloatValue(LastRecoilTime);
+		float NextRecoilValue_X = WeaponStat.Recoil_X->GetFloatValue(RecoilTime);
+
+		float LastRecoilValue_Y = WeaponStat.Recoil_Y->GetFloatValue(LastRecoilTime);
+		float NextRecoilValue_Y = WeaponStat.Recoil_Y->GetFloatValue(RecoilTime);
+
+		float PitchValue = (NextRecoilValue_X - LastRecoilValue_X);
+		float YawValue = (NextRecoilValue_Y - LastRecoilValue_Y);
+
+		if (bIsAiming)
+		{
+			PitchValue *= BulletStat.AimBulletSpread;
+			YawValue *= BulletStat.AimBulletSpread;
+		}
+		else
+		{
+			PitchValue *= BulletStat.HipBulletSpread;
+			YawValue *= BulletStat.HipBulletSpread;
+		}
+
+		GetInstigator()->AddControllerPitchInput(PitchValue);
+		GetInstigator()->AddControllerYawInput(YawValue);
+
+		//리코일 타임은 1발을 쏠때의 타임만큼씩 증가해야한다.
+		RecoilTime = RecoilTime + WeaponStat.SecondPerBullet;
+		if (WeaponFiringMode == EWeaponFiringMode::EWFM_SemiAuto)
+		{
+			RecoilTime *= 2;
+		}
+		
+
+		UE_LOG(LogTemp, Warning, TEXT("RecoilTime : %f"), RecoilTime);
+		if (RecoilTime > WeaponStat.SecondPerBullet * 30) //30을 나중에 탄창 최대개수로 바꾸면됨.
+		{
+			UE_LOG(LogTemp, Warning, TEXT("RecoilTime max, set 0.5"));
+			RecoilTime = 0.5f;
+		}
+
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("there is no Recoil_X, Y file"));
+	}
 }
+//
+//float AWeapon_Instant::PitchRecoilValue(float Zvalue)
+//{
+//	return 0.0f;
+//}
+//
+//float AWeapon_Instant::YawRecoilValue(FVector Vec)
+//{
+//	return 0.0f;
+//}

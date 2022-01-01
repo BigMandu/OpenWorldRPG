@@ -25,8 +25,8 @@ struct FBulletData
 	FBulletData()
 	{
 		Damage = 10;
-		HipBulletSpread = 300.f;
-		AimBulletSpread = 50.f;
+		HipBulletSpread = 2.f;
+		AimBulletSpread = 0.7f;
 	}
 };
 
@@ -63,6 +63,8 @@ public:
 	void CheckHit(FHitResult& Hit);
 
 	void CalcRecoilNApply(FVector *PreSpread, FVector *NexSpread);
-	float PitchRecoilValue(float Zvalue);
-	float YawRecoilValue(FVector Vec);
+
+	//float PitchRecoilValue(float Zvalue);
+	//float YawRecoilValue(FVector Vec);
+	void ApplyRecoil();
 };
