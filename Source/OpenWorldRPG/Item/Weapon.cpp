@@ -28,6 +28,9 @@ AWeapon::AWeapon() : Super()
 	bLMBDown = false;
 	bDetectLookInput = false;
 
+	
+	
+
 	//MuzzleEffectComp = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("MuzzleEffectComp"));
 	//MuzzleEffectComp->SetupAttachment(GetRootComponent());
 	MuzzleFlashSocketName = FName("muzzleflash");
@@ -53,6 +56,10 @@ void AWeapon::Equip(AActor* Char)
 {
 	AMainCharacter* Main = Cast<AMainCharacter>(Char);
 	bool bFlag = false;
+
+	WeaponStat.FireRatePerSec = WeaponStat.FireRatePerMin / 60;
+	WeaponStat.SecondPerBullet = 1 / WeaponStat.FireRatePerSec; //0.06;
+
 	if (Main)
 	{
 		if (CheckSendToInventory(Main)) //인벤토리로 보냈으면
@@ -594,6 +601,7 @@ void AWeapon::EndFiring()
 	UE_LOG(LogTemp, Warning, TEXT("AWeapon::EndFiring"));
 	bIsFiring = false;
 	GetWorldTimerManager().ClearTimer(FiringTimer);
+	//GetWorldTimerManager().ClearTimer(RecoilHandle);
 	FireCount = 0;
 	CurrentWeaponState = EWeaponState::EWS_Idle; //Burst mode를 위함
 	PreviousSpread = FVector::ZeroVector;
@@ -799,7 +807,7 @@ void AWeapon::AimInitialize()
 	GetWorldTimerManager().SetTimer(AimInitHandle, [=] {
 		//UE_LOG(LogTemp, Warning, TEXT("AimInit AlphaTime : %f"), AlphaTime);
 		Time += GetWorld()->GetDeltaSeconds();
-		AlphaTime = Time / 1.f; // Time/되돌아오는 시간 (스텟)
+		AlphaTime = Time / 0.6f; // Time/되돌아오는 시간 (스텟)
 		FRotator LerpAimRotation = FMath::Lerp(EndFiringRotation, StartFiringRotation, AlphaTime);
 		GetInstigatorController()->SetControlRotation(LerpAimRotation);
 		/*UE_LOG(LogTemp, Warning, TEXT("Time : %f"), Time);

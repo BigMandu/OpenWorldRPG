@@ -333,6 +333,10 @@ void AMainCharacter::Tick(float DeltaTime)
 				GetWorldTimerManager().ClearTimer(EquippedWeapon->AimInitHandle);
 			}
 		}
+		if (EquippedWeapon->RecoilAlphaTime >= 1.f)
+		{
+			GetWorldTimerManager().ClearTimer(EquippedWeapon->RecoilHandle);
+		}
 		
 	}
 	

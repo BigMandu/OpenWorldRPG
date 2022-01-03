@@ -87,7 +87,9 @@ struct FWeaponStat
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
 	int32 BurstRound;
 
+	UPROPERTY(VisibleAnywhere, Category = "Weapon | Stat")
 	float FireRatePerSec;
+	UPROPERTY(VisibleAnywhere, Category = "Weapon | Stat")
 	float SecondPerBullet;
 
 	/* Recoil */
@@ -108,8 +110,7 @@ struct FWeaponStat
 
 		//m4a1은 분당 700~950발.분당 950으로 잡고 초당 15.8발을 쏘면됨. 0.06초당 한발씩.
 		FireRatePerMin = 950;
-		FireRatePerSec = FireRatePerMin / 60;
-		SecondPerBullet = 1 / FireRatePerSec; //0.06;
+		
 		
 	}
 };
@@ -132,7 +133,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	USkeletalMeshComponent* SKMesh;
 
-	UPROPERTY(EditDefaultsOnly, Category = "WeaponStat")
+	UPROPERTY(EditAnywhere, Category = "WeaponStat")
 	FWeaponStat WeaponStat;
 
 	FName MuzzleFlashSocketName;
@@ -172,8 +173,9 @@ public:
 	FWeaponAnim FireAnimaton;
 
 	float AlphaTime;
+	float RecoilAlphaTime;
 	FTimerHandle AimInitHandle;
-
+	FTimerHandle RecoilHandle;
 	
 protected:
 

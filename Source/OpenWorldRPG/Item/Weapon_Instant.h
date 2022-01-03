@@ -26,7 +26,7 @@ struct FBulletData
 	{
 		Damage = 10;
 		HipBulletSpread = 2.f;
-		AimBulletSpread = 0.7f;
+		AimBulletSpread = 1.f;
 	}
 };
 
@@ -54,7 +54,14 @@ public:
 
 	/*FVector PreviousSpread;
 	FVector NextSpread;*/
+protected:
+	float PitchValue;
+	float YawValue;
 
+	float WorldTime;
+	
+	
+public:
 
 	virtual void BulletOut() override;
 	virtual void New_BulletOut() override;

@@ -5,6 +5,7 @@
 #include "OpenWorldRPG/MainCharacter.h"
 #include "Particles/ParticleSystem.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Sound/SoundCue.h"
 #include "DrawDebugHelpers.h" //디버깅용
 
@@ -28,7 +29,7 @@ void AWeapon_Instant::New_BulletOut()
 	FVector EndTrace = StartTrace + Dir * WeaponStat.WeaponRange;
 	
 	FHitResult Hit = BulletTrace(StartTrace, EndTrace);
-
+	GetWorldTimerManager().ClearTimer(RecoilHandle);
 	ApplyRecoil();
 
 	DrawDebugPoint(GetWorld(), Hit.Location, 10.f, FColor::Blue, false, 2.f);
@@ -254,8 +255,8 @@ void AWeapon_Instant::ApplyRecoil()
 		float LastRecoilValue_Y = WeaponStat.Recoil_Y->GetFloatValue(LastRecoilTime);
 		float NextRecoilValue_Y = WeaponStat.Recoil_Y->GetFloatValue(RecoilTime);
 
-		float PitchValue = (NextRecoilValue_X - LastRecoilValue_X);
-		float YawValue = (NextRecoilValue_Y - LastRecoilValue_Y);
+		PitchValue = (NextRecoilValue_X - LastRecoilValue_X);
+		YawValue = (NextRecoilValue_Y - LastRecoilValue_Y);
 
 		if (bIsAiming)
 		{
@@ -268,8 +269,28 @@ void AWeapon_Instant::ApplyRecoil()
 			YawValue *= BulletStat.HipBulletSpread;
 		}
 
-		GetInstigator()->AddControllerPitchInput(PitchValue);
-		GetInstigator()->AddControllerYawInput(YawValue);
+		WorldTime = 0.f;
+		RecoilAlphaTime = 0.f;
+
+		GetWorldTimerManager().SetTimer(RecoilHandle, [=] {
+			WorldTime += GetWorld()->GetDeltaSeconds();
+			RecoilAlphaTime = WorldTime / (WeaponStat.SecondPerBullet * 0.5);
+			
+			
+			UE_LOG(LogTemp, Warning, TEXT("alpha time : %f"), RecoilAlphaTime);
+			float LerpRecoilX = UKismetMathLibrary::Lerp(0, PitchValue, RecoilAlphaTime);
+			float LerpRecoilY = UKismetMathLibrary::Lerp(0, YawValue, RecoilAlphaTime);
+			
+			/*float LerpRecoilX = FMath::Lerp(0, PitchValue, AlphaTime);
+			float LerpRecoilY = FMath::Lerp(0, YawValue, AlphaTime);*/
+			GetInstigator()->AddControllerPitchInput(LerpRecoilX);
+			GetInstigator()->AddControllerYawInput(LerpRecoilY);
+
+			}, GetWorld()->GetDeltaSeconds(), true);
+
+		/*GetInstigator()->AddControllerPitchInput(PitchValue);
+		GetInstigator()->AddControllerYawInput(YawValue);*/
+		
 
 		//리코일 타임은 1발을 쏠때의 타임만큼씩 증가해야한다.
 		RecoilTime = RecoilTime + WeaponStat.SecondPerBullet;
@@ -283,7 +304,7 @@ void AWeapon_Instant::ApplyRecoil()
 		if (RecoilTime > WeaponStat.SecondPerBullet * 30) //30을 나중에 탄창 최대개수로 바꾸면됨.
 		{
 			UE_LOG(LogTemp, Warning, TEXT("RecoilTime max, set 0.5"));
-			RecoilTime = 0.5f;
+			RecoilTime = 1.f;
 		}
 
 	}
