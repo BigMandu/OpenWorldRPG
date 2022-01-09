@@ -30,13 +30,24 @@ void AMainController::BeginPlay()
 		}
 	}
 
-	if (WInventory)
+	/*if (WInventory)
 	{
 		Inventory = CreateWidget<UUserWidget>(this, WInventory);
 		if (Inventory)
 		{
 			Inventory->AddToViewport();
 			Inventory->SetVisibility(ESlateVisibility::Hidden);
+		}
+	}*/
+
+	if (WNewInventory)
+	{
+		NewInventory = CreateWidget<UUserWidget>(this, WNewInventory);
+		if (NewInventory)
+		{
+			
+			NewInventory->AddToViewport();
+			NewInventory->SetVisibility(ESlateVisibility::Hidden);
 		}
 	}
 
@@ -93,6 +104,34 @@ void AMainController::ToggleInventory()
 
 void AMainController::ShowInventory_Implementation()
 {
+	if (NewInventory)
+	{
+		NewInventory->SetVisibility(ESlateVisibility::Visible);
+
+		FInputModeGameAndUI Mode; ///TabKey로 HIde를 하기위해 Game And UI mode로 했는데도 키가 안먹힌다. 
+		Mode.SetWidgetToFocus(NewInventory->TakeWidget());
+
+		SetInputMode(Mode);
+		bShowMouseCursor = true;
+
+		if (Main)
+		{
+			//Main->DisableInput(this); //Player의 움직임 제한. -> 입력자체를 막아버리기 때문에 Toggle을 할 수 없음.
+			Main->bDisableInput = true;
+
+			if (Main->InteractLootBox)
+			{
+				ShowLootBoxWidget();
+			}
+
+		}
+		SetIgnoreMoveInput(true);
+		SetIgnoreLookInput(true);
+
+		bIsInventoryVisible = true;
+	}
+
+	/*
 	if (Inventory)
 	{
 		Inventory->SetVisibility(ESlateVisibility::Visible);
@@ -118,15 +157,15 @@ void AMainController::ShowInventory_Implementation()
 		SetIgnoreLookInput(true);
 
 		bIsInventoryVisible = true;
-	}
+	}*/
 }
 
 
 void AMainController::HideInventory_Implementation()
 {
-	if (Inventory)
+	if (NewInventory)
 	{
-		Inventory->SetVisibility(ESlateVisibility::Hidden);
+		NewInventory->SetVisibility(ESlateVisibility::Hidden);
 		FInputModeGameOnly Mode;
 		SetInputMode(FInputModeGameOnly());
 		bShowMouseCursor = false;
@@ -153,6 +192,37 @@ void AMainController::HideInventory_Implementation()
 
 		bIsInventoryVisible = false;
 	}
+	/*
+	if (Inventory)
+	{
+		Inventory->SetVisibility(ESlateVisibility::Hidden);
+		FInputModeGameOnly Mode;
+		SetInputMode(FInputModeGameOnly());
+		bShowMouseCursor = false;
+
+		if (Main)
+		{
+			
+				//LootBox와 상호작용 했었다면
+				//상호작용 중인 LootBox에서 Close Box를 호출한다.
+			
+			if (Main->InteractLootBox)
+			{
+				HideLootBoxWidget();
+				Main->InteractLootBox->CloseBox(Main);
+			}
+
+			//Main->DisableInput(this); //Player의 움직임 제한. -> 입력자체를 막아버리기 때문에 Toggle을 할 수 없음.
+			Main->bDisableInput = false;
+
+
+		}
+		SetIgnoreMoveInput(false);
+		SetIgnoreLookInput(false);
+
+		bIsInventoryVisible = false;
+	}
+	*/
 }
 
 void AMainController::CreateLootWidget()

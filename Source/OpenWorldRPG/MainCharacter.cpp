@@ -16,6 +16,7 @@
 #include "Perception/AISense_Hearing.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
+#include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
 #include "Item/InventoryComponent.h"
 #include "Item/Interactive_Interface.h"
 #include "Item/Interactable.h"
@@ -101,6 +102,7 @@ AMainCharacter::AMainCharacter()
 
 	/****** Item ****/
 	Inventory = CreateDefaultSubobject<UInventoryComponent>(TEXT("Inventory"));
+	NewInventory = CreateDefaultSubobject<UNewInventoryComponent>(TEXT("NewInventory"));
 	Equipment = CreateDefaultSubobject<UEquipmentComponent>(TEXT("Equipment"));
 
 	ActiveInteractDistance = 200.f; //상호작용 아이템이 표시되는 최대거리.

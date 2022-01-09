@@ -23,6 +23,7 @@ class UMainAnimInstance;
 class USpringArmComponent;
 class USkeletalMeshComponent;
 class USoundCue;
+class UNewInventoryComponent;
 
 
 UENUM(BlueprintType)
@@ -150,6 +151,9 @@ public:
 	/********* Inventory ********/
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Item)
 	UInventoryComponent* Inventory;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Item)
+	UNewInventoryComponent* NewInventory;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Item)
 	UEquipmentComponent* Equipment;
