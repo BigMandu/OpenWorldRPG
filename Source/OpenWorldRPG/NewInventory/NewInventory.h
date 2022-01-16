@@ -25,7 +25,8 @@ public:
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UNewInventoryGrid* GridWidget;
-	float TileSize;
+
+	//float TileSize;
 
 
 public:

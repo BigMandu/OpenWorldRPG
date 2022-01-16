@@ -3,6 +3,9 @@
 
 #include "Item.h"
 #include "OpenWorldRPG/MainCharacter.h"
+#include "OpenWorldRPG/NewInventory/NewItemObject.h"
+#include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
+#include "Materials/MaterialInterface.h"
 #include "DrawDebugHelpers.h"
 
 AItem::AItem()
@@ -17,7 +20,42 @@ AItem::AItem()
 	Mesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
 	Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
 	
+	ItemSize = FIntPoint(1, 1);
+	bCanRotate = true;
 	
+}
+
+void AItem::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	if (ItemObj == nullptr)
+	{
+		ItemObj = GetDefaultItemObj();
+	}
+}
+
+UNewItemObject* AItem::GetDefaultItemObj()
+{
+	UNewItemObject* Obj = NewObject<UNewItemObject>(this, UNewItemObject::StaticClass());
+	if (Obj)
+	{
+		//Obj->thumbnail = Thumbnail;
+		Obj->item = this;
+		Obj->bCanRotated = bCanRotate;
+		Obj->itemsize = ItemSize;
+
+		Obj->icon = Icon;
+		Obj->iconRotated = IconRotated;
+		
+		
+		UE_LOG(LogTemp, Warning, TEXT("AItem::Create object"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AItem::fail to Create object"));
+	}
+	return Obj;
 }
 
 void AItem::Pickup(class AActor* Actor)
@@ -27,7 +65,20 @@ void AItem::Pickup(class AActor* Actor)
 	if (Main)
 	{
 		//UE_LOG(LogTemp, Warning, TEXT("AItem::Add To Inventory"));
-		
+	
+		if (Main->NewInventoryComp)
+		{
+			if (Main->NewInventoryComp->AddItem(ItemObj))
+			{
+				UE_LOG(LogTemp, Warning, TEXT("success Add item"));
+				Destroy();
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("fail to Add item"));
+			}
+		}
+		/*
 		if (Main->Inventory->AddItem(this))//OwningInventory세팅 및 Tarray에 넣어줌.
 		{
 			SetItemState(EItemState::EIS_Pickup);
@@ -37,8 +88,8 @@ void AItem::Pickup(class AActor* Actor)
 
 			Mesh->SetHiddenInGame(true);	//Mesh->bHiddenInGame = true;
 			Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		
 		}
+		*/
 	}
 	
 }

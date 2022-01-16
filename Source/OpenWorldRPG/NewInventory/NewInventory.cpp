@@ -16,9 +16,10 @@ void UNewInventory::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	GridWidget->GridInitialize(InventoryComp, TileSize);
+	GridWidget->GridInitialize(InventoryComp, InventoryComp->TileSize);
 }
 
+/* Navive Construct 보다 먼저 실행됨.*/
 bool UNewInventory::Initialize()
 {
 	bool bResult = Super::Initialize();
@@ -27,28 +28,8 @@ bool UNewInventory::Initialize()
 	Main = (TMain == nullptr) ? nullptr : TMain;
 	if (Main)
 	{
-		InventoryComp = Main->NewInventory;
-		InventoryComp->Columns = 10;
-		InventoryComp->Rows = 10;
-		TileSize = 50.f;
-
-
+		InventoryComp = Main->NewInventoryComp;
+		//GridWidget->GridInitialize(InventoryComp, InventoryComp->TileSize);
 	}
-	
-	/*if (bResult)
-	{
-		AMainCharacter* TMain = Cast<AMainCharacter>(GetOwningPlayerPawn());
-		Main = (TMain == nullptr) ? nullptr : TMain;
-		if(Main)
-		{
-			InventoryComp = Main->NewInventory;
-			InventoryComp->Columns = 10;
-			InventoryComp->Rows = 10;
-			TileSize = 50.f;
-			
-			GridWidget->GridInitialize(InventoryComp, TileSize);
-			return bResult;
-		}
-	}*/
 	return bResult;
 }

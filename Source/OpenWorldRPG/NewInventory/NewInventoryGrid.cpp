@@ -3,6 +3,7 @@
 
 #include "OpenWorldRPG/NewInventory/NewInventoryGrid.h"
 #include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
+#include "OpenWorldRPG/NewInventory/NewItemwidget.h"
 #include "Components/Widget.h"
 #include "Components/CanvasPanelSlot.h"
 #include "Components/CanvasPanel.h"
@@ -28,18 +29,15 @@ void UNewInventoryGrid::GridInitialize(UNewInventoryComponent* p_InvComp, float 
 {
 	InventoryComp = p_InvComp;
 	TileSize = p_TileSize;
-
+	
 	UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(GridBorder->Slot);
 	if (CanvasSlot)
 	{
 		FVector2D Size = FVector2D(InventoryComp->Columns * TileSize, InventoryComp->Rows * TileSize);
 		CanvasSlot->SetSize(Size);
+	
 		CreateLineSegments();
-
-		/*FPaintArgs Args;
-		FGeometry Geo;*/
-		/* NativePaint를 어떻게 호출하는지..*/
-		//NativePaint(FPaintArgs & Args, FGeometry & Geo, FSlateRect & Slate, FSlateWindowElementList & Element, 5, FWidgetStyle & style, true);
+		RefreshInventory();
 	}
 
 }
@@ -82,6 +80,7 @@ void UNewInventoryGrid::CreateLineSegments()
 		Line.Start = FVector2D(LocalX, 0.f);
 		Line.End = FVector2D(LocalX, InventoryComp->Rows * TileSize);
 		Lines.Add(Line); 
+		
 	}
 	
 	/* create horizontal line */
@@ -95,26 +94,30 @@ void UNewInventoryGrid::CreateLineSegments()
 	}
 }
 
-
-/*
-void UNewInventoryGrid::CustomPaint()
+void UNewInventoryGrid::RefreshInventory()
 {
-	FGeometry BorderGeo = GridBorder->GetCachedGeometry();
-	FVector2D BorderLo = USlateBlueprintLibrary::GetLocalTopLeft(BorderGeo);
-	ULineBatchComponent* const LineBatcher = GetWorld()->PersistentLineBatcher;
-	if (LineBatcher)
+	/* 안쪽에 있는 CanvasPanel을 전부 지워준다.
+	* Line은 Border에 있으니 선을 다시 그을필요는 없음.
+	* 그리고 InventoryComponent에 있는 모든 item을 불러와서 해당하는 아이콘과 사이즈만큼 
+	* 채워 넣는다.
+	* InventoryComponent에 모든 Item을 얻어오는 함수를 새로 추가해준다.
+	*/
+
+	if (GridCanvasPanel)
 	{
-		for (FLine line : Lines)
+		//TMap<UNewItemObject*, FTile> ItemsMap;
+		GridCanvasPanel->ClearChildren();
+		auto ItemsMap = InventoryComp->GetAllItems();
+
+		for (auto ele : ItemsMap)
 		{
-			FVector2D posA = FVector2D(line.Start + BorderLo);
-			FVector2D posB = FVector2D(line.End + BorderLo);
-
-
-			//DrawLine의 Tint = RGB all 0.5f, Alpha is 0.5f;
-			FLinearColor LineColor = FLinearColor(0.5f, 0.5f, 0.5f, 0.5f);
-			//LineBatcher->DrawLine(posA, posB, LineColor, 10);
+			//CreateWidget>
+			//ItemsMap.Find(mapkey.Key);
+			
 		}
 		
+
 	}
-}*/
+}
+
 

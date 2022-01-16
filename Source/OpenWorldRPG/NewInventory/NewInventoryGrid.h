@@ -29,8 +29,6 @@ private:
 	/* InventoryStruct */
 	UPROPERTY(EditDefaultsOnly)
 	TArray<FLine> Lines;
-	UPROPERTY(EditDefaultsOnly)
-	FTile Tile;
 
 public:
 	UPROPERTY(EditDefaultsOnly, Category = "WidgetVariable", meta = (BindWidget))
@@ -46,8 +44,9 @@ public:
 public:
 	virtual void NativeConstruct() override;
 
+	virtual int32 NativePaint(const FPaintArgs& Args, const FGeometry& AllottedGeometry, const FSlateRect& MyCullingRect, FSlateWindowElementList& OutDrawElements, int32 LayerId, const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const override;
 	void GridInitialize(UNewInventoryComponent* p_InvComp, float p_TileSize);
 	void CreateLineSegments();
-	virtual int32 NativePaint(const FPaintArgs& Args, const FGeometry& AllottedGeometry, const FSlateRect& MyCullingRect, FSlateWindowElementList& OutDrawElements, int32 LayerId, const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const override;
-	//void CustomPaint();
+	void RefreshInventory();
+
 };

@@ -175,7 +175,7 @@ void UInventoryWidget::SetEquipmentSlot(UWidget* EquipSlot, AWeapon* Weap)
 			UTextBlock* TBlock = Cast<UTextBlock>(EquipSlotWidget->GetWidgetFromName(FName("EquipItemName")));
 			if (Thumb && TBlock)
 			{
-				Thumb->SetBrushFromTexture(Weap->Thumbnail);
+				//Thumb->SetBrushFromTexture(Weap->Thumbnail);
 				TBlock->SetText(Weap->ItemName);
 			}
 		}
