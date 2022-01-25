@@ -14,7 +14,9 @@
 class UBorder;
 class UCanvasPanel;
 class UNewInventoryComponent;
-
+class AMainCharacter;
+class AMainController;
+class UNewItemObject;
 
 UCLASS()
 class OPENWORLDRPG_API UNewInventoryGrid : public UUserWidget
@@ -24,6 +26,8 @@ public:
 	UNewInventoryGrid(const FObjectInitializer& ObjectInitializer);
 private:
 	UNewInventoryComponent* InventoryComp;
+	AMainController* MainCon;
+	AMainCharacter* Main;
 	float TileSize;
 
 	/* InventoryStruct */
@@ -47,6 +51,10 @@ public:
 	virtual int32 NativePaint(const FPaintArgs& Args, const FGeometry& AllottedGeometry, const FSlateRect& MyCullingRect, FSlateWindowElementList& OutDrawElements, int32 LayerId, const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const override;
 	void GridInitialize(UNewInventoryComponent* p_InvComp, float p_TileSize);
 	void CreateLineSegments();
+
+	UFUNCTION()
 	void RefreshInventory();
 
+	UFUNCTION()
+	void OnItemRemove(UObject* T_ItemObj);
 };

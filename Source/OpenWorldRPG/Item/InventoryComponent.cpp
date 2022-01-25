@@ -43,7 +43,7 @@ bool UInventoryComponent::AddItem(class AItem* Item)
 	InventoryItems.Add(Item);
 
 	
-	OnInventoryUpdated.Broadcast();
+	//OnInventoryUpdated.Broadcast();
 
 	return true;
 }
@@ -55,7 +55,7 @@ bool UInventoryComponent::RemoveItem(class AItem* Item)
 		//Item->OwningInventory = nullptr;
 		InventoryItems.RemoveSingle(Item);
 
-		OnInventoryUpdated.Broadcast();
+		//OnInventoryUpdated.Broadcast();
 
 		/*FTransform form;
 		form.SetLocation(GetOwner()->GetActorLocation() + GetOwner()->GetActorForwardVector() * 100.f);

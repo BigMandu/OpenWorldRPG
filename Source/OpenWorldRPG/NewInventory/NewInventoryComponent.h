@@ -9,6 +9,9 @@
 
 class UNewItemObject;
 
+//DECLARE_MULTICAST_DELEGATE_OneParam(FOnRemoved, UObject*);
+DECLARE_MULTICAST_DELEGATE(FOnInventoryUpdated);
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class OPENWORLDRPG_API UNewInventoryComponent : public UActorComponent
 {
@@ -17,6 +20,8 @@ class OPENWORLDRPG_API UNewInventoryComponent : public UActorComponent
 public:	
 	// Sets default values for this component's properties
 	UNewInventoryComponent();
+
+	FOnInventoryUpdated OnInventoryUpdated;
 
 	/* Instance Editable, ReadOnly, Expose on Spawn */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Constants")
@@ -28,6 +33,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Constants")
 	float TileSize = 50.f;
 
+	
 
 	TArray<UNewItemObject*> InventoryItems;
 
@@ -40,6 +46,8 @@ protected:
 
 public:	
 	bool AddItem(UNewItemObject* ItemObj);
+
+	bool RemoveItem(UNewItemObject* ItemObj);
 
 	bool IsAvailableSpace(UNewItemObject* ItemObj, int32 TopLeftIndex);
 

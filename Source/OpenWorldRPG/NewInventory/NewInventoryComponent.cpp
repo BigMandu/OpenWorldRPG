@@ -28,6 +28,14 @@ void UNewInventoryComponent::BeginPlay()
 	
 }
 
+bool UNewInventoryComponent::RemoveItem(UNewItemObject* ItemObj)
+{
+#if DEBUG
+	UE_LOG(LogTemp, Warning, TEXT("NewInvComp::Remove"));
+#endif
+	return true;
+}
+
 bool UNewInventoryComponent::AddItem(UNewItemObject* ItemObj)
 {
 	/*
@@ -46,7 +54,13 @@ bool UNewInventoryComponent::AddItem(UNewItemObject* ItemObj)
 				InventoryItems.Insert(ItemObj, iter);
 #if DEBUG
 				UE_LOG(LogTemp, Warning, TEXT("NewInvComp::AddItem = Success Add Item"));
-#endif
+#endif			
+				/* AddItem이 성공적이면 UNewInventoryGrid::RefreshInventory를 호출하기 위해
+				Delegate를 생성하고 broadcast를 때려준다.
+				*/
+				//
+				OnInventoryUpdated.Broadcast();
+
 				return bResult;				
 			}
 		}
@@ -190,3 +204,5 @@ TMap<UNewItemObject*, FTile> UNewInventoryComponent::GetAllItems()
 
 	return InventoryStoredInfo;
 }
+
+

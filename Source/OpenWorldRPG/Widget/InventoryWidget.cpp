@@ -40,8 +40,8 @@ bool UInventoryWidget::Initialize()
 			InventoryComp = Main->Inventory;
 			EquipmentComp = Main->Equipment;
 
-			InventoryComp->OnInventoryUpdated.AddDynamic(this, &UInventoryWidget::InitInventory);
-			EquipmentComp->OnEquipmentUpdated.AddDynamic(this, &UInventoryWidget::InitEquipment);
+			//InventoryComp->OnInventoryUpdated.AddDynamic(this, &UInventoryWidget::InitInventory);
+			//EquipmentComp->OnEquipmentUpdated.AddDynamic(this, &UInventoryWidget::InitEquipment);
 		}
 
 		/*if (Main->InteractLootBox)

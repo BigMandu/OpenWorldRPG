@@ -46,6 +46,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets | Inventory")
 	TSubclassOf<UUserWidget> WInventoryItems;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets | Inventory")
+	TSubclassOf<UUserWidget> WItemwidget;
+
 	/* Loot Box TEST */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets | LootBox")
 	TSubclassOf<UUserWidget> WLootBoxWidget;

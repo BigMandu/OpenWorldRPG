@@ -10,7 +10,7 @@ class AActor;
 class AItem;
 
 //Inventory가 업데이트 될때마다 블루프린트에서 ui를 업데이트를 하기 위해 delegate를 만들어준다.
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInventoryUpdated);
+//DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInventoryUpdated);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class OPENWORLDRPG_API UInventoryComponent : public UActorComponent
@@ -27,8 +27,8 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = Inventory)
 	int32 Capacity;
 
-	UPROPERTY(BlueprintAssignable, Category = Inventory)
-	FOnInventoryUpdated OnInventoryUpdated;
+	//UPROPERTY(BlueprintAssignable, Category = Inventory)
+	//FOnInventoryUpdated OnInventoryUpdated;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Items)
 	TArray<AActor*> InventoryItems; //inventory에 있는 item들
