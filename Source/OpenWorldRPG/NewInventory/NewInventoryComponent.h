@@ -58,5 +58,5 @@ public:
 
 	FTile ForEachIndex(UNewItemObject* Obj, int32 TopLeftIndex);
 
-	TMap<UNewItemObject*,FTile> GetAllItems();
+	const TMap<UNewItemObject*,FTile> GetAllItems();
 };

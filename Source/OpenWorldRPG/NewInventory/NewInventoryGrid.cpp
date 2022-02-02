@@ -5,17 +5,18 @@
 #include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
 #include "OpenWorldRPG/NewInventory/NewItemwidget.h"
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
-#include "Components/Widget.h"
-#include "Components/CanvasPanelSlot.h"
-#include "Components/CanvasPanel.h"
-#include "Components/Border.h"
-#include "Components/LineBatchComponent.h"
-#include "GameFramework/HUD.h"
-#include "Blueprint/UserWidget.h"
-#include "Blueprint/SlateBlueprintLibrary.h"
-#include "Blueprint/WidgetBlueprintLibrary.h"
 #include "OpenWorldRPG/MainCharacter.h"
 #include "OpenWorldRPG/MainController.h"
+#include "GameFramework/HUD.h"
+//#include "Components/Widget.h"
+//#include "Components/CanvasPanelSlot.h"
+//#include "Components/CanvasPanel.h"
+//#include "Components/Border.h"
+//#include "Components/LineBatchComponent.h"
+//#include "Blueprint/UserWidget.h"
+#include "Blueprint/SlateBlueprintLibrary.h"
+#include "Blueprint/WidgetBlueprintLibrary.h"
+
 
 
 UNewInventoryGrid::UNewInventoryGrid(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
@@ -46,7 +47,7 @@ void UNewInventoryGrid::GridInitialize(UNewInventoryComponent* p_InvComp, float 
 		//InventoryComp의 AddItem함수가 성공할때마다 broadcast,해당 함수를 실행시키기 위해 bind
 		if (InventoryComp)
 		{
-			FDelegateHandle DelHandle = InventoryComp->OnInventoryUpdated.AddUFunction(this, FName("RefreshInventory"));
+			InventoryComp->OnInventoryUpdated.AddUFunction(this, FName("RefreshInventory"));
 		}
 
 		CreateLineSegments();
@@ -128,41 +129,65 @@ void UNewInventoryGrid::RefreshInventory()
 	{
 		//TMap<UNewItemObject*, FTile> ItemsMap;
 		GridCanvasPanel->ClearChildren();
-		auto ItemsMap = InventoryComp->GetAllItems();
+		const auto ItemsMap = InventoryComp->GetAllItems();
 
 		for (auto ele : ItemsMap)
 		{
-			UNewItemwidget* ItemWidget = Cast<UNewItemwidget>(CreateWidget<UUserWidget>(this, MainCon->WItemwidget));
-			if (ItemWidget)
+
+			/*UNewItemwidget* testwidget = NewObject<UNewItemwidget>(this, UNewItemwidget::StaticClass());
+			if (testwidget)
 			{
-				ItemWidget->Tilesize = TileSize;
-				ItemWidget->ItemObj = ele.Key;
+				testwidget->Tilesize = TileSize;
+			}*/
 
-				//Item이 삭제됐을때 실행될 function을 생성한뒤, NewItemWidget의 Delegate에 연결한다.
-				// func의 생성은 delegate의 파라미터에 맞춤.
-				ItemWidget->OnRemoved.AddUFunction(this, FName("OnItemRemove"));// &UNewInventoryGrid::OnItemRemove);
-				
-				ItemWidget->Refresh();
+			//UNewItemwidget* ItemWidget = CreateWidget<UNewItemwidget>(this, UNewItemwidget::StaticClass());//MainCon->WItemwidget);// NewItemWidget);
+			//UNewItemwidget* ItemWidget = CreateWidget<UNewItemwidget>(GetOwningPlayer(), UNewItemwidget::StaticClass());//MainCon->WItemwidget);
+			
+			//UNewItemwidget* testwidget = ConstructWidget<UNewItemwidget>(MainCon->WItemwidget);
 
-				//canvas panel의 자식으로 ItemWidget을 추가시킨다.
-				UPanelSlot* PanelSlot = GridCanvasPanel->AddChild(ItemWidget);
+			newitemwidget = CreateWidget<UNewItemwidget>(this, WNewItemWidget);
 
-
-				/*추가시킨 ItemWidget의 size와 Position을 맞춰 주기 위한 작업을 진행한다.
-				* Setsize를 사용하기 위해 CanvasPanelSlot으로 Cast를 해준다.
-				* SetPosition도 사용한다.
-				*/
-				UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(PanelSlot);
-				if (CanvasSlot)
-				{
-					CanvasSlot->SetAutoSize(true);
-					FVector2D ItemTopLeft = FVector2D(ele.Value.X * TileSize, ele.Value.Y * TileSize);
-					CanvasSlot->SetPosition(ItemTopLeft);
-				}
-
-
-				
+			if (newitemwidget)
+			{
+				newitemwidget->Tilesize = TileSize;
+				newitemwidget->ItemObj = ele.Key;
+				newitemwidget->Refresh();
 			}
+
+
+			//if (ItemWidget != nullptr)
+			//{
+			//	
+			//	//ItemWidget->NativeConstruct();
+			//	//ItemWidget->Initialize();
+			//	//Item이 삭제됐을때 실행될 function을 생성한뒤, NewItemWidget의 Delegate에 연결한다.
+			//	// func의 생성은 delegate의 파라미터에 맞춤.
+			//	ItemWidget->OnRemoved.AddUFunction(this, FName("OnItemRemove"));// &UNewInventoryGrid::OnItemRemove);
+
+			//	ItemWidget->Tilesize = TileSize;
+			//	ItemWidget->ItemObj = ele.Key;
+
+
+			//	//ItemWidget->Refresh();
+
+			//	//canvas panel의 자식으로 ItemWidget을 추가시킨다.
+			//	UPanelSlot* PanelSlot = GridCanvasPanel->AddChild(ItemWidget);
+
+
+			//	/*추가시킨 ItemWidget의 size와 Position을 맞춰 주기 위한 작업을 진행한다.
+			//	* Setsize를 사용하기 위해 CanvasPanelSlot으로 Cast를 해준다.
+			//	* SetPosition도 사용한다.
+			//	*/
+			//	UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(PanelSlot);
+			//	if (CanvasSlot)
+			//	{
+			//		CanvasSlot->SetAutoSize(true);
+			//		FVector2D ItemTopLeft = FVector2D(ele.Value.X * TileSize, ele.Value.Y * TileSize);
+			//		CanvasSlot->SetPosition(ItemTopLeft);
+			//	}
+			//	
+			//}
+
 		}
 	}
 }

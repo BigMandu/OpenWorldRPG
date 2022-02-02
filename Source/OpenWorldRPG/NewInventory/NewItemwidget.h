@@ -4,11 +4,19 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+
+//#include "Runtime/UMG/Public/UMG.h"
+//#include "Runtime/UMG/Public/UMGStyle.h"
+//#include "Runtime/UMG/Public/Slate/SObjectWidget.h"
+//#include "Runtime/UMG/Public/IUMGModule.h"
+//#include "Runtime/UMG/Public/Blueprint/UserWidget.h"
+
 #include "NewItemwidget.generated.h"
 
 /**
  * 
  */
+class UUserWidget;
 class UNewItemObject;
 class USizeBox;
 class UBorder;
@@ -22,8 +30,11 @@ class OPENWORLDRPG_API UNewItemwidget : public UUserWidget
 {
 	GENERATED_BODY()
 public:
+	UPROPERTY(BlueprintReadOnly)
 	UNewItemObject* ItemObj;
+	UPROPERTY(BlueprintReadOnly)
 	float Tilesize;
+	UPROPERTY(BlueprintReadOnly)
 	FVector2D widgetsize;
 
 	/* delegate, NewItemwidget::GetIconIamge¿¡¼­ broad cast, 
@@ -33,22 +44,51 @@ public:
 	*/
 	FOnRemoved OnRemoved;
 
-	UPROPERTY(EditAnywhere, Category = "WidgetVariable", meta = (BindWidget))
-	USizeBox* BackgroundSizeBox;
+	USizeBox* testsizebox;
 
-	UPROPERTY(EditAnywhere, Category = "WidgetVariable", meta = (BindWidget))
-	UBorder* BackgroundBorder;
+	UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
+	USizeBox* BGSizeBox;
 
-	UPROPERTY(EditAnywhere, Category = "WidgetVariable", meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
+	UBorder* BGBorder;
+
+	UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
 	UImage* ItemIcon;
 
 public:
 	virtual bool Initialize() override;
 	virtual void NativeConstruct() override;
+	//virtual void SynchronizeProperties() override;
 	
-	UFUNCTION()
+	//UFUNCTION(BlueprintNativeEvent)
 	void Refresh();
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	FSlateBrush GetIconImage();
+
+	template <typename WidgetT>
+	FORCEINLINE_DEBUGGABLE WidgetT* ConstructWidget(UWidget* WidgetClass = WidgetT::StaticClass(), FName WidgetName = NAME_None)
+	{
+		static_assert(TIsDerivedFrom<WidgetT, UWidget>::IsDerived, "WidgetTree::ConstructWidget can only create UWidget objects.");
+
+		if (WidgetClass->IsChildOf<UUserWidget>())
+		{
+			return Cast<WidgetT>(CreateWidget(this, *WidgetClass, WidgetName));
+		}
+
+		return NewObject<WidgetT>(this, WidgetClass, WidgetName, RF_Transactional);
+	}
+
+	
+	/*FORCEINLINE_DEBUGGABLE WidgetT* ConstructWidget(TSubclassOf<UWidget>WidgetClass = WidgetT::StaticClass(), FName WidgetName = NAME_None)
+	{
+		static_assert(TIsDerivedFrom<WidgetT, UWidget>::IsDerived, "WidgetTree::ConstructWidget can only create UWidget objects.");
+
+		if (WidgetClass->IsChildOf<UUserWidget>())
+		{
+			return Cast<WidgetT>(CreateWidget(this, *WidgetClass, WidgetName));
+		}
+
+		return NewObject<WidgetT>(this, WidgetClass, WidgetName, RF_Transactional);
+	}*/
 };

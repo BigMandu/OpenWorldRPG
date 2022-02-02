@@ -4,11 +4,15 @@
 #include "OpenWorldRPG/NewInventory/NewItemwidget.h"
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
+
 #include "Components/CanvasPanelSlot.h"
 #include "Components/SizeBox.h"
 #include "Components/Border.h"
 #include "Components/Image.h"
 #include "Styling/SlateBrush.h"
+
+//BindWidget nullptr issue solution 1 -> add runtime headerfile
+
 
 bool UNewItemwidget::Initialize() 
 {
@@ -20,19 +24,62 @@ bool UNewItemwidget::Initialize()
 void UNewItemwidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+	//SynchronizeProperties();
+	Refresh();
+	
 
+	/*BGSizeBox = NewObject<USizeBox>(this, USizeBox::StaticClass());
+	ItemIcon = NewObject<UImage>(this, UImage::StaticClass());*/
+	/*if (testsizebox)
+	{
+		BGSizeBox = testsizebox;
+	}*/
+	//FObjectProperty* Obj = FindFProperty<FObjectProperty>(this->GetClass(), FName("BGSizeBox"));
+	//if(Obj)
+	//{
+	//	//testsizebox = Cast<USizeBox>(Obj);
+	//	
+	//}
 	//Refresh(); //error
 }
 
-void UNewItemwidget::Refresh()
+
+//void UNewItemwidget::SynchronizeProperties()
+//{
+//	Super::SynchronizeProperties();
+//	if (ItemObj && BGSizeBox)
+//	{
+//		FIntPoint Itemsize = ItemObj->GetItemSize();
+//
+//		widgetsize = FVector2D(Itemsize.X * Tilesize, Itemsize.Y * Tilesize);
+//
+//		BGSizeBox->SetWidthOverride(widgetsize.X);
+//		BGSizeBox->SetHeightOverride(widgetsize.Y); //error
+//
+//		UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(ItemIcon->Slot);
+//		if (CanvasSlot)
+//		{
+//			CanvasSlot->SetSize(widgetsize);
+//		}
+//
+//	}
+//	else
+//	{
+//		UE_LOG(LogTemp, Warning, TEXT("sizebox is invalid"));
+//	}
+//}
+
+void UNewItemwidget::Refresh()//_Implementation()
 {
-	if (ItemObj && BackgroundSizeBox)
+	
+	if (ItemObj && BGSizeBox)
 	{
 		FIntPoint Itemsize = ItemObj->GetItemSize();
+
 		widgetsize = FVector2D(Itemsize.X * Tilesize, Itemsize.Y * Tilesize);
 
-		BackgroundSizeBox->SetWidthOverride(widgetsize.X);
-		BackgroundSizeBox->SetHeightOverride(widgetsize.Y); //error
+		BGSizeBox->SetWidthOverride(widgetsize.X);
+		BGSizeBox->SetHeightOverride(widgetsize.Y); //error
 
 		UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(ItemIcon->Slot);
 		if (CanvasSlot)
@@ -45,6 +92,7 @@ void UNewItemwidget::Refresh()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("sizebox is invalid"));
 	}
+	
 }
 
 FSlateBrush UNewItemwidget::GetIconImage()
@@ -53,21 +101,12 @@ FSlateBrush UNewItemwidget::GetIconImage()
 	if (ItemObj)
 	{
 
-		/* Item obj에서 rotate bool에 따른 icon리턴하기 (icon, iconroated 중에서 하나)*/
+		/* Item obj에서 함수를 하나 만든뒤 rotate bool에 따른 icon리턴하기 (icon, iconroated 중에서 하나)
+		* 아래는 임시 코드임.
+		*/
 		icon = UWidgetBlueprintLibrary::MakeBrushFromMaterial(ItemObj->icon, widgetsize.X, widgetsize.Y);
 
-		//ItemObj->icon
-		//ReturnIcon = FSlateBrush(icon);
-		/*
-		https://youtu.be/pG7KFaCwvJw?t=1237 여기임.
-		에러 처리 해야됨 -> build.cs에서 slate 부분 주석 풀어주면 해결.
-
-		https://youtu.be/pG7KFaCwvJw?t=1351 여기임.
-		Event추가해야됨. 
-
-		Item이 Inventory에서 지워질때 Event를 발생시킨다.
-		*/
-
+		//Item이 지워질때 해당 event에 bind된 함수를 호출한다.
 		OnRemoved.Broadcast(ItemObj);
 	}
 	return icon;

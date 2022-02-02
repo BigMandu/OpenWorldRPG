@@ -36,6 +36,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets | Inventory")
 	UUserWidget* Inventory;
 
+	/* New Inventory System*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets | Inventory")
 	TSubclassOf<UUserWidget> WNewInventory;
 

@@ -26,5 +26,6 @@ public:
 	UMaterialInterface* icon;
 	UMaterialInterface* iconRotated;
 
+	UFUNCTION(BlueprintCallable)
 	FIntPoint GetItemSize();
 };

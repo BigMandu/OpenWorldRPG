@@ -169,7 +169,7 @@ UNewItemObject* UNewInventoryComponent::GetItemAtIndex(int32 index)
 	return ReturnObj;
 }
 
-TMap<UNewItemObject*, FTile> UNewInventoryComponent::GetAllItems()
+const TMap<UNewItemObject*, FTile> UNewInventoryComponent::GetAllItems()
 {
 	/*
 	* Item과, 해당 item의 Top-Left index를 담은 Map을 리턴해준다.
@@ -189,19 +189,6 @@ TMap<UNewItemObject*, FTile> UNewInventoryComponent::GetAllItems()
 		}
 
 	}
-
-	//for (auto It = InventoryItems.CreateIterator(); It; ++It)
-	//{
-
-	//	bool bAlreadyHaveit = false; // InventoryStoredInfo.Contains(It);
-	//	if (bAlreadyHaveit == false)
-	//	{
-	//		int32 index = It.GetIndex();
-	//		FTile CurItemSize = IndexToTile(It.GetIndex());
-	//		//InventoryStoredInfo.Add(It, CurItemSize);
-	//	}
-	//}
-
 	return InventoryStoredInfo;
 }
 
