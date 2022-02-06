@@ -85,6 +85,7 @@ void UNewItemwidget::Refresh()//_Implementation()
 		if (CanvasSlot)
 		{
 			CanvasSlot->SetSize(widgetsize);
+			ItemIcon->SetBrush(GetIconImage());
 		}
 
 	}

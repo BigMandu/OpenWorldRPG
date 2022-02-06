@@ -49,9 +49,30 @@ bool UNewInventoryComponent::AddItem(UNewItemObject* ItemObj)
 			bResult = IsAvailableSpace(ItemObj, iter);
 			if (bResult)
 			{
-				FTile tile;
+				FTile tile = IndexToTile(iter);
+				FIntPoint Itemsize = ItemObj->GetItemSize();
+				
+				FTile Itemtile;
+				Itemtile.X = 0;
+				Itemtile.Y = 0;
+
+				int32 HorizontalMAX = tile.X + Itemsize.X - 1;
+				int32 VerticalMAX = tile.Y + Itemsize.Y - 1;
+
+				for (int32 i = tile.X; i < HorizontalMAX; ++i)
+				{
+					for (int32 j = tile.Y; j < VerticalMAX; ++j)
+					{
+						Itemtile.X = i;
+						Itemtile.Y = j;
+						int32 index = TileToIndex(Itemtile);
+						InventoryItems.Insert(ItemObj, index);
+					}
+				}
+
+				/*FTile tile; 
 				tile = ForEachIndex(ItemObj, iter);
-				InventoryItems.Insert(ItemObj, iter);
+				InventoryItems.Insert(ItemObj, iter);*/
 #if DEBUG
 				UE_LOG(LogTemp, Warning, TEXT("NewInvComp::AddItem = Success Add Item"));
 #endif			
@@ -81,56 +102,106 @@ bool UNewInventoryComponent::IsAvailableSpace(UNewItemObject* ItemObj, int32 Top
 		이 Item이 차지할 타일만큼	(해당 index의 Top-left부터) 모든 Inventory tile을 
 		loop 돌면서 유효한 공간이 있는지 확인한다. 이미 차지하고 있다면 false, 없다면 true를 리턴.
 	*/
-	bool bReturn = false;
-	FTile tile = ForEachIndex(ItemObj, TopLeftIndex);
-	if ((tile.X >= 0 && tile.Y >= 0) && (tile.X < Columns && tile.Y < Rows))
+	bool bReturn = true;
+	//FTile tile = ForEachIndex(ItemObj, TopLeftIndex);
+	FTile tile = IndexToTile(TopLeftIndex);
+	FIntPoint Itemsize = ItemObj->GetItemSize();
+
+	FTile checktile;
+	checktile.X = 0; checktile.Y = 0;
+
+	int32 HorizontalMAX = tile.X + Itemsize.X - 1;
+	int32 VerticalMAX = tile.Y + Itemsize.Y - 1;
+
+	for (int32 i = tile.X; i < HorizontalMAX; ++i)
 	{
-		int32 index = TileToIndex(tile);
-		UNewItemObject* GettingItemObj = GetItemAtIndex(index);
-		/* 해당 index에 이미 item obj가 있으면 false를 return한다 */
-		if (GettingItemObj == nullptr)
+		for (int32 j = tile.Y; j < VerticalMAX; ++j)
 		{
+			checktile.X = i;
+			checktile.Y = j;
+			if ((checktile.X >= 0 && checktile.Y >= 0) && (checktile.X < Columns && checktile.Y < Rows))
+			{
+				int32 index = TileToIndex(checktile);
+				UNewItemObject* GettingItemObj = GetItemAtIndex(index);
+				/* 해당 index에 이미 item obj가 있으면 false를 return한다 */
+				if (GettingItemObj == nullptr)
+				{
 #if DEBUG
-			UE_LOG(LogTemp, Warning, TEXT("NewInvComp::IsAvaSpace = Empty At index"));
+					UE_LOG(LogTemp, Warning, TEXT("NewInvComp::IsAvaSpace = Empty At index"));
 #endif
-			bReturn = true;
+					//bReturn = true;
+				}
+				else
+				{
+					bReturn = false;
+#if DEBUG
+					UE_LOG(LogTemp, Warning, TEXT("NewInvComp::IsAvaSpace = Not Empty At index"));
+#endif
+				}
+			}
+			else
+			{
+#if DEBUG
+				UE_LOG(LogTemp, Warning, TEXT("NewInvComp::IsAvaSpace = Tile is invalid, wrong range"));
+#endif
+			}
 		}
-		else
-		{
-#if DEBUG
-			UE_LOG(LogTemp, Warning, TEXT("NewInvComp::IsAvaSpace = Not Empty At index"));
-#endif
-		}
+		//returntile.X = i;
 	}
-	else
-	{
-#if DEBUG
-		UE_LOG(LogTemp, Warning, TEXT("NewInvComp::IsAvaSpace = Tile is invalid, wrong range"));
-#endif
-	}
+
+	//리턴한 tile의 범위를 체크한다. (아이템이 차지할 inventory의 좌표를 리턴해옴)
+//	if ((tile.X >= 0 && tile.Y >= 0) && (tile.X < Columns && tile.Y < Rows))
+//	{
+//		int32 index = TileToIndex(tile);
+//		UNewItemObject* GettingItemObj = GetItemAtIndex(index);
+//		/* 해당 index에 이미 item obj가 있으면 false를 return한다 */
+//		if (GettingItemObj == nullptr)
+//		{
+//#if DEBUG
+//			UE_LOG(LogTemp, Warning, TEXT("NewInvComp::IsAvaSpace = Empty At index"));
+//#endif
+//			bReturn = true;
+//		}
+//		else
+//		{
+//#if DEBUG
+//			UE_LOG(LogTemp, Warning, TEXT("NewInvComp::IsAvaSpace = Not Empty At index"));
+//#endif
+//		}
+//	}
+//	else
+//	{
+//#if DEBUG
+//		UE_LOG(LogTemp, Warning, TEXT("NewInvComp::IsAvaSpace = Tile is invalid, wrong range"));
+//#endif
+//	}
 	return bReturn;
 }
 
-
+/* item obj와 top left index를 가지고 item의 크기만큼 
+	index를 loop돌면서 item이 차지할수 있는지 확인한다.
+*/
 FTile UNewInventoryComponent::ForEachIndex(UNewItemObject* Obj, int32 TopLeftIndex)
 {
 	FTile tile = IndexToTile(TopLeftIndex);
-	FIntPoint dimension = Obj->GetItemSize();
+	FIntPoint Itemsize = Obj->GetItemSize();
 	FTile returntile;
 	returntile.X = 0;
 	returntile.Y = 0;
 
-	int32 Outerendindex = tile.X + dimension.X;// -1;
-	int32 Innerendindex = tile.Y + dimension.Y;
+	int32 HorizontalMAX = tile.X + Itemsize.X - 1;
+	int32 VerticalMAX = tile.Y + Itemsize.Y - 1;
 	
-	for (int32 i = tile.X; i < Outerendindex; ++i)
+	for (int32 i = tile.X; i < HorizontalMAX; ++i)
 	{
-		returntile.X = i;
+		for (int32 j = tile.Y; j < VerticalMAX; ++j)
+		{
+			returntile.X = i;
+			returntile.Y = j;
+		}
+		//returntile.X = i;
 	}
-	for (int32 j = tile.Y; j < Innerendindex; ++j)
-	{
-		returntile.Y = j;
-	}
+	
 	return returntile;
 }
 

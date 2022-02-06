@@ -65,20 +65,6 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	FSlateBrush GetIconImage();
-
-	template <typename WidgetT>
-	FORCEINLINE_DEBUGGABLE WidgetT* ConstructWidget(UWidget* WidgetClass = WidgetT::StaticClass(), FName WidgetName = NAME_None)
-	{
-		static_assert(TIsDerivedFrom<WidgetT, UWidget>::IsDerived, "WidgetTree::ConstructWidget can only create UWidget objects.");
-
-		if (WidgetClass->IsChildOf<UUserWidget>())
-		{
-			return Cast<WidgetT>(CreateWidget(this, *WidgetClass, WidgetName));
-		}
-
-		return NewObject<WidgetT>(this, WidgetClass, WidgetName, RF_Transactional);
-	}
-
 	
 	/*FORCEINLINE_DEBUGGABLE WidgetT* ConstructWidget(TSubclassOf<UWidget>WidgetClass = WidgetT::StaticClass(), FName WidgetName = NAME_None)
 	{

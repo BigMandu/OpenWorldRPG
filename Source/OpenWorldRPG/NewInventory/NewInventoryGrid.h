@@ -6,11 +6,11 @@
 #include "OpenWorldRPG/NewInventory/InventoryStruct.h"
 #include "Blueprint/UserWidget.h"
 
-#include "Runtime/UMG/Public/UMG.h"
-#include "Runtime/UMG/Public/UMGStyle.h"
-#include "Runtime/UMG/Public/Slate/SObjectWidget.h"
-#include "Runtime/UMG/Public/IUMGModule.h"
-#include "Runtime/UMG/Public/Blueprint/UserWidget.h"
+//#include "Runtime/UMG/Public/UMG.h"
+//#include "Runtime/UMG/Public/UMGStyle.h"
+//#include "Runtime/UMG/Public/Slate/SObjectWidget.h"
+//#include "Runtime/UMG/Public/IUMGModule.h"
+//#include "Runtime/UMG/Public/Blueprint/UserWidget.h"
 
 #include "NewInventoryGrid.generated.h"
 
@@ -75,7 +75,7 @@ public:
 	void OnItemRemove(UObject* T_ItemObj);
 
 
-	template <typename WidgetT>
+	/*template <typename WidgetT>
 	FORCEINLINE_DEBUGGABLE WidgetT* ConstructWidget(TSubclassOf<UWidget>WidgetClass = WidgetT::StaticClass(), FName WidgetName = NAME_None)
 	{
 		static_assert(TIsDerivedFrom<WidgetT, UWidget>::IsDerived, "WidgetTree::ConstructWidget can only create UWidget objects.");
@@ -86,5 +86,5 @@ public:
 		}
 
 		return NewObject<WidgetT>(this, WidgetClass, WidgetName, RF_Transactional);
-	}
+	}*/
 };
