@@ -11,6 +11,7 @@
  */
 class UNewInventoryComponent;
 class UNewInventoryGrid;
+class UDropWidget;
 class AMainCharacter;
 
 UCLASS()
@@ -25,6 +26,9 @@ public:
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UNewInventoryGrid* GridWidget;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UDropWidget* DropWidget;
 
 	//float TileSize;
 

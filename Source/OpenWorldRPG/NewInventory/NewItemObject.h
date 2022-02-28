@@ -11,6 +11,7 @@
  */
 class AItem;
 class UTexture2D;
+class UTextBlock;
 
 UCLASS()
 class OPENWORLDRPG_API UNewItemObject : public UObject
@@ -23,9 +24,17 @@ public:
 	bool bCanRotated;
 	FIntPoint itemsize;
 
+	FText itemName;
+	FText itemDesc;
+
 	UMaterialInterface* icon;
 	UMaterialInterface* iconRotated;
 
+
+	int32 TopLeftIndex;
+
 	UFUNCTION(BlueprintCallable)
 	FIntPoint GetItemSize();
+
+	UClass* GetItemClass();
 };

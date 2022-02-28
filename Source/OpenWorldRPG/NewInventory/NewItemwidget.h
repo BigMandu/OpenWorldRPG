@@ -18,6 +18,7 @@
  */
 class UUserWidget;
 class UNewItemObject;
+class UTooltipWidget;
 class USizeBox;
 class UBorder;
 class UImage;
@@ -29,22 +30,27 @@ UCLASS()
 class OPENWORLDRPG_API UNewItemwidget : public UUserWidget
 {
 	GENERATED_BODY()
-public:
-	UPROPERTY(BlueprintReadOnly)
-	UNewItemObject* ItemObj;
-	UPROPERTY(BlueprintReadOnly)
-	float Tilesize;
-	UPROPERTY(BlueprintReadOnly)
-	FVector2D widgetsize;
 
-	/* delegate, NewItemwidget::GetIconIamge에서 broad cast, 
+private:
+	FVector2D widgetsize;
+	const FLinearColor NormalColor = FLinearColor(0.0, 0.0, 0.0, 0.5);
+	const FLinearColor HoverColor = FLinearColor(0.5, 0.5, 0.5, 0.2);
+	
+	UTooltipWidget* Tooltip;
+
+
+	UPROPERTY(EditDefaultsOnly, Category = "WidgetVariable")
+	TSubclassOf<UUserWidget> WTooltipWidget = nullptr;
+	
+public:
+
+	/* delegate, NewItemwidget::GetIconIamge,, NativeOnDragDetected 에서 broad cast, 
 	* NewInventoryGrid::RefreshInventory에서 NewInventoryGrid::OnItemRemove
 	* 와 bind시킴.
 	* Item을 삭제했을때 호출되도록.
 	*/
 	FOnRemoved OnRemoved;
-
-	USizeBox* testsizebox;
+	
 
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
 	USizeBox* BGSizeBox;
@@ -55,17 +61,33 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
 	UImage* ItemIcon;
 
+	/* GridWidget에서 data를 넣어줌*/
+	UNewItemObject* ItemObj;
+	float Tilesize;
+
+	
+
+
+private:
+	void Refresh();
+	FSlateBrush GetIconImage();
+
+	void CreateTooltip();
+
 public:
 	virtual bool Initialize() override;
 	virtual void NativeConstruct() override;
 	//virtual void SynchronizeProperties() override;
 	
-	//UFUNCTION(BlueprintNativeEvent)
-	void Refresh();
-
-	UFUNCTION(BlueprintCallable)
-	FSlateBrush GetIconImage();
 	
+	
+
+	virtual void NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
+	virtual void NativeOnMouseLeave(const FPointerEvent& InMouseEvent) override;
+
+	virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
+	virtual void NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation) override;
+
 	/*FORCEINLINE_DEBUGGABLE WidgetT* ConstructWidget(TSubclassOf<UWidget>WidgetClass = WidgetT::StaticClass(), FName WidgetName = NAME_None)
 	{
 		static_assert(TIsDerivedFrom<WidgetT, UWidget>::IsDerived, "WidgetTree::ConstructWidget can only create UWidget objects.");

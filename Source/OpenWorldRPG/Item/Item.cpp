@@ -37,13 +37,15 @@ void AItem::BeginPlay()
 
 UNewItemObject* AItem::GetDefaultItemObj()
 {
-	UNewItemObject* Obj = NewObject<UNewItemObject>(this, UNewItemObject::StaticClass());
+	UNewItemObject* Obj = NewObject<UNewItemObject>(this, UNewItemObject::StaticClass(), FName(GetName()));
 	if (Obj)
 	{
 		//Obj->thumbnail = Thumbnail;
 		Obj->item = this;
 		Obj->bCanRotated = bCanRotate;
 		Obj->itemsize = ItemSize;
+		Obj->itemName = ItemName;
+		Obj->itemDesc = ItemDescription;
 
 		Obj->icon = Icon;
 		Obj->iconRotated = IconRotated;
@@ -68,7 +70,7 @@ void AItem::Pickup(class AActor* Actor)
 	
 		if (Main->NewInventoryComp)
 		{
-			if (Main->NewInventoryComp->AddItem(ItemObj))
+			if (Main->NewInventoryComp->TryAddItem(ItemObj))
 			{
 				UE_LOG(LogTemp, Warning, TEXT("success Add item"));
 				Destroy();
@@ -135,6 +137,7 @@ void AItem::Use(AActor* Actor)
 	AMainCharacter* Main = Cast<AMainCharacter>(Actor);
 	if (Main)
 	{
+		
 		/* debug */
 		//UE_LOG(LogTemp, Warning, TEXT("AItem::Use"));
 	}

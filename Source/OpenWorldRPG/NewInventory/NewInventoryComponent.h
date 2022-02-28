@@ -45,7 +45,9 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
-	bool AddItem(UNewItemObject* ItemObj);
+	bool TryAddItem(UNewItemObject* ItemObj);
+
+	void AddItemAtIndex(UNewItemObject* ItemObj, int32 Index);
 
 	bool RemoveItem(UNewItemObject* ItemObj);
 
@@ -59,4 +61,7 @@ public:
 	FTile ForEachIndex(UNewItemObject* Obj, int32 TopLeftIndex);
 
 	const TMap<UNewItemObject*,FTile> GetAllItems();
+
+
+	bool SpawnItem(UNewItemObject* ItemObj, AActor* Actor);
 };

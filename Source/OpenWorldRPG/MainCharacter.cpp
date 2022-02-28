@@ -721,17 +721,23 @@ void AMainCharacter::FPSAimLocationAdjust()
 /************** Interactive & Inventory Key bind ÇÔ¼ö ***********/
 void AMainCharacter::LMBDown()
 {
-	if (EquippedWeapon)
+	if (bDisableInput == false)
 	{
-		EquippedWeapon->StartFire();
+		if (EquippedWeapon)
+		{
+			EquippedWeapon->StartFire();
+		}
 	}
 }
 
 void AMainCharacter::LMBUp()
 {
-	if (EquippedWeapon)
+	if (bDisableInput == false)
 	{
-		EquippedWeapon->StopFire();
+		if (EquippedWeapon)
+		{
+			EquippedWeapon->StopFire();
+		}
 	}
 }
 

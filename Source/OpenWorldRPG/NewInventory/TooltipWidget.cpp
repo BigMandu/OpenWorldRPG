@@ -1,0 +1,27 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "OpenWorldRPG/NewInventory/TooltipWidget.h"
+#include "OpenWorldRPG/NewInventory/NewItemObject.h"
+#include "Components/TextBlock.h"
+#include "Components/Image.h"
+
+
+//void UTooltipWidget::NativeConstruct()
+//{
+//	Super::NativeConstruct();
+//
+//}
+
+void UTooltipWidget::SetData(UNewItemObject* Obj, float tilesize)
+{
+	if (Obj)
+	{
+		FIntPoint size = Obj->itemsize;
+
+		ItemIcon->SetBrushSize(FVector2D(size.X * tilesize, size.Y * tilesize));
+		ItemIcon->SetBrushFromMaterial(Obj->icon);
+		ItemName->SetText(Obj->itemName);
+		ItemDesc->SetText(Obj->itemDesc);
+	}
+}

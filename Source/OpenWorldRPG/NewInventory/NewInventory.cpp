@@ -2,8 +2,9 @@
 
 
 #include "OpenWorldRPG/NewInventory/NewInventory.h"
-#include "OpenWorldRPG/NewInventory/NewInventoryGrid.h"
 #include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
+#include "OpenWorldRPG/NewInventory/NewInventoryGrid.h"
+#include "OpenWorldRPG/NewInventory/DropWidget.h"
 #include "OpenWorldRPG/MainCharacter.h"
 #include "OpenWorldRPG/MainController.h"
 
@@ -17,6 +18,7 @@ void UNewInventory::NativeConstruct()
 	Super::NativeConstruct();
 
 	GridWidget->GridInitialize(InventoryComp, InventoryComp->TileSize);
+	GridWidget->BindDropWidget(DropWidget);
 }
 
 /* Navive Construct 보다 먼저 실행됨.*/

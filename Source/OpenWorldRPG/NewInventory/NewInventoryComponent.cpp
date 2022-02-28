@@ -2,10 +2,11 @@
 
 
 #include "NewInventoryComponent.h"
+#include "OpenWorldRPG/Item/Item.h"
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
 #include "Containers/Array.h"
 
-#define DEBUG 1
+#define DEBUG 0
 // Sets default values for this component's properties
 UNewInventoryComponent::UNewInventoryComponent()
 {
@@ -13,7 +14,7 @@ UNewInventoryComponent::UNewInventoryComponent()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = false;
 
-	// ...
+	
 }
 
 
@@ -23,8 +24,9 @@ void UNewInventoryComponent::BeginPlay()
 	Super::BeginPlay();
 	
 	//해당InventoryComp의 Inventory배열사이즈를 설정한다.
-	InventoryItems.SetNum(Columns * Rows);
-	// ...
+	//InventoryItems[Columns * Rows] = { nullptr, };
+	//InventoryItems.SetNum(Columns * Rows);
+	InventoryItems.Init(nullptr, Columns * Rows);
 	
 }
 
@@ -32,11 +34,41 @@ bool UNewInventoryComponent::RemoveItem(UNewItemObject* ItemObj)
 {
 #if DEBUG
 	UE_LOG(LogTemp, Warning, TEXT("NewInvComp::Remove"));
-#endif
+#endif	
+	
+	//for (int32 iter = 0; iter < InventoryItems.Num(); ++iter)
+	//{
+	//	if (InventoryItems[iter] == ItemObj)
+	//	{
+	//		InventoryItems[iter] = nullptr;
+	//	}
+	//}
+
+	FIntPoint Size = ItemObj->GetItemSize();
+	FTile ItemIndex = IndexToTile(ItemObj->TopLeftIndex);
+	int32 loopX = ItemIndex.X + Size.X;
+	int32 loopY = ItemIndex.Y + Size.Y;
+
+	FTile removeTile;
+
+	for (int32 i = ItemIndex.X; i <= loopX; i++)
+	{
+		for (int32 j = ItemIndex.Y; j <= loopY; j++)
+		{
+
+			removeTile.X = i;
+			removeTile.Y = j;
+			int32 removeIndex = TileToIndex(removeTile);
+
+			InventoryItems[removeIndex] = nullptr;
+		}
+	}
+	
+
 	return true;
 }
 
-bool UNewInventoryComponent::AddItem(UNewItemObject* ItemObj)
+bool UNewInventoryComponent::TryAddItem(UNewItemObject* ItemObj)
 {
 	/*
 	* 이 ItemObj의 크기를 차지할 타일을 반복한다.
@@ -49,40 +81,8 @@ bool UNewInventoryComponent::AddItem(UNewItemObject* ItemObj)
 			bResult = IsAvailableSpace(ItemObj, iter);
 			if (bResult)
 			{
-				FTile tile = IndexToTile(iter);
-				FIntPoint Itemsize = ItemObj->GetItemSize();
-				
-				FTile Itemtile;
-				Itemtile.X = 0;
-				Itemtile.Y = 0;
-
-				int32 HorizontalMAX = tile.X + Itemsize.X - 1;
-				int32 VerticalMAX = tile.Y + Itemsize.Y - 1;
-
-				for (int32 i = tile.X; i < HorizontalMAX; ++i)
-				{
-					for (int32 j = tile.Y; j < VerticalMAX; ++j)
-					{
-						Itemtile.X = i;
-						Itemtile.Y = j;
-						int32 index = TileToIndex(Itemtile);
-						InventoryItems.Insert(ItemObj, index);
-					}
-				}
-
-				/*FTile tile; 
-				tile = ForEachIndex(ItemObj, iter);
-				InventoryItems.Insert(ItemObj, iter);*/
-#if DEBUG
-				UE_LOG(LogTemp, Warning, TEXT("NewInvComp::AddItem = Success Add Item"));
-#endif			
-				/* AddItem이 성공적이면 UNewInventoryGrid::RefreshInventory를 호출하기 위해
-				Delegate를 생성하고 broadcast를 때려준다.
-				*/
-				//
-				OnInventoryUpdated.Broadcast();
-
-				return bResult;				
+				AddItemAtIndex(ItemObj, iter);
+				return bResult;
 			}
 		}
 #if DEBUG
@@ -93,6 +93,41 @@ bool UNewInventoryComponent::AddItem(UNewItemObject* ItemObj)
 	UE_LOG(LogTemp, Warning, TEXT("NewInvComp::AddItem = Item Obj is invalid"));
 #endif
 	return bResult;
+}
+
+void UNewInventoryComponent::AddItemAtIndex(UNewItemObject* ItemObj, int32 Index)
+{
+	ItemObj->TopLeftIndex = Index;
+	FTile tile = IndexToTile(Index);
+	FIntPoint Itemsize = ItemObj->GetItemSize();
+
+	FTile Itemtile;
+	Itemtile.X = 0;
+	Itemtile.Y = 0;
+
+	int32 HorizontalMAX = tile.X + Itemsize.X - 1;
+	int32 VerticalMAX = tile.Y + Itemsize.Y - 1;
+
+	for (int32 i = tile.X; i <= HorizontalMAX; ++i)
+	{
+		for (int32 j = tile.Y; j <= VerticalMAX; ++j)
+		{
+			Itemtile.X = i;
+			Itemtile.Y = j;
+			if ((Itemtile.X >= 0 && Itemtile.Y >= 0) && (Itemtile.X < Columns && Itemtile.Y < Rows))
+			{
+				int32 Addindex = TileToIndex(Itemtile);
+				InventoryItems[Addindex] = ItemObj;
+			}
+		}
+	}
+#if DEBUG
+	UE_LOG(LogTemp, Warning, TEXT("NewInvComp::AddItem = Success Add Item"));
+#endif			
+	/*	AddItem이 성공적이면 UNewInventoryGrid::RefreshInventory를 호출하기 위해
+		Delegate를 생성하고 broadcast를 때려준다.
+	*/
+	OnInventoryUpdated.Broadcast();
 }
 
 bool UNewInventoryComponent::IsAvailableSpace(UNewItemObject* ItemObj, int32 TopLeftIndex)
@@ -113,9 +148,9 @@ bool UNewInventoryComponent::IsAvailableSpace(UNewItemObject* ItemObj, int32 Top
 	int32 HorizontalMAX = tile.X + Itemsize.X - 1;
 	int32 VerticalMAX = tile.Y + Itemsize.Y - 1;
 
-	for (int32 i = tile.X; i < HorizontalMAX; ++i)
+	for (int32 i = tile.X; i <= HorizontalMAX; ++i)
 	{
-		for (int32 j = tile.Y; j < VerticalMAX; ++j)
+		for (int32 j = tile.Y; j <= VerticalMAX; ++j)
 		{
 			checktile.X = i;
 			checktile.Y = j;
@@ -124,63 +159,44 @@ bool UNewInventoryComponent::IsAvailableSpace(UNewItemObject* ItemObj, int32 Top
 				int32 index = TileToIndex(checktile);
 				UNewItemObject* GettingItemObj = GetItemAtIndex(index);
 				/* 해당 index에 이미 item obj가 있으면 false를 return한다 */
-				if (GettingItemObj == nullptr)
-				{
-#if DEBUG
-					UE_LOG(LogTemp, Warning, TEXT("NewInvComp::IsAvaSpace = Empty At index"));
-#endif
-					//bReturn = true;
-				}
-				else
+				if (GettingItemObj != nullptr)
 				{
 					bReturn = false;
-#if DEBUG
-					UE_LOG(LogTemp, Warning, TEXT("NewInvComp::IsAvaSpace = Not Empty At index"));
-#endif
+					return bReturn;
 				}
+//				if (GettingItemObj == nullptr)
+//				{
+//#if DEBUG
+//					UE_LOG(LogTemp, Warning, TEXT("NewInvComp::IsAvaSpace = Empty At index"));
+//#endif
+//					//bReturn = true;
+//				}
+//				else
+//				{
+//#if DEBUG
+//					UE_LOG(LogTemp, Warning, TEXT("NewInvComp::IsAvaSpace = Not Empty At index"));
+//#endif
+//					bReturn = false;
+//					return bReturn;
+//				}
 			}
 			else
 			{
 #if DEBUG
 				UE_LOG(LogTemp, Warning, TEXT("NewInvComp::IsAvaSpace = Tile is invalid, wrong range"));
 #endif
+				bReturn = false;
+				return bReturn;
 			}
 		}
-		//returntile.X = i;
 	}
-
-	//리턴한 tile의 범위를 체크한다. (아이템이 차지할 inventory의 좌표를 리턴해옴)
-//	if ((tile.X >= 0 && tile.Y >= 0) && (tile.X < Columns && tile.Y < Rows))
-//	{
-//		int32 index = TileToIndex(tile);
-//		UNewItemObject* GettingItemObj = GetItemAtIndex(index);
-//		/* 해당 index에 이미 item obj가 있으면 false를 return한다 */
-//		if (GettingItemObj == nullptr)
-//		{
-//#if DEBUG
-//			UE_LOG(LogTemp, Warning, TEXT("NewInvComp::IsAvaSpace = Empty At index"));
-//#endif
-//			bReturn = true;
-//		}
-//		else
-//		{
-//#if DEBUG
-//			UE_LOG(LogTemp, Warning, TEXT("NewInvComp::IsAvaSpace = Not Empty At index"));
-//#endif
-//		}
-//	}
-//	else
-//	{
-//#if DEBUG
-//		UE_LOG(LogTemp, Warning, TEXT("NewInvComp::IsAvaSpace = Tile is invalid, wrong range"));
-//#endif
-//	}
 	return bReturn;
 }
 
 /* item obj와 top left index를 가지고 item의 크기만큼 
 	index를 loop돌면서 item이 차지할수 있는지 확인한다.
 */
+/*
 FTile UNewInventoryComponent::ForEachIndex(UNewItemObject* Obj, int32 TopLeftIndex)
 {
 	FTile tile = IndexToTile(TopLeftIndex);
@@ -204,6 +220,7 @@ FTile UNewInventoryComponent::ForEachIndex(UNewItemObject* Obj, int32 TopLeftInd
 	
 	return returntile;
 }
+*/
 
 /* Index를 grid의 x, y좌표로 바꿔준다.*/
 FTile UNewInventoryComponent::IndexToTile(int32 index)
@@ -264,3 +281,15 @@ const TMap<UNewItemObject*, FTile> UNewInventoryComponent::GetAllItems()
 }
 
 
+bool UNewInventoryComponent::SpawnItem(UNewItemObject* ItemObj, AActor* Actor)
+{
+	FVector ActorLocation = Actor->GetActorLocation();
+	FVector ActorForwardLo = Actor->GetActorForwardVector();
+	FVector DropLocation = ActorLocation + ActorForwardLo * 120.f;
+
+	FTransform form;
+	form.SetLocation(DropLocation);
+	/*SpawnActor<AItem>()
+	UWorld::SpawnActor(ItemObj->GetItemClass(), DropLocation);*/
+	return false;
+}

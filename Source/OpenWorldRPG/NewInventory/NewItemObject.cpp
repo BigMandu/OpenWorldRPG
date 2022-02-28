@@ -2,6 +2,7 @@
 
 
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
+#include "OpenWorldRPG/Item/Item.h"
 
 UNewItemObject::UNewItemObject()
 {
@@ -11,4 +12,9 @@ UNewItemObject::UNewItemObject()
 FIntPoint UNewItemObject::GetItemSize()
 {
 	return itemsize;
+}
+
+UClass* UNewItemObject::GetItemClass()
+{
+	return item->GetClass();
 }
