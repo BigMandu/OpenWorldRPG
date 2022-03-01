@@ -276,10 +276,24 @@ bool UNewInventoryGrid::NativeOnDrop(const FGeometry& InGeometry, const FDragDro
 
 		int32 index = InventoryComp->TileToIndex(DraggedTile);
 
+		/* 공간이 된다면 해당 공간에 넣는다.*/
 		if (InventoryComp->IsAvailableSpace(ItemObj, index))
 		{
 			InventoryComp->AddItemAtIndex(ItemObj, index);
 			return true;
+		}
+		else
+		{
+			/* 공간이 없으면 기존 저장된 Top-Left Index에 넣는다.*/
+			if (InventoryComp->IsAvailableSpace(ItemObj, ItemObj->TopLeftIndex))
+			{
+				InventoryComp->AddItemAtIndex(ItemObj, ItemObj->TopLeftIndex);
+			}
+			else
+			{
+				/* 뭔가 꼬였다면 그냥 Item을 넣는다.*/
+				InventoryComp->TryAddItem(ItemObj);
+			}
 		}
 	}
 	return false;

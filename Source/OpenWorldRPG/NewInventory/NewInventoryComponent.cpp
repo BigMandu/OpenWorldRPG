@@ -46,8 +46,8 @@ bool UNewInventoryComponent::RemoveItem(UNewItemObject* ItemObj)
 
 	FIntPoint Size = ItemObj->GetItemSize();
 	FTile ItemIndex = IndexToTile(ItemObj->TopLeftIndex);
-	int32 loopX = ItemIndex.X + Size.X;
-	int32 loopY = ItemIndex.Y + Size.Y;
+	int32 loopX = ItemIndex.X + Size.X - 1;
+	int32 loopY = ItemIndex.Y + Size.Y - 1;
 
 	FTile removeTile;
 
