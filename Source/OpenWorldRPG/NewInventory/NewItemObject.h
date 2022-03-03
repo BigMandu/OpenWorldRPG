@@ -22,6 +22,8 @@ public:
 	UNewItemObject();
 	AItem* item;
 	bool bCanRotated;
+	bool bRotated;
+
 	FIntPoint itemsize;
 
 	FText itemName;
@@ -37,4 +39,7 @@ public:
 	FIntPoint GetItemSize();
 
 	UClass* GetItemClass();
+	void ItemRotate();
+
+	UMaterialInterface* GetItemIcon();
 };

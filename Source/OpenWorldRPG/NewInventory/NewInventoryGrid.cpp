@@ -29,7 +29,6 @@
 
 UNewInventoryGrid::UNewInventoryGrid(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
-	//E: / Unreal Projects / OpenWorldRPG / Content / Inventory / SB_DropLocation.uasset
 	static ConstructorHelpers::FObjectFinder<USlateBrushAsset> BrushAsset(TEXT("/Game/Inventory/SB_DropLocation.SB_DropLocation"));
 
 	if (BrushAsset.Succeeded())
@@ -104,30 +103,6 @@ int32 UNewInventoryGrid::NativePaint(const FPaintArgs& Args, const FGeometry& Al
 	if (bNeedDropLocation && bDragging)
 	{
 		DrawDropLocation(Context);
-		//UNewItemObject* Obj = Cast< UNewItemObject>(UWidgetBlueprintLibrary::GetDragDroppingContent()->Payload);
-		//if (Obj)
-		//{
-		//	FTile DraggedTile;
-		//	DraggedTile.X = DraggedTopLeftTile.X;
-		//	DraggedTile.Y = DraggedTopLeftTile.Y;
-
-		//	int32 index = InventoryComp->TileToIndex(DraggedTile);
-
-		//	bool bCanDrop = InventoryComp->IsAvailableSpace(Obj, index);
-
-		//	FLinearColor Green = FLinearColor(0.f, 1.f, 0.f, 0.25f);
-		//	FLinearColor Red = FLinearColor(1.f, 0.f, 0.f, 0.25f);
-		//	FVector2D DropLocationPos = FVector2D(DraggedTile.X, DraggedTile.Y);
-		//	FVector2D DropLocationSize = FVector2D(Obj->GetItemSize().X, Obj->GetItemSize().Y);
-		//	FSlateBrush brush = FSlateBrush();
-
-		//	//UWidgetBlueprintLibrary::MakeBrushFromTexture(UTexture2D::make)
-		//	if (bCanDrop)
-		//	{
-		//		UWidgetBlueprintLibrary::DrawBox(Context, DropLocationPos, DropLocationSize, brush, Green);
-		//		//DrawBox
-		//	}
-		//}
 	}
 	
 
@@ -318,22 +293,22 @@ bool UNewInventoryGrid::NativeOnDragOver(const FGeometry& InGeometry, const FDra
 		FVector2D MousePosInEachTile = GetMousePositionInEachTile(MousePosInWidget);
 
 
-		UE_LOG(LogTemp, Warning, TEXT("========================================="));
-		UE_LOG(LogTemp, Warning, TEXT("MousePOSinWINDOW = %s"), *MousePosInWindow.ToString());
-		UE_LOG(LogTemp, Warning, TEXT("MousePOSinWIDGET = %s"), *MousePosInWidget.ToString());
-		UE_LOG(LogTemp, Warning, TEXT("MousePOSinTILE = %s"), *MousePosInEachTile.ToString());
+		//UE_LOG(LogTemp, Warning, TEXT("========================================="));
+		//UE_LOG(LogTemp, Warning, TEXT("MousePOSinWINDOW = %s"), *MousePosInWindow.ToString());
+		//UE_LOG(LogTemp, Warning, TEXT("MousePOSinWIDGET = %s"), *MousePosInWidget.ToString());
+		//UE_LOG(LogTemp, Warning, TEXT("MousePOSinTILE = %s"), *MousePosInEachTile.ToString());
 
 		FIntPoint Itemsize = ItemObj->GetItemSize();
 		/* 해당 타일의 오른쪽으로 반이상, 아래로 반이상 내려갔는지 판단.*/
 		if (MousePosInEachTile.X > TileSize / 2.f)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Right"));
+			//UE_LOG(LogTemp, Warning, TEXT("Right"));
 			AddRight = 1;
 		}
 
 		if (MousePosInEachTile.Y > TileSize / 2.f)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Down"));
+			//UE_LOG(LogTemp, Warning, TEXT("Down"));
 			AddDown = 1;
 		}
 
@@ -345,9 +320,9 @@ bool UNewInventoryGrid::NativeOnDragOver(const FGeometry& InGeometry, const FDra
 		FIntPoint GetPos = FIntPoint((MousePosInWidget / TileSize).X, (MousePosInWidget / TileSize).Y);
 
 		DraggedTopLeftTile = GetPos - CenterPosition;	
-		UE_LOG(LogTemp, Warning, TEXT("CenterPosition = %s"), *CenterPosition.ToString());
-		UE_LOG(LogTemp, Warning, TEXT("GetPos = %s"), *GetPos.ToString());
-		UE_LOG(LogTemp, Warning, TEXT("DraggedTopLeftTile = %s"), *DraggedTopLeftTile.ToString());
+		//UE_LOG(LogTemp, Warning, TEXT("CenterPosition = %s"), *CenterPosition.ToString());
+		//UE_LOG(LogTemp, Warning, TEXT("GetPos = %s"), *GetPos.ToString());
+		//UE_LOG(LogTemp, Warning, TEXT("DraggedTopLeftTile = %s"), *DraggedTopLeftTile.ToString());
 
 		bReturn = true;
 	}
@@ -397,6 +372,9 @@ void UNewInventoryGrid::DrawDropLocation(FPaintContext& Context) const
 		
 		if (Brush)
 		{
+			UE_LOG(LogTemp, Warning, TEXT("========================================="));
+			UE_LOG(LogTemp, Warning, TEXT("DropLo Pos : %s"), *DropLocationPos.ToString());
+			UE_LOG(LogTemp, Warning, TEXT("DropLo Size : %s"), *DropLocationSize.ToString());
 			if (bCanDrop)
 			{
 				UWidgetBlueprintLibrary::DrawBox(Context, DropLocationPos * TileSize, DropLocationSize, Brush, Green);
@@ -418,3 +396,23 @@ void UNewInventoryGrid::DrawDropLocation(FPaintContext& Context) const
 	}
 }
 
+FReply UNewInventoryGrid::NativeOnPreviewKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
+{
+	FReply Reply = Super::NativeOnPreviewKeyDown(InGeometry, InKeyEvent);
+	
+	UNewItemObject* Obj = Cast<UNewItemObject>(UWidgetBlueprintLibrary::GetDragDroppingContent()->Payload);
+	if (Obj && Obj->bCanRotated)
+	{
+		if (InKeyEvent.GetKey() == EKeys::R)
+		{	
+		
+			Obj->ItemRotate();
+			UNewItemwidget* Itemwidget = Cast< UNewItemwidget>(UWidgetBlueprintLibrary::GetDragDroppingContent()->DefaultDragVisual);
+			if (Itemwidget)
+			{
+				Itemwidget->Refresh();
+			}
+		}
+	}
+	return Reply;
+}

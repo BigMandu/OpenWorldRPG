@@ -69,7 +69,7 @@ public:
 
 
 private:
-	void Refresh();
+	
 	FSlateBrush GetIconImage();
 
 	void CreateTooltip();
@@ -80,7 +80,7 @@ public:
 	//virtual void SynchronizeProperties() override;
 	
 	
-	
+	void Refresh();
 
 	virtual void NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 	virtual void NativeOnMouseLeave(const FPointerEvent& InMouseEvent) override;

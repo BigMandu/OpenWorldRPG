@@ -110,13 +110,12 @@ FSlateBrush UNewItemwidget::GetIconImage()
 	FSlateBrush icon;
 	if (ItemObj)
 	{
+		
+		icon = UWidgetBlueprintLibrary::MakeBrushFromMaterial(ItemObj->GetItemIcon(), widgetsize.X, widgetsize.Y);
+		
+		
 
-		/* Item obj에서 함수를 하나 만든뒤 rotate bool에 따른 icon리턴하기 (icon, iconroated 중에서 하나)
-		* 아래는 임시 코드임.
-		*/
-		icon = UWidgetBlueprintLibrary::MakeBrushFromMaterial(ItemObj->icon, widgetsize.X, widgetsize.Y);
-
-		//Item이 지워질때 해당 event에 bind된 함수를 호출한다.
+		//Item이 지워질때 해당 event에 bind된 함수를 호출한다.6
 		//OnRemoved.Broadcast(ItemObj);
 	}
 	return icon;

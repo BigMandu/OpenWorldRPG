@@ -85,6 +85,10 @@ bool UNewInventoryComponent::TryAddItem(UNewItemObject* ItemObj)
 				return bResult;
 			}
 		}
+
+		/** 실패 했을때, Item을 Rotate시켜주자.
+		* Rotate했는데도 실패했으면, Rotate를 한 item을 다시 Rotate해서 원복시키고 종료하자.
+		*/
 #if DEBUG
 		UE_LOG(LogTemp, Warning, TEXT("NewInvComp::AddItem = Inventory is full"));
 #endif
