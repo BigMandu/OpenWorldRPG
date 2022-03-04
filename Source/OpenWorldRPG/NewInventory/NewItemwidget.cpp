@@ -22,50 +22,11 @@ bool UNewItemwidget::Initialize()
 void UNewItemwidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	//SynchronizeProperties();
-	Refresh();
-	CreateTooltip();
 
-	/*BGSizeBox = NewObject<USizeBox>(this, USizeBox::StaticClass());
-	ItemIcon = NewObject<UImage>(this, UImage::StaticClass());*/
-	/*if (testsizebox)
-	{
-		BGSizeBox = testsizebox;
-	}*/
-	//FObjectProperty* Obj = FindFProperty<FObjectProperty>(this->GetClass(), FName("BGSizeBox"));
-	//if(Obj)
-	//{
-	//	//testsizebox = Cast<USizeBox>(Obj);
-	//	
-	//}
-	//Refresh(); //error
+	//Refresh();
+	CreateTooltip();
 }
 
-
-//void UNewItemwidget::SynchronizeProperties()
-//{
-//	Super::SynchronizeProperties();
-//	if (ItemObj && BGSizeBox)
-//	{
-//		FIntPoint Itemsize = ItemObj->GetItemSize();
-//
-//		widgetsize = FVector2D(Itemsize.X * Tilesize, Itemsize.Y * Tilesize);
-//
-//		BGSizeBox->SetWidthOverride(widgetsize.X);
-//		BGSizeBox->SetHeightOverride(widgetsize.Y); //error
-//
-//		UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(ItemIcon->Slot);
-//		if (CanvasSlot)
-//		{
-//			CanvasSlot->SetSize(widgetsize);
-//		}
-//
-//	}
-//	else
-//	{
-//		UE_LOG(LogTemp, Warning, TEXT("sizebox is invalid"));
-//	}
-//}
 void UNewItemwidget::CreateTooltip()
 {
 	Tooltip = CreateWidget<UTooltipWidget>(this, WTooltipWidget);
@@ -110,8 +71,11 @@ FSlateBrush UNewItemwidget::GetIconImage()
 	FSlateBrush icon;
 	if (ItemObj)
 	{
+		if (ItemObj->GetItemIcon())
+		{
+			icon = UWidgetBlueprintLibrary::MakeBrushFromMaterial(ItemObj->GetItemIcon(), widgetsize.X, widgetsize.Y);
+		}
 		
-		icon = UWidgetBlueprintLibrary::MakeBrushFromMaterial(ItemObj->GetItemIcon(), widgetsize.X, widgetsize.Y);
 		
 		
 
@@ -166,15 +130,17 @@ void UNewItemwidget::NativeOnDragDetected(const FGeometry& InGeometry, const FPo
 	//UDragDropOperation
 	UDragDropOperation* DDOper = UWidgetBlueprintLibrary::CreateDragDropOperation(nullptr);
 	
-	DDOper->Payload = ItemObj;
-	DDOper->DefaultDragVisual = this;
+	if (ItemObj)
+	{
+		DDOper->Payload = ItemObj;
+		DDOper->DefaultDragVisual = this;
 
-	/*OutOperation->Payload = ItemObj;
-	OutOperation->DefaultDragVisual = this;*/
-	
-	OutOperation = DDOper;
-	/* Drag가 감지되면 해당 item을 Inventory에서 삭제한다.*/
-	OnRemoved.Broadcast(ItemObj);	
-	RemoveFromParent();
-	
+		/*OutOperation->Payload = ItemObj;
+		OutOperation->DefaultDragVisual = this;*/
+
+		OutOperation = DDOper;
+		/* Drag가 감지되면 해당 item을 Inventory에서 삭제한다.*/
+		OnRemoved.Broadcast(ItemObj);
+		RemoveFromParent(); //여기서 가끔 에러뜸
+	}
 }

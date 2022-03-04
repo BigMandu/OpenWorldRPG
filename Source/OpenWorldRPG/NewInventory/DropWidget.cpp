@@ -4,6 +4,7 @@
 #include "OpenWorldRPG/NewInventory/DropWidget.h"
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
 #include "Blueprint/DragDropOperation.h"
+#include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Components/Border.h"
 #include "Components/TextBlock.h"
 #include "DrawDebugHelpers.h"
@@ -40,6 +41,19 @@ bool UDropWidget::NativeOnDrop(const FGeometry & InGeometry, const FDragDropEven
 
 void UDropWidget::ChangeState()
 {
+	/*bool bDragging = UWidgetBlueprintLibrary::IsDragDropping();
+
+	if (bDragging)
+	{
+		DropBorder->SetBrushColor(FLinearColor(0.5, 0.5, 0.5, 0.2));
+		DropText->SetText(DragDetectText);
+	}
+	else
+	{
+		DropBorder->SetBrushColor(FLinearColor(0.0, 0.0, 0.0, 0.0));
+		DropText->SetText(NormalText);
+	}*/
+
 	if (bReturnNormal)
 	{
 		DropBorder->SetBrushColor(FLinearColor(0.0, 0.0, 0.0, 0.0));

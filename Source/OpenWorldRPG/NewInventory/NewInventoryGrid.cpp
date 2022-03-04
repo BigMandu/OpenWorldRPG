@@ -167,7 +167,7 @@ void UNewInventoryGrid::RefreshInventory()
 				testwidget->OnRemoved.AddUFunction(this, FName("OnItemRemove"));
 				testwidget->Tilesize = TileSize;
 				testwidget->ItemObj = ele.Key;
-				//testwidget->Refresh();
+				testwidget->Refresh();
 
 				UPanelSlot* PanelSlot = GridCanvasPanel->AddChild(testwidget);
 
@@ -221,19 +221,23 @@ void UNewInventoryGrid::BindDropWidget(UDropWidget* T_Dropwidget)
 
 void UNewInventoryGrid::OnItemRemove(UObject* T_ItemObj)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Call OnRemoveFunc"));
-	UNewItemObject* ItemObj = Cast<UNewItemObject>(T_ItemObj);
-	if (ItemObj && InventoryComp)
+	if (T_ItemObj)
 	{
-		/* 
-		* NewItemWidget의 delegate에 bind된 함수.
-		* 이 함수가 호출되면서,
-		* 해당 InventoryGrid에 연결된 InventoryComponent의 특정 함수를 호출한다.
-		*/
-		bool bRemoveResult = InventoryComp->RemoveItem(ItemObj);
-		if (Dropwidget)
+		UNewItemObject* ItemObj = Cast<UNewItemObject>(T_ItemObj);
+		if (ItemObj && InventoryComp)
 		{
-			Dropwidget->ChangeState();
+			/*
+			* NewItemWidget의 delegate에 bind된 함수.
+			* 이 함수가 호출되면서,
+			* 해당 InventoryGrid에 연결된 InventoryComponent의 특정 함수를 호출한다.
+			*/
+			bool bRemoveResult = InventoryComp->RemoveItem(ItemObj);
+
+			/* Drop widget 상태 변환 */
+			if (Dropwidget)
+			{
+				Dropwidget->ChangeState();
+			}
 		}
 	}
 }
@@ -250,6 +254,12 @@ bool UNewInventoryGrid::NativeOnDrop(const FGeometry& InGeometry, const FDragDro
 		DraggedTile.Y = DraggedTopLeftTile.Y;
 
 		int32 index = InventoryComp->TileToIndex(DraggedTile);
+		/* Drop widget 상태 변환 */
+		if (Dropwidget)
+		{
+			Dropwidget->bReturnNormal = true;
+			Dropwidget->ChangeState();
+		}
 
 		/* 공간이 된다면 해당 공간에 넣는다.*/
 		if (InventoryComp->IsAvailableSpace(ItemObj, index))
@@ -299,6 +309,8 @@ bool UNewInventoryGrid::NativeOnDragOver(const FGeometry& InGeometry, const FDra
 		//UE_LOG(LogTemp, Warning, TEXT("MousePOSinTILE = %s"), *MousePosInEachTile.ToString());
 
 		FIntPoint Itemsize = ItemObj->GetItemSize();
+		UE_LOG(LogTemp, Warning, TEXT("========================================="));
+		UE_LOG(LogTemp, Warning, TEXT("OnDragOver ItemSize : %s"), *ItemObj->GetItemSize().ToString());
 		/* 해당 타일의 오른쪽으로 반이상, 아래로 반이상 내려갔는지 판단.*/
 		if (MousePosInEachTile.X > TileSize / 2.f)
 		{
@@ -372,9 +384,11 @@ void UNewInventoryGrid::DrawDropLocation(FPaintContext& Context) const
 		
 		if (Brush)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("========================================="));
-			UE_LOG(LogTemp, Warning, TEXT("DropLo Pos : %s"), *DropLocationPos.ToString());
-			UE_LOG(LogTemp, Warning, TEXT("DropLo Size : %s"), *DropLocationSize.ToString());
+
+			//UE_LOG(LogTemp, Warning, TEXT("========================================="));
+			UE_LOG(LogTemp, Warning, TEXT("DrawDropLo ItemSize : %s"), *Obj->GetItemSize().ToString());
+			//UE_LOG(LogTemp, Warning, TEXT("DropLo Pos : %s"), *DropLocationPos.ToString());
+			//UE_LOG(LogTemp, Warning, TEXT("DropLo Size : %s"), *DropLocationSize.ToString());
 			if (bCanDrop)
 			{
 				UWidgetBlueprintLibrary::DrawBox(Context, DropLocationPos * TileSize, DropLocationSize, Brush, Green);
@@ -398,19 +412,23 @@ void UNewInventoryGrid::DrawDropLocation(FPaintContext& Context) const
 
 FReply UNewInventoryGrid::NativeOnPreviewKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
 {
+	UE_LOG(LogTemp, Warning, TEXT("NewInventoryGrid::OnPreviewKeyDown"));
 	FReply Reply = Super::NativeOnPreviewKeyDown(InGeometry, InKeyEvent);
 	
-	UNewItemObject* Obj = Cast<UNewItemObject>(UWidgetBlueprintLibrary::GetDragDroppingContent()->Payload);
-	if (Obj && Obj->bCanRotated)
+	bool bDragging = UWidgetBlueprintLibrary::IsDragDropping();
+	if (bDragging)
 	{
-		if (InKeyEvent.GetKey() == EKeys::R)
-		{	
-		
-			Obj->ItemRotate();
-			UNewItemwidget* Itemwidget = Cast< UNewItemwidget>(UWidgetBlueprintLibrary::GetDragDroppingContent()->DefaultDragVisual);
-			if (Itemwidget)
+		UNewItemObject* Obj = Cast<UNewItemObject>(UWidgetBlueprintLibrary::GetDragDroppingContent()->Payload);
+		if (Obj && Obj->bCanRotated)
+		{
+			if (InKeyEvent.GetKey() == EKeys::R)
 			{
-				Itemwidget->Refresh();
+				Obj->ItemRotate();
+				UNewItemwidget* Itemwidget = Cast< UNewItemwidget>(UWidgetBlueprintLibrary::GetDragDroppingContent()->DefaultDragVisual);
+				if (Itemwidget)
+				{
+					Itemwidget->Refresh();
+				}
 			}
 		}
 	}

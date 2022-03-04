@@ -47,6 +47,8 @@ protected:
 public:	
 	bool TryAddItem(UNewItemObject* ItemObj);
 
+	bool TryAddItemStep(UNewItemObject* ItemObj);
+
 	void AddItemAtIndex(UNewItemObject* ItemObj, int32 Index);
 
 	bool RemoveItem(UNewItemObject* ItemObj);

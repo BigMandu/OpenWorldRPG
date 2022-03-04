@@ -17,7 +17,18 @@ void UTooltipWidget::SetData(UNewItemObject* Obj, float tilesize)
 {
 	if (Obj)
 	{
-		FIntPoint size = Obj->itemsize;
+		FIntPoint size;
+		FIntPoint Tempsize = Obj->GetItemSize();
+		if (Obj->bRotated)
+		{
+			size.X = Tempsize.Y;
+			size.Y = Tempsize.X;
+		}
+		else
+		{
+			size = Tempsize;
+		}
+		
 
 		ItemIcon->SetBrushSize(FVector2D(size.X * tilesize, size.Y * tilesize));
 		ItemIcon->SetBrushFromMaterial(Obj->icon);

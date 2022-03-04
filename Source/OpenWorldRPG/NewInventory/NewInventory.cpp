@@ -19,6 +19,7 @@ void UNewInventory::NativeConstruct()
 
 	GridWidget->GridInitialize(InventoryComp, InventoryComp->TileSize);
 	GridWidget->BindDropWidget(DropWidget);
+
 }
 
 /* Navive Construct 보다 먼저 실행됨.*/

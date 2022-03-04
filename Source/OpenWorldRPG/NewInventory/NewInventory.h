@@ -27,6 +27,7 @@ public:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UNewInventoryGrid* GridWidget;
 
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UDropWidget* DropWidget;
 

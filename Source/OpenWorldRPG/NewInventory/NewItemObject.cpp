@@ -11,13 +11,12 @@ UNewItemObject::UNewItemObject()
 
 FIntPoint UNewItemObject::GetItemSize()
 {
-	UE_LOG(LogTemp, Warning, TEXT("NewItemObj::GetItemSize func called"));
-	if (bRotated)
-	{
-		int32 temp = itemsize.X;
-		itemsize.X = itemsize.Y;
-		itemsize.Y = temp;
-	}
+	//if (bRotated) //재호출 되면서 다시 플립되는 문제가 발생함.
+	//{
+	//	int32 temp = itemsize.X;
+	//	itemsize.X = itemsize.Y;
+	//	itemsize.Y = temp;
+	//}
 	return itemsize;
 }
 
@@ -30,7 +29,13 @@ void UNewItemObject::ItemRotate()
 {
 	UE_LOG(LogTemp, Warning, TEXT("NewItemObj::ItemRotate func called"));
 	if (bCanRotated)
-	{
+	{	
+		//회전을 했다면 item size를 swap해줌.
+		int32 temp = itemsize.X;
+		itemsize.X = itemsize.Y;
+		itemsize.Y = temp;
+		
+
 		/* flip flop*/
 		bRotated = !bRotated;
 	}
@@ -38,10 +43,20 @@ void UNewItemObject::ItemRotate()
 
 UMaterialInterface* UNewItemObject::GetItemIcon()
 {
-	UE_LOG(LogTemp, Warning, TEXT("NewItemObj::GetItemIcon func called"));
+	UMaterialInterface* ReturnIcon = nullptr;
 	if (bRotated)
 	{
-		return iconRotated;
+		if (iconRotated)
+		{
+			ReturnIcon = iconRotated;
+		}
 	}
-	return icon;
+	else
+	{
+		if (icon)
+		{
+			ReturnIcon = icon;
+		}
+	}
+	return ReturnIcon;
 }

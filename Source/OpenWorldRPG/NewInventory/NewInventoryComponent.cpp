@@ -76,6 +76,39 @@ bool UNewInventoryComponent::TryAddItem(UNewItemObject* ItemObj)
 	bool bResult = false;
 	if (ItemObj)
 	{
+		bResult = TryAddItemStep(ItemObj);
+
+		/* Item추가에 실패했고 Item을 돌릴 수 있다면 */
+		if (!bResult && ItemObj->bCanRotated)
+		{
+#if DEBUG
+			UE_LOG(LogTemp, Warning, TEXT("NewInvComp::AddItem = Inventory is full, Try Item Rotate."));
+#endif
+			/* Item을 돌리고 다시 추가한다. */
+			ItemObj->ItemRotate();
+			bResult = TryAddItemStep(ItemObj);
+
+			/* 그래도 실패했다면 돌린 item을 다시 원복 시킨다.*/
+			if (!bResult)
+			{
+				ItemObj->ItemRotate();
+#if DEBUG
+				UE_LOG(LogTemp, Warning, TEXT("NewInvComp::AddItem = Inventory is Completely full"));
+#endif
+			}
+		}
+	}
+#if DEBUG
+	UE_LOG(LogTemp, Warning, TEXT("NewInvComp::AddItem = Item Obj is invalid"));
+#endif
+	return bResult;
+}
+
+bool UNewInventoryComponent::TryAddItemStep(UNewItemObject* ItemObj)
+{
+	bool bResult = false;
+	if (ItemObj)
+	{
 		for (int32 iter = 0; iter < InventoryItems.Num(); ++iter)
 		{
 			bResult = IsAvailableSpace(ItemObj, iter);
@@ -85,17 +118,7 @@ bool UNewInventoryComponent::TryAddItem(UNewItemObject* ItemObj)
 				return bResult;
 			}
 		}
-
-		/** 실패 했을때, Item을 Rotate시켜주자.
-		* Rotate했는데도 실패했으면, Rotate를 한 item을 다시 Rotate해서 원복시키고 종료하자.
-		*/
-#if DEBUG
-		UE_LOG(LogTemp, Warning, TEXT("NewInvComp::AddItem = Inventory is full"));
-#endif
 	}
-#if DEBUG
-	UE_LOG(LogTemp, Warning, TEXT("NewInvComp::AddItem = Item Obj is invalid"));
-#endif
 	return bResult;
 }
 
@@ -168,21 +191,6 @@ bool UNewInventoryComponent::IsAvailableSpace(UNewItemObject* ItemObj, int32 Top
 					bReturn = false;
 					return bReturn;
 				}
-//				if (GettingItemObj == nullptr)
-//				{
-//#if DEBUG
-//					UE_LOG(LogTemp, Warning, TEXT("NewInvComp::IsAvaSpace = Empty At index"));
-//#endif
-//					//bReturn = true;
-//				}
-//				else
-//				{
-//#if DEBUG
-//					UE_LOG(LogTemp, Warning, TEXT("NewInvComp::IsAvaSpace = Not Empty At index"));
-//#endif
-//					bReturn = false;
-//					return bReturn;
-//				}
 			}
 			else
 			{
