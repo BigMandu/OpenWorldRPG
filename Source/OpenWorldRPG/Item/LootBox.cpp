@@ -64,7 +64,7 @@ void ALootBox::BeginPlay()
 
 void ALootBox::OpenBox(AActor* Actor)
 {
-	UE_LOG(LogTemp, Warning, TEXT("LootBox::OpenBox"));
+	UE_LOG(LogTemp, Warning, TEXT("LootBox::OpenBox, BoxName : %s"), *this->GetFName().ToString());
 
 	AMainCharacter* Main = Cast<AMainCharacter>(Actor);
 	if (Main)
@@ -79,8 +79,15 @@ void ALootBox::ShowWidget()
 	UNewInventory* MainInventory = Cast<UNewInventory>(MainCon->NewInventory);
 	if (MainInventory)
 	{
-		MainInventory->SetRightWidget(LootBoxWidget);
-		MainCon->ToggleInventory();
+		LootBoxWidget = CreateWidget<ULootBoxWidget>(MainCon, WLootBoxWidget);
+		if (LootBoxWidget)
+		{
+			LootBoxWidget->InitLootBoxWidget(this);
+
+			UE_LOG(LogTemp, Warning, TEXT("LootBox::ShowWidget, Widget name : %s"), *LootBoxWidget->GetFName().ToString());
+			MainInventory->SetRightWidget(LootBoxWidget);
+			MainCon->ToggleInventory();
+		}
 	}
 }
 

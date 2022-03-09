@@ -47,6 +47,7 @@ void UNewInventory::SetRightWidget(UUserWidget* Widget)
 {
 	if (Widget)
 	{
+		ContentBorder->ClearChildren();
 		ContentBorder->AddChild(Widget);
 		RightWidgetSwitcher->SetActiveWidgetIndex(2);
 		//LootWidget->SetVisibility(ESlateVisibility::Visible);
