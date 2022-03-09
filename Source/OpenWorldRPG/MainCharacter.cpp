@@ -102,7 +102,7 @@ AMainCharacter::AMainCharacter()
 
 	/****** Item ****/
 	Inventory = CreateDefaultSubobject<UInventoryComponent>(TEXT("Inventory"));
-	NewInventoryComp = CreateDefaultSubobject<UNewInventoryComponent>(TEXT("NewInventory"));
+	InventoryComp = CreateDefaultSubobject<UNewInventoryComponent>(TEXT("InventoryComp"));
 	Equipment = CreateDefaultSubobject<UEquipmentComponent>(TEXT("Equipment"));
 
 	ActiveInteractDistance = 200.f; //상호작용 아이템이 표시되는 최대거리.

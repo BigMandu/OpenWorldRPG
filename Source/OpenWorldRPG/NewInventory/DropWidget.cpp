@@ -41,18 +41,6 @@ bool UDropWidget::NativeOnDrop(const FGeometry & InGeometry, const FDragDropEven
 
 void UDropWidget::ChangeState()
 {
-	/*bool bDragging = UWidgetBlueprintLibrary::IsDragDropping();
-
-	if (bDragging)
-	{
-		DropBorder->SetBrushColor(FLinearColor(0.5, 0.5, 0.5, 0.2));
-		DropText->SetText(DragDetectText);
-	}
-	else
-	{
-		DropBorder->SetBrushColor(FLinearColor(0.0, 0.0, 0.0, 0.0));
-		DropText->SetText(NormalText);
-	}*/
 
 	if (bReturnNormal)
 	{
@@ -60,9 +48,6 @@ void UDropWidget::ChangeState()
 		DropText->SetText(NormalText);
 		
 		bReturnNormal = false;
-		/*FText Droptext = FText("Drop Item Here");
-		DropText->SetText(FText::FromString(" Drop item Here"));
-		*/
 		
 	}
 	else

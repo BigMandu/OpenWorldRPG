@@ -178,8 +178,8 @@ void AMainController::HideInventory_Implementation()
 			*/
 			if (Main->InteractLootBox)
 			{
-				HideLootBoxWidget();
-				Main->InteractLootBox->CloseBox(Main);
+				//HideLootBoxWidget();
+				//Main->InteractLootBox->CloseBox(Main);
 			}
 
 			//Main->DisableInput(this); //Player의 움직임 제한. -> 입력자체를 막아버리기 때문에 Toggle을 할 수 없음.

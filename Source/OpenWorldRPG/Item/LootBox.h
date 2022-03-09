@@ -6,14 +6,17 @@
 #include "Interactable.h"
 #include "LootBox.generated.h"
 
-class UInventoryComponent;
+class UNewInventoryComponent;
 class UInventoryWidget;
+class UNewInventoryGrid;
+class ULootBoxWidget;
 class UUserWidget;
 class AItem;
-class AMainCharacter;
+class AMainController;
+//class AMainCharacter;
 
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FLootBoxOpen);
+//DECLARE_DYNAMIC_MULTICAST_DELEGATE(FLootBoxOpen);
 
 UCLASS()
 class OPENWORLDRPG_API ALootBox : public AInteractable
@@ -22,37 +25,44 @@ class OPENWORLDRPG_API ALootBox : public AInteractable
 public:
 	ALootBox();
 
-	UPROPERTY(BlueprintAssignable, Category = Lootbox)
-	FLootBoxOpen LootBoxOpen;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = LootBox)
-	UInventoryComponent* BoxInvComp;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = LootBox)
-	int32 LootItemCount;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = LootBox)
-	TSubclassOf<AItem> LootItem_1;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = LootBox)
-	TSubclassOf<AItem> LootItem_2;
-	
+	/*UPROPERTY(BlueprintAssignable, Category = Lootbox)
+	FLootBoxOpen LootBoxOpen;*/
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = LootBox)
-	TArray<TSubclassOf<AItem>> BoxItem;
+	UNewInventoryComponent* BoxInventoryComp;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = LootBox)
+	TSubclassOf<ULootBoxWidget>WLootBoxWidget;
+	
+	ULootBoxWidget* LootBoxWidget;
+
+	/*UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = LootBox)
+	int32 LootItemCount;*/
+
+	/*UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = LootBox)
+	TSubclassOf<AItem> LootItem_1;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = LootBox)
+	TSubclassOf<AItem> LootItem_2;*/
+	
+
+	/*UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = LootBox)
+	TArray<TSubclassOf<AItem>> BoxItem;*/
 
 
-	UInventoryWidget* WidgetInv;
+	//UInventoryWidget* WidgetInv;
 
-	AMainCharacter* Main;
+	//AMainCharacter* Main;
+	AMainController* MainCon;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 public:
-	void SelectAndStoreLootItem();
+	//void SelectAndStoreLootItem();
 
 	void OpenBox(AActor* Actor);
-	void CloseBox(AActor* Actor);
+	void ShowWidget();
+	//void CloseBox(AActor* Actor);
 	
 };

@@ -5,8 +5,13 @@
 #include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
 #include "OpenWorldRPG/NewInventory/NewInventoryGrid.h"
 #include "OpenWorldRPG/NewInventory/DropWidget.h"
+#include "OpenWorldRPG/NewInventory/LootBoxWidget.h"
+
 #include "OpenWorldRPG/MainCharacter.h"
 #include "OpenWorldRPG/MainController.h"
+
+#include "Components/WidgetSwitcher.h"
+#include "Components/Border.h"
 
 UNewInventory::UNewInventory(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
@@ -16,10 +21,11 @@ UNewInventory::UNewInventory(const FObjectInitializer& ObjectInitializer) : Supe
 void UNewInventory::NativeConstruct()
 {
 	Super::NativeConstruct();
-
-	GridWidget->GridInitialize(InventoryComp, InventoryComp->TileSize);
-	GridWidget->BindDropWidget(DropWidget);
-
+	if (InventoryComp)
+	{
+		GridWidget->GridInitialize(InventoryComp, InventoryComp->TileSize);
+		GridWidget->BindDropWidget(DropWidget);
+	}
 }
 
 /* Navive Construct 보다 먼저 실행됨.*/
@@ -29,10 +35,26 @@ bool UNewInventory::Initialize()
 
 	AMainCharacter* TMain = Cast<AMainCharacter>(GetOwningPlayerPawn());
 	Main = (TMain == nullptr) ? nullptr : TMain;
-	if (Main)
+	if (Main && Main->InventoryComp)
 	{
-		InventoryComp = Main->NewInventoryComp;
+		InventoryComp = Main->InventoryComp;
 		//GridWidget->GridInitialize(InventoryComp, InventoryComp->TileSize);
 	}
 	return bResult;
+}
+
+void UNewInventory::SetRightWidget(UUserWidget* Widget)
+{
+	if (Widget)
+	{
+		ContentBorder->AddChild(Widget);
+		RightWidgetSwitcher->SetActiveWidgetIndex(2);
+		//LootWidget->SetVisibility(ESlateVisibility::Visible);
+		//RightWidgetSwitcher->SetActiveWidget(Widget);
+	}
+}
+
+void UNewInventory::ChangeRightSwitcher()
+{
+
 }

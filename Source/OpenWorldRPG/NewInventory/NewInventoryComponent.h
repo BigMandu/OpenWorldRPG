@@ -24,17 +24,17 @@ public:
 	FOnInventoryUpdated OnInventoryUpdated;
 
 	/* Instance Editable, ReadOnly, Expose on Spawn */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Constants")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InventoryComp")
 	int32 Columns = 10;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Constants")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InventoryComp")
 	int32 Rows = 10;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Constants")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InventoryComp")
 	float TileSize = 50.f;
 
 	
-
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InventoryComp")
 	TArray<UNewItemObject*> InventoryItems;
 
 private:

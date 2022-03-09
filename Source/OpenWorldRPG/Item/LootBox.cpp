@@ -3,11 +3,13 @@
 
 #include "LootBox.h"
 #include "Item.h"
-#include "InventoryComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Blueprint/UserWidget.h"
 #include "OpenWorldRPG/MainCharacter.h"
 #include "OpenWorldRPG/MainController.h"
-#include "OpenWorldRPG/Widget/InventoryWidget.h"
+#include "OpenWorldRPG/NewInventory/LootBoxWidget.h"
+#include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
+#include "OpenWorldRPG/NewInventory/NewInventory.h"
 
 ALootBox::ALootBox()
 {
@@ -17,24 +19,75 @@ ALootBox::ALootBox()
 
 	Mesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
 
-	BoxInvComp = CreateDefaultSubobject<UInventoryComponent>(TEXT("BoxInventory"));
+	BoxInventoryComp = CreateDefaultSubobject<UNewInventoryComponent>(TEXT("BoxInventoryComp"));
+
+
+	//WidgetBlueprint'/Game/Inventory/WBP_LootBox.WBP_LootBox'
+	//위젯 하드코딩
+	/*
+	WidgetBlueprint'/Game/Inventory/WBP_LootBox.WBP_LootBox'
+	static ConstructorHelpers::FObjectFinder<UUserWidget> TempLootBoxWidget(TEXT("WidgetBlueprint'/Game/Inventory/WBP_LootBox.WBP_LootBox_C'"));
+	if (TempLootBoxWidget.Succeeded())
+	{
+		WLootBoxWidget = TempLootBoxWidget.Object;
 	
-	LootItemCount = 1;
+		
+		//LootBoxWidget = CreateWidget<ULootBoxWidget>(this, WLootBoxWidget);
+		if (WLootBoxWidget)
+		{
+			LootBoxWidget = Cast<ULootBoxWidget>(WLootBoxWidget.GetDefaultObject());
+			if (LootBoxWidget)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("LootBox:: widget success"));
+			}
+		}
+	}
+	*/
+	
+	//LootItemCount = 1;
 }
 
 void ALootBox::BeginPlay()
 {
 	Super::BeginPlay();
+	MainCon = Cast<AMainController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 
-
-	if (LootItem_1 && LootItem_2)
+	if (WLootBoxWidget && MainCon)
 	{
-		BoxItem.Add(LootItem_1);
-		BoxItem.Add(LootItem_2);
-	}
-	SelectAndStoreLootItem();
+		LootBoxWidget = CreateWidget<ULootBoxWidget>(MainCon, WLootBoxWidget);
+		if (LootBoxWidget)
+		{
+			LootBoxWidget->InitLootBoxWidget(this);
+		}
+	}	
 }
 
+void ALootBox::OpenBox(AActor* Actor)
+{
+	UE_LOG(LogTemp, Warning, TEXT("LootBox::OpenBox"));
+
+	AMainCharacter* Main = Cast<AMainCharacter>(Actor);
+	if (Main)
+	{
+		MainCon = Main->MainController;
+		ShowWidget();
+	}
+}
+
+void ALootBox::ShowWidget()
+{
+	UNewInventory* MainInventory = Cast<UNewInventory>(MainCon->NewInventory);
+	if (MainInventory)
+	{
+		MainInventory->SetRightWidget(LootBoxWidget);
+		MainCon->ToggleInventory();
+	}
+}
+
+
+
+
+/*
 void ALootBox::SelectAndStoreLootItem()
 {
 	int32 BoxMaxNum = BoxItem.Num() - 1;
@@ -59,57 +112,6 @@ void ALootBox::SelectAndStoreLootItem()
 			}
 		}
 	}
-	
+
 }
-
-void ALootBox::OpenBox(AActor* Actor)
-{
-	UE_LOG(LogTemp, Warning, TEXT("LootBox::OpenBox"));
-	
-	Main = Cast<AMainCharacter>(Actor);
-	if (Main)
-	{
-		Main->InteractLootBox = this;
-		//Main->MainController->ShowInventory();
-
-		//LootBoxOpen.Broadcast();
-		if (Main->MainController)
-		{
-			AMainController* MainCon = Main->MainController;
-			UE_LOG(LogTemp, Warning, TEXT("LootBox::show Loot Box"));
-			WidgetInv = Cast<UInventoryWidget>(MainCon->Inventory);
-			
-			if(WidgetInv)
-			{
-				WidgetInv->SetLootBoxWidget();
-				MainCon->LootBoxWidget->Initialize();
-				MainCon->ToggleInventory();
-			}
-			/*Main->MainController->CreateLootWidget();
-			Main->MainController->ShowLootBox();*/
-		}
-	}
-}
-
-void ALootBox::CloseBox(AActor* Actor)
-{
-	//Call from MainController HideInventory();
-
-	AMainCharacter* TMain = Cast<AMainCharacter>(Actor);
-	if (Main == TMain)
-	{
-		Main->InteractLootBox = nullptr;
-		if (Main->MainController)
-		{
-			AMainController* MainCon = Main->MainController;
-			UE_LOG(LogTemp, Warning, TEXT("LootBox::hide Loot Box"));
-			WidgetInv = Cast<UInventoryWidget>(MainCon->Inventory);
-			if (WidgetInv)
-			{
-				WidgetInv->SetLootBoxWidget();
-				//MainCon->ToggleInventory();
-			}
-			
-		}
-	}
-}
+*/

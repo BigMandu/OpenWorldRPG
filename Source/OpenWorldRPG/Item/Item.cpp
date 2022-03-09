@@ -68,9 +68,9 @@ void AItem::Pickup(class AActor* Actor)
 	{
 		//UE_LOG(LogTemp, Warning, TEXT("AItem::Add To Inventory"));
 	
-		if (Main->NewInventoryComp)
+		if (Main->InventoryComp)
 		{
-			if (Main->NewInventoryComp->TryAddItem(ItemObj))
+			if (Main->InventoryComp->TryAddItem(ItemObj))
 			{
 				UE_LOG(LogTemp, Warning, TEXT("success Add item"));
 				Destroy();

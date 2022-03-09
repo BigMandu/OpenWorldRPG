@@ -51,6 +51,7 @@ void UNewInventoryGrid::NativeConstruct()
 
 void UNewInventoryGrid::GridInitialize(UNewInventoryComponent* p_InvComp, float p_TileSize)
 {
+	UE_LOG(LogTemp, Warning, TEXT("InvGrid:: called GridInit func"));
 	InventoryComp = p_InvComp;
 	TileSize = p_TileSize;
 	

@@ -9,21 +9,39 @@
 /**
  * 
  */
+class UWidgetSwitcher;
 class UNewInventoryComponent;
 class UNewInventoryGrid;
 class UDropWidget;
+class ULootBoxWidget;
+class UBorder;
 class AMainCharacter;
 
 UCLASS()
 class OPENWORLDRPG_API UNewInventory : public UUserWidget
 {
 	GENERATED_BODY()
+private:
+	
+
 public:
 	AMainCharacter* Main;
 
 	//UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UNewInventoryComponent* InventoryComp;
 	
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UWidgetSwitcher* MainInventorySwitcher;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UWidgetSwitcher* RightWidgetSwitcher;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	ULootBoxWidget* LootWidget;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBorder* ContentBorder;
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UNewInventoryGrid* GridWidget;
 
@@ -40,6 +58,8 @@ public:
 public:
 	virtual bool Initialize() override;
 	virtual void NativeConstruct() override;
-	
+
+	void SetRightWidget(UUserWidget* Widget);
+	void ChangeRightSwitcher();
 	
 };

@@ -153,7 +153,7 @@ public:
 	UInventoryComponent* Inventory;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Item)
-	UNewInventoryComponent* NewInventoryComp;
+	UNewInventoryComponent* InventoryComp;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Item)
 	UEquipmentComponent* Equipment;
