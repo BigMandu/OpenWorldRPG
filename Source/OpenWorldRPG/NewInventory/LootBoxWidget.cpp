@@ -22,7 +22,7 @@ void ULootBoxWidget::InitLootBoxWidget(AActor* actor)
 	LootBox = Cast<ALootBox>(actor);
 	if (LootBox)
 	{
-		LootBoxGridwidget->GridInitialize(LootBox->BoxInventoryComp, 50.f);
+		LootBoxGridwidget->GridInitialize(LootBox->BoxInventoryComp, LootBox->BoxInventoryComp->TileSize);
 
 	}
 }

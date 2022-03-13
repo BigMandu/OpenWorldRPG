@@ -52,14 +52,14 @@ void ALootBox::BeginPlay()
 	Super::BeginPlay();
 	MainCon = Cast<AMainController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 
-	if (WLootBoxWidget && MainCon)
+	/*if (WLootBoxWidget && MainCon)
 	{
 		LootBoxWidget = CreateWidget<ULootBoxWidget>(MainCon, WLootBoxWidget);
 		if (LootBoxWidget)
 		{
 			LootBoxWidget->InitLootBoxWidget(this);
 		}
-	}	
+	}	*/
 }
 
 void ALootBox::OpenBox(AActor* Actor)
@@ -70,10 +70,15 @@ void ALootBox::OpenBox(AActor* Actor)
 	if (Main)
 	{
 		MainCon = Main->MainController;
+		MainCon->bIsInteractLootBox = true;
 		ShowWidget();
 	}
 }
 
+/*
+	MainController에서 보낸 DELEGATE를  여기 LootBox에서 받고,
+	음 뭐 해보자.
+*/
 void ALootBox::ShowWidget()
 {
 	UNewInventory* MainInventory = Cast<UNewInventory>(MainCon->NewInventory);

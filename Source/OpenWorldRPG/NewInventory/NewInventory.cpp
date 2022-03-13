@@ -49,7 +49,6 @@ void UNewInventory::SetRightWidget(UUserWidget* Widget)
 	{
 		ContentBorder->ClearChildren();
 		ContentBorder->AddChild(Widget);
-		RightWidgetSwitcher->SetActiveWidgetIndex(2);
 		//LootWidget->SetVisibility(ESlateVisibility::Visible);
 		//RightWidgetSwitcher->SetActiveWidget(Widget);
 	}
@@ -57,5 +56,19 @@ void UNewInventory::SetRightWidget(UUserWidget* Widget)
 
 void UNewInventory::ChangeRightSwitcher()
 {
-
+	if (Main)
+	{
+		AMainController* MainCon = Main->MainController;
+		if (MainCon)
+		{
+			if (MainCon->bIsInteractLootBox)
+			{
+				RightWidgetSwitcher->SetActiveWidgetIndex(2);
+			}
+			else
+			{
+				RightWidgetSwitcher->SetActiveWidgetIndex(1);
+			}
+		}
+	}
 }

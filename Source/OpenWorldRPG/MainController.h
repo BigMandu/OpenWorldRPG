@@ -57,7 +57,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets | LootBox")
 	UUserWidget* LootBoxWidget;
 
-
+	bool bIsInteractLootBox;
 
 	bool bIsInventoryVisible;
 

@@ -6,6 +6,7 @@
 #include "Item/LootBox.h"
 #include "GameFramework/PlayerController.h"
 #include "Blueprint/UserWidget.h"
+#include "OpenWorldRPG/NewInventory/NewInventory.h"
 
 
 
@@ -106,7 +107,14 @@ void AMainController::ShowInventory_Implementation()
 {
 	if (NewInventory)
 	{
+		UNewInventory* TmpNewInv = Cast< UNewInventory>(NewInventory);
+		if (TmpNewInv)
+		{
+			TmpNewInv->ChangeRightSwitcher();
+		}
+
 		NewInventory->SetVisibility(ESlateVisibility::Visible);
+		
 
 		FInputModeGameAndUI Mode; ///TabKey로 HIde를 하기위해 Game And UI mode로 했는데도 키가 안먹힌다. 
 		Mode.SetWidgetToFocus(NewInventory->TakeWidget());
@@ -191,6 +199,7 @@ void AMainController::HideInventory_Implementation()
 		SetIgnoreLookInput(false);
 
 		bIsInventoryVisible = false;
+		bIsInteractLootBox = false;
 	}
 	/*
 	if (Inventory)

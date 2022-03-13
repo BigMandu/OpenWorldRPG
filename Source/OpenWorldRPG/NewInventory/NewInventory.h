@@ -37,9 +37,6 @@ public:
 	UWidgetSwitcher* RightWidgetSwitcher;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	ULootBoxWidget* LootWidget;
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBorder* ContentBorder;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))

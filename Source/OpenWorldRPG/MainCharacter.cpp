@@ -959,6 +959,7 @@ void AMainCharacter::Interactive()
 		{
 			if ((GetActorLocation() - InActor->Mesh->GetComponentLocation()).Size() <= ActiveInteractDistance)
 			{
+				Interface->OnInteract.Broadcast();
 				Interface->Interaction(this);
 			}
 		}

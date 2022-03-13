@@ -16,6 +16,9 @@ class UInteractive_Interface : public UInterface
 /**
  * 
  */
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInteract);
+
 class OPENWORLDRPG_API IInteractive_Interface
 {
 	GENERATED_BODY()
@@ -25,4 +28,5 @@ public:
 	//Force implement function.
 	virtual void Interaction(class AActor* Actor) = 0;// { return nullptr; }
 	
+	FOnInteract OnInteract;
 };
