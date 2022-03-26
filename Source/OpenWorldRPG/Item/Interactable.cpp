@@ -3,7 +3,7 @@
 
 #include "Interactable.h"
 #include "Item.h"
-#include "Weapon.h"
+#include "Equipment.h"
 #include "LootBox.h"
 #include "OpenWorldRPG/MainCharacter.h"
 #include "Components/StaticMeshComponent.h"
@@ -48,13 +48,13 @@ void AInteractable::Interaction(class AActor* Actor)
 		}
 		break;
 	}
-	case EInteractType::EIT_Weapon:
+	case EInteractType::EIT_Equipment:
 	{
 		//여기서 Weapon을 검사하지 말고, 걍 바로 Equip을 호출해야함.
-		AWeapon* Weapon = Cast<AWeapon>(this);
-		if (Weapon)
+		AEquipment* Equipment = Cast<AEquipment>(this);
+		if (Equipment)
 		{
-			Weapon->Equip(Actor); //Weapon으로 cast, equip함수 호출
+			Equipment->Equip(Actor); //Weapon으로 cast, equip함수 호출
 		}
 		break;
 	}

@@ -31,16 +31,6 @@ void AMainController::BeginPlay()
 		}
 	}
 
-	/*if (WInventory)
-	{
-		Inventory = CreateWidget<UUserWidget>(this, WInventory);
-		if (Inventory)
-		{
-			Inventory->AddToViewport();
-			Inventory->SetVisibility(ESlateVisibility::Hidden);
-		}
-	}*/
-
 	if (WNewInventory)
 	{
 		NewInventory = CreateWidget<UUserWidget>(this, WNewInventory);
@@ -51,26 +41,6 @@ void AMainController::BeginPlay()
 			NewInventory->SetVisibility(ESlateVisibility::Hidden);
 		}
 	}
-
-	/* Loot Box Widget TEST */
-	/*
-	if (WLootBoxInvWidget)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("WLootBoxWidget is valid"));
-		LootBoxInvWidget = CreateWidget<UUserWidget>(this, WLootBoxInvWidget);
-		if (LootBoxInvWidget)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("LootBoxWidget is valid"));
-
-			
-			//LootBoxInvWidget->SetPositionInViewport(FVector2D(500.f, 300.f));
-			LootBoxInvWidget->SetAnchorsInViewport(FAnchors(1000.f, 500.f));
-			LootBoxInvWidget->SetDesiredSizeInViewport(FVector2D(500.f));
-			LootBoxInvWidget->AddToViewport();
-			LootBoxInvWidget->SetVisibility(ESlateVisibility::Hidden);
-		}
-	}
-	*/
 }
 
 void AMainController::ShowInteractText_Implementation()
@@ -107,10 +77,14 @@ void AMainController::ShowInventory_Implementation()
 {
 	if (NewInventory)
 	{
-		UNewInventory* TmpNewInv = Cast< UNewInventory>(NewInventory);
-		if (TmpNewInv)
+		/* Interact LootBox가 없다면 DropWidget을 배치한다. */
+		if (!bIsInteractLootBox)
 		{
-			TmpNewInv->ChangeRightSwitcher();
+			UNewInventory* TmpNewInv = Cast<UNewInventory>(NewInventory);
+			if (TmpNewInv)
+			{
+				TmpNewInv->SetRightWidget((UUserWidget*)TmpNewInv->DropWidget);
+			}
 		}
 
 		NewInventory->SetVisibility(ESlateVisibility::Visible);
@@ -126,46 +100,12 @@ void AMainController::ShowInventory_Implementation()
 		{
 			//Main->DisableInput(this); //Player의 움직임 제한. -> 입력자체를 막아버리기 때문에 Toggle을 할 수 없음.
 			Main->bDisableInput = true;
-
-			if (Main->InteractLootBox)
-			{
-				ShowLootBoxWidget();
-			}
-
 		}
 		SetIgnoreMoveInput(true);
 		SetIgnoreLookInput(true);
 
 		bIsInventoryVisible = true;
 	}
-
-	/*
-	if (Inventory)
-	{
-		Inventory->SetVisibility(ESlateVisibility::Visible);
-		
-		FInputModeGameAndUI Mode; ///TabKey로 HIde를 하기위해 Game And UI mode로 했는데도 키가 안먹힌다. 
-		Mode.SetWidgetToFocus(Inventory->TakeWidget()); 
-
-		SetInputMode(Mode);
-		bShowMouseCursor = true;
-
-		if (Main)
-		{
-			//Main->DisableInput(this); //Player의 움직임 제한. -> 입력자체를 막아버리기 때문에 Toggle을 할 수 없음.
-			Main->bDisableInput = true;
-
-			if (Main->InteractLootBox)
-			{
-				ShowLootBoxWidget();
-			}
-			
-		}
-		SetIgnoreMoveInput(true);
-		SetIgnoreLookInput(true);
-
-		bIsInventoryVisible = true;
-	}*/
 }
 
 
@@ -180,20 +120,8 @@ void AMainController::HideInventory_Implementation()
 
 		if (Main)
 		{
-			/* 
-				LootBox와 상호작용 했었다면 
-				상호작용 중인 LootBox에서 Close Box를 호출한다.
-			*/
-			if (Main->InteractLootBox)
-			{
-				//HideLootBoxWidget();
-				//Main->InteractLootBox->CloseBox(Main);
-			}
-
 			//Main->DisableInput(this); //Player의 움직임 제한. -> 입력자체를 막아버리기 때문에 Toggle을 할 수 없음.
-			Main->bDisableInput = false;
-
-		
+			Main->bDisableInput = false;		
 		}
 		SetIgnoreMoveInput(false);
 		SetIgnoreLookInput(false);
@@ -201,38 +129,11 @@ void AMainController::HideInventory_Implementation()
 		bIsInventoryVisible = false;
 		bIsInteractLootBox = false;
 	}
-	/*
-	if (Inventory)
-	{
-		Inventory->SetVisibility(ESlateVisibility::Hidden);
-		FInputModeGameOnly Mode;
-		SetInputMode(FInputModeGameOnly());
-		bShowMouseCursor = false;
-
-		if (Main)
-		{
-			
-				//LootBox와 상호작용 했었다면
-				//상호작용 중인 LootBox에서 Close Box를 호출한다.
-			
-			if (Main->InteractLootBox)
-			{
-				HideLootBoxWidget();
-				Main->InteractLootBox->CloseBox(Main);
-			}
-
-			//Main->DisableInput(this); //Player의 움직임 제한. -> 입력자체를 막아버리기 때문에 Toggle을 할 수 없음.
-			Main->bDisableInput = false;
-
-
-		}
-		SetIgnoreMoveInput(false);
-		SetIgnoreLookInput(false);
-
-		bIsInventoryVisible = false;
-	}
-	*/
 }
+
+
+
+/* 이하는 쓰지 않는 코드임. */
 
 void AMainController::CreateLootWidget()
 {

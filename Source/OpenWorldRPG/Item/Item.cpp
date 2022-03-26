@@ -50,6 +50,8 @@ UNewItemObject* AItem::GetDefaultItemObj()
 		Obj->icon = Icon;
 		Obj->iconRotated = IconRotated;
 		
+		Obj->bCanEquip = bCanEquip;
+		Obj->EquipmentType = EquipmentType;
 		
 		UE_LOG(LogTemp, Warning, TEXT("AItem::Create object"));
 	}
@@ -60,6 +62,11 @@ UNewItemObject* AItem::GetDefaultItemObj()
 	return Obj;
 }
 
+/** Pickup도 손봐야함.
+*  Actor의 InventoryComponent를 우선 봐야할게 아니라, 
+* Actor의 Equipment에서 Storage를 갖고있는 Backpack이나 Vest를 우선 탐색해서
+* 있다면 그곳에 넣어야됨.
+*/
 void AItem::Pickup(class AActor* Actor)
 {
 	//UE_LOG(LogTemp, Warning, TEXT("AItem::Pickup"));

@@ -14,12 +14,12 @@ class USkeletalMesh;
 UENUM(BlueprintType)
 enum class EInteractType : uint8
 {
-	EIT_Gizmo	UMETA(DisplayName = "EIT_Gizmo"),
-	EIT_Item	UMETA(DisplayName = "EIT_Item"),
-	EIT_Weapon	UMETA(DisplayName = "EIT_Weapon"),
-	EIT_LootBox	UMETA(DisplayName = "EIT_LootBox"),
+	EIT_Gizmo		UMETA(DisplayName = "EIT_Gizmo"),
+	EIT_Item		UMETA(DisplayName = "EIT_Item"),
+	EIT_Equipment	UMETA(DisplayName = "EIT_Equipment"),
+	EIT_LootBox		UMETA(DisplayName = "EIT_LootBox"),
 
-	EIT_MAX		UMETA(DisplayName = "DefaultMAX")
+	EIT_MAX			UMETA(DisplayName = "DefaultMAX")
 };
 
 UCLASS()
@@ -49,7 +49,7 @@ public:
 	FString InteractText;
 
 
-	UPROPERTY(EditAnywhere, Category = "Item | Enums")
+	UPROPERTY(EditAnywhere, Category = Item)
 	EInteractType InteractType;
 
 protected:

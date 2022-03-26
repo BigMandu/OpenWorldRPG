@@ -15,14 +15,15 @@
 #include "Math/UnrealMathUtility.h"
 #include "DrawDebugHelpers.h" //디버깅용
 
+#define DEBUG 0
 
 AWeapon::AWeapon() : Super()
 {
-	SKMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMesh"));
+	//SKMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMesh"));
 
-	RootComponent = SKMesh;
-	Mesh->SetupAttachment(GetRootComponent());
-	SKMesh->SetHiddenInGame(true);
+	//RootComponent = SKMesh;
+	//Mesh->SetupAttachment(GetRootComponent());
+	//SKMesh->SetHiddenInGame(true);
 
 	bIsFiring = false;
 	bLMBDown = false;
@@ -39,174 +40,62 @@ AWeapon::AWeapon() : Super()
 	CurrentWeaponState = EWeaponState::EWS_Idle;
 }
 
-void AWeapon::SetOwningPlayer(AActor* Actor)
-{
-	if (OwningPlayer != Actor)
-	{
-		AMainCharacter* Main = Cast<AMainCharacter>(Actor);
-		if (Main)
-		{
-			OwningPlayer = Main;
-			SetInstigator(Main); //Instigator 설정.
-		}
-	}
-}
+//void AWeapon::SetOwningPlayer(AActor* Actor)
+//{
+//	if (OwningPlayer != Actor)
+//	{
+//		AMainCharacter* Main = Cast<AMainCharacter>(Actor);
+//		if (Main)
+//		{
+//			OwningPlayer = Main;
+//			SetInstigator(Main); //Instigator 설정.
+//		}
+//	}
+//}
 
 void AWeapon::Equip(AActor* Char)
 {
-	AMainCharacter* Main = Cast<AMainCharacter>(Char);
-	bool bFlag = false;
+	Super::Equip(Char);
 
 	WeaponStat.FireRatePerSec = WeaponStat.FireRatePerMin / 60;
-	WeaponStat.SecondPerBullet = 1 / WeaponStat.FireRatePerSec; //0.06;
-
-	if (Main)
-	{
-		if (CheckSendToInventory(Main)) //인벤토리로 보냈으면
-		{
-			bFlag = true;
-		}
-
-		switch (WeaponType)
-		{
-		case EWeaponType::EWT_Rifle:
-		case EWeaponType::EWT_Pistol:
-			if (!bFlag) //Inventory로 보내지 않았으면 장착 시킨다.
-			{				
-				/* 1,2,3을 눌렀을때 Quick Swap하기 위해 */
-				if (WeaponType == EWeaponType::EWT_Rifle) //라이플이고
-				{
-					if (Main->PrimaryWeapon) //이미 주무기가 있으면
-					{
-						Main->SubWeapon = this; //부무기로 지정
-					}
-					else //주무기가 없으면
-					{
-						Main->PrimaryWeapon = this; //주무기로
-					}
-				}
-				else //피스톨
-				{
-					Main->PistolWeapon = this;
-				}
-
-				//아무 무기가 없을 경우 지금 Weapon을 장착시킨다.
-				if (Main->EquippedWeapon == nullptr)
-				{
-					if (WeaponType == EWeaponType::EWT_Rifle)
-					{
-						Main->ChangeWeapon(1);
-					}
-					else
-					{
-						Main->ChangeWeapon(3);
-					}
-
-					GunAttachToMesh(Main);
-				}
-				/*
-				//아래 조건으로 하는것 보다 위의 조건으로 하는게 더 나은듯.
-				if (GetItemState() == EItemState::EIS_Spawn) //땅에 있는 Item이면,
-				{
-						같은타입 무기가 이미 장착 -> 땅에있는 Item을 Inventory로
-						같은 타입 무기가 없음 -> 땅에있는 Item을 장착.
-
-						여기서 Main의 EquipCompo넌트에서 검색해야함. 결과는 true or false리턴.
-
-				}
-				else //이미 Inventory에 있는 Item이면
-				{
-					 같은 타입 무기가 이미 장착 -> 기존 무기를 Inventory로, 땅Item을 장착
-					 같은 타입 무기가 없음 -> 땅에 있는 Item을 장착
-
-
-				}
-				//카메라 모드에 따라 1인칭, 3인칭 Mesh에 부착시킨다.
-				GunAttachToMesh(Main); //아래코드를 함수로 대체.
-				*/
-				/*if (Main->CameraMode == ECameraMode::ECM_FPS)
-				{
-					FPSocket->AttachActor(this, Main->FPMesh);
-				}
-				else
-				{
-					TPSocket->AttachActor(this, Main->GetMesh());
-				}*/
-			}
-			break;
-		case EWeaponType::EWT_Helmet:
-			if(!bFlag)
-			{
-				//장착
-				SKMesh->SetHiddenInGame(true); //임시로 해둔것임.
-			}
-			break;
-		case EWeaponType::EWT_Vest:
-			if (!bFlag)
-			{
-				//장착
-				SKMesh->SetHiddenInGame(true); //임시로 해둔것임.
-			}
-			break;
-		}		
-
-		
-		if (!bFlag) //Inventory로 보내지 않았으면
-		{
-			UE_LOG(LogTemp, Warning, TEXT("AWeapon::Equip Success"));
-
-			//Main에 있는 Equipment에 Add해준다.
-			Main->Equipment->AddEquipment(this);
-			SetOwningPlayer(Main);
-
-			Mesh->SetSimulatePhysics(false);
-			Mesh->SetEnableGravity(false);
-
-			Mesh->SetHiddenInGame(true); //Static Mesh를 안보이게 하고, Collision을 끈다.
-			Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
-
-			/*if (EquippedSound)
-			{
-				UGameplayStatics::PlaySoundAtLocation(GetWorld(), EquippedSound, Main->GetActorLocation());
-			}*/
-		}
-	}
+	WeaponStat.SecondPerBullet = 1 / WeaponStat.FireRatePerSec; //0.06
+	GunAttachToMesh(Char);
 }
 
-bool AWeapon::CheckSendToInventory(AMainCharacter* Main)
+//bool AWeapon::CheckSendToInventory(AMainCharacter* Main)
+//{
+//	check(Main);
+//
+//	//이 무기와 같은 타입의 무기가 이미 장착되어있고 (Rifle인 경우 2개 장착가능)
+//	if (Main->Equipment->IsWeaponExist(this))
+//	{
+//		if (GetItemState() == EItemState::EIS_Spawn || GetItemState() == EItemState::EIS_Drop) //월드에 있는 무기면
+//		{
+//			//OwningEquipment를 null로 설정해준다.
+//			OwningEquipment = nullptr;
+//
+//			//Inventory로 이동해야함.
+//			Pickup(Main);
+//			return true;
+//		}
+//		else //Pickup상태면 (Inventory에 있는 무기임) -> 스왑해준다 //얘는 따로 빼서 함수를 구현해야할듯하다.
+//		{
+//			AWeapon* Beforeweapon = Main->Equipment->GetBeforeWeapon(this);
+//			if (Beforeweapon != nullptr)
+//			{
+//				Beforeweapon->OwningEquipment = nullptr;
+//				Beforeweapon->Pickup(Main); //기존 무기를 Inventory로 보낸다. 
+//			}
+//			UE_LOG(LogTemp, Warning, TEXT("Weapon::CheckSendToInventory. something wrong."));
+//			return false;
+//		}
+//	}
+//	return false;
+//}
+
+void AWeapon::GunAttachToMesh(AActor* Actor)
 {
-	check(Main);
-
-	//이 무기와 같은 타입의 무기가 이미 장착되어있고 (Rifle인 경우 2개 장착가능)
-	if (Main->Equipment->IsWeaponExist(this))
-	{
-		if (GetItemState() == EItemState::EIS_Spawn || GetItemState() == EItemState::EIS_Drop) //월드에 있는 무기면
-		{
-			//OwningEquipment를 null로 설정해준다.
-			OwningEquipment = nullptr;
-
-			//Inventory로 이동해야함.
-			Pickup(Main);
-			return true;
-		}
-		else //Pickup상태면 (Inventory에 있는 무기임) -> 얘는 따로 빼서 함수를 구현해야할듯하다.
-		{
-			AWeapon* Beforeweapon = Main->Equipment->GetBeforeWeapon(this);
-			if (Beforeweapon != nullptr)
-			{
-				Beforeweapon->OwningEquipment = nullptr;
-				Beforeweapon->Pickup(Main); //기존 무기를 Inventory로 보낸다. 
-			}
-			UE_LOG(LogTemp, Warning, TEXT("Weapon::CheckSendToInventory. something wrong."));
-			return false;
-		}
-	}
-	return false;
-}
-
-void AWeapon::GunAttachToMesh(AMainCharacter* Main)
-{
+	AMainCharacter* Main = Cast<AMainCharacter>(Actor);
 	if (Main)
 	{
 		const USkeletalMeshSocket* TPSocket = Main->GetMesh()->GetSocketByName("WeaponGrip");
@@ -270,8 +159,9 @@ void AWeapon::GunAttachToMesh(AMainCharacter* Main)
 }
 
 
-void AWeapon::FPS_AimAttachToMesh(AMainCharacter* Main)
+void AWeapon::FPS_AimAttachToMesh(AActor* Actor)
 {
+	AMainCharacter* Main = Cast<AMainCharacter>(Actor);
 	if (Main && Main->EquippedWeapon)
 	{
 		if (Main->CameraMode == ECameraMode::ECM_FPS)
@@ -294,24 +184,20 @@ void AWeapon::FPS_AimAttachToMesh(AMainCharacter* Main)
 	}
 }
 
-void AWeapon::Drop()
-{
-	Super::Drop();
-
-	/* Weapon Rifle이 드랍될때
-	*  몇개씩 땅 밑으로 꺼진다... 디버깅 해봐도 collision은 제대로 세팅되는데도
-	*  꺼진다. - 원인파악 불가.
-	*/
-	UE_LOG(LogTemp, Warning, TEXT("AWeapon::Drop"));
-	SKMesh->SetHiddenInGame(true);
-	OwningEquipment = false;
-	
-	
-}
+//void AWeapon::Drop()
+//{
+//	Super::Drop();
+//
+//	UE_LOG(LogTemp, Warning, TEXT("AWeapon::Drop"));
+//	SKMesh->SetHiddenInGame(true);
+//	OwningEquipment = false;
+//	
+//	
+//}
 
 void AWeapon::ChangeSafetyLever()
 {
-	if (WeaponType == EWeaponType::EWT_Rifle)
+	if (EquipmentType == EEquipmentType::EET_Rifle)
 	{
 		switch (WeaponFiringMode)
 		{
@@ -345,7 +231,9 @@ void AWeapon::TempNewWeaponState()
 	{
 		if (CanFire())//발사를 할 수 있다면, Firing으로 상태를 변경한다.
 		{
-			//UE_LOG(LogTemp, Warning, TEXT("TempState -> Firing"));
+#if DEBUG
+			UE_LOG(LogTemp, Warning, TEXT("TempState -> Firing"));
+#endif
 			State = EWeaponState::EWS_Firing;
 		}
 	}
@@ -360,13 +248,15 @@ void AWeapon::SetWeaponState(EWeaponState NewState)
 	//기존에 발사중이었고, 더이상 LMB를 누르지 않는다면
 	if (CurrentWeaponState == EWeaponState::EWS_Firing && NewState != EWeaponState::EWS_Firing)
 	{
-		
-
 		/* 점사면 끝내도 지정된 몇발 이상 안쐈으면 사격되도록 함. */
 		bool bCanEndFire = true;
 		if (WeaponFiringMode == EWeaponFiringMode::EWFM_Burst)
 		{
+#if DEBUG
+			UE_LOG(LogTemp, Warning, TEXT("SetWeponState: Burst mode Continuous Firing"));
+#endif			
 			bCanEndFire = false;
+
 		}
 
 
@@ -374,6 +264,9 @@ void AWeapon::SetWeaponState(EWeaponState NewState)
 		 점사일때는 냅둔다, Check Firing함수에서 Firing을 호출하도록 함.*/
 		if (bCanEndFire)
 		{
+#if DEBUG
+			UE_LOG(LogTemp, Warning, TEXT("SetWeponState: Call EndFiring func"));
+#endif			
 			CurrentWeaponState = NewState;
 			EndFiring(); 
 			
@@ -383,6 +276,10 @@ void AWeapon::SetWeaponState(EWeaponState NewState)
 	//기존에 발사하지 않았고, LMB를 눌렀다면
 	else if (CurrentWeaponState != EWeaponState::EWS_Firing && NewState == EWeaponState::EWS_Firing)
 	{
+
+#if DEBUG
+		UE_LOG(LogTemp, Warning, TEXT("SetWeponState: Start Firing Call ControlFiring func"));
+#endif			
 		//사격을 시작한다.
 		CurrentWeaponState = NewState;
 		ControlFiring();	
@@ -469,7 +366,11 @@ void AWeapon::ControlFiring()
 	* 1초가 남는데. 1초후에 3초가 되어 쏠 쑤 있다.
 	* 이를 식으로 나타내면 된다.	
 	*/
-	//UE_LOG(LogTemp, Warning, TEXT("AWeapon::ControlFiring"));
+
+#if DEBUG
+	UE_LOG(LogTemp, Warning, TEXT("AWeapon::ControlFiring"));
+#endif			
+	
 	float WorldTime = GetWorld()->GetTimeSeconds();
 	
 	/* 점사 모드일때는 강제로 시간을 더 추가한다. */
@@ -509,6 +410,10 @@ void AWeapon::Firing()
 		ammo 체크, FireCount 증가, 함수 끝에 Timer기록 (마지막 발사 시간 기록용)
 		계속해서 사격중이라면 ReFiring함수 호출
 	*/
+
+#if DEBUG
+	UE_LOG(LogTemp, Warning, TEXT("Firing function"));
+#endif			
 	bIsFiring = true;
 
 	if (bDetectLookInput == false)

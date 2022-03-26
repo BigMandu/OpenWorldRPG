@@ -28,7 +28,14 @@ class UDropWidget;
 class AMainCharacter;
 class AMainController;
 
+UENUM(BlueprintType)
+enum class EGridType : uint8
+{
+	EGT_Inventory	UMETA(DisplayName = "Inventory"),
+	EGT_Slot		UMETA(DisplayName = "Slot"),
 
+	EGT_MAX		UMETA(DisplayName = "DefaultsMAX")
+};
 
 UCLASS()
 class OPENWORLDRPG_API UNewInventoryGrid : public UUserWidget
@@ -40,7 +47,7 @@ private:
 	UNewInventoryComponent* InventoryComp;
 	AMainController* MainCon;
 	AMainCharacter* Main;
-	float TileSize;
+
 
 	/* InventoryStruct */
 	UPROPERTY(EditDefaultsOnly)
@@ -53,6 +60,18 @@ private:
 
 
 public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Settings)
+	EGridType GridType;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Settings)
+	float Rows;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Settings)
+	float Columns;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Settings)
+	float TileSize;
+
 	UPROPERTY(EditDefaultsOnly, Category = "WidgetVariable", meta = (BindWidget))
 	UCanvasPanel* GridCanvasPanel;
 

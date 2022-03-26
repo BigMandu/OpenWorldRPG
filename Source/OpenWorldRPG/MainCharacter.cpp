@@ -4,23 +4,29 @@
 #include "MainCharacter.h"
 #include "MainController.h"
 #include "MainAnimInstance.h"
+
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "Camera/CameraComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Components/PawnNoiseEmitterComponent.h"
+#include "Sound/SoundCue.h"
+#include "Camera/CameraComponent.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "Engine/EngineTypes.h"
+
 #include "Perception/AISightTargetInterface.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "Perception/AISense_Sight.h"
 #include "Perception/AISense_Hearing.h"
-#include "Kismet/GameplayStatics.h"
-#include "Sound/SoundCue.h"
+
+#include "OpenWorldRPG/Item/EquipmentComponent.h"
 #include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
-#include "Item/InventoryComponent.h"
-#include "Item/Interactive_Interface.h"
-#include "Item/Interactable.h"
-#include "Item/Weapon.h"
+
+#include "OpenWorldRPG/Item/Interactive_Interface.h"
+//#include "OpenWorldRPG/Item/InventoryComponent.h"
+#include "OpenWorldRPG/Item/Interactable.h"
+#include "OpenWorldRPG/Item/Equipment.h"
+#include "OpenWorldRPG/Item/Weapon.h"
 
 #include "DrawDebugHelpers.h" //µð¹ö±ë¿ë
 
@@ -959,7 +965,7 @@ void AMainCharacter::Interactive()
 		{
 			if ((GetActorLocation() - InActor->Mesh->GetComponentLocation()).Size() <= ActiveInteractDistance)
 			{
-				Interface->OnInteract.Broadcast();
+				//Interface->OnInteract.Broadcast();
 				Interface->Interaction(this);
 			}
 		}

@@ -52,15 +52,18 @@ void UNewInventoryGrid::NativeConstruct()
 void UNewInventoryGrid::GridInitialize(UNewInventoryComponent* p_InvComp, float p_TileSize)
 {
 	UE_LOG(LogTemp, Warning, TEXT("InvGrid:: called GridInit func"));
+	check(p_InvComp);
+
 	InventoryComp = p_InvComp;
 	TileSize = p_TileSize;
-	
+	Rows = InventoryComp->Rows;
+	Columns = InventoryComp->Columns;
 	
 
 	UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(GridBorder->Slot);
 	if (CanvasSlot)
 	{
-		FVector2D Size = FVector2D(InventoryComp->Columns * TileSize, InventoryComp->Rows * TileSize);
+		FVector2D Size = FVector2D(Columns * TileSize, Rows * TileSize);
 		CanvasSlot->SetSize(Size);
 	
 		
@@ -114,23 +117,23 @@ void UNewInventoryGrid::CreateLineSegments()
 {
 	/* create vertical line */
 	/* 0열부터 끝열까지 순차적으로 그리기 위해 라인을 만들어 넣어줌*/
-	for (int32 iter = 0; iter <= InventoryComp->Columns; iter++)
+	for (int32 iter = 0; iter <= Columns; iter++)
 	{
 		float LocalX = iter * TileSize;
 		FLine Line;
 		Line.Start = FVector2D(LocalX, 0.f);
-		Line.End = FVector2D(LocalX, InventoryComp->Rows * TileSize);
+		Line.End = FVector2D(LocalX, Rows * TileSize);
 		Lines.Add(Line); 
 		
 	}
 	
 	/* create horizontal line */
-	for (int32 iter = 0; iter <= InventoryComp->Rows; iter++)
+	for (int32 iter = 0; iter <= Rows; iter++)
 	{
 		float LocalY = iter * TileSize;
 		FLine Line;
 		Line.Start = FVector2D(0.f, LocalY);
-		Line.End = FVector2D(InventoryComp->Columns * TileSize, LocalY);
+		Line.End = FVector2D(Columns * TileSize, LocalY);
 		Lines.Add(Line);
 	}
 }
@@ -145,6 +148,7 @@ void UNewInventoryGrid::RefreshInventory()
 	* 채워 넣는다.
 	* InventoryComponent에 모든 Item을 얻어오는 함수를 새로 추가해준다.
 	*/
+
 	AMainCharacter* TMain = Cast<AMainCharacter>(GetOwningPlayerPawn());
 	Main = (TMain != nullptr) ? TMain : nullptr;
 	if (Main)
@@ -152,12 +156,12 @@ void UNewInventoryGrid::RefreshInventory()
 		MainCon = Main->MainController;
 	}
 	
-	if (GridCanvasPanel && MainCon != nullptr)
+	if (GridCanvasPanel)// && MainCon != nullptr)
 	{
 		//TMap<UNewItemObject*, FTile> ItemsMap;
 		GridCanvasPanel->ClearChildren();
 		const auto ItemsMap = InventoryComp->GetAllItems();
-
+		
 		for (auto ele : ItemsMap)
 		{
 			UNewItemwidget* testwidget = CreateWidget<UNewItemwidget>(this, WNewItemWidget);
@@ -185,31 +189,6 @@ void UNewInventoryGrid::RefreshInventory()
 					CanvasSlot->SetPosition(ItemTopLeft);
 				}
 			}
-
-			//if (newitemwidget)
-			//{
-			//	newitemwidget->OnRemoved.AddUFunction(this, FName("OnItemRemove"));
-			//	newitemwidget->Tilesize = TileSize;
-			//	newitemwidget->ItemObj = ele.Key;
-			//	newitemwidget->Refresh();
-
-			//	UPanelSlot* PanelSlot = GridCanvasPanel->AddChild(newitemwidget);
-
-
-			//	/*추가시킨 ItemWidget의 size와 Position을 맞춰 주기 위한 작업을 진행한다.
-			//	* Setsize를 사용하기 위해 CanvasPanelSlot으로 Cast를 해준다.
-			//	* SetPosition도 사용한다.
-			//	*/
-			//	UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(PanelSlot);
-			//	if (CanvasSlot)
-			//	{
-			//		CanvasSlot->SetAutoSize(true);
-			//		FVector2D ItemTopLeft = FVector2D(ele.Value.X * TileSize, ele.Value.Y * TileSize);
-			//		CanvasSlot->SetPosition(ItemTopLeft);
-			//	}
-			//		
-
-			//}
 		}
 	}
 }
@@ -235,8 +214,9 @@ void UNewInventoryGrid::OnItemRemove(UObject* T_ItemObj)
 			bool bRemoveResult = InventoryComp->RemoveItem(ItemObj);
 
 			/* Drop widget 상태 변환 */
-			if (Dropwidget)
+			if (Dropwidget && !MainCon->bIsInteractLootBox)
 			{
+				UE_LOG(LogTemp, Warning, TEXT("InvGrid:: Drop Widget Change 'Drop' State "));
 				Dropwidget->ChangeState();
 			}
 		}
@@ -255,9 +235,11 @@ bool UNewInventoryGrid::NativeOnDrop(const FGeometry& InGeometry, const FDragDro
 		DraggedTile.Y = DraggedTopLeftTile.Y;
 
 		int32 index = InventoryComp->TileToIndex(DraggedTile);
+		
 		/* Drop widget 상태 변환 */
-		if (Dropwidget)
+		if (Dropwidget && !MainCon->bIsInteractLootBox)
 		{
+			UE_LOG(LogTemp, Warning, TEXT("InvGrid:: Drop Widget Change 'Normal' State "));
 			Dropwidget->bReturnNormal = true;
 			Dropwidget->ChangeState();
 		}
@@ -287,6 +269,7 @@ bool UNewInventoryGrid::NativeOnDrop(const FGeometry& InGeometry, const FDragDro
 
 bool UNewInventoryGrid::NativeOnDragOver(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
 {
+	Super::NativeOnDragOver(InGeometry, InDragDropEvent, InOperation);
 	bool bReturn = false;
 
 	UNewItemObject* ItemObj = Cast<UNewItemObject>(InOperation->Payload);
@@ -310,8 +293,8 @@ bool UNewInventoryGrid::NativeOnDragOver(const FGeometry& InGeometry, const FDra
 		//UE_LOG(LogTemp, Warning, TEXT("MousePOSinTILE = %s"), *MousePosInEachTile.ToString());
 
 		FIntPoint Itemsize = ItemObj->GetItemSize();
-		UE_LOG(LogTemp, Warning, TEXT("========================================="));
-		UE_LOG(LogTemp, Warning, TEXT("OnDragOver ItemSize : %s"), *ItemObj->GetItemSize().ToString());
+		//UE_LOG(LogTemp, Warning, TEXT("========================================="));
+		//UE_LOG(LogTemp, Warning, TEXT("OnDragOver ItemSize : %s"), *ItemObj->GetItemSize().ToString());
 		/* 해당 타일의 오른쪽으로 반이상, 아래로 반이상 내려갔는지 판단.*/
 		if (MousePosInEachTile.X > TileSize / 2.f)
 		{
@@ -355,11 +338,13 @@ FVector2D UNewInventoryGrid::GetMousePositionInEachTile(FVector2D MousePos)
 
 void UNewInventoryGrid::NativeOnDragEnter(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
 {
+	Super::NativeOnDragEnter(InGeometry, InDragDropEvent, InOperation);
 	bNeedDropLocation = true;
 }
 
 void UNewInventoryGrid::NativeOnDragLeave(const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
 {
+	Super::NativeOnDragLeave(InDragDropEvent, InOperation);
 	bNeedDropLocation = false;
 }
 
@@ -387,7 +372,7 @@ void UNewInventoryGrid::DrawDropLocation(FPaintContext& Context) const
 		{
 
 			//UE_LOG(LogTemp, Warning, TEXT("========================================="));
-			UE_LOG(LogTemp, Warning, TEXT("DrawDropLo ItemSize : %s"), *Obj->GetItemSize().ToString());
+			//UE_LOG(LogTemp, Warning, TEXT("DrawDropLo ItemSize : %s"), *Obj->GetItemSize().ToString());
 			//UE_LOG(LogTemp, Warning, TEXT("DropLo Pos : %s"), *DropLocationPos.ToString());
 			//UE_LOG(LogTemp, Warning, TEXT("DropLo Size : %s"), *DropLocationSize.ToString());
 			if (bCanDrop)

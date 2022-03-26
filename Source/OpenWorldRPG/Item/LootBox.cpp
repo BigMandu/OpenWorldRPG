@@ -76,8 +76,8 @@ void ALootBox::OpenBox(AActor* Actor)
 }
 
 /*
-	MainController에서 보낸 DELEGATE를  여기 LootBox에서 받고,
-	음 뭐 해보자.
+	시작하자마자 LootBox Interaction시 LootBox위젯이 나오지 않음.
+	인벤토리를 한번 보고나면 보임... ->> 해결해야됨.
 */
 void ALootBox::ShowWidget()
 {
@@ -91,7 +91,7 @@ void ALootBox::ShowWidget()
 
 			UE_LOG(LogTemp, Warning, TEXT("LootBox::ShowWidget, Widget name : %s"), *LootBoxWidget->GetFName().ToString());
 			MainInventory->SetRightWidget(LootBoxWidget);
-			MainCon->ToggleInventory();
+			MainCon->ShowInventory_Implementation();// ToggleInventory();
 		}
 	}
 }

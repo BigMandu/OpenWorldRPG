@@ -10,6 +10,7 @@
 #include "OpenWorldRPG/MainCharacter.h"
 #include "OpenWorldRPG/MainController.h"
 
+#include "Components/ScrollBox.h"
 #include "Components/WidgetSwitcher.h"
 #include "Components/Border.h"
 
@@ -47,8 +48,12 @@ void UNewInventory::SetRightWidget(UUserWidget* Widget)
 {
 	if (Widget)
 	{
-		ContentBorder->ClearChildren();
-		ContentBorder->AddChild(Widget);
+		RightWidgetScrollBox->ClearChildren();
+		RightWidgetScrollBox->AddChild(Widget);
+		
+		/*ContentBorder->ClearChildren();
+		ContentBorder->AddChild(Widget);*/
+		UE_LOG(LogTemp, Warning, TEXT("Inventory::SetRightWidget, Widget name : %s"), *Widget->GetFName().ToString());
 		//LootWidget->SetVisibility(ESlateVisibility::Visible);
 		//RightWidgetSwitcher->SetActiveWidget(Widget);
 	}

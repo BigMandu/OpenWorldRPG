@@ -1,8 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "EquipmentComponent.h"
-#include "Weapon.h"
+#include "OpenWorldRPG/Item/EquipmentComponent.h"
+#include "OpenWorldRPG/Item/Equipment.h"
 
 // Sets default values for this component's properties
 UEquipmentComponent::UEquipmentComponent()
@@ -18,18 +18,18 @@ void UEquipmentComponent::BeginPlay()
 	Super::BeginPlay();	
 }
 
-bool UEquipmentComponent::AddEquipment(AWeapon* Weapon)
+bool UEquipmentComponent::AddEquipment(AEquipment* Equip)
 {
 	UE_LOG(LogTemp, Warning, TEXT("EquipComp : AddEquip"));
-	if (Weapon)
+	if (Equip)
 	{
-		if (Weapon->OwningInventory != nullptr) //인벤토리에 있던 Weapon이면,
+		if (Equip->OwningInventory != nullptr) //인벤토리에 있던 Weapon이면,
 		{
-			Weapon->OwningInventory->RemoveItem(Cast<AItem>(this)); //인벤토리에서 지워준다.
+			Equip->OwningInventory->RemoveItem(Cast<AItem>(this)); //인벤토리에서 지워준다.
 		}
 
-		Weapon->OwningEquipment = this;
-		EquipmentItems.Add(Weapon);
+		Equip->OwningEquipment = this;
+		EquipmentItems.Add(Equip);
 		
 		OnEquipmentUpdated.Broadcast();
 
@@ -39,32 +39,32 @@ bool UEquipmentComponent::AddEquipment(AWeapon* Weapon)
 	return false;
 }
 
-bool UEquipmentComponent::RemoveEquipment(AWeapon* Weapon)
+bool UEquipmentComponent::RemoveEquipment(AEquipment* Equip)
 {
-	if (Weapon)
+	if (Equip)
 	{
-		EquipmentItems.RemoveSingle(Weapon);
+		EquipmentItems.RemoveSingle(Equip);
 		OnEquipmentUpdated.Broadcast();
 		return true;
 	}
 	return false;
 }
 
-bool UEquipmentComponent::IsWeaponExist(AWeapon* Weapon)
+bool UEquipmentComponent::IsWeaponExist(AEquipment* Equip)
 {
 	int32 RifleCnt = 0;
 
 	for (auto& EquipItem : EquipmentItems)
 	{
-		AWeapon* Equipped = Cast<AWeapon>(EquipItem);
+		AEquipment* Equipped = Cast<AEquipment>(EquipItem);
 		if (Equipped)
 		{
 			//Rifle Type은 주무기, 부무기 두개를 장착할 수 있다.
-			if (Equipped->WeaponType == EWeaponType::EWT_Rifle && Weapon->WeaponType == EWeaponType::EWT_Rifle)
+			if (Equipped->EquipmentType == EEquipmentType::EET_Rifle && Equip->EquipmentType == EEquipmentType::EET_Rifle)
 			{
 				RifleCnt++;
 			}
-			else if(Equipped->WeaponType == Weapon->WeaponType) //파라미터 Weapon의 Type이 이미 있으면 true
+			else if(Equipped->EquipmentType == Equip->EquipmentType) //파라미터 Weapon의 Type이 이미 있으면 true
 			{
 				return true;
 			}
@@ -80,14 +80,14 @@ bool UEquipmentComponent::IsWeaponExist(AWeapon* Weapon)
 	return false;
 }
 
-AWeapon* UEquipmentComponent::GetBeforeWeapon(AWeapon* Weapon)
+AEquipment* UEquipmentComponent::GetBeforeWeapon(AEquipment* Equip)
 {
 	for (auto& EquipItem : EquipmentItems)
 	{
-		AWeapon* Equipped = Cast<AWeapon>(EquipItem);
+		AEquipment* Equipped = Cast<AEquipment>(EquipItem);
 		if (Equipped)
 		{
-			if (Equipped->WeaponType == Weapon->WeaponType)
+			if (Equipped->EquipmentType == Equip->EquipmentType)
 			{
 				return Equipped;
 			}

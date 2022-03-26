@@ -15,6 +15,7 @@ class UNewInventoryGrid;
 class UDropWidget;
 class ULootBoxWidget;
 class UBorder;
+class UScrollBox;
 class AMainCharacter;
 
 UCLASS()
@@ -38,6 +39,9 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBorder* ContentBorder;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UScrollBox* RightWidgetScrollBox;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UNewInventoryGrid* GridWidget;

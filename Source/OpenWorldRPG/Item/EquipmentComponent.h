@@ -7,8 +7,8 @@
 #include "EquipmentComponent.generated.h"
 
 
-class AWeapon;
-
+//class AWeapon;
+class AEquipment;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEquipmentUpdated);
 
@@ -22,7 +22,7 @@ public:
 	UEquipmentComponent();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Equipment)
-	TArray<AActor*> EquipmentItems;
+	TArray<AEquipment*> EquipmentItems;
 
 	UPROPERTY(BlueprintAssignable, Category = Equipment)
 	FOnEquipmentUpdated OnEquipmentUpdated;
@@ -33,12 +33,12 @@ protected:
 
 public:	
 
-	bool AddEquipment(AWeapon* Weapon);
-	bool RemoveEquipment(AWeapon* Weapon);
+	bool AddEquipment(AEquipment* Equip);
+	bool RemoveEquipment(AEquipment* Equip);
 
 	//Weapon파라미터와 같은 타입의 장비가 이미 있는지 확인
-	bool IsWeaponExist(AWeapon* Weapon);
+	bool IsWeaponExist(AEquipment* Equip);
 	
 	//Weapon파라미터와 같은 타입의 장비를 리턴
-	AWeapon* GetBeforeWeapon(AWeapon* Weapon);
+	AEquipment* GetBeforeWeapon(AEquipment* Equip);
 };

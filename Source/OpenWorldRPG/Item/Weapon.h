@@ -3,9 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Item.h"
-#include "Components/SkeletalMeshComponent.h"
-#include "EquipmentComponent.h"
+#include "OpenWorldRPG/Item/Equipment.h"
+//#include "Components/SkeletalMeshComponent.h"
+//#include "EquipmentComponent.h"
 #include "Weapon.generated.h"
 
 /**
@@ -24,16 +24,16 @@ class AMainCharacter;
 class UCurveFloat;
 
 
-UENUM(BlueprintType)
-enum class EWeaponType : uint8
-{
-	EWT_Rifle	UMETA(DisplayName = "Rifle"),
-	EWT_Pistol	UMETA(DisplayName = "Pistol"),
-	EWT_Helmet	UMETA(DisplayName = "Helmet"),
-	EWT_Vest	UMETA(DisplayName = "Vest"),
-
-	EWT_MAX		UMETA(DisplayName = "DefaltMAX")
-};
+//UENUM(BlueprintType)
+//enum class EWeaponType : uint8
+//{
+//	EWT_Rifle	UMETA(DisplayName = "Rifle"),
+//	EWT_Pistol	UMETA(DisplayName = "Pistol"),
+//	EWT_Helmet	UMETA(DisplayName = "Helmet"),
+//	EWT_Vest	UMETA(DisplayName = "Vest"),
+//
+//	EWT_MAX		UMETA(DisplayName = "DefaltMAX")
+//};
 
 
 //단발, 점사, 연사를 구분
@@ -116,22 +116,22 @@ struct FWeaponStat
 };
 
 UCLASS(Abstract)
-class OPENWORLDRPG_API AWeapon : public AItem
+class OPENWORLDRPG_API AWeapon : public AEquipment
 {
 	GENERATED_BODY()
 	
 public:
 	AWeapon();
 
-	UEquipmentComponent* OwningEquipment;
-	AActor* OwningPlayer;
+	//UEquipmentComponent* OwningEquipment;
+	//AActor* OwningPlayer;
 
 
 	bool bIsFiring;
 	bool bIsAiming; //Main에서 값을 단순히 넣어주기만 한다.
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-	USkeletalMeshComponent* SKMesh;
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	//USkeletalMeshComponent* SKMesh;
 
 	UPROPERTY(EditAnywhere, Category = "WeaponStat")
 	FWeaponStat WeaponStat;
@@ -139,25 +139,25 @@ public:
 	FName MuzzleFlashSocketName;
 
 	/* FPS Aim모드 일때 위치값 저장*/
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AimLocation")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "AimLocation")
 	FTransform CharFPMeshTransform;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AimLocation")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "AimLocation")
 	FTransform WeapSKMeshTransform;
 
 	/* Enums */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-	EWeaponType WeaponType;
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	//EWeaponType WeaponType;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	EWeaponFiringMode WeaponFiringMode;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	EWeaponState CurrentWeaponState;
 
 	/* FX */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Sound")
-	USoundCue* EquippedSound;
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Sound")
+	//USoundCue* EquippedSound;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Sound")
 	USoundCue* FireSound;
@@ -205,17 +205,17 @@ protected:
 	
 public:
 
-	void SetOwningPlayer(AActor * Actor);
+	//void SetOwningPlayer(AActor * Actor);
 
-	void Equip(AActor* Char);
+	virtual void Equip(AActor* Char) override;
 	
-	void GunAttachToMesh(AMainCharacter* Main);
+	void GunAttachToMesh(AActor* Actor);
 
-	void FPS_AimAttachToMesh(AMainCharacter* Main);
+	void FPS_AimAttachToMesh(AActor* Actor);
 
-	bool CheckSendToInventory(AMainCharacter* Main);
+	//bool CheckSendToInventory(AMainCharacter* Main);
 
-	virtual void Drop() override;
+	//virtual void Drop() override;
 	
 	void ChangeSafetyLever();
 	

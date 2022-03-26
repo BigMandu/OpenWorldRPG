@@ -18,8 +18,8 @@ class OPENWORLDRPG_API UDropWidget : public UUserWidget
 {
 	GENERATED_BODY()
 public:
-	UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
-	USizeBox* DropSizeBox;
+	/*UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
+	USizeBox* DropSizeBox;*/
 	
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
 	UBorder* DropBorder;

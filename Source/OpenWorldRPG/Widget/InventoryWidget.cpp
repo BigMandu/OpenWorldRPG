@@ -107,33 +107,33 @@ void UInventoryWidget::InitEquipment()
 
 	for (auto EquipItem : EquipmentComp->EquipmentItems)
 	{
-		AWeapon* EquipWeap = Cast<AWeapon>(EquipItem);
-		if (EquipWeap)
-		{
-			switch (EquipWeap->WeaponType)
-			{
-			case EWeaponType::EWT_Rifle:
-				if (CheckEquipSlotIsSet(Primary))
-				{
-					SetEquipmentSlot(Sub, EquipWeap);
-				}
-				else
-				{
-					SetEquipmentSlot(Primary, EquipWeap);
-				}
-				break;
-			case EWeaponType::EWT_Pistol:
-				//CheckEquipSlotIsSet(Pistol);
-				SetEquipmentSlot(Pistol, EquipWeap);
-				break;
-			case EWeaponType::EWT_Helmet:
-				SetEquipmentSlot(Helmet, EquipWeap);
-				break;
-			case EWeaponType::EWT_Vest:
-				SetEquipmentSlot(Vest, EquipWeap);
-				break;
-			}
-		}
+		//AWeapon* EquipWeap = Cast<AWeapon>(EquipItem);
+		//if (EquipWeap)
+		//{
+		//	switch (EquipWeap->WeaponType)
+		//	{
+		//	case EWeaponType::EWT_Rifle:
+		//		if (CheckEquipSlotIsSet(Primary))
+		//		{
+		//			SetEquipmentSlot(Sub, EquipWeap);
+		//		}
+		//		else
+		//		{
+		//			SetEquipmentSlot(Primary, EquipWeap);
+		//		}
+		//		break;
+		//	case EWeaponType::EWT_Pistol:
+		//		//CheckEquipSlotIsSet(Pistol);
+		//		SetEquipmentSlot(Pistol, EquipWeap);
+		//		break;
+		//	case EWeaponType::EWT_Helmet:
+		//		SetEquipmentSlot(Helmet, EquipWeap);
+		//		break;
+		//	case EWeaponType::EWT_Vest:
+		//		SetEquipmentSlot(Vest, EquipWeap);
+		//		break;
+		//	}
+		//}
 	}
 }
 
