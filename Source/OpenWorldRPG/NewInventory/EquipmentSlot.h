@@ -24,8 +24,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WidgetVariable")
 	EEquipmentType SlotType;
 
-	UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
-	UImage* ItemIcon;
+	//UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
+	//UImage* ItemIcon;
 
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
 	UBorder* BGBorder;

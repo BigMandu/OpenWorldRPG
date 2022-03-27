@@ -11,6 +11,7 @@
 /*
 각 슬롯을 생성.
 */
+class AEquipment;
 class UEquipmentSlot;
 class UEquipmentComponent;
 
@@ -40,10 +41,15 @@ public:
 
 	UEquipmentComponent* EquipComp;
 
+	UPROPERTY(EditDefaultsOnly, Category = "WidgetVariable")
+	TSubclassOf<UUserWidget> WNewItemWidget = nullptr;
+
 	void EquipInitialize(UEquipmentComponent* p_EquipComp);
+
+	UFUNCTION()
 	void RefreshEquipWidget();
 
-	void Set
+	void SetSlot(AEquipment* Equip, UEquipmentSlot* EquipSlot);
 
 
 	//virtual bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;

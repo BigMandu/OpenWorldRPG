@@ -237,7 +237,7 @@ bool UNewInventoryGrid::NativeOnDrop(const FGeometry& InGeometry, const FDragDro
 		int32 index = InventoryComp->TileToIndex(DraggedTile);
 		
 		/* Drop widget 상태 변환 */
-		if (Dropwidget && !MainCon->bIsInteractLootBox)
+		if (Dropwidget && MainCon && !MainCon->bIsInteractLootBox)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("InvGrid:: Drop Widget Change 'Normal' State "));
 			Dropwidget->bReturnNormal = true;

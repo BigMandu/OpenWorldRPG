@@ -10,7 +10,8 @@
 //class AWeapon;
 class AEquipment;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEquipmentUpdated);
+//DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEquipmentUpdated);
+DECLARE_MULTICAST_DELEGATE(FOnEquipmentUpdated);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class OPENWORLDRPG_API UEquipmentComponent : public UActorComponent
@@ -21,11 +22,13 @@ public:
 	// Sets default values for this component's properties
 	UEquipmentComponent();
 
+	//UPROPERTY(BlueprintAssignable, Category = Equipment)
+	FOnEquipmentUpdated OnEquipmentUpdated;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Equipment)
 	TArray<AEquipment*> EquipmentItems;
 
-	UPROPERTY(BlueprintAssignable, Category = Equipment)
-	FOnEquipmentUpdated OnEquipmentUpdated;
+	
 
 protected:
 	// Called when the game starts

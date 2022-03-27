@@ -4,13 +4,24 @@
 #include "OpenWorldRPG/NewInventory/EquipWidget.h"
 #include "OpenWorldRPG/NewInventory/EquipmentSlot.h"
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
+#include "OpenWorldRPG/NewInventory/NewItemwidget.h"
 #include "OpenWorldRPG/Item/Equipment.h"
 #include "OpenWorldRPG/Item/EquipmentComponent.h"
+
+#include "Components/Image.h"
+#include "Components/Border.h"
+#include "Components/CanvasPanelSlot.h"
+#include "Components/CanvasPanel.h"
 #include "Blueprint/DragDropOperation.h"
 
 void UEquipWidget::EquipInitialize(UEquipmentComponent* p_EquipComp)
 {
 	EquipComp = p_EquipComp;
+	if (EquipComp)
+	{
+		EquipComp->OnEquipmentUpdated.AddUFunction(this, FName("RefreshEquipWidget"));
+		UE_LOG(LogTemp, Warning, TEXT("UEquipWidget:: Bind Success"));
+	}
 
 	RefreshEquipWidget();
 }
@@ -33,6 +44,8 @@ void UEquipWidget::RefreshEquipWidget()
 			case EEquipmentType::EET_Rifle:
 				break;
 			case EEquipmentType::EET_Vest:
+				UE_LOG(LogTemp, Warning, TEXT("UEquipWidget:: RefreshEquip, Set Slot call"));
+				SetSlot(ele, VestSlot);
 				break;
 			case EEquipmentType::EET_Backpack:
 				break;
@@ -40,6 +53,34 @@ void UEquipWidget::RefreshEquipWidget()
 			}
 		}
 	}
+}
+
+void UEquipWidget::SetSlot(AEquipment* Equip, UEquipmentSlot* EquipSlot)
+{
+	if (WNewItemWidget)
+	{
+		UNewItemwidget* ItemWidget = CreateWidget<UNewItemwidget>(this, WNewItemWidget);
+
+		if (ItemWidget)
+		{
+			//ItemWidget->OnRemoved.AddUFunction(this, FName("OnItemRemove"));
+			
+			ItemWidget->Tilesize = EquipSlot->GetDesiredSize().X;
+			ItemWidget->ItemObj = Equip->ItemObj; // ele.Key;
+			ItemWidget->Refresh();
+
+			//EquipSlot->BGBorder->AddChild(ItemWidget);
+			UPanelSlot* PanelSlot = EquipSlot->BGBorder->AddChild(ItemWidget);
+
+			UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(PanelSlot);
+			if (CanvasSlot)
+			{
+				CanvasSlot->SetAutoSize(true);
+			}
+
+		}
+	}
+	//EquipSlot->ItemIcon->SetBrushFromMaterial(Equip->Icon);
 }
 
 //bool UEquipWidget::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)

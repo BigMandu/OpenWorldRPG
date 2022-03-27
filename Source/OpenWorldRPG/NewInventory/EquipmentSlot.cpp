@@ -7,6 +7,7 @@
 #include "Components/Image.h"
 #include "Blueprint/DragDropOperation.h"
 
+
 void UEquipmentSlot::NativeOnDragEnter(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
 {
 	Super::NativeOnDragEnter(InGeometry, InDragDropEvent, InOperation);
@@ -22,6 +23,7 @@ void UEquipmentSlot::NativeOnDragLeave(const FDragDropEvent& InDragDropEvent, UD
 	Super::NativeOnDragLeave(InDragDropEvent, InOperation);
 	PaintBGBorder();
 }
+
 
 //bool UEquipmentSlot::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
 //{
@@ -43,6 +45,7 @@ void UEquipmentSlot::NativeOnDragLeave(const FDragDropEvent& InDragDropEvent, UD
 //
 //	return true;
 //}
+
 
 
 void UEquipmentSlot::PaintBGBorder(EEquipmentType EquipType)

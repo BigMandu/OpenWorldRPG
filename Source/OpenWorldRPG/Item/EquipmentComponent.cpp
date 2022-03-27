@@ -31,6 +31,7 @@ bool UEquipmentComponent::AddEquipment(AEquipment* Equip)
 		Equip->OwningEquipment = this;
 		EquipmentItems.Add(Equip);
 		
+		//EquipWidget::RefreshEquipWidget°ú bind½ÃÅ´.
 		OnEquipmentUpdated.Broadcast();
 
 		UE_LOG(LogTemp, Warning, TEXT("EquipComp : AddSuccess"));
