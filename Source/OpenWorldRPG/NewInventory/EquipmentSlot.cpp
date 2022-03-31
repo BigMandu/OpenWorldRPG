@@ -7,6 +7,16 @@
 #include "Components/Image.h"
 #include "Blueprint/DragDropOperation.h"
 
+bool UEquipmentSlot::IsSupportedEquip(UNewItemObject* Obj)
+{
+	bool bReturn = false;
+
+	if (Obj->InteractType == EInteractType::EIT_Equipment && Obj->EquipmentType == SlotType)
+	{
+		bReturn = true;
+	}
+	return bReturn;
+}
 
 void UEquipmentSlot::NativeOnDragEnter(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
 {
@@ -14,56 +24,37 @@ void UEquipmentSlot::NativeOnDragEnter(const FGeometry& InGeometry, const FDragD
 	UNewItemObject* ItemObj = Cast< UNewItemObject>(InOperation->Payload);
 	if (ItemObj)
 	{
-		PaintBGBorder(ItemObj->EquipmentType);
+		PaintBGBorder(ItemObj);
+		
 	}
 
 }
 void UEquipmentSlot::NativeOnDragLeave(const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
 {
 	Super::NativeOnDragLeave(InDragDropEvent, InOperation);
-	PaintBGBorder();
+	PaintBGBorder(nullptr);
+	
 }
 
 
-//bool UEquipmentSlot::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
-//{
-//	Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);
-//	
-//	UNewItemObject* ItemObj = Cast< UNewItemObject>(InOperation->Payload);
-//	if (ItemObj)
-//	{
-//		if (ItemObj->EquipmentType == SlotType)
-//		{
-//			UE_LOG(LogTemp, Warning, TEXT("Correct Slot"));
-//		}
-//		else
-//		{
-//			UE_LOG(LogTemp, Warning, TEXT("Incorrect Slot"));
-//		}
-//	}
-//	
-//
-//	return true;
-//}
-
-
-
-void UEquipmentSlot::PaintBGBorder(EEquipmentType EquipType)
+void UEquipmentSlot::PaintBGBorder(UNewItemObject* Obj)
 {
-	if (EquipType != EEquipmentType::EET_MAX)
+	if (Obj != nullptr)
 	{
 		FLinearColor Green = FLinearColor(0.f, 1.f, 0.f, 0.25f);
 		FLinearColor Red = FLinearColor(1.f, 0.f, 0.f, 0.25f);
 		
 		if (BGBorder)
 		{
-			if (EquipType == SlotType)
+			if (IsSupportedEquip(Obj))
 			{
 				BGBorder->SetBrushColor(Green);
+				bCanDrop = true;
 			}
 			else
 			{
 				BGBorder->SetBrushColor(Red);
+				bCanDrop = false;
 			}
 		}
 	}
@@ -71,5 +62,29 @@ void UEquipmentSlot::PaintBGBorder(EEquipmentType EquipType)
 	{
 		FLinearColor Black = FLinearColor(0.f, 0.f, 0.f, 0.25f);
 		BGBorder->SetBrushColor(Black);
+		bCanDrop = false;
 	}
+
+	UE_LOG(LogTemp, Warning, TEXT("UEquipmentSlot bCanDrop = %s"), bCanDrop ? "true" : "false");
+}
+
+bool UEquipmentSlot::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
+{
+	Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);
+	
+	UNewItemObject* ItemObj = Cast< UNewItemObject>(InOperation->Payload);
+	if (ItemObj)
+	{
+		if (IsSupportedEquip(ItemObj))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Correct Slot"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Incorrect Slot"));
+		}
+	}
+	
+
+	return true;
 }

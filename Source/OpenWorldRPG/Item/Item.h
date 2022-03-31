@@ -40,7 +40,7 @@ enum class EItemState : uint8
 };
 
 UCLASS()
-class OPENWORLDRPG_API AItem : public AInteractable, public IItemInterface
+class OPENWORLDRPG_API AItem : public AInteractable //, public IItemInterface
 {
 	GENERATED_BODY()
 	//GENERATED_UCLASS_BODY()

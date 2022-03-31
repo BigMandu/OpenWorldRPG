@@ -2,6 +2,7 @@
 
 
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
+#include "OpenWorldRPG/NewInventory/NewInventoryGrid.h"
 #include "OpenWorldRPG/Item/Item.h"
 
 UNewItemObject::UNewItemObject()
@@ -59,4 +60,13 @@ UMaterialInterface* UNewItemObject::GetItemIcon()
 		}
 	}
 	return ReturnIcon;
+}
+
+UNewInventoryGrid* UNewItemObject::GetMotherContainer()
+{
+	if (MotherContainer != nullptr)
+	{
+		return MotherContainer;
+	}
+	return nullptr;
 }

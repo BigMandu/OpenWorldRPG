@@ -14,6 +14,7 @@
 */
 class UImage;
 class UBorder;
+class UNewItemObject;
 
 UCLASS()
 class OPENWORLDRPG_API UEquipmentSlot : public UUserWidget, public IItemInterface
@@ -31,9 +32,12 @@ public:
 	UBorder* BGBorder;
 
 
-	void PaintBGBorder(EEquipmentType EquipType = EEquipmentType::EET_MAX);
+	void PaintBGBorder(UNewItemObject* Obj);
 
-	//virtual bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
+
+	bool IsSupportedEquip(UNewItemObject* Obj);
+
+	virtual bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
 
 	virtual void NativeOnDragEnter(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
 	virtual void NativeOnDragLeave(const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;

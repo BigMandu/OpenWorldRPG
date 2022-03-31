@@ -4,6 +4,7 @@
 #include "OpenWorldRPG/NewInventory/NewItemwidget.h"
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
 #include "OpenWorldRPG/NewInventory/TooltipWidget.h"
+#include "OpenWorldRPG/NewInventory/NewInventoryGrid.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Components/CanvasPanelSlot.h"
 #include "Components/SizeBox.h"
@@ -128,7 +129,7 @@ void UNewItemwidget::NativeOnDragDetected(const FGeometry& InGeometry, const FPo
 {
 	Super::NativeOnDragDetected(InGeometry, InMouseEvent, OutOperation);
 	//UDragDropOperation
-	UDragDropOperation* DDOper = UWidgetBlueprintLibrary::CreateDragDropOperation(nullptr);
+	DDOper = UWidgetBlueprintLibrary::CreateDragDropOperation(nullptr);
 	
 	if (ItemObj)
 	{
@@ -137,10 +138,81 @@ void UNewItemwidget::NativeOnDragDetected(const FGeometry& InGeometry, const FPo
 
 		/*OutOperation->Payload = ItemObj;
 		OutOperation->DefaultDragVisual = this;*/
-
+		
 		OutOperation = DDOper;
-		/* Drag가 감지되면 해당 item을 Inventory에서 삭제한다.*/
+		
+
+
+		
+
 		OnRemoved.Broadcast(ItemObj);
-		RemoveFromParent(); //여기서 가끔 에러뜸
+		RemoveFromParent();
+
+
+		/* Drop Widget이 있다면, Drop Widget의 상태를 변환하기 위해 BroadCast를 한다.*/
+		//OnDragDetect.Broadcast(ItemObj);
+
+		/* 나중에 수정해야할것. 
+		* Drag가 Detection되면 바로 지우는게 아니라 , 
+		* 이 Class의 Drop이벤트에서 
+		*	mother container가 있으면, 해당 Container의 Drop()을 호출하는 식으로 변경하자.
+		*  이렇게 되면 Drop()에서 이벤트를 발생시키고  DropWidget에서 변경할수 있게 된다. 해보자 
+		*/
+		
+		
 	}
+}
+
+bool UNewItemwidget::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
+{
+	bool bReturn = Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);
+
+	UE_LOG(LogTemp, Warning, TEXT("NewItemWidget::OnDrop func called"));
+
+	/*
+		여기서, Operation의 Payload내에 있는 MotherContainer와  지금 이놈의 MotherContainer를 비교.
+
+		같으면 , 컨테이너가 바뀌지 않음. index(위치)만 변경하면됨.
+		얘의 Top-Left index를 이용, 이놈의 Mothercontainer내에 함수를 호출, index를 변경한다.
+
+
+		다르면, 컨테이너가 변경됨.
+		이놈의 MotherContainer와  payload내의 MotherContainer를 파라미터로 받는 함수를 호출,
+		이놈의 MotherContainer에서 item삭제, payload내의 MotherContainer에 item add한다.
+
+	*/
+
+	/*
+	UNewItemObject* InOperItemObj = Cast<UNewItemObject>(InOperation->Payload);
+	if (InOperItemObj && InOperItemObj == ItemObj)
+	{
+		InOperItemObj = nullptr;
+		//ItemWidget과 ItemObj에 저장된 MotherContainer가 일치한다면 같은 컨테이너에서 이동.
+		if (MotherContainer == ItemObj->GetMotherContainer())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("NewItemWidget::OnDrop(), Call MoveItemInSameContainer"));
+			MotherContainer->MoveItemInSameContainer(ItemObj);
+		}
+		//일치 하지 않는다면 다른 컨테이너로 이동함. (ItemWidget의 MotherContainer로)
+		else if (MotherContainer != ItemObj->GetMotherContainer() && MotherContainer->bCanDrop)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("NewItemWidget::OnDrop(), Move other container"));
+			OnRemoved.Broadcast(ItemObj);
+			//RemoveFromParent(); //여기서 가끔 에러뜸
+			return true;
+		}
+		//아무것도 아니면 실패로 Rollback한다.
+		else if(MotherContainer->bCanDrop == false)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("NewItemWidget::OnDrop(), Wrong area"));
+			//MotherContainer
+		}
+
+
+		//
+		//
+		//}
+	}
+	*/
+	return bReturn;
 }

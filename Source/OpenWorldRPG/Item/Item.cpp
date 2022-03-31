@@ -52,12 +52,13 @@ UNewItemObject* AItem::GetDefaultItemObj()
 		
 		Obj->bCanEquip = bCanEquip;
 		Obj->EquipmentType = EquipmentType;
+		Obj->InteractType = InteractType;
 		
-		UE_LOG(LogTemp, Warning, TEXT("AItem::Create object"));
+		//UE_LOG(LogTemp, Warning, TEXT("AItem::Create object"));
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("AItem::fail to Create object"));
+		//UE_LOG(LogTemp, Warning, TEXT("AItem::fail to Create object"));
 	}
 	return Obj;
 }

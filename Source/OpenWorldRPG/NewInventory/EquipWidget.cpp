@@ -69,14 +69,14 @@ void UEquipWidget::SetSlot(AEquipment* Equip, UEquipmentSlot* EquipSlot)
 			ItemWidget->ItemObj = Equip->ItemObj; // ele.Key;
 			ItemWidget->Refresh();
 
-			//EquipSlot->BGBorder->AddChild(ItemWidget);
-			UPanelSlot* PanelSlot = EquipSlot->BGBorder->AddChild(ItemWidget);
+			EquipSlot->BGBorder->AddChild(ItemWidget);
+			/*UPanelSlot* PanelSlot = EquipSlot->BGBorder->AddChild(ItemWidget);
 
 			UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(PanelSlot);
 			if (CanvasSlot)
 			{
 				CanvasSlot->SetAutoSize(true);
-			}
+			}*/
 
 		}
 	}

@@ -5,25 +5,26 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Interactive_Interface.h"
+#include "OpenWorldRPG/Item/ItemInterface.h"
 #include "Engine/BlendableInterface.h"
 #include "Interactable.generated.h"
 
 class UStaticMeshComponent;
 class USkeletalMesh;
 
-UENUM(BlueprintType)
-enum class EInteractType : uint8
-{
-	EIT_Gizmo		UMETA(DisplayName = "EIT_Gizmo"),
-	EIT_Item		UMETA(DisplayName = "EIT_Item"),
-	EIT_Equipment	UMETA(DisplayName = "EIT_Equipment"),
-	EIT_LootBox		UMETA(DisplayName = "EIT_LootBox"),
-
-	EIT_MAX			UMETA(DisplayName = "DefaultMAX")
-};
+//UENUM(BlueprintType)
+//enum class EInteractType : uint8
+//{
+//	EIT_Gizmo		UMETA(DisplayName = "EIT_Gizmo"),
+//	EIT_Item		UMETA(DisplayName = "EIT_Item"),
+//	EIT_Equipment	UMETA(DisplayName = "EIT_Equipment"),
+//	EIT_LootBox		UMETA(DisplayName = "EIT_LootBox"),
+//
+//	EIT_MAX			UMETA(DisplayName = "DefaultMAX")
+//};
 
 UCLASS()
-class OPENWORLDRPG_API AInteractable : public AActor, public IInteractive_Interface
+class OPENWORLDRPG_API AInteractable : public AActor, public IInteractive_Interface, public IItemInterface
 {
 	GENERATED_BODY()
 	//GENERATED_UCLASS_BODY()

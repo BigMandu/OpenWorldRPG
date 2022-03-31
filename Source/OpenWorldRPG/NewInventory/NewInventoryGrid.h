@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "OpenWorldRPG/Item/ItemInterface.h"
 #include "OpenWorldRPG/NewInventory/InventoryStruct.h"
 #include "Blueprint/UserWidget.h"
 
@@ -38,7 +39,7 @@ enum class EGridType : uint8
 };
 
 UCLASS()
-class OPENWORLDRPG_API UNewInventoryGrid : public UUserWidget
+class OPENWORLDRPG_API UNewInventoryGrid : public UUserWidget, public IItemInterface
 {
 	GENERATED_BODY()
 public:
@@ -58,6 +59,7 @@ private:
 	
 	USlateBrushAsset* Brush;
 
+	UNewItemObject* PendingObj;
 
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Settings)
@@ -88,6 +90,8 @@ public:
 	//UNewItemwidget
 	UDropWidget* Dropwidget;
 	
+	//bool bCanDrop;
+	
 private:
 	
 	FVector2D GetMousePositionInEachTile(FVector2D MousePos);
@@ -113,6 +117,9 @@ public:
 
 	UFUNCTION()
 	void RefreshInventory();
+	
+	UFUNCTION()
+	void PendingRemoveItem(UObject* PendingObject);
 
 	UFUNCTION()
 	void OnItemRemove(UObject* T_ItemObj);
@@ -120,6 +127,11 @@ public:
 	void BindDropWidget(UDropWidget* T_Dropwidget);
 
 	void DrawDropLocation(FPaintContext& Context) const;
+
+	bool MoveItemInSameContainer(UNewItemObject* Item);
+
+	
+	//bool RemoveItemAtBeforeIndex(UNewItemObject* Item);
 
 	/*template <typename WidgetT>
 	FORCEINLINE_DEBUGGABLE WidgetT* ConstructWidget(TSubclassOf<UWidget>WidgetClass = WidgetT::StaticClass(), FName WidgetName = NAME_None)

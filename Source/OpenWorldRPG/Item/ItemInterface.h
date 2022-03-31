@@ -21,6 +21,18 @@ enum class EEquipmentType : uint8
 	EET_MAX			UMETA(DisplayName = "DefaltMAX")
 };
 
+
+UENUM(BlueprintType)
+enum class EInteractType : uint8
+{
+	EIT_Gizmo		UMETA(DisplayName = "EIT_Gizmo"),
+	EIT_Item		UMETA(DisplayName = "EIT_Item"),
+	EIT_Equipment	UMETA(DisplayName = "EIT_Equipment"),
+	EIT_LootBox		UMETA(DisplayName = "EIT_LootBox"),
+
+	EIT_MAX			UMETA(DisplayName = "DefaultMAX")
+};
+
 UINTERFACE(MinimalAPI)
 class UItemInterface : public UInterface
 {
@@ -34,5 +46,6 @@ class OPENWORLDRPG_API IItemInterface
 {
 	GENERATED_BODY()
 public:
-	//EEquipmentType EquipmentType;
+	bool bCanDrop = false;
+	//virtual bool CanDrop() = 0;
 };
