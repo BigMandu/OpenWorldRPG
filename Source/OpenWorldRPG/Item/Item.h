@@ -34,7 +34,6 @@ enum class EItemState : uint8
 {
 	EIS_Spawn	UMETA(DisplayName = "Spawn"),
 	EIS_Pickup	UMETA(DisplayName = "Pickup"),
-	EIS_Drop	UMETA(DisplayName = "Drop"),
 
 	EIS_MAX		UMETA(DisplayName = "DefaultsMAX")
 };

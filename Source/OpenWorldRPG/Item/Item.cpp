@@ -80,8 +80,10 @@ void AItem::Pickup(class AActor* Actor)
 		{
 			if (Main->InventoryComp->TryAddItem(ItemObj))
 			{
-				UE_LOG(LogTemp, Warning, TEXT("success Add item"));
+				SetItemState(EItemState::EIS_Pickup);
 				Destroy();
+				UE_LOG(LogTemp, Warning, TEXT("success Add item"));
+				
 			}
 			else
 			{
@@ -115,7 +117,7 @@ void AItem::Drop()
 			Mesh->SetEnableGravity(true);
 			Mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 
-			SetItemState(EItemState::EIS_Drop);
+			SetItemState(EItemState::EIS_Spawn);
 			FVector OwnerLocation = OwningInventory->GetOwner()->GetActorLocation();
 			FVector OwnerForwardLo = OwningInventory->GetOwner()->GetActorForwardVector();
 			FVector DropLocation = OwnerLocation + OwnerForwardLo * 120.f;			

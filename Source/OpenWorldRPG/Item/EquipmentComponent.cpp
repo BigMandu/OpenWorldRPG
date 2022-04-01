@@ -96,3 +96,13 @@ AEquipment* UEquipmentComponent::GetBeforeWeapon(AEquipment* Equip)
 	}
 	return nullptr;
 }
+
+bool UEquipmentComponent::SwapEquipment(AEquipment* Before, AEquipment* Next)
+{
+	//double check
+	if(Before->EquipmentType == Next->EquipmentType)
+	{
+		EquipmentItems.RemoveSingle(Before);
+
+	}
+}

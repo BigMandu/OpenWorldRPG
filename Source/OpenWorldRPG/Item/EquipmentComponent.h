@@ -44,4 +44,6 @@ public:
 	
 	//Weapon파라미터와 같은 타입의 장비를 리턴
 	AEquipment* GetBeforeWeapon(AEquipment* Equip);
+
+	bool SwapEquipment(AEquipment* Before, AEquipment* Next);
 };

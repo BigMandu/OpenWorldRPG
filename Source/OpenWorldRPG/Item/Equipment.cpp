@@ -55,6 +55,7 @@ void AEquipment::SetOwningPlayer(AActor* Actor)
 
 void AEquipment::Equip(AActor* Actor)
 {
+	UE_LOG(LogTemp, Warning, TEXT("AEquipment::Equip func called"));
 	AMainCharacter* Main = Cast<AMainCharacter>(Actor);
 	bool bFlag = false;
 
@@ -64,6 +65,7 @@ void AEquipment::Equip(AActor* Actor)
 		if (CheckSendToInventory(Main)) //인벤토리로 보냈는지 확인
 		{
 			bFlag = true;
+			return;
 		}
 
 		switch (EquipmentType)
@@ -72,7 +74,7 @@ void AEquipment::Equip(AActor* Actor)
 		case EEquipmentType::EET_Pistol:
 		{
 			
-			if (!bFlag) //Inventory로 보내지 않았으면 장착 시킨다.
+			//if (!bFlag) //Inventory로 보내지 않았으면 장착 시킨다.
 			{
 				AWeapon* Weapon = Cast<AWeapon>(this);
 				/* 1,2,3을 눌렀을때 Quick Swap하기 위해 */
@@ -138,14 +140,14 @@ void AEquipment::Equip(AActor* Actor)
 		}
 			break;
 		case EEquipmentType::EET_Helmet:
-			if (!bFlag)
+			//if (!bFlag)
 			{
 				
 				//SKMesh->SetHiddenInGame(true); //임시로 해둔것임.
 			}
 			break;
 		case EEquipmentType::EET_Vest:
-			if (!bFlag)
+			//if (!bFlag)
 			{
 				//장착
 				const USkeletalMeshSocket* Socket = Main->GetMesh()->GetSocketByName("VestSocket");
@@ -156,7 +158,7 @@ void AEquipment::Equip(AActor* Actor)
 			}
 			break;
 		case EEquipmentType::EET_Backpack:
-			if (!bFlag)
+			//if (!bFlag)
 			{
 				//SKMesh->SetHiddenInGame(true); //임시
 			}
@@ -164,7 +166,7 @@ void AEquipment::Equip(AActor* Actor)
 
 
 
-		if (!bFlag) //Inventory로 보내지 않았으면
+		//if (!bFlag) //Inventory로 보내지 않았으면
 		{
 			UE_LOG(LogTemp, Warning, TEXT("AWeapon::Equip Success"));
 
@@ -195,7 +197,7 @@ bool AEquipment::CheckSendToInventory(AActor* Actor)
 	//이 무기와 같은 타입의 무기가 이미 장착되어있고 (Rifle인 경우 2개 장착가능)
 	if (Main->Equipment->IsWeaponExist(this))
 	{
-		if (GetItemState() == EItemState::EIS_Spawn || GetItemState() == EItemState::EIS_Drop) //월드에 있는 무기면
+		if (GetItemState() == EItemState::EIS_Spawn) //월드에 있는 무기면
 		{
 			//OwningEquipment를 null로 설정해준다.
 			OwningEquipment = nullptr;

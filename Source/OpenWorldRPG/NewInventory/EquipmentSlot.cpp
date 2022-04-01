@@ -3,6 +3,8 @@
 
 #include "OpenWorldRPG/NewInventory/EquipmentSlot.h"
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
+#include "OpenWorldRPG/MainCharacter.h"
+#include "OpenWorldRPG/Item/Equipment.h"
 #include "Components/Border.h"
 #include "Components/Image.h"
 #include "Blueprint/DragDropOperation.h"
@@ -13,7 +15,7 @@ bool UEquipmentSlot::IsSupportedEquip(UNewItemObject* Obj)
 
 	if (Obj->InteractType == EInteractType::EIT_Equipment && Obj->EquipmentType == SlotType)
 	{
-		bReturn = true;
+		bReturn = true;	
 	}
 	return bReturn;
 }
@@ -78,6 +80,14 @@ bool UEquipmentSlot::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEv
 		if (IsSupportedEquip(ItemObj))
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Correct Slot"));
+			AEquipment* Equipment = Cast<AEquipment>(ItemObj->item);
+			if (Equipment)
+			{
+				AMainCharacter* Main = Cast<AMainCharacter>(GetOwningPlayerPawn());
+				Equipment->Equip(Main); //Weapon으로 cast, equip함수 호출
+			}
+
+			
 		}
 		else
 		{
