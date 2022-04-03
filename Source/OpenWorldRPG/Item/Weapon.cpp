@@ -53,9 +53,9 @@ AWeapon::AWeapon() : Super()
 //	}
 //}
 
-void AWeapon::Equip(AActor* Char)
+void AWeapon::StepEquip(AActor* Char)
 {
-	Super::Equip(Char);
+	Super::StepEquip(Char);
 
 	WeaponStat.FireRatePerSec = WeaponStat.FireRatePerMin / 60;
 	WeaponStat.SecondPerBullet = 1 / WeaponStat.FireRatePerSec; //0.06

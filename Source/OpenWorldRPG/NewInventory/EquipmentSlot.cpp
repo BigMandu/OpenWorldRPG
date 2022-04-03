@@ -34,7 +34,7 @@ void UEquipmentSlot::NativeOnDragEnter(const FGeometry& InGeometry, const FDragD
 void UEquipmentSlot::NativeOnDragLeave(const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
 {
 	Super::NativeOnDragLeave(InDragDropEvent, InOperation);
-	PaintBGBorder(nullptr);
+	PaintBGBorder();
 	
 }
 
@@ -84,7 +84,7 @@ bool UEquipmentSlot::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEv
 			if (Equipment)
 			{
 				AMainCharacter* Main = Cast<AMainCharacter>(GetOwningPlayerPawn());
-				Equipment->Equip(Main); //Weapon으로 cast, equip함수 호출
+				Equipment->StepEquip(Main); //Weapon으로 cast, equip함수 호출
 			}
 
 			

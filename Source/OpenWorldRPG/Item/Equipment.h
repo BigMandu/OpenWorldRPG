@@ -75,10 +75,12 @@ protected:
 
 public:
 	void SetOwningPlayer(AActor* Actor);
-	
 
-	virtual void Equip(AActor* Actor);
-	bool CheckSendToInventory(AActor* Actor);
+	void SendToInventory(AActor* Actor);
+
+	virtual void StepEquip(AActor* Actor);
+	void Equip(AActor* Actor);
+	
 
 	virtual void Drop() override;
 };

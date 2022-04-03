@@ -21,21 +21,36 @@ void UEquipmentComponent::BeginPlay()
 bool UEquipmentComponent::AddEquipment(AEquipment* Equip)
 {
 	UE_LOG(LogTemp, Warning, TEXT("EquipComp : AddEquip"));
+	bool bAlreadyHave = false;
 	if (Equip)
 	{
-		if (Equip->OwningInventory != nullptr) //인벤토리에 있던 Weapon이면,
+		//if (Equip->OwningInventory != nullptr) //인벤토리에 있던 Weapon이면,
+		//{
+		//	Equip->OwningInventory->RemoveItem(Cast<AItem>(this)); //인벤토리에서 지워준다.
+		//}
+
+		/* 동일한 Equip이 이미 있는지 확인한다. Swap일때 AddEquip을 하기 때문에*/
+		for(auto& EquippedItem : EquipmentItems)
 		{
-			Equip->OwningInventory->RemoveItem(Cast<AItem>(this)); //인벤토리에서 지워준다.
+			if(EquippedItem == Equip)
+			{
+				bAlreadyHave = true;
+				break;
+			}
 		}
 
-		Equip->OwningEquipment = this;
-		EquipmentItems.Add(Equip);
-		
-		//EquipWidget::RefreshEquipWidget과 bind시킴.
-		OnEquipmentUpdated.Broadcast();
+		/* 동일 Equip이 없다면 추가시킨다. */
+		if (bAlreadyHave == false)
+		{
+			Equip->OwningEquipment = this;
+			EquipmentItems.Add(Equip);
 
-		UE_LOG(LogTemp, Warning, TEXT("EquipComp : AddSuccess"));
-		return true;
+			//EquipWidget::RefreshEquipWidget과 bind시킴.
+			OnEquipmentUpdated.Broadcast();
+
+			UE_LOG(LogTemp, Warning, TEXT("EquipComp : AddSuccess"));
+			return true;
+		}
 	}
 	return false;
 }
@@ -45,13 +60,15 @@ bool UEquipmentComponent::RemoveEquipment(AEquipment* Equip)
 	if (Equip)
 	{
 		EquipmentItems.RemoveSingle(Equip);
+		Equip->OwningPlayer = nullptr;
+
 		OnEquipmentUpdated.Broadcast();
 		return true;
 	}
 	return false;
 }
 
-bool UEquipmentComponent::IsWeaponExist(AEquipment* Equip)
+bool UEquipmentComponent::IsSameTypeExist(AEquipment* Equip)
 {
 	int32 RifleCnt = 0;
 
@@ -81,7 +98,7 @@ bool UEquipmentComponent::IsWeaponExist(AEquipment* Equip)
 	return false;
 }
 
-AEquipment* UEquipmentComponent::GetBeforeWeapon(AEquipment* Equip)
+AEquipment* UEquipmentComponent::GetEquippedWeaponSameType(AEquipment* Equip)
 {
 	for (auto& EquipItem : EquipmentItems)
 	{
@@ -100,9 +117,13 @@ AEquipment* UEquipmentComponent::GetBeforeWeapon(AEquipment* Equip)
 bool UEquipmentComponent::SwapEquipment(AEquipment* Before, AEquipment* Next)
 {
 	//double check
+	bool bReturn = false;
 	if(Before->EquipmentType == Next->EquipmentType)
 	{
-		EquipmentItems.RemoveSingle(Before);
-
+		if(RemoveEquipment(Before))
+		{
+			bReturn = AddEquipment(Next);
+		}
 	}
+	return bReturn;
 }

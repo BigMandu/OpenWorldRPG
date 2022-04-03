@@ -32,7 +32,7 @@ public:
 	UBorder* BGBorder;
 
 
-	void PaintBGBorder(UNewItemObject* Obj);
+	void PaintBGBorder(UNewItemObject* Obj = nullptr);
 
 
 	bool IsSupportedEquip(UNewItemObject* Obj);

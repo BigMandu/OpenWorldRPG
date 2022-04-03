@@ -207,7 +207,7 @@ public:
 
 	//void SetOwningPlayer(AActor * Actor);
 
-	virtual void Equip(AActor* Char) override;
+	virtual void StepEquip(AActor* Char) override;
 	
 	void GunAttachToMesh(AActor* Actor);
 

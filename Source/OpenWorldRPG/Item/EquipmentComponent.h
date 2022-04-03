@@ -40,10 +40,10 @@ public:
 	bool RemoveEquipment(AEquipment* Equip);
 
 	//Weapon파라미터와 같은 타입의 장비가 이미 있는지 확인
-	bool IsWeaponExist(AEquipment* Equip);
+	bool IsSameTypeExist(AEquipment* Equip);
 	
 	//Weapon파라미터와 같은 타입의 장비를 리턴
-	AEquipment* GetBeforeWeapon(AEquipment* Equip);
+	AEquipment* GetEquippedWeaponSameType(AEquipment* Equip);
 
 	bool SwapEquipment(AEquipment* Before, AEquipment* Next);
 };

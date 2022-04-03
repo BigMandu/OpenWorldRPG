@@ -64,12 +64,14 @@ void UEquipWidget::SetSlot(AEquipment* Equip, UEquipmentSlot* EquipSlot)
 		if (ItemWidget)
 		{
 			//ItemWidget->OnRemoved.AddUFunction(this, FName("OnItemRemove"));
-			
+			EquipSlot->BGBorder->ClearChildren();
+
 			ItemWidget->Tilesize = EquipSlot->GetDesiredSize().X;
 			ItemWidget->ItemObj = Equip->ItemObj; // ele.Key;
 			ItemWidget->Refresh();
 
 			EquipSlot->BGBorder->AddChild(ItemWidget);
+			EquipSlot->PaintBGBorder();
 			/*UPanelSlot* PanelSlot = EquipSlot->BGBorder->AddChild(ItemWidget);
 
 			UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(PanelSlot);
