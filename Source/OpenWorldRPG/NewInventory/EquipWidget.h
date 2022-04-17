@@ -43,7 +43,7 @@ public:
 	void EquipInitialize(UEquipmentComponent* p_EquipComp);
 	void RefreshEquipWidget();
 
-	void Set
+	//void Set
 
 
 	//virtual bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
