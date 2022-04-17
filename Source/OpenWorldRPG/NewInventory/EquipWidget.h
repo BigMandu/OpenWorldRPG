@@ -14,6 +14,8 @@
 class AEquipment;
 class UEquipmentSlot;
 class UEquipmentComponent;
+class UOverlay;
+class UBorder;
 
 UCLASS()
 class OPENWORLDRPG_API UEquipWidget : public UUserWidget, public IItemInterface
@@ -39,6 +41,13 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
 	UEquipmentSlot* BackpackSlot;
 
+	UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
+	UOverlay* VestOverlay;
+	UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
+	UOverlay* BackpackOverlay;
+	/*UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
+	UBorder* VestBorder;*/
+
 	UEquipmentComponent* EquipComp;
 
 	UPROPERTY(EditDefaultsOnly, Category = "WidgetVariable")
@@ -49,8 +58,12 @@ public:
 	UFUNCTION()
 	void RefreshEquipWidget();
 
+	UFUNCTION()
+	void RemoveEquipment(UObject* T_ItemObj);
+
 	void SetSlot(AEquipment* Equip, UEquipmentSlot* EquipSlot);
 
+	void RemoveSlot();
 
 	//virtual bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
 };

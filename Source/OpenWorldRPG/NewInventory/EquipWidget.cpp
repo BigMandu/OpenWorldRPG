@@ -5,13 +5,17 @@
 #include "OpenWorldRPG/NewInventory/EquipmentSlot.h"
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
 #include "OpenWorldRPG/NewInventory/NewItemwidget.h"
+#include "OpenWorldRPG/NewInventory/NewInventoryGrid.h"
 #include "OpenWorldRPG/Item/Equipment.h"
+#include "OpenWorldRPG/Item/Weapon.h"
 #include "OpenWorldRPG/Item/EquipmentComponent.h"
 
 #include "Components/Image.h"
 #include "Components/Border.h"
-#include "Components/CanvasPanelSlot.h"
-#include "Components/CanvasPanel.h"
+#include "Components/Overlay.h"
+//#include "Components/Border.h"
+//#include "Components/CanvasPanelSlot.h"
+//#include "Components/CanvasPanel.h"
 #include "Blueprint/DragDropOperation.h"
 
 void UEquipWidget::EquipInitialize(UEquipmentComponent* p_EquipComp)
@@ -28,28 +32,55 @@ void UEquipWidget::EquipInitialize(UEquipmentComponent* p_EquipComp)
 
 void UEquipWidget::RefreshEquipWidget()
 {
+	RemoveSlot();
 	if (EquipComp)
 	{
 		for (auto ele : EquipComp->EquipmentItems)
 		{
-			switch (ele->EquipmentType)
+			if (ele != nullptr)
 			{
-			case EEquipmentType::EET_Helmet:
-				
-				break;
-			case EEquipmentType::EET_Plate:
-				break;
-			case EEquipmentType::EET_Pistol:
-				break;
-			case EEquipmentType::EET_Rifle:
-				break;
-			case EEquipmentType::EET_Vest:
-				UE_LOG(LogTemp, Warning, TEXT("UEquipWidget:: RefreshEquip, Set Slot call"));
-				SetSlot(ele, VestSlot);
-				break;
-			case EEquipmentType::EET_Backpack:
-				break;
+				switch (ele->EquipmentType)
+				{
+				case EEquipmentType::EET_Helmet:
+					SetSlot(ele, HelmetSlot);
+					break;
+				case EEquipmentType::EET_Plate:
+					SetSlot(ele, PlateSlot);
+					break;
+				case EEquipmentType::EET_Pistol:
+					SetSlot(ele, PistolSlot);
+					break;
+				case EEquipmentType::EET_Rifle:
+					{
+					AWeapon* Weapon = Cast<AWeapon>(ele);
+						if(Weapon)
+						{
+							switch(Weapon->RifleAssign)
+							{
+							case ERifleAssign::ERA_Primary:
+								SetSlot(ele, PrimarySlot);
+								break;
+							case ERifleAssign::ERA_Sub:
+								SetSlot(ele, SubSlot);
+								break;
+							}
+						}
+					}
+					
+					break;
+				case EEquipmentType::EET_Vest:
+					SetSlot(ele, VestSlot);
+					if (ele->EquipGridWidget)
+					{
+						VestOverlay->AddChild(ele->EquipGridWidget);//°¡²û error
+					}
+					break;
+				case EEquipmentType::EET_Backpack:
+					SetSlot(ele, BackpackSlot);
+					BackpackOverlay->AddChild(ele->EquipGridWidget);
+					break;
 
+				}
 			}
 		}
 	}
@@ -63,46 +94,45 @@ void UEquipWidget::SetSlot(AEquipment* Equip, UEquipmentSlot* EquipSlot)
 
 		if (ItemWidget)
 		{
-			//ItemWidget->OnRemoved.AddUFunction(this, FName("OnItemRemove"));
+			ItemWidget->OnRemoved.AddUFunction(this, FName("RemoveEquipment"));
 			EquipSlot->BGBorder->ClearChildren();
+			//VestOverlay->ClearChildren();
+			
 
 			ItemWidget->Tilesize = EquipSlot->GetDesiredSize().X;
 			ItemWidget->ItemObj = Equip->ItemObj; // ele.Key;
 			ItemWidget->Refresh();
-
+			
 			EquipSlot->BGBorder->AddChild(ItemWidget);
 			EquipSlot->PaintBGBorder();
-			/*UPanelSlot* PanelSlot = EquipSlot->BGBorder->AddChild(ItemWidget);
-
-			UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(PanelSlot);
-			if (CanvasSlot)
-			{
-				CanvasSlot->SetAutoSize(true);
-			}*/
 
 		}
 	}
-	//EquipSlot->ItemIcon->SetBrushFromMaterial(Equip->Icon);
 }
 
-//bool UEquipWidget::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
-//{
-//	Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);
-//
-//	UNewItemObject* ItemObj = Cast<UNewItemObject>(InOperation->Payload);
-//	if (ItemObj)
-//	{
-//		if (ItemObj->bCanEquip)
-//		{
-//			if (ItemObj->EquipmentType == EEquipmentType::EET_Vest)
-//			{
-//				UE_LOG(LogTemp, Warning, TEXT(" Correct Slot, Can Equip "));
-//			}
-//			else
-//			{
-//				UE_LOG(LogTemp, Warning, TEXT(" Incorrect Slot "));
-//			}
-//		}
-//	}
-//	return true;
-//}
+void UEquipWidget::RemoveEquipment(UObject* T_ItemObj)
+{
+	UNewItemObject* ItemObj = Cast<UNewItemObject>(T_ItemObj);
+	if (ItemObj && EquipComp)
+	{
+		AEquipment* Equipment = Cast<AEquipment>(ItemObj->item);
+		if(Equipment)
+		{
+			
+			Equipment->Remove();
+			EquipComp->RemoveEquipment(Equipment);
+			
+			ItemObj->bIsDestoryed = true;
+			//Equipment->Destroy();
+		}
+	}
+}
+
+void UEquipWidget::RemoveSlot()
+{
+	VestOverlay->ClearChildren();
+	BackpackOverlay->ClearChildren();
+	PrimarySlot->BGBorder->ClearChildren();
+	SubSlot->BGBorder->ClearChildren();
+}
+

@@ -133,6 +133,7 @@ void UNewItemwidget::NativeOnDragDetected(const FGeometry& InGeometry, const FPo
 	
 	if (ItemObj)
 	{
+		
 		DDOper->Payload = ItemObj;
 		DDOper->DefaultDragVisual = this;
 
@@ -168,6 +169,11 @@ bool UNewItemwidget::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEv
 	bool bReturn = Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);
 
 	UE_LOG(LogTemp, Warning, TEXT("NewItemWidget::OnDrop func called"));
+
+	/* 같은 Item이고 Stackable이 가능하다면, stack한다.
+	 *
+	 */
+
 
 	/*
 		여기서, Operation의 Payload내에 있는 MotherContainer와  지금 이놈의 MotherContainer를 비교.

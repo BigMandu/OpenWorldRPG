@@ -44,6 +44,7 @@ bool UEquipmentComponent::AddEquipment(AEquipment* Equip)
 		{
 			Equip->OwningEquipment = this;
 			EquipmentItems.Add(Equip);
+			Equip->SKMesh->SetHiddenInGame(false); //ÀÓ½Ã·Î ÇØµÐ°ÍÀÓ.
 
 			//EquipWidget::RefreshEquipWidget°ú bind½ÃÅ´.
 			OnEquipmentUpdated.Broadcast();
@@ -59,9 +60,14 @@ bool UEquipmentComponent::RemoveEquipment(AEquipment* Equip)
 {
 	if (Equip)
 	{
+		/*if (Equip->SKMesh)
+		{
+			Equip->SKMesh->SetHiddenInGame(true);
+		}*/
 		EquipmentItems.RemoveSingle(Equip);
 		Equip->OwningPlayer = nullptr;
-
+		Equip->Destroy();
+		
 		OnEquipmentUpdated.Broadcast();
 		return true;
 	}

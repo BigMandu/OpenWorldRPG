@@ -97,7 +97,7 @@ public:
 	FORCEINLINE void SetItemState(EItemState State) { ItemState = State; }
 
 	/* child class에서 override할 예정임*/
-	UNewItemObject* GetDefaultItemObj();
+	virtual UNewItemObject* GetDefaultItemObj();
 
 	void Pickup(AActor* Actor);
 	

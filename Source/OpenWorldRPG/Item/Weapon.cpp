@@ -14,6 +14,7 @@
 #include "Curves/CurveFloat.h"
 #include "Math/UnrealMathUtility.h"
 #include "DrawDebugHelpers.h" //디버깅용
+#include "OpenWorldRPG/NewInventory/NewItemObject.h"
 
 #define DEBUG 0
 
@@ -29,15 +30,14 @@ AWeapon::AWeapon() : Super()
 	bLMBDown = false;
 	bDetectLookInput = false;
 
-	
-	
-
 	//MuzzleEffectComp = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("MuzzleEffectComp"));
 	//MuzzleEffectComp->SetupAttachment(GetRootComponent());
 	MuzzleFlashSocketName = FName("muzzleflash");
 
 	WeaponFiringMode = EWeaponFiringMode::EWFM_SemiAuto;
 	CurrentWeaponState = EWeaponState::EWS_Idle;
+
+	RifleAssign = ERifleAssign::ERA_MAX;
 }
 
 //void AWeapon::SetOwningPlayer(AActor* Actor)
@@ -53,12 +53,16 @@ AWeapon::AWeapon() : Super()
 //	}
 //}
 
-void AWeapon::StepEquip(AActor* Char)
+void AWeapon::Equip(AActor* Char)
 {
-	Super::StepEquip(Char);
+	Super::Equip(Char);
+
+	AMainCharacter* Main = Cast<AMainCharacter>(Char);
+	check(Main);
 
 	WeaponStat.FireRatePerSec = WeaponStat.FireRatePerMin / 60;
-	WeaponStat.SecondPerBullet = 1 / WeaponStat.FireRatePerSec; //0.06
+	WeaponStat.SecondPerBullet = 1 / WeaponStat.FireRatePerSec; //0.06	
+
 	GunAttachToMesh(Char);
 }
 
@@ -145,10 +149,16 @@ void AWeapon::GunAttachToMesh(AActor* Actor)
 				break;
 			}
 
-			if (Main->EquippedWeapon)//이미 들고있는 무기가 있을경우
+			/* 이미 들고 있는 무기가 있고, 들고있는 무기와 이 무기가 다른경우
+			 * 들고있는 무기를 안보이게 한다.  ( 임시 ) -> 다른 소켓으로 이동시켜야함.
+			 */
+			if (Main->EquippedWeapon && (Main->EquippedWeapon != this))
 			{
 				//해당 무기의 SkMesh를 안보이게 한다.
-				Main->EquippedWeapon->SKMesh->SetHiddenInGame(true);
+				if (Main->EquippedWeapon->SKMesh)
+				{
+					Main->EquippedWeapon->SKMesh->SetHiddenInGame(true);
+				}
 			}
 
 			SKMesh->SetHiddenInGame(false);
@@ -299,11 +309,14 @@ bool AWeapon::CanFire()
 	* 장착중이 아니어야 한다. //미구현.
 	* 스프린트 중이 아니어야 한다. //미구현
 	*/
-	if (WeaponFiringMode != EWeaponFiringMode::EWFM_Safe && CurrentWeaponState != EWeaponState::EWS_Reloading)
+	if (ItemObj->bIsDestoryed == false)
 	{
-		if (!(WeaponFiringMode == EWeaponFiringMode::EWFM_SemiAuto && FireCount > 0))
+		if (WeaponFiringMode != EWeaponFiringMode::EWFM_Safe && CurrentWeaponState != EWeaponState::EWS_Reloading)
 		{
-			bCanFire = true;
+			if (!(WeaponFiringMode == EWeaponFiringMode::EWFM_SemiAuto && FireCount > 0))
+			{
+				bCanFire = true;
+			}
 		}
 	}
 	return bCanFire;
@@ -721,4 +734,36 @@ void AWeapon::AimInitialize()
 		UE_LOG(LogTemp, Warning, TEXT("EndFiringRotation : %s"), *EndFiringRotation.ToString());
 		UE_LOG(LogTemp, Warning, TEXT("LerpRotation : %s"), *LerpAimRotation.ToString());*/
 		},GetWorld()->GetDeltaSeconds(),true);
+}
+
+void AWeapon::Remove()
+{
+	UE_LOG(LogTemp, Warning, TEXT("AWeapon::Remove func called"));
+	Super::Remove();	
+	if (OwningPlayer)
+	{
+		AMainCharacter* Main = Cast<AMainCharacter>(OwningPlayer);
+		if (Main)
+		{
+			if (Main->EquippedWeapon == this)
+			{
+				Main->ChangeWeapon(0);
+				Main->EquippedWeapon = nullptr;
+				RifleAssign = ERifleAssign::ERA_MAX;
+			}
+
+			if (Main->PrimaryWeapon == this)
+			{
+				Main->PrimaryWeapon = nullptr;
+			}
+			else if(Main->SubWeapon == this)
+			{
+				Main->SubWeapon = nullptr;
+			}
+			else if(Main->PistolWeapon == this)
+			{
+				Main->PistolWeapon = nullptr;
+			}
+		}
+	}
 }

@@ -226,18 +226,21 @@ void UNewInventoryGrid::OnItemRemove(UObject* T_ItemObj)
 		UNewItemObject* ItemObj = Cast<UNewItemObject>(T_ItemObj);
 		if (ItemObj && InventoryComp)
 		{
-			/*
-			* NewItemWidget의 delegate에 bind된 함수.
-			* 이 함수가 호출되면서,
-			* 해당 InventoryGrid에 연결된 InventoryComponent의 특정 함수를 호출한다.
-			*/
-			bool bRemoveResult = InventoryComp->RemoveItem(ItemObj);
-
-			/* Drop widget 상태 변환 */
-			if (Dropwidget && !MainCon->bIsInteractLootBox)
+			if (ItemObj->GetMotherContainer() != nullptr)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("InvGrid:: Drop Widget Change 'Drop' State "));
-				Dropwidget->ChangeState();
+				/*
+				* NewItemWidget의 delegate에 bind된 함수.
+				* 이 함수가 호출되면서,
+				* 해당 InventoryGrid에 연결된 InventoryComponent의 특정 함수를 호출한다.
+				*/
+				bool bRemoveResult = InventoryComp->RemoveItem(ItemObj);
+
+				/* Drop widget 상태 변환 */
+				if (Dropwidget && !MainCon->bIsInteractLootBox)
+				{
+					UE_LOG(LogTemp, Warning, TEXT("InvGrid:: Drop Widget Change 'Drop' State "));
+					Dropwidget->ChangeState();
+				}
 			}
 		}
 	}

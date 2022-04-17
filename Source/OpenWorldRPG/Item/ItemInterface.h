@@ -48,4 +48,29 @@ class OPENWORLDRPG_API IItemInterface
 public:
 	bool bCanDrop = false;
 	//virtual bool CanDrop() = 0;
+
+	//virtual bool SpawnEquip(class UNewItemObject* ItemObj);
+
+	//FORCEINLINE bool SpawnEquip(class UNewItemObject* ItemObj)
+	//{
+	//	if (ItemObj->bIsDestoryed)
+	//	{
+	//		class AEquipment* T_Equipment = Cast<AEquipment>(UWorld::GetWorld()->SpawnActor<AActor>(ItemObj->GetItemClass()));
+	//		if (T_Equipment)
+	//		{
+	//			ItemObj->bIsDestoryed = false;
+	//			//T_Equipment = Equipment;
+	//			T_Equipment->EquipInventoryComp = Equipment->EquipInventoryComp;
+	//			T_Equipment->ReInitialize(ItemObj);
+
+	//			Equipment = T_Equipment;
+
+	//			ItemObj->item = T_Equipment;
+
+
+
+	//		}
+	//		//Equipment->SetItemState(EItemState::EIS_Pickup);
+	//	}
+	//}
 };

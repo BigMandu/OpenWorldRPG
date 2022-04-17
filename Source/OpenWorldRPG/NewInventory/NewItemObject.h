@@ -11,9 +11,12 @@
  * 
  */
 class AItem;
+class AEquipment;
 class UTexture2D;
 class UTextBlock;
 class UNewInventoryGrid;
+class UNewInventoryComponent;
+
 
 //UENUM(BlueprintType)
 //enum class EEquipType : uint8
@@ -48,6 +51,7 @@ public:
 	UMaterialInterface* iconRotated;
 
 	UNewInventoryGrid* MotherContainer;
+	UNewInventoryComponent* InvComp;
 
 	int32 TopLeftIndex;
 
@@ -64,4 +68,7 @@ public:
 	EEquipmentType EquipmentType;
 	EInteractType InteractType;
 	bool bCanEquip;
+	bool bIsDestoryed;
+
+	
 };
