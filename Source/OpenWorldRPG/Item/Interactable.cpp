@@ -54,7 +54,7 @@ void AInteractable::Interaction(class AActor* Actor)
 		AEquipment* Equipment = Cast<AEquipment>(this);
 		if (Equipment)
 		{
-			Equipment->Equip(Actor); //Weapon으로 cast, equip함수 호출
+			Equipment->StepEquip(Actor); //Weapon으로 cast, equip함수 호출
 		}
 		break;
 	}

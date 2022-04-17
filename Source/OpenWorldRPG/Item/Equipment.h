@@ -16,6 +16,7 @@ class USoundCue;
 class UNewInventoryComponent;
 class UNewInventoryGrid;
 
+
 //UENUM(BlueprintType)
 //enum class EEquipmentType : uint8
 //{
@@ -39,6 +40,8 @@ private:
 public:
 
 	AEquipment();
+
+	virtual UNewItemObject* GetDefaultItemObj() override;
 
 	//AMainController* MainCon;
 	UEquipmentComponent* OwningEquipment;
@@ -74,11 +77,18 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
+	void ReInitialize(UNewItemObject* Obj);
 	void SetOwningPlayer(AActor* Actor);
-	
 
+	void SendToInventory(AActor* Actor);
+
+	void StepEquip(AActor* Actor);
 	virtual void Equip(AActor* Actor);
-	bool CheckSendToInventory(AActor* Actor);
-
+	
 	virtual void Drop() override;
+
+	virtual void Remove();
+
+	/* Destory된 BeforeEquip과 동일한 장비를 SpawnActor로 spawn한뒤 해당 장비를 리턴한다.*/
+	//AEquipment* SpawnEquip(UNewItemObject* Obj, AActor* Actor);
 };

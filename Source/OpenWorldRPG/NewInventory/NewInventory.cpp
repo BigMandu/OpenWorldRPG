@@ -6,6 +6,7 @@
 #include "OpenWorldRPG/NewInventory/NewInventoryGrid.h"
 #include "OpenWorldRPG/NewInventory/DropWidget.h"
 #include "OpenWorldRPG/NewInventory/LootBoxWidget.h"
+#include "OpenWorldRPG/NewInventory/EquipWidget.h"
 
 #include "OpenWorldRPG/MainCharacter.h"
 #include "OpenWorldRPG/MainController.h"
@@ -26,6 +27,7 @@ void UNewInventory::NativeConstruct()
 	{
 		GridWidget->GridInitialize(InventoryComp, InventoryComp->TileSize);
 		GridWidget->BindDropWidget(DropWidget);
+		EquipWidget->EquipInitialize(EquipComp);
 	}
 }
 
@@ -39,6 +41,7 @@ bool UNewInventory::Initialize()
 	if (Main && Main->InventoryComp)
 	{
 		InventoryComp = Main->InventoryComp;
+		EquipComp = Main->Equipment;
 		//GridWidget->GridInitialize(InventoryComp, InventoryComp->TileSize);
 	}
 	return bResult;
@@ -48,11 +51,12 @@ void UNewInventory::SetRightWidget(UUserWidget* Widget)
 {
 	if (Widget)
 	{
-		RightWidgetScrollBox->ClearChildren();
-		RightWidgetScrollBox->AddChild(Widget);
+		//RightWidgetScrollBox->ClearChildren();
+		//RightWidgetScrollBox->AddChild(Widget);
 		
-		/*ContentBorder->ClearChildren();
-		ContentBorder->AddChild(Widget);*/
+		ContentBorder->ClearChildren();
+		ContentBorder->AddChild(Widget);
+		Widget->SetVisibility(ESlateVisibility::Visible);
 		UE_LOG(LogTemp, Warning, TEXT("Inventory::SetRightWidget, Widget name : %s"), *Widget->GetFName().ToString());
 		//LootWidget->SetVisibility(ESlateVisibility::Visible);
 		//RightWidgetSwitcher->SetActiveWidget(Widget);

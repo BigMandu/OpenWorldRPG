@@ -10,7 +10,8 @@
 //class AWeapon;
 class AEquipment;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEquipmentUpdated);
+//DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEquipmentUpdated);
+DECLARE_MULTICAST_DELEGATE(FOnEquipmentUpdated);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class OPENWORLDRPG_API UEquipmentComponent : public UActorComponent
@@ -21,11 +22,13 @@ public:
 	// Sets default values for this component's properties
 	UEquipmentComponent();
 
+	//UPROPERTY(BlueprintAssignable, Category = Equipment)
+	FOnEquipmentUpdated OnEquipmentUpdated;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Equipment)
 	TArray<AEquipment*> EquipmentItems;
 
-	UPROPERTY(BlueprintAssignable, Category = Equipment)
-	FOnEquipmentUpdated OnEquipmentUpdated;
+	
 
 protected:
 	// Called when the game starts
@@ -37,8 +40,10 @@ public:
 	bool RemoveEquipment(AEquipment* Equip);
 
 	//Weapon파라미터와 같은 타입의 장비가 이미 있는지 확인
-	bool IsWeaponExist(AEquipment* Equip);
+	bool IsSameTypeExist(AEquipment* Equip);
 	
 	//Weapon파라미터와 같은 타입의 장비를 리턴
-	AEquipment* GetBeforeWeapon(AEquipment* Equip);
+	AEquipment* GetEquippedWeaponSameType(AEquipment* Equip);
+
+	bool SwapEquipment(AEquipment* Before, AEquipment* Next);
 };

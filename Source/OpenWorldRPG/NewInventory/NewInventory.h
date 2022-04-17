@@ -10,12 +10,16 @@
  * 
  */
 class UWidgetSwitcher;
+class UBorder;
+class UScrollBox;
+
+class UEquipmentComponent;
 class UNewInventoryComponent;
 class UNewInventoryGrid;
 class UDropWidget;
 class ULootBoxWidget;
-class UBorder;
-class UScrollBox;
+class UEquipWidget;
+
 class AMainCharacter;
 
 UCLASS()
@@ -30,6 +34,7 @@ public:
 
 	//UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UNewInventoryComponent* InventoryComp;
+	UEquipmentComponent* EquipComp;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UWidgetSwitcher* MainInventorySwitcher;
@@ -40,11 +45,14 @@ public:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBorder* ContentBorder;
 
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UScrollBox* RightWidgetScrollBox;
+	/*UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UScrollBox* RightWidgetScrollBox;*/
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UNewInventoryGrid* GridWidget;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UEquipWidget* EquipWidget;
 
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))

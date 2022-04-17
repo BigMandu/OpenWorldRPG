@@ -16,6 +16,8 @@
 /**
  * 
  */
+class UDragDropOperation;
+class UNewInventoryGrid;
 class UUserWidget;
 class UNewItemObject;
 class UTooltipWidget;
@@ -24,6 +26,8 @@ class UBorder;
 class UImage;
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnRemoved, UObject*);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnDragDetect, UObject*);
+
 //DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRemoved, TWeakPtr<UNewItemObject>, ItemObj);
 
 UCLASS()
@@ -50,7 +54,9 @@ public:
 	* Item을 삭제했을때 호출되도록.
 	*/
 	FOnRemoved OnRemoved;
+	FOnDragDetect OnDragDetect;
 	
+	UDragDropOperation* DDOper;
 
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
 	USizeBox* BGSizeBox;
@@ -62,8 +68,10 @@ public:
 	UImage* ItemIcon;
 
 	/* GridWidget에서 data를 넣어줌*/
+	UNewInventoryGrid* MotherContainer;
 	UNewItemObject* ItemObj;
 	float Tilesize;
+	
 
 	
 
@@ -87,7 +95,7 @@ public:
 
 	virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 	virtual void NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation) override;
-
+	virtual bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
 	/*FORCEINLINE_DEBUGGABLE WidgetT* ConstructWidget(TSubclassOf<UWidget>WidgetClass = WidgetT::StaticClass(), FName WidgetName = NAME_None)
 	{
 		static_assert(TIsDerivedFrom<WidgetT, UWidget>::IsDerived, "WidgetTree::ConstructWidget can only create UWidget objects.");

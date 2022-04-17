@@ -78,14 +78,17 @@ void AMainController::ShowInventory_Implementation()
 	if (NewInventory)
 	{
 		/* Interact LootBox가 없다면 DropWidget을 배치한다. */
-		if (!bIsInteractLootBox)
+		//if (!bIsInteractLootBox)
 		{
 			UNewInventory* TmpNewInv = Cast<UNewInventory>(NewInventory);
 			if (TmpNewInv)
 			{
-				TmpNewInv->SetRightWidget((UUserWidget*)TmpNewInv->DropWidget);
+				TmpNewInv->ChangeRightSwitcher();
+				//TmpNewInv->SetRightWidget((UUserWidget*)TmpNewInv->DropWidget);
 			}
 		}
+
+		
 
 		NewInventory->SetVisibility(ESlateVisibility::Visible);
 		

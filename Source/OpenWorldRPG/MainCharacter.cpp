@@ -821,6 +821,10 @@ void AMainCharacter::ChangeWeapon(int32 index)
 {
 	switch (index)
 	{
+	case 0:
+		TPAnimInstance->WeaponTypeNumber = 0;
+		FPAnimInstance->WeaponTypeNumber = 0;
+		break;
 	case 1:
 		if (PrimaryWeapon)
 		{
@@ -829,6 +833,7 @@ void AMainCharacter::ChangeWeapon(int32 index)
 			{
 				TPAnimInstance->WeaponTypeNumber = 1;
 				FPAnimInstance->WeaponTypeNumber = 1;
+				EquippedWeapon = PrimaryWeapon;
 			}
 		}
 		break;
@@ -840,6 +845,7 @@ void AMainCharacter::ChangeWeapon(int32 index)
 			{
 				TPAnimInstance->WeaponTypeNumber = 1;
 				FPAnimInstance->WeaponTypeNumber = 1;
+				EquippedWeapon = SubWeapon;
 			}
 		}
 		break;
@@ -851,6 +857,7 @@ void AMainCharacter::ChangeWeapon(int32 index)
 			{
 				TPAnimInstance->WeaponTypeNumber = 2;
 				FPAnimInstance->WeaponTypeNumber = 2;
+				EquippedWeapon = PistolWeapon;
 			}
 		}
 		break;

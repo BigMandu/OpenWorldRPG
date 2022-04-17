@@ -10,6 +10,7 @@
 #include "OpenWorldRPG/MainController.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "Kismet/GameplayStatics.h"
+#include "OpenWorldRPG/NewInventory/NewItemObject.h"
 #include "Sound/SoundCue.h"
 
 
@@ -31,13 +32,46 @@ void AEquipment::BeginPlay()
 	if (bHasStorage)
 	{
 		AMainController* MainCon = Cast<AMainController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+		
+		
 		if (WEquipGridWidget && MainCon)
 		{
-			UNewInventoryGrid* Grid = CreateWidget<UNewInventoryGrid>(MainCon, WEquipGridWidget);
+			EquipGridWidget = CreateWidget<UNewInventoryGrid>(MainCon, WEquipGridWidget);
 			//EquipGridWidget = CreateWidget<UNewInventoryGrid>(this, WEquipGridWidget);
-			//EquipGridWidget->GridInitialize(EquipInventoryComp, EquipInventoryComp->TileSize);
+			
+			EquipGridWidget->GridInitialize(EquipInventoryComp, EquipInventoryComp->TileSize);
+		}
+	
+	}
+}
+
+void AEquipment::ReInitialize(UNewItemObject* Obj)
+{
+	if(ItemObj)
+	{
+		ItemObj = Obj;
+		if(bHasStorage)
+		{
+			AMainController* MainCon = Cast<AMainController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+
+			if (WEquipGridWidget && MainCon)
+			{
+				EquipGridWidget = CreateWidget<UNewInventoryGrid>(MainCon, WEquipGridWidget);
+				EquipGridWidget->GridInitialize(EquipInventoryComp, EquipInventoryComp->TileSize);
+			}
 		}
 	}
+}
+
+UNewItemObject* AEquipment::GetDefaultItemObj()
+{
+	UNewItemObject* Obj = Super::GetDefaultItemObj();
+
+	if(Obj && bHasStorage && EquipInventoryComp)
+	{
+		Obj->InvComp = EquipInventoryComp;
+	}
+	return Obj;
 }
 
 void AEquipment::SetOwningPlayer(AActor* Actor)
@@ -53,170 +87,179 @@ void AEquipment::SetOwningPlayer(AActor* Actor)
 	}
 }
 
-void AEquipment::Equip(AActor* Actor)
+void AEquipment::StepEquip(AActor* Actor)
 {
+	UE_LOG(LogTemp, Warning, TEXT("AEquipment::StepEquip func called"));
 	AMainCharacter* Main = Cast<AMainCharacter>(Actor);
-	bool bFlag = false;
-
 
 	if (Main)
 	{
-		if (CheckSendToInventory(Main)) //인벤토리로 보냈는지 확인
+		/*이 무기의 타입과 일치하는 무기가 이미 있다면
+		 * 1. 이 무기가 월드에 스폰된 상태라면, Inventory에 추가를 시도한다.
+		 * 2. 이 무기가 Inventory에 있는 상태라면 원래 장착된 장비와 바꿔 장착 한다.
+		 * 일치하는 무기가 없다면 Equip함수를 호출한다.
+		 */
+		if (Main->Equipment->IsSameTypeExist(this))
 		{
-			bFlag = true;
-		}
-
-		switch (EquipmentType)
-		{
-		case EEquipmentType::EET_Rifle:
-		case EEquipmentType::EET_Pistol:
-		{
-			
-			if (!bFlag) //Inventory로 보내지 않았으면 장착 시킨다.
+			if (GetItemState() == EItemState::EIS_Spawn)
 			{
-				AWeapon* Weapon = Cast<AWeapon>(this);
-				/* 1,2,3을 눌렀을때 Quick Swap하기 위해 */
-				if (EquipmentType == EEquipmentType::EET_Rifle && Weapon) //라이플이고
+				//인벤토리로 이 item을 보내고 함수를 종료한다.
+				SendToInventory(Main);
+				return;
+			}
+			else if (GetItemState() == EItemState::EIS_Pickup)
+			{
+				/* 장착 하려는 장비가 Pickup상태(Inventory에 있는 상태)면
+				 * 장비 Swap을 진행한다.
+				 */
+				AEquipment* Beforeweapon = Main->Equipment->GetEquippedWeaponSameType(this);
+				if (Beforeweapon)
 				{
-					if (Main->PrimaryWeapon) //이미 주무기가 있으면
-					{
-						Main->SubWeapon = Weapon;// (AWeapon*)this; //부무기로 지정
-					}
-					else //주무기가 없으면
-					{
-						Main->PrimaryWeapon = Weapon;// (AWeapon*)this; //주무기로
-					}
+ 					Main->Equipment->SwapEquipment(Beforeweapon, this);
+					Beforeweapon->SendToInventory(Main);
+					/*this를 SpawnActor해서 Data를 이관하는 작업을 하는 함수를 호출해야한다.
+					 * UEqupmentSlot::NativeDrop에서 하는 루틴을 함수화 해야함.
+					 *
+					 */
 				}
-				else //피스톨
-				{
-					Main->PistolWeapon = Weapon; // (AWeapon*)this;
-				}
-
-				//들고 있는 무기가 없을 경우 지금 Weapon을 들도록 한다.
-				if (Main->EquippedWeapon == nullptr)
-				{
-					if (EquipmentType == EEquipmentType::EET_Rifle)
-					{
-						Main->ChangeWeapon(1);
-					}
-					else
-					{
-						Main->ChangeWeapon(3);
-					}
-
-					//GunAttachToMesh(Main);
-				}
-				/*
-				//아래 조건으로 하는것 보다 위의 조건으로 하는게 더 나은듯.
-				if (GetItemState() == EItemState::EIS_Spawn) //땅에 있는 Item이면,
-				{
-						같은타입 무기가 이미 장착 -> 땅에있는 Item을 Inventory로
-						같은 타입 무기가 없음 -> 땅에있는 Item을 장착.
-
-						여기서 Main의 EquipCompo넌트에서 검색해야함. 결과는 true or false리턴.
-
-				}
-				else //이미 Inventory에 있는 Item이면
-				{
-					 같은 타입 무기가 이미 장착 -> 기존 무기를 Inventory로, 땅Item을 장착
-					 같은 타입 무기가 없음 -> 땅에 있는 Item을 장착
-
-
-				}
-				//카메라 모드에 따라 1인칭, 3인칭 Mesh에 부착시킨다.
-				GunAttachToMesh(Main); //아래코드를 함수로 대체.
-				*/
-				/*if (Main->CameraMode == ECameraMode::ECM_FPS)
-				{
-					FPSocket->AttachActor(this, Main->FPMesh);
-				}
-				else
-				{
-					TPSocket->AttachActor(this, Main->GetMesh());
-				}*/
 			}
 		}
-			break;
-		case EEquipmentType::EET_Helmet:
-			if (!bFlag)
-			{
-				
-				//SKMesh->SetHiddenInGame(true); //임시로 해둔것임.
-			}
-			break;
-		case EEquipmentType::EET_Vest:
-			if (!bFlag)
-			{
-				//장착
-				const USkeletalMeshSocket* Socket = Main->GetMesh()->GetSocketByName("VestSocket");
-				
-				Socket->AttachActor(this, Main->GetMesh());
-
-				SKMesh->SetHiddenInGame(false); //임시로 해둔것임.
-			}
-			break;
-		case EEquipmentType::EET_Backpack:
-			if (!bFlag)
-			{
-				//SKMesh->SetHiddenInGame(true); //임시
-			}
-		}
-
-
-
-		if (!bFlag) //Inventory로 보내지 않았으면
-		{
-			UE_LOG(LogTemp, Warning, TEXT("AWeapon::Equip Success"));
-
-			//Main에 있는 Equipment에 Add해준다.
-			Main->Equipment->AddEquipment(this);
-			SetOwningPlayer(Main);
-
-			Mesh->SetSimulatePhysics(false);
-			Mesh->SetEnableGravity(false);
-
-			Mesh->SetHiddenInGame(true); //Static Mesh를 안보이게 하고, Collision을 끈다.
-			Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
-
-			/*if (EquippedSound)
-			{
-				UGameplayStatics::PlaySoundAtLocation(GetWorld(), EquippedSound, Main->GetActorLocation());
-			}*/
-		}
+		Equip(Actor);
 	}
 }
 
-bool AEquipment::CheckSendToInventory(AActor* Actor)
+void AEquipment::Equip(AActor* Actor)
+{
+	AMainCharacter* Main = Cast<AMainCharacter>(Actor);
+	switch (EquipmentType)
+	{
+	case EEquipmentType::EET_Pistol:
+	case EEquipmentType::EET_Rifle:
+	{
+		AWeapon* Weapon = Cast<AWeapon>(this);
+		check(Weapon);
+
+		/* Weapon이 Primary, Sub로 지정되어있지 않을때만 주/부무기로 지정한다. */
+
+		if (Weapon->RifleAssign == ERifleAssign::ERA_MAX)
+		{
+			/* 1,2,3을 눌렀을때 Quick Swap하기 위해 */
+			if (EquipmentType == EEquipmentType::EET_Rifle) //라이플이고
+			{
+				if (Main->PrimaryWeapon) //이미 주무기가 있으면
+				{
+					Weapon->RifleAssign = ERifleAssign::ERA_Sub;
+					Main->SubWeapon = Weapon;// (AWeapon*)this; //부무기로 지정
+				}
+				else //주무기가 없으면
+				{
+					Weapon->RifleAssign = ERifleAssign::ERA_Primary;
+					Main->PrimaryWeapon = Weapon;// (AWeapon*)this; //주무기로
+				}
+			}
+			else //피스톨
+			{
+				Main->PistolWeapon = Weapon; // (AWeapon*)this;
+			}
+		}
+
+
+		//들고 있는 무기가 없을 경우 지금 Weapon을 들도록 한다.
+		if (Main->EquippedWeapon == nullptr)
+		{
+			if (EquipmentType == EEquipmentType::EET_Rifle)
+			{
+				if (Main->PrimaryWeapon)
+				{
+					Main->ChangeWeapon(1);
+				}
+				else if (Main->SubWeapon)
+				{
+					Main->ChangeWeapon(2);
+				}
+
+			}
+			else
+			{
+				Main->ChangeWeapon(3);
+			}
+
+			//GunAttachToMesh(Main);
+		}
+	}
+		break;
+	case EEquipmentType::EET_Helmet:
+	{
+
+		//SKMesh->SetHiddenInGame(true); //임시로 해둔것임.
+	}
+	break;
+	case EEquipmentType::EET_Vest:
+	{
+		//장착
+		const USkeletalMeshSocket* Socket = Main->GetMesh()->GetSocketByName("VestSocket");
+		Socket->AttachActor(this, Main->GetMesh());
+	}
+	break;
+	case EEquipmentType::EET_Backpack:
+	{
+		//SKMesh->SetHiddenInGame(true); //임시
+	}
+	}
+
+	//Main에 있는 Equipment에 Add해준다.
+	Main->Equipment->AddEquipment(this);
+	SetOwningPlayer(Main);
+
+	
+
+	Mesh->SetSimulatePhysics(false);
+	Mesh->SetEnableGravity(false);
+
+	Mesh->SetHiddenInGame(true); //Static Mesh를 안보이게 하고, Collision을 끈다.
+	Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+
+	/*if (EquippedSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), EquippedSound, Main->GetActorLocation());
+	}*/
+
+
+}
+
+
+
+void AEquipment::SendToInventory(AActor* Actor)
 {
 	AMainCharacter* Main = Cast<AMainCharacter>(Actor);
 	check(Main);
 
 	//이 무기와 같은 타입의 무기가 이미 장착되어있고 (Rifle인 경우 2개 장착가능)
-	if (Main->Equipment->IsWeaponExist(this))
+	//if (Main->Equipment->IsWeaponExist(this))
 	{
-		if (GetItemState() == EItemState::EIS_Spawn || GetItemState() == EItemState::EIS_Drop) //월드에 있는 무기면
+		//if (GetItemState() == EItemState::EIS_Spawn) //월드에 있는 무기면
 		{
 			//OwningEquipment를 null로 설정해준다.
 			OwningEquipment = nullptr;
-
+			ItemObj->bIsDestoryed = true;
 			//Inventory로 이동해야함.
 			Pickup(Main);
-			return true;
+	//		return true;
 		}
-		else //Pickup상태면 (Inventory에 있는 무기임) -> 스왑해준다 //얘는 따로 빼서 함수를 구현해야할듯하다.
-		{
-			AEquipment* Beforeweapon = Main->Equipment->GetBeforeWeapon(this);
-			if (Beforeweapon != nullptr)
-			{
-				Beforeweapon->OwningEquipment = nullptr;
-				Beforeweapon->Pickup(Main); //기존 무기를 Inventory로 보낸다. 
-			}
-			UE_LOG(LogTemp, Warning, TEXT("Weapon::CheckSendToInventory. something wrong."));
-			return false;
-		}
+		//else //Pickup상태면 (Inventory에 있는 무기임) -> 스왑해준다 //얘는 따로 빼서 함수를 구현해야할듯하다.
+		//{
+		//	AEquipment* Beforeweapon = Main->Equipment->GetBeforeWeapon(this);
+		//	if (Beforeweapon != nullptr)
+		//	{
+		//		Beforeweapon->OwningEquipment = nullptr;
+		//		Beforeweapon->Pickup(Main); //기존 무기를 Inventory로 보낸다. 
+		//	}
+		//	UE_LOG(LogTemp, Warning, TEXT("Weapon::CheckSendToInventory. something wrong."));
+		//	return false;
+		//}
 	}
-	return false;
+	//return false;
 }
 
 void AEquipment::Drop()
@@ -229,3 +272,37 @@ void AEquipment::Drop()
 
 
 }
+
+void AEquipment::Remove()
+{
+	/* 아무것도 안함. .. 음..*/
+
+
+}
+
+/*
+AEquipment* AEquipment::SpawnEquip(UNewItemObject* Obj, AActor* Actor)
+{
+	if (Obj && Actor)
+	{
+		AEquipment* T_Equipment = Cast<AEquipment>(GetWorld()->SpawnActor<AActor>(Obj->GetItemClass()));
+		//AMainCharacter* Main = Cast<AMainCharacter>(Actor);
+		if (T_Equipment)
+		{
+			Obj->bIsDestoryed = false;
+			T_Equipment = this;
+			T_Equipment->EquipInventoryComp = this->EquipInventoryComp;
+			T_Equipment->ReInitialize(Obj);
+
+			Obj->item = T_Equipment;
+			//if(Main)
+			//{
+			//	T_Equipment->StepEquip(Main);
+			//}
+		}
+
+		return T_Equipment;
+	}
+	return nullptr;
+}
+*/

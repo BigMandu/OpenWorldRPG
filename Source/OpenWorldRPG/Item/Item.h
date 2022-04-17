@@ -34,13 +34,12 @@ enum class EItemState : uint8
 {
 	EIS_Spawn	UMETA(DisplayName = "Spawn"),
 	EIS_Pickup	UMETA(DisplayName = "Pickup"),
-	EIS_Drop	UMETA(DisplayName = "Drop"),
 
 	EIS_MAX		UMETA(DisplayName = "DefaultsMAX")
 };
 
 UCLASS()
-class OPENWORLDRPG_API AItem : public AInteractable, public IItemInterface
+class OPENWORLDRPG_API AItem : public AInteractable //, public IItemInterface
 {
 	GENERATED_BODY()
 	//GENERATED_UCLASS_BODY()
@@ -98,7 +97,7 @@ public:
 	FORCEINLINE void SetItemState(EItemState State) { ItemState = State; }
 
 	/* child class에서 override할 예정임*/
-	UNewItemObject* GetDefaultItemObj();
+	virtual UNewItemObject* GetDefaultItemObj();
 
 	void Pickup(AActor* Actor);
 	

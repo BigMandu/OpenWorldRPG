@@ -35,6 +35,14 @@ class UCurveFloat;
 //	EWT_MAX		UMETA(DisplayName = "DefaltMAX")
 //};
 
+UENUM()
+enum class ERifleAssign : uint8
+{
+	ERA_Primary		UMETA(Displayname = "Primary"),
+	ERA_Sub			UMETA(Displayname = "Sub"),
+	ERA_MAX			UMETA(Displayname = "DefaultsMAX")
+};
+
 
 //단발, 점사, 연사를 구분
 UENUM(BlueprintType)
@@ -150,6 +158,9 @@ public:
 	//EWeaponType WeaponType;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
+	ERifleAssign RifleAssign;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	EWeaponFiringMode WeaponFiringMode;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
@@ -250,4 +261,6 @@ public:
 	void PlayWeaponAnimAndCamShake(FWeaponAnim& Anim);
 
 	void AimInitialize();
+
+	virtual void Remove() override;
 };

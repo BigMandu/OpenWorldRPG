@@ -14,6 +14,16 @@
 */
 class UImage;
 class UBorder;
+class UNewItemObject;
+
+UENUM(BlueprintType)
+enum class ERifleSlot :uint8
+{
+	ERS_Primary		UMETA(DisplayName = "Primary"),
+	ERS_Sub			UMETA(DisplayName = "Sub"),
+
+	ERS_MAX			UMETA(DisplayName = "defaultsMAX")
+};
 
 UCLASS()
 class OPENWORLDRPG_API UEquipmentSlot : public UUserWidget, public IItemInterface
@@ -24,16 +34,22 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WidgetVariable")
 	EEquipmentType SlotType;
 
-	UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
-	UImage* ItemIcon;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WidgetVariable")
+	ERifleSlot RifleSlotType;
+
+	//UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
+	//UImage* ItemIcon;
 
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
 	UBorder* BGBorder;
 
 
-	void PaintBGBorder(EEquipmentType EquipType = EEquipmentType::EET_MAX);
+	void PaintBGBorder(UNewItemObject* Obj = nullptr);
 
-	//virtual bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
+
+	bool IsSupportedEquip(UNewItemObject* Obj);
+
+	virtual bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
 
 	virtual void NativeOnDragEnter(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
 	virtual void NativeOnDragLeave(const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;

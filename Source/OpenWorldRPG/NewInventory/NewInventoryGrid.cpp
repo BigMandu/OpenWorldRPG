@@ -164,17 +164,27 @@ void UNewInventoryGrid::RefreshInventory()
 		
 		for (auto ele : ItemsMap)
 		{
-			UNewItemwidget* testwidget = CreateWidget<UNewItemwidget>(this, WNewItemWidget);
+			UNewItemwidget* Itemwidget = CreateWidget<UNewItemwidget>(this, WNewItemWidget);
 			//newitemwidget = CreateWidget<UNewItemwidget>(this, WNewItemWidget);
 
-			if (testwidget)
+			if (Itemwidget)
 			{
-				testwidget->OnRemoved.AddUFunction(this, FName("OnItemRemove"));
-				testwidget->Tilesize = TileSize;
-				testwidget->ItemObj = ele.Key;
-				testwidget->Refresh();
+				Itemwidget->OnRemoved.AddUFunction(this, FName("OnItemRemove"));
+				Itemwidget->OnDragDetect.AddUFunction(this, FName("PendingRemoveItem"));
+				
+				Itemwidget->Tilesize = TileSize;
+				Itemwidget->ItemObj = ele.Key;
+				Itemwidget->Refresh();
+				
+				Itemwidget->MotherContainer = this;
+				
+				UNewItemObject* tempObj = Cast<UNewItemObject>(ele.Key);
+				if (tempObj)
+				{
+					tempObj->MotherContainer = this;
+				}
 
-				UPanelSlot* PanelSlot = GridCanvasPanel->AddChild(testwidget);
+				UPanelSlot* PanelSlot = GridCanvasPanel->AddChild(Itemwidget);
 
 
 				/*추가시킨 ItemWidget의 size와 Position을 맞춰 주기 위한 작업을 진행한다.
@@ -198,6 +208,16 @@ void UNewInventoryGrid::BindDropWidget(UDropWidget* T_Dropwidget)
 	Dropwidget = T_Dropwidget;
 }
 
+void UNewInventoryGrid::PendingRemoveItem(UObject* PendingObject)
+{
+	UNewItemObject* ItemObj = Cast<UNewItemObject>(PendingObject);
+	if (ItemObj)
+	{
+		PendingObj = ItemObj;
+		InventoryComp->RemoveItem(ItemObj);
+	}
+}
+
 
 void UNewInventoryGrid::OnItemRemove(UObject* T_ItemObj)
 {
@@ -206,45 +226,86 @@ void UNewInventoryGrid::OnItemRemove(UObject* T_ItemObj)
 		UNewItemObject* ItemObj = Cast<UNewItemObject>(T_ItemObj);
 		if (ItemObj && InventoryComp)
 		{
-			/*
-			* NewItemWidget의 delegate에 bind된 함수.
-			* 이 함수가 호출되면서,
-			* 해당 InventoryGrid에 연결된 InventoryComponent의 특정 함수를 호출한다.
-			*/
-			bool bRemoveResult = InventoryComp->RemoveItem(ItemObj);
-
-			/* Drop widget 상태 변환 */
-			if (Dropwidget && !MainCon->bIsInteractLootBox)
+			if (ItemObj->GetMotherContainer() != nullptr)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("InvGrid:: Drop Widget Change 'Drop' State "));
-				Dropwidget->ChangeState();
+				/*
+				* NewItemWidget의 delegate에 bind된 함수.
+				* 이 함수가 호출되면서,
+				* 해당 InventoryGrid에 연결된 InventoryComponent의 특정 함수를 호출한다.
+				*/
+				bool bRemoveResult = InventoryComp->RemoveItem(ItemObj);
+
+				/* Drop widget 상태 변환 */
+				if (Dropwidget && !MainCon->bIsInteractLootBox)
+				{
+					UE_LOG(LogTemp, Warning, TEXT("InvGrid:: Drop Widget Change 'Drop' State "));
+					Dropwidget->ChangeState();
+				}
 			}
 		}
 	}
 }
 
+bool UNewInventoryGrid::MoveItemInSameContainer(UNewItemObject* Item)
+{
+	UE_LOG(LogTemp, Warning, TEXT("UNewInventoryGrid::MoveItemInSameContainer() is called"));
+	FTile DraggedTile;
+	DraggedTile.X = DraggedTopLeftTile.X;
+	DraggedTile.Y = DraggedTopLeftTile.Y;
+
+	int32 index = InventoryComp->TileToIndex(DraggedTile);
+
+	if (InventoryComp->IsAvailableSpace(Item, index))
+	{
+		//InventoryComp->RemoveItem(Item);
+		InventoryComp->AddItemAtIndex(Item, index);
+		
+
+
+		return true;
+	}
+	else
+	{
+		/* 공간이 없으면 기존 저장된 Top-Left Index에 넣는다.*/
+		if (InventoryComp->IsAvailableSpace(Item, Item->TopLeftIndex))
+		{
+			InventoryComp->AddItemAtIndex(Item, Item->TopLeftIndex);
+		}
+		else
+		{
+			/* 뭔가 꼬였다면 그냥 Item을 넣는다.*/
+			InventoryComp->TryAddItem(Item);
+		}
+	}
+	return false;
+
+}
+
 bool UNewInventoryGrid::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
 {
-	Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);
+	bool bReturn = Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);
+
+	UE_LOG(LogTemp, Warning, TEXT("NewInventoryGrid::OnDrop func called"));
 
 	UNewItemObject* ItemObj = Cast<UNewItemObject>(InOperation->Payload);
 	if (ItemObj)
 	{
+		
 		FTile DraggedTile;
 		DraggedTile.X = DraggedTopLeftTile.X;
 		DraggedTile.Y = DraggedTopLeftTile.Y;
-
+		
 		int32 index = InventoryComp->TileToIndex(DraggedTile);
 		
-		/* Drop widget 상태 변환 */
-		if (Dropwidget && !MainCon->bIsInteractLootBox)
+		// Drop widget 상태 변환 
+		if (Dropwidget && MainCon && !MainCon->bIsInteractLootBox)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("InvGrid:: Drop Widget Change 'Normal' State "));
 			Dropwidget->bReturnNormal = true;
 			Dropwidget->ChangeState();
 		}
 
-		/* 공간이 된다면 해당 공간에 넣는다.*/
+		// 공간이 된다면 해당 공간에 넣는다.
 		if (InventoryComp->IsAvailableSpace(ItemObj, index))
 		{
 			InventoryComp->AddItemAtIndex(ItemObj, index);
@@ -252,25 +313,25 @@ bool UNewInventoryGrid::NativeOnDrop(const FGeometry& InGeometry, const FDragDro
 		}
 		else
 		{
-			/* 공간이 없으면 기존 저장된 Top-Left Index에 넣는다.*/
+			// 공간이 없으면 기존 저장된 Top-Left Index에 넣는다.
 			if (InventoryComp->IsAvailableSpace(ItemObj, ItemObj->TopLeftIndex))
 			{
 				InventoryComp->AddItemAtIndex(ItemObj, ItemObj->TopLeftIndex);
 			}
 			else
 			{
-				/* 뭔가 꼬였다면 그냥 Item을 넣는다.*/
+				// 뭔가 꼬였다면 그냥 Item을 넣는다.
 				InventoryComp->TryAddItem(ItemObj);
 			}
 		}
 	}
-	return false;
+	return bReturn;
 }
 
 bool UNewInventoryGrid::NativeOnDragOver(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
 {
-	Super::NativeOnDragOver(InGeometry, InDragDropEvent, InOperation);
-	bool bReturn = false;
+	bool bReturn = Super::NativeOnDragOver(InGeometry, InDragDropEvent, InOperation);
+	
 
 	UNewItemObject* ItemObj = Cast<UNewItemObject>(InOperation->Payload);
 
@@ -287,14 +348,15 @@ bool UNewInventoryGrid::NativeOnDragOver(const FGeometry& InGeometry, const FDra
 		FVector2D MousePosInEachTile = GetMousePositionInEachTile(MousePosInWidget);
 
 
-		//UE_LOG(LogTemp, Warning, TEXT("========================================="));
-		//UE_LOG(LogTemp, Warning, TEXT("MousePOSinWINDOW = %s"), *MousePosInWindow.ToString());
-		//UE_LOG(LogTemp, Warning, TEXT("MousePOSinWIDGET = %s"), *MousePosInWidget.ToString());
-		//UE_LOG(LogTemp, Warning, TEXT("MousePOSinTILE = %s"), *MousePosInEachTile.ToString());
+		/*UE_LOG(LogTemp, Warning, TEXT("========================================="));
+		UE_LOG(LogTemp, Warning, TEXT("MousePOSinWINDOW = %s"), *MousePosInWindow.ToString());
+		UE_LOG(LogTemp, Warning, TEXT("MousePOSinWIDGET = %s"), *MousePosInWidget.ToString());
+		UE_LOG(LogTemp, Warning, TEXT("MousePOSinTILE = %s"), *MousePosInEachTile.ToString());*/
 
 		FIntPoint Itemsize = ItemObj->GetItemSize();
-		//UE_LOG(LogTemp, Warning, TEXT("========================================="));
-		//UE_LOG(LogTemp, Warning, TEXT("OnDragOver ItemSize : %s"), *ItemObj->GetItemSize().ToString());
+		/*UE_LOG(LogTemp, Warning, TEXT("========================================="));
+		UE_LOG(LogTemp, Warning, TEXT("OnDragOver ItemSize : %s"), *ItemObj->GetItemSize().ToString());*/
+
 		/* 해당 타일의 오른쪽으로 반이상, 아래로 반이상 내려갔는지 판단.*/
 		if (MousePosInEachTile.X > TileSize / 2.f)
 		{
@@ -316,11 +378,11 @@ bool UNewInventoryGrid::NativeOnDragOver(const FGeometry& InGeometry, const FDra
 		FIntPoint GetPos = FIntPoint((MousePosInWidget / TileSize).X, (MousePosInWidget / TileSize).Y);
 
 		DraggedTopLeftTile = GetPos - CenterPosition;	
-		//UE_LOG(LogTemp, Warning, TEXT("CenterPosition = %s"), *CenterPosition.ToString());
-		//UE_LOG(LogTemp, Warning, TEXT("GetPos = %s"), *GetPos.ToString());
-		//UE_LOG(LogTemp, Warning, TEXT("DraggedTopLeftTile = %s"), *DraggedTopLeftTile.ToString());
+		/*UE_LOG(LogTemp, Warning, TEXT("CenterPosition = %s"), *CenterPosition.ToString());
+		UE_LOG(LogTemp, Warning, TEXT("GetPos = %s"), *GetPos.ToString());
+		UE_LOG(LogTemp, Warning, TEXT("DraggedTopLeftTile = %s"), *DraggedTopLeftTile.ToString());*/
 
-		bReturn = true;
+		//bReturn = true;
 	}
 
 	return bReturn;
@@ -340,12 +402,16 @@ void UNewInventoryGrid::NativeOnDragEnter(const FGeometry& InGeometry, const FDr
 {
 	Super::NativeOnDragEnter(InGeometry, InDragDropEvent, InOperation);
 	bNeedDropLocation = true;
+	bCanDrop = true;
+	UE_LOG(LogTemp, Warning, TEXT("InvGrid bCanDrop = %s"), bCanDrop ? "true" : "false");
 }
 
 void UNewInventoryGrid::NativeOnDragLeave(const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
 {
 	Super::NativeOnDragLeave(InDragDropEvent, InOperation);
 	bNeedDropLocation = false;
+	bCanDrop = false;
+	UE_LOG(LogTemp, Warning, TEXT("InvGrid bCanDrop = %s"), bCanDrop ? "true" : "false");
 }
 
 void UNewInventoryGrid::DrawDropLocation(FPaintContext& Context) const
@@ -359,7 +425,7 @@ void UNewInventoryGrid::DrawDropLocation(FPaintContext& Context) const
 
 		int32 index = InventoryComp->TileToIndex(DraggedTile);
 
-		bool bCanDrop = InventoryComp->IsAvailableSpace(Obj, index);
+		bool bEmptyAtIndex = InventoryComp->IsAvailableSpace(Obj, index);
 
 		
 
@@ -375,7 +441,7 @@ void UNewInventoryGrid::DrawDropLocation(FPaintContext& Context) const
 			//UE_LOG(LogTemp, Warning, TEXT("DrawDropLo ItemSize : %s"), *Obj->GetItemSize().ToString());
 			//UE_LOG(LogTemp, Warning, TEXT("DropLo Pos : %s"), *DropLocationPos.ToString());
 			//UE_LOG(LogTemp, Warning, TEXT("DropLo Size : %s"), *DropLocationSize.ToString());
-			if (bCanDrop)
+			if (bEmptyAtIndex)
 			{
 				UWidgetBlueprintLibrary::DrawBox(Context, DropLocationPos * TileSize, DropLocationSize, Brush, Green);
 				//DrawBox
