@@ -86,11 +86,11 @@ bool UEquipmentSlot::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEv
 			AMainCharacter* Main = Cast<AMainCharacter>(GetOwningPlayerPawn());
 			AEquipment* Equipment = Cast<AEquipment>(ItemObj->item);
 			AWeapon* Weapon = Cast<AWeapon>(Equipment);
-
 			if (Equipment)// && ItemObj->GetMotherContainer() != nullptr) //-> 아이템을 뺏다가 바로 끼는 경우가 있을때가 있기 때문에 조건에서 뺌.
 			{
 				if(SlotType == EEquipmentType::EET_Rifle)
 				{
+					
 					if (Weapon)
 					{
 						if (RifleSlotType == ERifleSlot::ERS_Primary)
@@ -131,35 +131,40 @@ bool UEquipmentSlot::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEv
 					AEquipment* T_Equipment = Cast<AEquipment>(GetWorld()->SpawnActor<AActor>(ItemObj->GetItemClass()));
 					if (T_Equipment)
 					{
+						if(T_Equipment->EquipmentType == EEquipmentType::EET_Rifle)
+						{
+							AWeapon* T_Weapon = Cast<AWeapon>(T_Equipment);
+							if(T_Weapon)
+							{
+								T_Weapon->RifleAssign = Weapon->RifleAssign;
+							}
+						}
+
+
 						ItemObj->bIsDestoryed = false;
 						//T_Equipment = Equipment;
 						if (Equipment->bHasStorage)
 						{
 							T_Equipment->EquipInventoryComp = Equipment->EquipInventoryComp;
 						}
-
 						T_Equipment->ReInitialize(ItemObj);
-
 
 						Equipment = T_Equipment;
 						ItemObj->item = Equipment;
 
-						Equipment->SetItemState(EItemState::EIS_Pickup);
-						
-						
+						Equipment->SetItemState(EItemState::EIS_Pickup);						
 					}
-					
 				}
 				
 				ItemObj->MotherContainer = nullptr;
 
-				AWeapon* T_Weapon = Cast<AWeapon>(Equipment);
+				/*AWeapon* T_Weapon = Cast<AWeapon>(Equipment);
 				if (T_Weapon)
 				{
 					T_Weapon->RifleAssign = Weapon->RifleAssign;
 					T_Weapon->StepEquip(Main);
-				}
-				else
+				}*/
+				//else
 				{
 					Equipment->StepEquip(Main); //Weapon으로 cast, equip함수 호출
 				}

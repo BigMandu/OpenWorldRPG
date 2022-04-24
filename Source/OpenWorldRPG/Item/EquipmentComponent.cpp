@@ -22,6 +22,7 @@ bool UEquipmentComponent::AddEquipment(AEquipment* Equip)
 {
 	UE_LOG(LogTemp, Warning, TEXT("EquipComp : AddEquip"));
 	bool bAlreadyHave = false;
+	bool bReturn = false;
 	if (Equip)
 	{
 		//if (Equip->OwningInventory != nullptr) //인벤토리에 있던 Weapon이면,
@@ -47,13 +48,15 @@ bool UEquipmentComponent::AddEquipment(AEquipment* Equip)
 			Equip->SKMesh->SetHiddenInGame(false); //임시로 해둔것임.
 
 			//EquipWidget::RefreshEquipWidget과 bind시킴.
+
+			bReturn = true;
+		}
 			OnEquipmentUpdated.Broadcast();
 
 			UE_LOG(LogTemp, Warning, TEXT("EquipComp : AddSuccess"));
-			return true;
-		}
+
 	}
-	return false;
+	return bReturn;
 }
 
 bool UEquipmentComponent::RemoveEquipment(AEquipment* Equip)

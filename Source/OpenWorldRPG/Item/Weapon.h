@@ -147,11 +147,13 @@ public:
 	FName MuzzleFlashSocketName;
 
 	/* FPS Aim모드 일때 위치값 저장*/
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "AimLocation")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon | Transform")
 	FTransform CharFPMeshTransform;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "AimLocation")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon | Transform")
 	FTransform WeapSKMeshTransform;
+
+	
 
 	/* Enums */
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")

@@ -133,17 +133,19 @@ void AEquipment::Equip(AActor* Actor)
 	AMainCharacter* Main = Cast<AMainCharacter>(Actor);
 	switch (EquipmentType)
 	{
-	case EEquipmentType::EET_Pistol:
-	case EEquipmentType::EET_Rifle:
-	{
+	//case EEquipmentType::EET_Pistol:
+	//case EEquipmentType::EET_Rifle:
+	/*
+	 * {
+	
 		AWeapon* Weapon = Cast<AWeapon>(this);
 		check(Weapon);
 
-		/* Weapon이 Primary, Sub로 지정되어있지 않을때만 주/부무기로 지정한다. */
+		// Weapon이 Primary, Sub로 지정되어있지 않을때만 주/부무기로 지정한다.
 
 		if (Weapon->RifleAssign == ERifleAssign::ERA_MAX)
 		{
-			/* 1,2,3을 눌렀을때 Quick Swap하기 위해 */
+			// 1,2,3을 눌렀을때 Quick Swap하기 위해 
 			if (EquipmentType == EEquipmentType::EET_Rifle) //라이플이고
 			{
 				if (Main->PrimaryWeapon) //이미 주무기가 있으면
@@ -187,7 +189,9 @@ void AEquipment::Equip(AActor* Actor)
 			//GunAttachToMesh(Main);
 		}
 	}
-		break;
+	*/
+	
+		//break;
 	case EEquipmentType::EET_Helmet:
 	{
 
@@ -198,7 +202,16 @@ void AEquipment::Equip(AActor* Actor)
 	{
 		//장착
 		const USkeletalMeshSocket* Socket = Main->GetMesh()->GetSocketByName("VestSocket");
-		Socket->AttachActor(this, Main->GetMesh());
+		if(Socket)
+		{
+			if(Socket->AttachActor(this, Main->GetMesh()))
+			{
+				SetActorRelativeTransform(MeshAttachTransform);
+			}			
+
+			/*UE_LOG(LogTemp, Warning, TEXT("Vest relative transform: %s"), *MeshAttachTransform.ToString());
+			UE_LOG(LogTemp, Warning, TEXT("Vest location : %s"), *GetActorLocation().ToString());*/
+		}
 	}
 	break;
 	case EEquipmentType::EET_Backpack:
@@ -207,15 +220,16 @@ void AEquipment::Equip(AActor* Actor)
 	}
 	}
 
+	
+
 	//Main에 있는 Equipment에 Add해준다.
 	Main->Equipment->AddEquipment(this);
 	SetOwningPlayer(Main);
-
 	
+	SKMesh->SetHiddenInGame(false);
 
 	Mesh->SetSimulatePhysics(false);
 	Mesh->SetEnableGravity(false);
-
 	Mesh->SetHiddenInGame(true); //Static Mesh를 안보이게 하고, Collision을 끈다.
 	Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 

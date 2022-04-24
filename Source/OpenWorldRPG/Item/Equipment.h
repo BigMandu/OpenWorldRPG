@@ -71,6 +71,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")
 	UNewInventoryComponent* EquipInventoryComp;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")
+	FTransform MeshAttachTransform;
 	
 
 protected:

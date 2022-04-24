@@ -826,38 +826,39 @@ void AMainCharacter::ChangeWeapon(int32 index)
 		FPAnimInstance->WeaponTypeNumber = 0;
 		break;
 	case 1:
-		if (PrimaryWeapon)
+		// 현재 장착하고 있는 무기가 Primary와 다를경우에만 변경. 일치하면 똑같은걸 장착할 필요가 없음.
+		if (PrimaryWeapon && (PrimaryWeapon != EquippedWeapon))
 		{
 			PrimaryWeapon->GunAttachToMesh(this);
 			if (TPAnimInstance && FPAnimInstance)
 			{
 				TPAnimInstance->WeaponTypeNumber = 1;
 				FPAnimInstance->WeaponTypeNumber = 1;
-				EquippedWeapon = PrimaryWeapon;
+				//EquippedWeapon = PrimaryWeapon;
 			}
 		}
 		break;
 	case 2:
-		if (SubWeapon)
+		if (SubWeapon && (SubWeapon != EquippedWeapon))
 		{
 			SubWeapon->GunAttachToMesh(this);
 			if (TPAnimInstance && FPAnimInstance)
 			{
 				TPAnimInstance->WeaponTypeNumber = 1;
 				FPAnimInstance->WeaponTypeNumber = 1;
-				EquippedWeapon = SubWeapon;
+				//EquippedWeapon = SubWeapon;
 			}
 		}
 		break;
 	case 3:
-		if (PistolWeapon)
+		if (PistolWeapon && (PistolWeapon != EquippedWeapon))
 		{
 			PistolWeapon->GunAttachToMesh(this);
 			if (TPAnimInstance && FPAnimInstance)
 			{
 				TPAnimInstance->WeaponTypeNumber = 2;
 				FPAnimInstance->WeaponTypeNumber = 2;
-				EquippedWeapon = PistolWeapon;
+				//EquippedWeapon = PistolWeapon;
 			}
 		}
 		break;

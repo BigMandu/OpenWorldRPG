@@ -56,114 +56,115 @@ AWeapon::AWeapon() : Super()
 void AWeapon::Equip(AActor* Char)
 {
 	Super::Equip(Char);
-
 	AMainCharacter* Main = Cast<AMainCharacter>(Char);
 	check(Main);
 
+	if (RifleAssign == ERifleAssign::ERA_MAX)
+	{
+		/* 1,2,3을 눌렀을때 Quick Swap하기 위해 */
+		if (EquipmentType == EEquipmentType::EET_Rifle) //라이플이고
+		{
+			if (Main->PrimaryWeapon) //이미 주무기가 있으면
+			{
+				RifleAssign = ERifleAssign::ERA_Sub;
+				Main->SubWeapon = this;// (AWeapon*)this; //부무기로 지정
+			}
+			else //주무기가 없으면
+			{
+				RifleAssign = ERifleAssign::ERA_Primary;
+				Main->PrimaryWeapon = this;// (AWeapon*)this; //주무기로
+			}
+		}
+		else //피스톨
+		{
+			Main->PistolWeapon = this; // (AWeapon*)this;
+		}
+	}
+
+
+	//들고 있는 무기가 없을 경우 지금 Weapon을 들도록 한다.
+	if (Main->EquippedWeapon == nullptr)
+	{
+		if (EquipmentType == EEquipmentType::EET_Rifle)
+		{
+			if (Main->PrimaryWeapon)
+			{
+				Main->ChangeWeapon(1);
+			}
+			else if (Main->SubWeapon)
+			{
+				Main->ChangeWeapon(2);
+			}
+
+		}
+		else
+		{
+			Main->ChangeWeapon(3);
+		}
+
+		//GunAttachToMesh(Main);
+	}
+
+
+
 	WeaponStat.FireRatePerSec = WeaponStat.FireRatePerMin / 60;
-	WeaponStat.SecondPerBullet = 1 / WeaponStat.FireRatePerSec; //0.06	
+	WeaponStat.SecondPerBullet = 1 / WeaponStat.FireRatePerSec; //0.06
 
+	//broadcast를 위해 AddEquipment 함수를 호출한다. 이미 추가되어있기 때문에, broadcast말고는 하는게 없다.
+	Main->Equipment->AddEquipment(this);
+	
 	GunAttachToMesh(Char);
+	
 }
-
-//bool AWeapon::CheckSendToInventory(AMainCharacter* Main)
-//{
-//	check(Main);
-//
-//	//이 무기와 같은 타입의 무기가 이미 장착되어있고 (Rifle인 경우 2개 장착가능)
-//	if (Main->Equipment->IsWeaponExist(this))
-//	{
-//		if (GetItemState() == EItemState::EIS_Spawn || GetItemState() == EItemState::EIS_Drop) //월드에 있는 무기면
-//		{
-//			//OwningEquipment를 null로 설정해준다.
-//			OwningEquipment = nullptr;
-//
-//			//Inventory로 이동해야함.
-//			Pickup(Main);
-//			return true;
-//		}
-//		else //Pickup상태면 (Inventory에 있는 무기임) -> 스왑해준다 //얘는 따로 빼서 함수를 구현해야할듯하다.
-//		{
-//			AWeapon* Beforeweapon = Main->Equipment->GetBeforeWeapon(this);
-//			if (Beforeweapon != nullptr)
-//			{
-//				Beforeweapon->OwningEquipment = nullptr;
-//				Beforeweapon->Pickup(Main); //기존 무기를 Inventory로 보낸다. 
-//			}
-//			UE_LOG(LogTemp, Warning, TEXT("Weapon::CheckSendToInventory. something wrong."));
-//			return false;
-//		}
-//	}
-//	return false;
-//}
 
 void AWeapon::GunAttachToMesh(AActor* Actor)
 {
 	AMainCharacter* Main = Cast<AMainCharacter>(Actor);
 	if (Main)
 	{
+		/* 이미 들고 있는 무기가 있고, 들고있는 무기와 이 무기가 다른경우
+		* 이미 들고 있는 무기를 'SubWeapon Attach' 소켓에 부착시킨다.
+		*/
+		if (Main->EquippedWeapon && (Main->EquippedWeapon != this))// && ItemState == EItemState::EIS_Spawn)
+		{
+			const USkeletalMeshSocket* SubSocket = Main->GetMesh()->GetSocketByName("SubWeaponAttachSocket");
+
+			SubSocket->AttachActor(Main->EquippedWeapon, Main->GetMesh());
+			Main->EquippedWeapon->SetActorRelativeTransform(MeshAttachTransform);
+
+			/*SubSocket->AttachActor(this, Main->GetMesh());
+			SetActorRelativeTransform(MeshAttachTransform);*/
+
+		}
+		
+	
 		const USkeletalMeshSocket* TPSocket = Main->GetMesh()->GetSocketByName("WeaponGrip");
 		const USkeletalMeshSocket* FPSocket = Main->FPMesh->GetSocketByName("WeaponGrip");
+
 		if (TPSocket && FPSocket)
 		{
 			switch (Main->CameraMode)
 			{
 			case ECameraMode::ECM_FPS:
-				
+
 				//AttachToActor(Main,)
 				if (FPSocket->AttachActor(this, Main->FPMesh))
 				{
 					Main->BaseWeapTransform = SKMesh->GetRelativeTransform();
-					/*if (Main->bIsAim)
-					{
-						FPS_AimAttachToMesh(Main);
-					}*/
-					/*if (WeaponType == EWeaponType::EWT_Rifle)
-					{
-						SetActorRelativeLocation(Main->RifleRelativeLoRo.GetLocation());
-						SetActorRelativeRotation(Main->RifleRelativeLoRo.GetRotation());
-					}
-					else
-					{
-						SetActorRelativeLocation(Main->PistolRelativeLoRo.GetLocation());
-						SetActorRelativeRotation(Main->PistolRelativeLoRo.GetRotation());
-					}*/
 				}
-				
-				//setactorrelativ
 				break;
 			case ECameraMode::ECM_TPS:
 				if (TPSocket->AttachActor(this, Main->GetMesh()))
 				{
-					/*if (WeaponType == EWeaponType::EWT_Rifle)
-					{
-						SetActorRelativeLocation(Main->RifleRelativeLoRo.GetLocation());
-						SetActorRelativeRotation(Main->RifleRelativeLoRo.GetRotation());
-					}
-					else
-					{
-						SetActorRelativeLocation(Main->PistolRelativeLoRo.GetLocation());
-						SetActorRelativeRotation(Main->PistolRelativeLoRo.GetRotation());
-					}*/
+
 				}
 				break;
-			}
+			}				
 
-			/* 이미 들고 있는 무기가 있고, 들고있는 무기와 이 무기가 다른경우
-			 * 들고있는 무기를 안보이게 한다.  ( 임시 ) -> 다른 소켓으로 이동시켜야함.
-			 */
-			if (Main->EquippedWeapon && (Main->EquippedWeapon != this))
-			{
-				//해당 무기의 SkMesh를 안보이게 한다.
-				if (Main->EquippedWeapon->SKMesh)
-				{
-					Main->EquippedWeapon->SKMesh->SetHiddenInGame(true);
-				}
-			}
-
+			//SKMesh->SetVisibility(true);
 			SKMesh->SetHiddenInGame(false);
 			Main->EquippedWeapon = this;
-		}
+		}		
 
 	}
 }
