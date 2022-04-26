@@ -194,8 +194,14 @@ void AEquipment::Equip(AActor* Actor)
 		//break;
 	case EEquipmentType::EET_Helmet:
 	{
-
-		//SKMesh->SetHiddenInGame(true); //임시로 해둔것임.
+		const USkeletalMeshSocket* Socket = Main->GetMesh()->GetSocketByName("headsocket");
+		if (Socket)
+		{
+			if (Socket->AttachActor(this, Main->GetMesh()))
+			{
+				SetActorRelativeTransform(MeshAttachTransform);
+			}
+		}
 	}
 	break;
 	case EEquipmentType::EET_Vest:
@@ -208,15 +214,19 @@ void AEquipment::Equip(AActor* Actor)
 			{
 				SetActorRelativeTransform(MeshAttachTransform);
 			}			
-
-			/*UE_LOG(LogTemp, Warning, TEXT("Vest relative transform: %s"), *MeshAttachTransform.ToString());
-			UE_LOG(LogTemp, Warning, TEXT("Vest location : %s"), *GetActorLocation().ToString());*/
 		}
 	}
 	break;
 	case EEquipmentType::EET_Backpack:
 	{
-		//SKMesh->SetHiddenInGame(true); //임시
+		const USkeletalMeshSocket* Socket = Main->GetMesh()->GetSocketByName("BackpackSocket");
+		if (Socket)
+		{
+			if (Socket->AttachActor(this, Main->GetMesh()))
+			{
+				SetActorRelativeTransform(MeshAttachTransform);
+			}
+		}
 	}
 	}
 

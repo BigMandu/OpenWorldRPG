@@ -20,6 +20,8 @@
 
 AWeapon::AWeapon() : Super()
 {
+	PrimaryActorTick.bCanEverTick = true;
+
 	//SKMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMesh"));
 
 	//RootComponent = SKMesh;
@@ -38,6 +40,36 @@ AWeapon::AWeapon() : Super()
 	CurrentWeaponState = EWeaponState::EWS_Idle;
 
 	RifleAssign = ERifleAssign::ERA_MAX;
+}
+
+void AWeapon::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	
+	/* New Aim System, */
+	if (OwningPlayer != nullptr)
+	{
+		/*FVector ViewRot = GetAimRotation();
+		FVector ViewLoc = GetAimLocation_TEST();*/
+
+		FTransform AimPos = GetAimPosition();
+
+		FVector EndVec = AimPos.GetLocation() + AimPos.GetRotation().Vector() * 3000.f;
+		FHitResult Hit = BulletTrace(AimPos.GetLocation(), EndVec);
+
+		//DrawDebugPoint(GetWorld(), Hit.Location, 20.f, FColor::Green, false, 0.1f);
+		
+		
+		if(Hit.bBlockingHit)
+		{
+			WorldAimPosition = Hit.Location;
+		}
+		else
+		{
+			WorldAimPosition = EndVec;
+		}
+		//UE_LOG(LogTemp, Warning, TEXT("Aim pos = %s"), *WorldAimPosition.ToString());
+	}
 }
 
 //void AWeapon::SetOwningPlayer(AActor* Actor)
@@ -565,39 +597,75 @@ bool AWeapon::CheckRefire()
 	return bFlag;
 }
 
-FVector AWeapon::GetAimRotation()
+
+FVector AWeapon::GetAimLocation_TEST()
 {
 	check(OwningPlayer)
 	AMainCharacter* MainChar = Cast<AMainCharacter>(OwningPlayer);
 
 	AMainController* MainCon = MainChar ? Cast<AMainController>(MainChar->MainController) : nullptr;
+
+	//FVector ReturnAim = FTransform(FRotator::ZeroRotator, FVector::ZeroVector);
 	FVector ReturnAim = FVector::ZeroVector;
-	
+
+	if(MainCon)
+	{
+		FVector AimLoc = FVector::ZeroVector;
+		FRotator AimRot = FRotator::ZeroRotator;
+		MainCon->GetPlayerViewPoint(AimLoc, AimRot);
+
+		//ReturnAim = FTransform(AimRot, AimLoc);
+		ReturnAim = AimLoc;
+	}
+	return ReturnAim;
+}
+
+/* 플레이어의 시점각도 (뷰포트가 바라보고 있는 회전각)를 Vector값으로 구한다.*/
+FTransform AWeapon::GetAimPosition()
+{
+	check(OwningPlayer)
+	AMainCharacter* MainChar = Cast<AMainCharacter>(OwningPlayer);
+	AMainController* MainCon = MainChar ? Cast<AMainController>(MainChar->MainController) : nullptr;
+
+	FTransform ReturnAim = FTransform(FRotator::ZeroRotator, FVector::ZeroVector);
+	//FVector ReturnAim = FVector::ZeroVector;
+
 	if (MainCon)
 	{
 		FVector AimLoc = FVector::ZeroVector;
 		FRotator AimRot = FRotator::ZeroRotator;
 		MainCon->GetPlayerViewPoint(AimLoc, AimRot);
 
-		ReturnAim = AimRot.Vector();
+		ReturnAim = FTransform(AimRot, AimLoc);
+		//ReturnAim = AimRot.Vector();
 	}
 
 	return ReturnAim;
 }
 
-FVector AWeapon::GetTraceStartLocation(FVector& Dir)
+/* 위 함수에서 구한 각과 스타트 로케이션을 내적 벡터 해줘서 최종 탄 시작 위치를 구한다.*/
+FVector AWeapon::GetTraceStartLocation(FVector Dir)
 {
 	check(OwningPlayer)
-	AMainCharacter* MainChar = Cast<AMainCharacter>(OwningPlayer);
+	/*AMainCharacter* MainChar = Cast<AMainCharacter>(OwningPlayer);
 	
-	AMainController* MainCon = MainChar ? Cast<AMainController>(MainChar->MainController) : nullptr;
+	AMainController* MainCon = MainChar ? Cast<AMainController>(MainChar->MainController) : nullptr;*/
 	FVector ReturnLocation = FVector::ZeroVector;
 
-	if (MainCon)
-	{
-		FRotator Rot;
-		MainCon->GetPlayerViewPoint(ReturnLocation, Rot);
 
+	FVector WeaponMuzzleLocation = SKMesh->GetSocketLocation(MuzzleFlashSocketName);
+	ReturnLocation = WeaponMuzzleLocation;
+
+	
+	//if (MainCon)
+	//{
+		//FRotator Rot;
+		//MainCon->GetPlayerViewPoint(ReturnLocation, Rot);
+		//ReturnLocation = ReturnLocation + Dir * (OwningPlayer->GetActorLocation() - ReturnLocation | Dir);
+
+		//ReturnLocation = WeaponMuzzleLocation;// +Dir;// *(OwningPlayer->GetActorLocation() - ReturnLocation | Dir);
+		//DrawDebugSphere(GetWorld(), ReturnLocation, 12.f, 6, FColor::Green, false, 2.f, (uint8)nullptr, 2.f);
+		
 		/*
 		* FVector CalcDistance = OwningPlayer->GetActorLocation() - ReturnLocation;
 		float DotP = FVector::DotProduct(CalcDistance, Dir);
@@ -616,7 +684,7 @@ FVector AWeapon::GetTraceStartLocation(FVector& Dir)
 		
 		FVector dotLocation = ReturnLocation + Dir * DotP;
 		*/
-		ReturnLocation = ReturnLocation + Dir * (OwningPlayer->GetActorLocation() - ReturnLocation | Dir );
+		
 		
 		/*
 		DrawDebugSphere(GetWorld(), ReturnLocation, 12.f, 6, FColor::Green, true, 2.f, (uint8)nullptr, 2.f);
@@ -628,13 +696,14 @@ FVector AWeapon::GetTraceStartLocation(FVector& Dir)
 		//UE_LOG(LogTemp, Warning, TEXT("Blue Result= %s"), *dotLocation.ToString());
 		UE_LOG(LogTemp, Warning, TEXT("Green Result = %s"), *ReturnLocation.ToString());
 		*/
-	}
+	//}
 	
 	return ReturnLocation;
 }
 
 
-FHitResult AWeapon::BulletTrace(FVector& StartTrace, FVector& EndTrace)
+
+FHitResult AWeapon::BulletTrace(FVector StartTrace, FVector EndTrace)
 {
 	FHitResult Hit;
 
@@ -676,7 +745,7 @@ void AWeapon::WeaponFX()
 
 		if (MuzzleSocket)
 		{
-			SKMesh->GetSocketLocation(MuzzleFlashSocketName);
+			
 			FVector MuzzleLocation = SKMesh->GetSocketLocation(MuzzleFlashSocketName);
 			FRotator MuzzleRotation = SKMesh->GetSocketRotation(MuzzleFlashSocketName);
 

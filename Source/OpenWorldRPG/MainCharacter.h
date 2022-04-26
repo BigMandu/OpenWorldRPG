@@ -93,9 +93,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	float BaseLookupRate;
 
-	const FVector TPSCam_Rel_Location = FVector(0.f, 30.f, 20.f);
+	const FVector TPSCam_Rel_Location = FVector(0.f, 15.f, 20.f);
 
-	const float MAXCameraLength = 600.f;
+	const float MAXCameraLength = 170.f;
 	const float MINCameraLength = 100.f;
 	float BeforeCameraLength;
 

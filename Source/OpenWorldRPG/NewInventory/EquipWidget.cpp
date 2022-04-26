@@ -70,14 +70,17 @@ void UEquipWidget::RefreshEquipWidget()
 					break;
 				case EEquipmentType::EET_Vest:
 					SetSlot(ele, VestSlot);
-					if (ele->EquipGridWidget)
-					{
+					if (VestOverlay && ele->bHasStorage && ele->EquipGridWidget)
+					{ 
 						VestOverlay->AddChild(ele->EquipGridWidget);//°¡²û error
 					}
 					break;
 				case EEquipmentType::EET_Backpack:
 					SetSlot(ele, BackpackSlot);
-					BackpackOverlay->AddChild(ele->EquipGridWidget);
+					if (BackpackOverlay && ele->bHasStorage && ele->EquipGridWidget)
+					{
+						BackpackOverlay->AddChild(ele->EquipGridWidget);
+					}
 					break;
 
 				}

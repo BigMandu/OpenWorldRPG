@@ -130,7 +130,7 @@ class OPENWORLDRPG_API AWeapon : public AEquipment
 	
 public:
 	AWeapon();
-
+	virtual void Tick(float DeltaTime) override;
 	//UEquipmentComponent* OwningEquipment;
 	//AActor* OwningPlayer;
 
@@ -203,6 +203,8 @@ protected:
 
 	FTimerHandle FiringTimer;
 
+	FVector WorldAimPosition;
+
 	/* Aim Initialize에서 사용 */
 	FRotator StartFiringRotation;
 	FRotator EndFiringRotation;
@@ -249,9 +251,11 @@ public:
 	virtual void BulletOut() PURE_VIRTUAL(AWeapon::BulletOut);
 	virtual void New_BulletOut() PURE_VIRTUAL(AWeapon::New_BulletOut);
 
-	FVector GetAimRotation();
-	FVector GetTraceStartLocation(FVector& Dir);
-	FHitResult BulletTrace(FVector& StartTrace, FVector& EndTrace);
+
+	FVector GetAimLocation_TEST();
+	FTransform GetAimPosition();
+	FVector GetTraceStartLocation(FVector Dir = FVector::ZeroVector);
+	FHitResult BulletTrace(FVector StartTrace, FVector EndTrace);
 	
 	/* Setting New Weapon State, And Call SetWeaponState func */
 	void TempNewWeaponState();

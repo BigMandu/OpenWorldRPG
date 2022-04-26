@@ -279,19 +279,8 @@ void AMainCharacter::Tick(float DeltaTime)
 	/* 3인칭 모드에서 총이 있고 움직이고 있으면 시점을 방향으로 지정한다.*/
 	if (EquippedWeapon && CameraMode == ECameraMode::ECM_TPS)
 	{
-		if (AimMode == EAimMode::EAM_NotAim) //Not Aim모드 일때만
-		{
-			if (bIsAccelerating)
-			{
-				bUseControllerRotationYaw = true;
-				GetCharacterMovement()->bOrientRotationToMovement = false;
-			}
-			else
-			{
-				bUseControllerRotationYaw = false;
-				GetCharacterMovement()->bOrientRotationToMovement = true;
-			}
-		}
+		bUseControllerRotationYaw = true;
+		GetCharacterMovement()->bOrientRotationToMovement = false;
 	}
 	
 
@@ -394,6 +383,9 @@ void AMainCharacter::SetCameraMode(ECameraMode Type) //플레이어 시점 상태 -> VKe
 		if (EquippedWeapon) //현재 장착무기가 있으면 First,Third mesh에 따라 소켓에 부착.
 		{
 			EquippedWeapon->GunAttachToMesh(this);
+
+			//장착 무기가 있으면, 컨트롤러의 회전에 따라 캐릭터를 회전하도록 한다.
+			bUseControllerRotationYaw = true;
 			//const USkeletalMeshSocket* TPSocket = GetMesh()->GetSocketByName(GripSocketName);
 			//if (TPSocket)
 			//{
@@ -430,6 +422,7 @@ void AMainCharacter::SetCameraMode(ECameraMode Type) //플레이어 시점 상태 -> VKe
 		/*  Character Mesh 설정 */
 		FPMesh->SetHiddenInGame(false);
 		GetMesh()->SetHiddenInGame(true);
+		
 
 		/* 장착 무기 Mesh에 부착 */
 		if (EquippedWeapon)
@@ -499,8 +492,19 @@ void AMainCharacter::SetAimMode(EAimMode Mode)
 			GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
 			if (CameraMode == ECameraMode::ECM_TPS)
 			{
-				GetCharacterMovement()->bOrientRotationToMovement = true; //움직인 방향 = 진행방향으로 설정
-				bUseControllerRotationYaw = false; //3인칭에 Aim상태가 아니면, Yaw를 풀어준다.
+				if(EquippedWeapon)
+				{
+					GetCharacterMovement()->bOrientRotationToMovement = false;
+					bUseControllerRotationYaw = true; //false; //3인칭에 Aim상태가 아니면, Yaw를 풀어준다.
+				}
+				else
+				{
+					GetCharacterMovement()->bOrientRotationToMovement = true; //움직인 방향 = 진행방향으로 설정
+					bUseControllerRotationYaw = false; //3인칭에 Aim상태가 아니면, Yaw를 풀어준다.
+				}
+
+				
+				
 				//땡긴 카메라를 다시 원복 시킨다.
 				/*float CurrentLength = CameraBoom->TargetArmLength;
 				float CameraLength = FMath::FInterpTo(CurrentLength, BeforeCameraLength, GetWorld()->GetDeltaSeconds(), 15.f);*/
@@ -662,7 +666,7 @@ void AMainCharacter::ScrollDN()
 			{
 				CameraBoom->TargetArmLength = MINCameraLength;
 			}
-			else CameraBoom->TargetArmLength -= 50;
+			else CameraBoom->TargetArmLength -= 25;
 		}
 	}
 }
@@ -677,7 +681,7 @@ void AMainCharacter::ScrollUP()
 			{
 				CameraBoom->TargetArmLength = MAXCameraLength;
 			}
-			else CameraBoom->TargetArmLength += 50;
+			else CameraBoom->TargetArmLength += 25;
 		}
 	}
 }
@@ -706,7 +710,8 @@ void AMainCharacter::FPSAimLocationAdjust()
 	{
 		if (bIsAim)
 		{
-			//총에 맞는 위치를 쉽게 하기 위해 Weapon에 해당 변수를 줬다.
+			//각 총마다 FPMesh의 올바른 위치에 부착하기 위해
+			//Weapon Class에 Transform 변수를 만들어줬다.
 			const FTransform NewFPMeshTransform = EquippedWeapon->CharFPMeshTransform;
 			const FTransform NewWeaponTransform = EquippedWeapon->WeapSKMeshTransform;
 			CameraFPS->SetFieldOfView(70.f);

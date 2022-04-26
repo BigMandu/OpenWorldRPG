@@ -37,7 +37,7 @@ class OPENWORLDRPG_API AWeapon_Instant : public AWeapon
 	
 public:
 	AWeapon_Instant();
-	
+
 	UPROPERTY(EditDefaultsOnly, Category = "WeaponStat")
 	FBulletData BulletStat;
 

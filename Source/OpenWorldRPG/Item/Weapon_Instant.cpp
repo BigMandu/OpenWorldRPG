@@ -12,10 +12,15 @@
 
 AWeapon_Instant::AWeapon_Instant() : Super()
 {
-	
+
 }
 
 
+
+/* New_BulletOut함수는 ApplyRecoil함수에서 Weapon에 추가한
+ * CurveFloat을 이용해 그려진 Spread를 Time을 기준으로 가져오는 방식이다.
+ * 카운터 스트라이크의 Spread시스템과 유사하다.
+ */
 void AWeapon_Instant::New_BulletOut()
 {
 	//rpm이 950면, rps는 15.8, 0.06초당 1발
@@ -23,20 +28,38 @@ void AWeapon_Instant::New_BulletOut()
 	* 마지막값과 현재값을 이용해야한다.
 	* 마지막 float값에서 현재flaot값을 뺀 만큼의 pitch,yaw를 올려줘야한다.
 	*/
-	FVector Dir = GetAimRotation();
-	FVector StartTrace = GetTraceStartLocation(Dir);	
-	//FVector NewDir = GetAimRotation();
-	FVector EndTrace = StartTrace + Dir * WeaponStat.WeaponRange;
+	//FVector Dir = GetAimRotation();
+	FTransform AimPos = GetAimPosition();
+	FVector StartTrace = GetTraceStartLocation();// AimPos.Rotator().Vector());
+
+	//FVector ViewportLo = GetAimLocation_TEST();
+	FVector Direction = (WorldAimPosition - StartTrace).GetSafeNormal();
+
+	FVector EndTrace = StartTrace + Direction * WeaponStat.WeaponRange;
+	//FVector EndTrace = (StartTrace + Dir * WeaponStat.WeaponRange) - (StartTrace - ViewportLo);
+
+	//FVector EndTrace = StartTrace + Dir * ((StartTrace - Viewport.GetLocation() | Dir) * WeaponStat.WeaponRange);
+	//FVector EndTrace = StartTrace + Dir * ((GetInstigator()->GetActorForwardVector() | Dir) * WeaponStat.WeaponRange);
+
 	
 	FHitResult Hit = BulletTrace(StartTrace, EndTrace);
 	GetWorldTimerManager().ClearTimer(RecoilHandle);
 	ApplyRecoil();
 
-	DrawDebugPoint(GetWorld(), Hit.Location, 10.f, FColor::Blue, false, 2.f);
+
+
+	/*DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor::Blue, false, 1.f);
+	DrawDebugPoint(GetWorld(), Hit.Location, 10.f, FColor::Blue, false, 5.f);*/
 	CheckHit(Hit);
 
 }
 
+/* 이 함수는 더 이상 사용하지 않는다. New_BulletOut 함수를 사용할것.
+ *
+ * Random Stream을 이용한 방법과, Rand값을 이용한 방법을 사용했던 함수다.
+ * Random Stream은 Spread를 따로 외우거나 익힐 필요 없는 단순한 반동이며
+ * Rand값을 이용한 Spread는 개발자가 의도한 대로 Spread를 뿌려 줄 수 있지만, 한계가 있다.
+ */
 void AWeapon_Instant::BulletOut()
 {
 	//UE_LOG(LogTemp, Warning, TEXT("Weap_Instant::BulletOut"));
@@ -49,7 +72,7 @@ void AWeapon_Instant::BulletOut()
 	float ConeHalfAngle = FMath::DegreesToRadians(LastSpread *0.5);
 	*/
 
-	FVector Dir = GetAimRotation();
+	FVector Dir;// = GetAimRotation();
 	FVector StartTrace = GetTraceStartLocation(Dir);
 
 	/* 이어서 새로추가. (RandomStream을 이용한 Weapon Spread) */ 
