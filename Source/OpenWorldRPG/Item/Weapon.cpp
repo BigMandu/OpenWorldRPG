@@ -14,7 +14,10 @@
 #include "Curves/CurveFloat.h"
 #include "Math/UnrealMathUtility.h"
 #include "DrawDebugHelpers.h" //디버깅용
+//#include "Components/SphereComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
+
 
 #define DEBUG 0
 
@@ -27,6 +30,13 @@ AWeapon::AWeapon() : Super()
 	//RootComponent = SKMesh;
 	//Mesh->SetupAttachment(GetRootComponent());
 	//SKMesh->SetHiddenInGame(true);
+
+	CapsuleComp = CreateDefaultSubobject<UCapsuleComponent>(TEXT("CapsuleComponent"));
+	CapsuleComp->SetupAttachment(RootComponent);
+
+	/*CapsuleComp->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnBeginHighReady);
+	CapsuleComp->OnComponentEndOverlap.AddDynamic(this, &AWeapon::OnEndHighReady);*/
+	
 
 	bIsFiring = false;
 	bLMBDown = false;
@@ -70,6 +80,23 @@ void AWeapon::Tick(float DeltaTime)
 		}
 		//UE_LOG(LogTemp, Warning, TEXT("Aim pos = %s"), *WorldAimPosition.ToString());
 	}
+}
+
+void AWeapon::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	CapsuleComp->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnBeginHighReady);
+	CapsuleComp->OnComponentEndOverlap.AddDynamic(this, &AWeapon::OnEndHighReady);
+
+
+	//CombatCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);//기본적으로 충돌을 끈다.
+
+	//CombatCollision->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic); //충돌 채널을 worlddynamic채널로 설정한다. (움직이는 액터라)
+
+	//CombatCollision->SetCollisionResponseToChannels(ECollisionResponse::ECR_Ignore);
+	//CombatCollision->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap); //Pawn에 대한 충돌만 overlap.
+	//CombatCollision->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block); //Staticmesh를 통과못하게 한번 해봤다.
 }
 
 //void AWeapon::SetOwningPlayer(AActor* Actor)
@@ -598,6 +625,8 @@ bool AWeapon::CheckRefire()
 }
 
 
+
+
 FVector AWeapon::GetAimLocation_TEST()
 {
 	check(OwningPlayer)
@@ -836,4 +865,15 @@ void AWeapon::Remove()
 			}
 		}
 	}
+}
+
+
+void AWeapon::OnBeginHighReady(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	UE_LOG(LogTemp, Warning, TEXT(" Weapon Overlap begin"));
+}
+
+void AWeapon::OnEndHighReady(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	UE_LOG(LogTemp, Warning, TEXT(" Weapon Overlap End"));
 }

@@ -15,6 +15,8 @@
 
 class UMatineeCameraShake;
 class UCameraShake;
+class USphereComponent;
+class UCapsuleComponent;
 class USoundCue;
 class UParticleSystem;
 class UParticleSystemComponent;
@@ -130,10 +132,13 @@ class OPENWORLDRPG_API AWeapon : public AEquipment
 	
 public:
 	AWeapon();
-	virtual void Tick(float DeltaTime) override;
+	
 	//UEquipmentComponent* OwningEquipment;
 	//AActor* OwningPlayer;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	UCapsuleComponent* CapsuleComp;
+	//USphereComponent* SphereComp;
 
 	bool bIsFiring;
 	bool bIsAiming; //Main에서 값을 단순히 넣어주기만 한다.
@@ -153,7 +158,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon | Transform")
 	FTransform WeapSKMeshTransform;
 
-	
 
 	/* Enums */
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
@@ -221,6 +225,12 @@ protected:
 public:
 
 	//void SetOwningPlayer(AActor * Actor);
+	virtual void Tick(float DeltaTime) override;
+
+	virtual void PostInitializeComponents() override;
+
+	/*virtual void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;
+	virtual void OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex) override;*/
 
 	virtual void Equip(AActor* Char) override;
 	
@@ -250,6 +260,11 @@ public:
 
 	virtual void BulletOut() PURE_VIRTUAL(AWeapon::BulletOut);
 	virtual void New_BulletOut() PURE_VIRTUAL(AWeapon::New_BulletOut);
+
+	UFUNCTION()
+	void OnBeginHighReady(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	UFUNCTION()
+	void OnEndHighReady(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 
 	FVector GetAimLocation_TEST();
