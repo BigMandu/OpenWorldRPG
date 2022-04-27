@@ -86,37 +86,26 @@ void AWeapon::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
+	CapsuleComp->SetHiddenInGame(false);//for debug
+
 	CapsuleComp->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnBeginHighReady);
 	CapsuleComp->OnComponentEndOverlap.AddDynamic(this, &AWeapon::OnEndHighReady);
 
+	CapsuleComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	//CapsuleComp->setcollision
+	//CapsuleComp->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
 
-	//CombatCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);//기본적으로 충돌을 끈다.
-
-	//CombatCollision->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic); //충돌 채널을 worlddynamic채널로 설정한다. (움직이는 액터라)
-
-	//CombatCollision->SetCollisionResponseToChannels(ECollisionResponse::ECR_Ignore);
-	//CombatCollision->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap); //Pawn에 대한 충돌만 overlap.
-	//CombatCollision->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block); //Staticmesh를 통과못하게 한번 해봤다.
+	CapsuleComp->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
+	//CapsuleComp->SetCollisionResponseToChannel(ECollisionChannel::ecc)
 }
-
-//void AWeapon::SetOwningPlayer(AActor* Actor)
-//{
-//	if (OwningPlayer != Actor)
-//	{
-//		AMainCharacter* Main = Cast<AMainCharacter>(Actor);
-//		if (Main)
-//		{
-//			OwningPlayer = Main;
-//			SetInstigator(Main); //Instigator 설정.
-//		}
-//	}
-//}
 
 void AWeapon::Equip(AActor* Char)
 {
 	Super::Equip(Char);
 	AMainCharacter* Main = Cast<AMainCharacter>(Char);
 	check(Main);
+
+	CapsuleComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 
 	if (RifleAssign == ERifleAssign::ERA_MAX)
 	{
