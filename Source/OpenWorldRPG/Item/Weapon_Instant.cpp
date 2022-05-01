@@ -38,13 +38,16 @@ void AWeapon_Instant::New_BulletOut()
 	FVector EndTrace = StartTrace + Direction * WeaponStat.WeaponRange;*/
 	//FHitResult Hit = BulletTrace(StartTrace, EndTrace);
 
-	FHitResult Hit = BulletTrace(StartTrace, WorldAimPosition);
+	//그냥 WorldAimPos를 EndPoint로 지정할경우. 가끔 딱 맞아떨어질때, Hit이 안먹힌다.
+	//따라서 거리를 살짝 더 늘려준다.
+	FHitResult Hit = BulletTrace(StartTrace, WorldAimPosition+AimPos.Rotator().Vector()*30.f);
 
-	/*DrawDebugLine(GetWorld(), StartTrace, WorldAimPosition, FColor::Green, false, 5.f);
-	DrawDebugPoint(GetWorld(), WorldAimPosition, 10.f, FColor::Green, false, 5.f);*/
+	//DrawDebugLine(GetWorld(), StartTrace, WorldAimPosition, FColor::Green, false, 5.f);
+	//DrawDebugLine(GetWorld(), StartTrace, WorldAimPosition + AimPos.Rotator().Vector() * 30.f, FColor::Blue, false, 5.f);
+	//DrawDebugPoint(GetWorld(), WorldAimPosition, 10.f, FColor::Green, false, 5.f);
 	DrawDebugPoint(GetWorld(), Hit.Location, 10.f, FColor::Blue, false, 5.f);
-	UE_LOG(LogTemp, Warning, TEXT("Start: %s, WorldAim : %s"), *StartTrace.ToString(), *WorldAimPosition.ToString());
-	UE_LOG(LogTemp, Warning, TEXT("HitLocation : %s"), *Hit.Location.ToString());
+	//UE_LOG(LogTemp, Warning, TEXT("Start: %s, WorldAim : %s"), *StartTrace.ToString(), *WorldAimPosition.ToString());
+	//UE_LOG(LogTemp, Warning, TEXT("HitLocation : %s"), *Hit.Location.ToString());
 	CheckHit(Hit);
 
 	GetWorldTimerManager().ClearTimer(RecoilHandle);
