@@ -13,6 +13,9 @@
  */
 #define COLLISION_WEAPON_INST	ECC_GameTraceChannel1
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBeginHighReady);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEndHighReady);
+
 class UMatineeCameraShake;
 class UCameraShake;
 class USphereComponent;
@@ -85,18 +88,27 @@ struct FWeaponStat
 {
 	GENERATED_BODY()
 
-	//Magazine의 최대 탄알수, 연발 속도
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
-	int32 AmmoPerMag;
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
-	float FireRatePerMin;
+	//Weapon의 사거리
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
 	float WeaponRange;
+
+	/* 탄이 흩어지는 정도.*/
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
+	float HipBulletSpread;
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
+	float AimBulletSpread;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
+	int32 AmmoPerMag;
+
+
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
 	bool bHasBurstMode;
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
 	int32 BurstRound;
-
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
+	float FireRatePerMin;
 	UPROPERTY(VisibleAnywhere, Category = "Weapon | Stat")
 	float FireRatePerSec;
 	UPROPERTY(VisibleAnywhere, Category = "Weapon | Stat")
@@ -112,15 +124,23 @@ struct FWeaponStat
 	/* FWeaponStat Defaults */
 	FWeaponStat()
 	{
-		bHasBurstMode = true;
-		BurstRound = 3;
-
 		WeaponRange = 5000.f;
+		HipBulletSpread = 1.5f;
+		AimBulletSpread = 1.f;
+
 		AmmoPerMag = 30;
+
+		bHasBurstMode = true;
+		BurstRound = 3;	
+		
 
 		//m4a1은 분당 700~950발.분당 950으로 잡고 초당 15.8발을 쏘면됨. 0.06초당 한발씩.
 		FireRatePerMin = 950;
-		
+
+		/*FireRatePerSec이나 SecondPerBullet은
+		 * FireRatePerMin이 Weapon마다 변할 수 있으니.
+		 * Equip함수에서 계산하여 저장한다.
+		 */
 		
 	}
 };
@@ -136,15 +156,14 @@ public:
 	//UEquipmentComponent* OwningEquipment;
 	//AActor* OwningPlayer;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	FOnBeginHighReady OnBeginHighReady;
+	FOnEndHighReady OnEndHighReady;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UCapsuleComponent* CapsuleComp;
-	//USphereComponent* SphereComp;
 
 	bool bIsFiring;
 	bool bIsAiming; //Main에서 값을 단순히 넣어주기만 한다.
-
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-	//USkeletalMeshComponent* SKMesh;
 
 	UPROPERTY(EditAnywhere, Category = "WeaponStat")
 	FWeaponStat WeaponStat;
@@ -160,8 +179,6 @@ public:
 
 
 	/* Enums */
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-	//EWeaponType WeaponType;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	ERifleAssign RifleAssign;
@@ -208,6 +225,7 @@ protected:
 	FTimerHandle FiringTimer;
 
 	FVector WorldAimPosition;
+	FVector WeaponMuzzleLocation;
 
 	/* Aim Initialize에서 사용 */
 	FRotator StartFiringRotation;
@@ -219,7 +237,11 @@ protected:
 
 	FVector PreviousSpread;
 	FVector NextSpread;
-	
+
+	bool bIsHighReady;
+
+private:
+	void UpdateAim();
 	
 	
 public:
@@ -229,16 +251,11 @@ public:
 
 	virtual void PostInitializeComponents() override;
 
-	/*virtual void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) override;
-	virtual void OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex) override;*/
-
 	virtual void Equip(AActor* Char) override;
 	
 	void GunAttachToMesh(AActor* Actor);
 
 	void FPS_AimAttachToMesh(AActor* Actor);
-
-	//bool CheckSendToInventory(AMainCharacter* Main);
 
 	//virtual void Drop() override;
 	
@@ -258,16 +275,17 @@ public:
 
 	bool CanEndFire();
 
-	virtual void BulletOut() PURE_VIRTUAL(AWeapon::BulletOut);
+	virtual void Old_BulletOut() PURE_VIRTUAL(AWeapon::BulletOut);
 	virtual void New_BulletOut() PURE_VIRTUAL(AWeapon::New_BulletOut);
 
 	UFUNCTION()
-	void OnBeginHighReady(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	void OnCollisionBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	UFUNCTION()
-	void OnEndHighReady(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	void OnCollisionEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 
-	FVector GetAimLocation_TEST();
+	//FVector GetAimLocation_TEST();
+	void AimInitialize();
 	FTransform GetAimPosition();
 	FVector GetTraceStartLocation(FVector Dir = FVector::ZeroVector);
 	FHitResult BulletTrace(FVector StartTrace, FVector EndTrace);
@@ -281,7 +299,7 @@ public:
 	void WeaponFX();
 	void PlayWeaponAnimAndCamShake(FWeaponAnim& Anim);
 
-	void AimInitialize();
+	
 
 	virtual void Remove() override;
 };

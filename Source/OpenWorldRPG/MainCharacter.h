@@ -24,7 +24,7 @@ class USpringArmComponent;
 class USkeletalMeshComponent;
 class USoundCue;
 class UNewInventoryComponent;
-
+class UPoseableMeshComponent;
 
 UENUM(BlueprintType)
 enum class EPlayerStatus : uint8
@@ -93,10 +93,10 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	float BaseLookupRate;
 
-	const FVector TPSCam_Rel_Location = FVector(0.f, 15.f, 20.f);
-
+	const FVector TPSCam_Rel_Location = FVector(0.f, 0.f, 8.f);
+	const FVector TPSCam_Aim_Rel_Location = FVector(0.f, 18.5f, -8.f);
 	const float MAXCameraLength = 170.f;
-	const float MINCameraLength = 100.f;
+	const float MINCameraLength = 80.f;
 	float BeforeCameraLength;
 
 	/* FPS Aim을 위한 저장값*/
@@ -199,6 +199,8 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item | Weapon")
 	AWeapon* PistolWeapon;
+
+	void SetEquippedWeapon(AWeapon* Weapon);
 
 	
 protected:

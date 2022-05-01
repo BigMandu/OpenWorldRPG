@@ -34,7 +34,7 @@ public:
 	AInteractable();
 
 	/* Item Static Mesh */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Item)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Item)
 	UStaticMeshComponent* Mesh;
 
 	/* Item의 사용 액션 (Equip, Food, etc..) */

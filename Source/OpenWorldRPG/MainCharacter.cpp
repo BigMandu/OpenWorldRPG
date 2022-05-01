@@ -29,6 +29,9 @@
 #include "OpenWorldRPG/Item/Weapon.h"
 
 #include "DrawDebugHelpers.h" //디버깅용
+#include "Components/CapsuleComponent.h"
+#include "Components/PoseableMeshComponent.h"
+#include "BoneControllers/AnimNode_ModifyBone.h"
 
 // Sets default values
 AMainCharacter::AMainCharacter()
@@ -121,6 +124,7 @@ AMainCharacter::AMainCharacter()
 	/******  Perception ****/
 	StimuliSourceComp = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("StimuliSource"));
 
+	
 }
 
 // Called to bind functionality to input
@@ -203,6 +207,9 @@ void AMainCharacter::PostInitializeComponents()
 	BaseFPMeshTransform = FPMesh->GetRelativeTransform();
 	
 
+	//GetCapsuleComponent()->SetCollisionProfileName(FName("MainChar"));
+	GetCapsuleComponent()->SetCollisionObjectType(ECollisionChannel::ECC_GameTraceChannel2);
+	//GetCapsuleComponent()->SetCollisionProfileName("MainChar");
 }
 
 // Called when the game starts or when spawned
@@ -475,6 +482,8 @@ void AMainCharacter::SetAimMode(EAimMode Mode)
 				BeforeCameraLength = CameraBoom->TargetArmLength; //현재 SprintArm의 길이를 저장한다.
 				//float CameraLength = FMath::FInterpTo(BeforeCameraLength, MINCameraLength, GetWorld()->GetDeltaSeconds(), 15.f);
 				CameraBoom->TargetArmLength = MINCameraLength;
+				
+				CameraTPS->SetRelativeLocation(TPSCam_Aim_Rel_Location);
 			}
 			else if (CameraMode == ECameraMode::ECM_FPS)
 			{
@@ -509,6 +518,7 @@ void AMainCharacter::SetAimMode(EAimMode Mode)
 				/*float CurrentLength = CameraBoom->TargetArmLength;
 				float CameraLength = FMath::FInterpTo(CurrentLength, BeforeCameraLength, GetWorld()->GetDeltaSeconds(), 15.f);*/
 				CameraBoom->TargetArmLength = BeforeCameraLength;
+				CameraTPS->SetRelativeLocation(TPSCam_Rel_Location);
 			}
 			else if (CameraMode == ECameraMode::ECM_FPS)
 			{
@@ -883,6 +893,16 @@ void AMainCharacter::ChangePistolWeapon()
 	ChangeWeapon(3);
 }
 
+void AMainCharacter::SetEquippedWeapon(AWeapon* Weapon)
+{
+	if (Weapon)
+	{
+		EquippedWeapon = Weapon;
+		//EquippedWeapon->OnBeginHighReady.AddDynamic(this, &UMainAnimInstance::BeginHighReady);
+		//EquippedWeapon->OnEndHighReady.AddDynamic(this, &AMainCharacter::EndHighReady);
+		
+	}
+}
 
 
 
@@ -901,6 +921,31 @@ FTransform AMainCharacter::LeftHandik()
 
 	return Transform;
 }
+
+//void AMainCharacter::BeginHighReady()
+//{
+//	
+//	const USkeletalMeshSocket* TP_ArmLeft = GetMesh()->GetSocketByName("upperarm_l");
+//	const USkeletalMeshSocket* TP_ArmRight = GetMesh()->GetSocketByName("upperarm_r");
+//
+//	const USkeletalMeshSocket* FP_Arms = FPMesh->GetSocketByName("spine_03");
+//	/*const USkeletalMeshSocket* FP_ArmLeft = FPMesh->GetSocketByName("UpperArm_L");
+//	const USkeletalMeshSocket* FP_ArmRight = FPMesh->GetSocketByName("UpperArm_R");*/
+//
+//	FRotator NewRot = FRotator(0.f, 0.f, 200.f);
+//
+//	//TP_ArmLeft->RelativeRotation = NewRot;
+//	FAnimNode_ModifyBone ModBone;
+//	const FBoneReference Bone("upperarm_l");
+//	ModBone.BoneToModify = Bone.BoneName;
+//	ModBone.Rotation = FRotator(0.f, 0.f, 120.f);
+//}
+//
+//void AMainCharacter::EndHighReady()
+//{
+//	
+//}
+
 
 
 /*************************  Interaction 관련 ***************************************************/

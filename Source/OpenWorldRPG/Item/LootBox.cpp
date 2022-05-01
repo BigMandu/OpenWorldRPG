@@ -17,6 +17,7 @@ ALootBox::ALootBox()
 	Mesh->SetEnableGravity(true);
 	Mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 
+	Mesh->SetCollisionObjectType(ECollisionChannel::ECC_WorldStatic);
 	Mesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
 
 	BoxInventoryComp = CreateDefaultSubobject<UNewInventoryComponent>(TEXT("BoxInventoryComp"));

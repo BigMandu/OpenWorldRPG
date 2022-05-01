@@ -21,6 +21,8 @@ AEquipment::AEquipment() : Super()
 
 	RootComponent = SKMesh;
 	Mesh->SetupAttachment(GetRootComponent());
+	//Mesh->CanCharacterStepUpOn = ECB_No;
+
 	SKMesh->SetHiddenInGame(true);
 
 }
@@ -31,18 +33,9 @@ void AEquipment::BeginPlay()
 
 	if (bHasStorage)
 	{
-		AMainController* MainCon = Cast<AMainController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-		
-		
-		if (WEquipGridWidget && MainCon)
-		{
-			EquipGridWidget = CreateWidget<UNewInventoryGrid>(MainCon, WEquipGridWidget);
-			//EquipGridWidget = CreateWidget<UNewInventoryGrid>(this, WEquipGridWidget);
-			
-			EquipGridWidget->GridInitialize(EquipInventoryComp, EquipInventoryComp->TileSize);
-		}
-	
+		SettingStorage();
 	}
+
 }
 
 void AEquipment::ReInitialize(UNewItemObject* Obj)
@@ -52,8 +45,11 @@ void AEquipment::ReInitialize(UNewItemObject* Obj)
 		ItemObj = Obj;
 		if(bHasStorage)
 		{
-			AMainController* MainCon = Cast<AMainController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-
+			if (MainCon == nullptr) 
+			{
+				MainCon = Cast<AMainController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+			}
+			//AMainController* MainCon = Cast<AMainController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 			if (WEquipGridWidget && MainCon)
 			{
 				EquipGridWidget = CreateWidget<UNewInventoryGrid>(MainCon, WEquipGridWidget);
@@ -81,6 +77,7 @@ void AEquipment::SetOwningPlayer(AActor* Actor)
 		AMainCharacter* Main = Cast<AMainCharacter>(Actor);
 		if (Main)
 		{
+			MainCon = Main->MainController;
 			OwningPlayer = Main;
 			SetInstigator(Main); //Instigator 설정.
 		}
@@ -235,6 +232,7 @@ void AEquipment::Equip(AActor* Actor)
 	//Main에 있는 Equipment에 Add해준다.
 	Main->Equipment->AddEquipment(this);
 	SetOwningPlayer(Main);
+
 	
 	SKMesh->SetHiddenInGame(false);
 
@@ -284,6 +282,23 @@ void AEquipment::SendToInventory(AActor* Actor)
 		//}
 	}
 	//return false;
+}
+
+void AEquipment::SettingStorage()
+{
+	if (MainCon == nullptr)
+	{
+		MainCon = Cast<AMainController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	}
+	//AMainController* MainCon = Cast<AMainController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+
+	if (WEquipGridWidget && MainCon)
+	{
+		EquipGridWidget = CreateWidget<UNewInventoryGrid>(MainCon, WEquipGridWidget);
+		//EquipGridWidget = CreateWidget<UNewInventoryGrid>(this, WEquipGridWidget);
+
+		EquipGridWidget->GridInitialize(EquipInventoryComp, EquipInventoryComp->TileSize);
+	}
 }
 
 void AEquipment::Drop()

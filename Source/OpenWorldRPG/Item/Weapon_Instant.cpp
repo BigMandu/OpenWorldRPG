@@ -2,6 +2,9 @@
 #pragma warning(disable : 4800)
 
 #include "Weapon_Instant.h"
+
+#include <string>
+
 #include "OpenWorldRPG/MainCharacter.h"
 #include "Particles/ParticleSystem.h"
 #include "Kismet/GameplayStatics.h"
@@ -28,30 +31,24 @@ void AWeapon_Instant::New_BulletOut()
 	* 마지막값과 현재값을 이용해야한다.
 	* 마지막 float값에서 현재flaot값을 뺀 만큼의 pitch,yaw를 올려줘야한다.
 	*/
-	//FVector Dir = GetAimRotation();
 	FTransform AimPos = GetAimPosition();
-	FVector StartTrace = GetTraceStartLocation();// AimPos.Rotator().Vector());
+	FVector StartTrace = GetTraceStartLocation(AimPos.Rotator().Vector());
 
-	//FVector ViewportLo = GetAimLocation_TEST();
-	FVector Direction = (WorldAimPosition - StartTrace).GetSafeNormal();
+	/*FVector Direction = (WorldAimPosition - StartTrace).GetSafeNormal();
+	FVector EndTrace = StartTrace + Direction * WeaponStat.WeaponRange;*/
+	//FHitResult Hit = BulletTrace(StartTrace, EndTrace);
 
-	FVector EndTrace = StartTrace + Direction * WeaponStat.WeaponRange;
-	//FVector EndTrace = (StartTrace + Dir * WeaponStat.WeaponRange) - (StartTrace - ViewportLo);
+	FHitResult Hit = BulletTrace(StartTrace, WorldAimPosition);
 
-	//FVector EndTrace = StartTrace + Dir * ((StartTrace - Viewport.GetLocation() | Dir) * WeaponStat.WeaponRange);
-	//FVector EndTrace = StartTrace + Dir * ((GetInstigator()->GetActorForwardVector() | Dir) * WeaponStat.WeaponRange);
-
-	
-	FHitResult Hit = BulletTrace(StartTrace, EndTrace);
-	GetWorldTimerManager().ClearTimer(RecoilHandle);
-	ApplyRecoil();
-
-
-
-	/*DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor::Blue, false, 1.f);
-	DrawDebugPoint(GetWorld(), Hit.Location, 10.f, FColor::Blue, false, 5.f);*/
+	/*DrawDebugLine(GetWorld(), StartTrace, WorldAimPosition, FColor::Green, false, 5.f);
+	DrawDebugPoint(GetWorld(), WorldAimPosition, 10.f, FColor::Green, false, 5.f);*/
+	DrawDebugPoint(GetWorld(), Hit.Location, 10.f, FColor::Blue, false, 5.f);
+	UE_LOG(LogTemp, Warning, TEXT("Start: %s, WorldAim : %s"), *StartTrace.ToString(), *WorldAimPosition.ToString());
+	UE_LOG(LogTemp, Warning, TEXT("HitLocation : %s"), *Hit.Location.ToString());
 	CheckHit(Hit);
 
+	GetWorldTimerManager().ClearTimer(RecoilHandle);
+	ApplyRecoil();
 }
 
 /* 이 함수는 더 이상 사용하지 않는다. New_BulletOut 함수를 사용할것.
@@ -60,7 +57,7 @@ void AWeapon_Instant::New_BulletOut()
  * Random Stream은 Spread를 따로 외우거나 익힐 필요 없는 단순한 반동이며
  * Rand값을 이용한 Spread는 개발자가 의도한 대로 Spread를 뿌려 줄 수 있지만, 한계가 있다.
  */
-void AWeapon_Instant::BulletOut()
+void AWeapon_Instant::Old_BulletOut()
 {
 	//UE_LOG(LogTemp, Warning, TEXT("Weap_Instant::BulletOut"));
 	
@@ -98,7 +95,8 @@ void AWeapon_Instant::BulletOut()
 	//CurFiringSpread = (10.f < CurFiringSpread + 1.f) ? 10.f : CurFiringSpread + 1.f; //RandomStream을 이용한 Spread.
 }
 
-
+/* 이 함수도 사용하지 않는다. Old_BulletOut에서 사용.
+ */
 FVector AWeapon_Instant::BulletSpread(FVector Vec)
 {
 	/* Random을 이용한 Weapon Spread */
@@ -117,12 +115,12 @@ FVector AWeapon_Instant::BulletSpread(FVector Vec)
 			{
 				if (bIsAiming)
 				{
-					NewZ = FireCount * BulletStat.AimBulletSpread;
+					NewZ = FireCount * WeaponStat.AimBulletSpread;
 					LastZpos = NewZ;
 				}
 				else
 				{
-					NewZ = FireCount * BulletStat.HipBulletSpread/3;
+					NewZ = FireCount * WeaponStat.HipBulletSpread/3;
 					LastZpos = NewZ;
 				}
 				//RecoilValue = -1 * (float)FireCount / 10;
@@ -131,8 +129,8 @@ FVector AWeapon_Instant::BulletSpread(FVector Vec)
 			{
 				if (bIsAiming)
 				{
-					randX = FMath::RandRange(-1 * BulletStat.AimBulletSpread, BulletStat.AimBulletSpread);
-					randY = FMath::RandRange(-1 * BulletStat.AimBulletSpread, BulletStat.AimBulletSpread);
+					randX = FMath::RandRange(-1 * WeaponStat.AimBulletSpread, WeaponStat.AimBulletSpread);
+					randY = FMath::RandRange(-1 * WeaponStat.AimBulletSpread, WeaponStat.AimBulletSpread);
 
 					//NewZ = FireCount * (FireCount / 8.5) * (BulletStat.AimBulletSpread / 10);
 					NewZ = 0.f;
@@ -141,8 +139,8 @@ FVector AWeapon_Instant::BulletSpread(FVector Vec)
 				}
 				else
 				{
-					randX = FMath::RandRange(-1 * BulletStat.HipBulletSpread, BulletStat.HipBulletSpread);
-					randY = FMath::RandRange(-1 * BulletStat.HipBulletSpread, BulletStat.HipBulletSpread);
+					randX = FMath::RandRange(-1 * WeaponStat.HipBulletSpread, WeaponStat.HipBulletSpread);
+					randY = FMath::RandRange(-1 * WeaponStat.HipBulletSpread, WeaponStat.HipBulletSpread);
 
 					//NewZ = FireCount * (FireCount / 8.5) * (BulletStat.HipBulletSpread / 10);
 					NewZ = 0.f;
@@ -186,6 +184,7 @@ void AWeapon_Instant::CheckHit(FHitResult& Hit)
 	
 }
 
+/* 이 함수도 사용하지 않는다. Old Bullet Out에서 사용.*/
 void AWeapon_Instant::CalcRecoilNApply(FVector *PreSpread, FVector *NexSpread)
 {
 	if (FireCount < 1)// || PreviousSpread != FVector::ZeroVector)
@@ -267,11 +266,19 @@ void AWeapon_Instant::CalcRecoilNApply(FVector *PreSpread, FVector *NexSpread)
 }
 
 
+/* Recoil_X와 Recoil_Y는 Curve float 에디터에 생성해놓음.
+ *
+ */
 void AWeapon_Instant::ApplyRecoil()
 {
 	if (WeaponStat.Recoil_X && WeaponStat.Recoil_Y)
 	{
-		float LastRecoilTime = RecoilTime - WeaponStat.SecondPerBullet;
+		/* Recoil Time은 AWeapon::EndFiring에서 0으로 초기화 된다.
+		 *
+		 * Recoil Time을 기준으로 Curve Float값을 가져와 지난번과, 다음에 쏠 값을 가져와
+		 * 상승값을 구해 적용한다.
+		 */
+		float LastRecoilTime = RecoilTime - WeaponStat.SecondPerBullet;		
 		float LastRecoilValue_X = WeaponStat.Recoil_X->GetFloatValue(LastRecoilTime);
 		float NextRecoilValue_X = WeaponStat.Recoil_X->GetFloatValue(RecoilTime);
 
@@ -281,31 +288,42 @@ void AWeapon_Instant::ApplyRecoil()
 		PitchValue = (NextRecoilValue_X - LastRecoilValue_X);
 		YawValue = (NextRecoilValue_Y - LastRecoilValue_Y);
 
+		/* 조준 유무에 따라 반동을 준다. */
 		if (bIsAiming)
 		{
-			PitchValue *= BulletStat.AimBulletSpread;
-			YawValue *= BulletStat.AimBulletSpread;
+			PitchValue *= WeaponStat.AimBulletSpread;
+			YawValue *= WeaponStat.AimBulletSpread;
 		}
 		else
 		{
-			PitchValue *= BulletStat.HipBulletSpread;
-			YawValue *= BulletStat.HipBulletSpread;
+			PitchValue *= WeaponStat.HipBulletSpread;
+			YawValue *= WeaponStat.HipBulletSpread;
 		}
+
+		//Spray는 Full Auto를 기준으로 만들었기 때문에
+		//Semiauto, Burst모드에서는 반동이 너무 심하거나, 너무 약함
+		if (WeaponFiringMode == EWeaponFiringMode::EWFM_Burst)
+		{
+			PitchValue *= 1.5;
+		}
+
+		//UE_LOG(LogTemp, Warning, TEXT("Pitch : %f, Yaw : %f"), PitchValue, YawValue);
 
 		WorldTime = 0.f;
 		RecoilAlphaTime = 0.f;
 
 		GetWorldTimerManager().SetTimer(RecoilHandle, [=] {
 			WorldTime += GetWorld()->GetDeltaSeconds();
-			RecoilAlphaTime = WorldTime / (WeaponStat.SecondPerBullet * 0.5);
+			RecoilAlphaTime = WorldTime / (WeaponStat.SecondPerBullet *1.5);
+
 			
-			
-			UE_LOG(LogTemp, Warning, TEXT("alpha time : %f"), RecoilAlphaTime);
+			//UE_LOG(LogTemp, Warning, TEXT("alpha time : %f"), RecoilAlphaTime);
+
+
 			float LerpRecoilX = UKismetMathLibrary::Lerp(0, PitchValue, RecoilAlphaTime);
 			float LerpRecoilY = UKismetMathLibrary::Lerp(0, YawValue, RecoilAlphaTime);
-			
-			/*float LerpRecoilX = FMath::Lerp(0, PitchValue, AlphaTime);
-			float LerpRecoilY = FMath::Lerp(0, YawValue, AlphaTime);*/
+
+			//UE_LOG(LogTemp, Warning, TEXT("Lerp X : %f, Lerp Y: %f"), LerpRecoilX, LerpRecoilY);
 			GetInstigator()->AddControllerPitchInput(LerpRecoilX);
 			GetInstigator()->AddControllerYawInput(LerpRecoilY);
 
@@ -317,17 +335,12 @@ void AWeapon_Instant::ApplyRecoil()
 
 		//리코일 타임은 1발을 쏠때의 타임만큼씩 증가해야한다.
 		RecoilTime = RecoilTime + WeaponStat.SecondPerBullet;
-		if (WeaponFiringMode == EWeaponFiringMode::EWFM_SemiAuto)
-		{
-			RecoilTime *= 2;
-		}
-		
 
-		UE_LOG(LogTemp, Warning, TEXT("RecoilTime : %f"), RecoilTime);
+		//UE_LOG(LogTemp, Warning, TEXT("RecoilTime : %f"), RecoilTime);
 		if (RecoilTime > WeaponStat.SecondPerBullet * 30) //30을 나중에 탄창 최대개수로 바꾸면됨.
 		{
-			UE_LOG(LogTemp, Warning, TEXT("RecoilTime max, set 0.5"));
-			RecoilTime = 1.f;
+			//UE_LOG(LogTemp, Warning, TEXT("RecoilTime max, set 0.5"));
+			RecoilTime = 0.3f;
 		}
 
 	}

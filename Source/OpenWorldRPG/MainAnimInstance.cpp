@@ -3,8 +3,11 @@
 
 #include "MainAnimInstance.h"
 #include "MainCharacter.h"
+#include "Animation/AnimNode_SequencePlayer.h"
 #include "Item/Weapon.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "BoneControllers/AnimNode_ModifyBone.h"
+#include "Engine/SkeletalMeshSocket.h"
 
 void UMainAnimInstance::NativeInitializeAnimation()
 {
@@ -28,7 +31,7 @@ void UMainAnimInstance::UpdateAnimationProperties()
 			Player = Cast<AMainCharacter>(Pawn);
 		}
 	}
-
+	
 	if (Player)
 	{
 		bIsinAir = Player->GetCharacterMovement()->IsFalling();
@@ -54,6 +57,19 @@ void UMainAnimInstance::UpdateAnimationProperties()
 		
 		Yaw = NewRotate.Yaw;//NewRotYaw.ClampAxis(90.f); //각각 회전의 제한을 걸어준다.
 		Pitch = NewRotate.Pitch;//NewRotPitch.ClampAxis(90.f);
+
+		if (Player->EquippedWeapon)
+		{
+			if (bBeginHighReady)
+			{
+				BeginHighReady();
+			}
+
+			if (bEndHighReady)
+			{
+				EndHighReady();
+			}
+		}
 	}
 }
 
@@ -61,4 +77,58 @@ void UMainAnimInstance::UpdateAnimationProperties()
 void UMainAnimInstance::AnimNotify_StepSound()
 {
 	StepSound.Broadcast();
+	/*FAnimNode_ModifyBone ModBone;
+	FBoneReference Bone("")
+	ModBone.BoneToModify = Bone.BoneName*/
+}
+
+
+void UMainAnimInstance::BeginHighReady()
+{	
+	if(Player)
+	{
+		TP_NewALRot = FRotator(0.f, 0.f, -90.f);
+		TP_NewARRot = FRotator(0.f, 0.f, -90.f);
+
+		/* TPMesh의 Rotation값*/
+		TP_HighReadyRotator_Left = FMath::RInterpTo(TP_HighReadyRotator_Left, TP_NewALRot, GetWorld()->GetDeltaSeconds(), 1.0f);
+		TP_HighReadyRotator_Right = FMath::RInterpTo(TP_HighReadyRotator_Right, TP_NewARRot, GetWorld()->GetDeltaSeconds(), 5.0f);
+
+
+		/* FPMesh의 Rotation 값 */
+		FP_NewRot = FRotator(90.f, 0.f, 0.f);
+		FP_HighReadyRotator = FMath::RInterpTo(FP_HighReadyRotator, FP_NewRot, GetWorld()->GetDeltaSeconds(), 5.0f);
+		
+
+		//UE_LOG(LogTemp, Warning, TEXT("FP_HighReadyRotator : %s"), *FP_HighReadyRotator.ToString());
+	}
+	
+
+
+	
+}
+void UMainAnimInstance::EndHighReady()
+{
+
+	/* TP bone Trans */
+	TP_NewALRot = FRotator(0.f, 0.f, 0.f);
+	TP_NewARRot = FRotator(0.f, 0.f, 0.f);
+
+	TP_HighReadyRotator_Left = FMath::RInterpTo(TP_HighReadyRotator_Left, FRotator(0.f), GetWorld()->GetDeltaSeconds(), 1.0f);
+	TP_HighReadyRotator_Right = FMath::RInterpTo(TP_HighReadyRotator_Right, FRotator(0.f), GetWorld()->GetDeltaSeconds(), 1.5f);
+
+
+	/* FP Mesh Trans */
+	const FRotator FP_CurrentRot = Player->FPMesh->GetRelativeRotation();
+	FP_HighReadyRotator = FMath::RInterpTo(FP_HighReadyRotator, FRotator(0.f), GetWorld()->GetDeltaSeconds(), 1.5f);
+
+
+
+	/* 0에 가까워지면 bEndHighReady를 false로 바꿔줘 재 실행을 방지한다. */
+	if(TP_HighReadyRotator_Right.IsNearlyZero(0.01) || FP_HighReadyRotator.IsNearlyZero(0.01))
+	{
+		bEndHighReady = false;
+	}
+
+	//UE_LOG(LogTemp, Warning, TEXT("AnimInst : End High Ready : %s"), *FP_HighReadyRotator.ToString());
 }

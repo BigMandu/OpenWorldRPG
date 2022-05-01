@@ -19,6 +19,7 @@ AItem::AItem()
 
 	Mesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
 	Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+	Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel2, ECollisionResponse::ECR_Overlap);
 	
 	ItemSize = FIntPoint(1, 1);
 	bCanRotate = true;

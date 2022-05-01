@@ -14,19 +14,14 @@ struct FBulletData
 {
 	GENERATED_BODY()
 	
-	UPROPERTY(EditDefaultsOnly, Category = "WeaponStat")
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
 	int32 Damage;
-	UPROPERTY(EditDefaultsOnly, Category = "WeaponStat")
-	float HipBulletSpread;
-	UPROPERTY(EditDefaultsOnly, Category = "WeaponStat")
-	float AimBulletSpread;
+
 
 	/* FBulletData Defaults */
 	FBulletData()
 	{
 		Damage = 10;
-		HipBulletSpread = 2.f;
-		AimBulletSpread = 1.f;
 	}
 };
 
@@ -63,7 +58,7 @@ protected:
 	
 public:
 
-	virtual void BulletOut() override;
+	virtual void Old_BulletOut() override;
 	virtual void New_BulletOut() override;
 	FVector BulletSpread(FVector Vec);
 

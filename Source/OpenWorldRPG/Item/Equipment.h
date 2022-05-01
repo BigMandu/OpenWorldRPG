@@ -43,11 +43,11 @@ public:
 
 	virtual UNewItemObject* GetDefaultItemObj() override;
 
-	//AMainController* MainCon;
+	AMainController* MainCon;
 	UEquipmentComponent* OwningEquipment;
 	AActor* OwningPlayer;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Equipment")
 	USkeletalMeshComponent* SKMesh;
 
 	/*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")
@@ -83,6 +83,8 @@ public:
 	void SetOwningPlayer(AActor* Actor);
 
 	void SendToInventory(AActor* Actor);
+
+	void SettingStorage();
 
 	void StepEquip(AActor* Actor);
 	virtual void Equip(AActor* Actor);

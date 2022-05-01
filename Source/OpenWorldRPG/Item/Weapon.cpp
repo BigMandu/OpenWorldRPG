@@ -16,6 +16,7 @@
 #include "DrawDebugHelpers.h" //디버깅용
 //#include "Components/SphereComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "OpenWorldRPG/MainAnimInstance.h"
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
 
 
@@ -25,18 +26,12 @@ AWeapon::AWeapon() : Super()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	//SKMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMesh"));
-
-	//RootComponent = SKMesh;
-	//Mesh->SetupAttachment(GetRootComponent());
-	//SKMesh->SetHiddenInGame(true);
-
 	CapsuleComp = CreateDefaultSubobject<UCapsuleComponent>(TEXT("CapsuleComponent"));
-	CapsuleComp->SetupAttachment(RootComponent);
+	CapsuleComp->SetupAttachment(RootComponent);	
 
-	/*CapsuleComp->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnBeginHighReady);
-	CapsuleComp->OnComponentEndOverlap.AddDynamic(this, &AWeapon::OnEndHighReady);*/
-	
+	WeaponFiringMode = EWeaponFiringMode::EWFM_SemiAuto;
+	CurrentWeaponState = EWeaponState::EWS_Idle;
+	RifleAssign = ERifleAssign::ERA_MAX;
 
 	bIsFiring = false;
 	bLMBDown = false;
@@ -45,11 +40,6 @@ AWeapon::AWeapon() : Super()
 	//MuzzleEffectComp = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("MuzzleEffectComp"));
 	//MuzzleEffectComp->SetupAttachment(GetRootComponent());
 	MuzzleFlashSocketName = FName("muzzleflash");
-
-	WeaponFiringMode = EWeaponFiringMode::EWFM_SemiAuto;
-	CurrentWeaponState = EWeaponState::EWS_Idle;
-
-	RifleAssign = ERifleAssign::ERA_MAX;
 }
 
 void AWeapon::Tick(float DeltaTime)
@@ -57,28 +47,10 @@ void AWeapon::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	
 	/* New Aim System, */
-	if (OwningPlayer != nullptr)
+	if (MainCon != nullptr) //if (OwningPlayer != nullptr)
 	{
-		/*FVector ViewRot = GetAimRotation();
-		FVector ViewLoc = GetAimLocation_TEST();*/
-
-		FTransform AimPos = GetAimPosition();
-
-		FVector EndVec = AimPos.GetLocation() + AimPos.GetRotation().Vector() * 3000.f;
-		FHitResult Hit = BulletTrace(AimPos.GetLocation(), EndVec);
-
-		//DrawDebugPoint(GetWorld(), Hit.Location, 20.f, FColor::Green, false, 0.1f);
+		UpdateAim();
 		
-		
-		if(Hit.bBlockingHit)
-		{
-			WorldAimPosition = Hit.Location;
-		}
-		else
-		{
-			WorldAimPosition = EndVec;
-		}
-		//UE_LOG(LogTemp, Warning, TEXT("Aim pos = %s"), *WorldAimPosition.ToString());
 	}
 }
 
@@ -88,15 +60,17 @@ void AWeapon::PostInitializeComponents()
 
 	CapsuleComp->SetHiddenInGame(false);//for debug
 
-	CapsuleComp->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnBeginHighReady);
-	CapsuleComp->OnComponentEndOverlap.AddDynamic(this, &AWeapon::OnEndHighReady);
+	CapsuleComp->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnCollisionBegin);
+	CapsuleComp->OnComponentEndOverlap.AddDynamic(this, &AWeapon::OnCollisionEnd);
 
-	CapsuleComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	//CapsuleComp->setcollision
-	//CapsuleComp->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
-
+	CapsuleComp->SetCollisionObjectType(ECollisionChannel::ECC_GameTraceChannel3); //Weapon콜리전 Object로 지정.
 	CapsuleComp->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
-	//CapsuleComp->SetCollisionResponseToChannel(ECollisionChannel::ecc)
+	//MainChar (GTC2 : GameTraceChannel2), WorldDynamic은 무시
+	CapsuleComp->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel2, ECollisionResponse::ECR_Ignore);
+	CapsuleComp->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic, ECollisionResponse::ECR_Ignore);
+
+
+	
 }
 
 void AWeapon::Equip(AActor* Char)
@@ -211,7 +185,8 @@ void AWeapon::GunAttachToMesh(AActor* Actor)
 
 			//SKMesh->SetVisibility(true);
 			SKMesh->SetHiddenInGame(false);
-			Main->EquippedWeapon = this;
+			Main->SetEquippedWeapon(this);
+			//Main->EquippedWeapon = this;
 		}		
 
 	}
@@ -307,7 +282,7 @@ void AWeapon::SetWeaponState(EWeaponState NewState)
 	//기존에 발사중이었고, 더이상 LMB를 누르지 않는다면
 	if (CurrentWeaponState == EWeaponState::EWS_Firing && NewState != EWeaponState::EWS_Firing)
 	{
-		/* 점사면 끝내도 지정된 몇발 이상 안쐈으면 사격되도록 함. */
+		// 점사면 끝내도 지정된 몇발 이상 안쐈으면 사격되도록 함.
 		bool bCanEndFire = true;
 		if (WeaponFiringMode == EWeaponFiringMode::EWFM_Burst)
 		{
@@ -319,8 +294,8 @@ void AWeapon::SetWeaponState(EWeaponState NewState)
 		}
 
 
-		/* 사격이 중단되어야 할때 EndFiring호출 
-		 점사일때는 냅둔다, Check Firing함수에서 Firing을 호출하도록 함.*/
+		//사격이 중단되어야 할때 EndFiring호출 
+		 //점사일때는 냅둔다-> Check Firing함수에서 Firing을 호출하도록 함.
 		if (bCanEndFire)
 		{
 #if DEBUG
@@ -345,19 +320,21 @@ void AWeapon::SetWeaponState(EWeaponState NewState)
 	}
 }
 
+
+	/*
+	* 쏠 수 있는 조건
+	* 1. 조정간 안전이 아니어야한다.
+	* 2. 장전중, 사격중이 아니어야 한다.
+	* 3. 탄약이 한발이상 있어야 한다.
+	*
+	* 4. 장착중이 아니어야 한다. //미구현.
+	* 5. 스프린트 중이 아니어야 한다. //미구현
+	*/
 bool AWeapon::CanFire()
 {
 	bool bCanFire = false;
 	
-	/*
-	* 쏠 수 있는 조건
-	* 조정간 안전이 아니어야한다.
-	* 장전중, 사격중이 아니어야 한다. 
-	* 탄약이 한발이상 있어야 한다.
-	* 
-	* 장착중이 아니어야 한다. //미구현.
-	* 스프린트 중이 아니어야 한다. //미구현
-	*/
+	
 	if (ItemObj->bIsDestoryed == false)
 	{
 		if (WeaponFiringMode != EWeaponFiringMode::EWFM_Safe && CurrentWeaponState != EWeaponState::EWS_Reloading)
@@ -376,15 +353,17 @@ bool AWeapon::CanEndFire()
 	return false;
 }
 
-void AWeapon::StartFire()
-{
-	/* 여기서 FiringMode에 따라 Delay를 줘야함.
-	*	semiauto인 경우 toggle방식으로.
-	*	burst인 경우 3발 사격
-	*  Fullauto인 경우 연속사격
-	* 
+
+   /* FiringMode에 따라 Delay를 줘야함.
+	* semiauto인 경우 toggle방식으로.
+	* burst인 경우 3발 사격
+	* Fullauto인 경우 연속사격
+	*
 	* 여기서 timer체크를 한번 해주고 이후에 호출되는 함수를 또 두개로 나눠서 함.
 	*/
+void AWeapon::StartFire()
+{
+	
 	if (!bLMBDown)
 	{
 		bLMBDown = true;
@@ -435,14 +414,18 @@ void AWeapon::ControlFiring()
 	
 	float WorldTime = GetWorld()->GetTimeSeconds();
 	
-	/* 점사 모드일때는 강제로 시간을 더 추가한다. */
+	// 점사 모드일때는 강제로 시간을 더 추가한다. 
+	// Enum을 써도 되지만 if문이 너무 길어져서 boolean변수를 하나 추가한거다.
 	bool bIsBurstmode = false;
 	if (WeaponFiringMode == EWeaponFiringMode::EWFM_Burst)
 	{
 		bIsBurstmode = true;
 	}
 
-	//점사모드면 재발사 가능 시간을 늦춰준다.
+	//마지막 발사시간과 총의 SPB (발사당 필요한 초)를 더한 값이 worldTime보다 크다면
+	// 아직 발사 할 수 없으므로 발사가능 시간을 구한다.
+
+	//점사모드면 발사 가능 시간을 늦춘 조건으로 검사한다.
 	if((bIsBurstmode && LastFireTime > 0 && LastFireTime + WeaponStat.SecondPerBullet *4 >WorldTime) ||
 		(LastFireTime > 0 && LastFireTime + WeaponStat.SecondPerBullet > WorldTime))
 	{
@@ -459,7 +442,7 @@ void AWeapon::ControlFiring()
 	}
 	else
 	{
-		//UE_LOG(LogTemp, Warning, TEXT("No time, Call firing directly"));
+		//발사가 가능하다면 바로 호출한다.
 		Firing();
 	}
 	
@@ -495,7 +478,7 @@ void AWeapon::Firing()
 	{
 		StartFiringRotation = GetInstigatorController()->GetControlRotation();
 		//UE_LOG(LogTemp, Warning, TEXT("Save Start Firing Rotation"));
-		UE_LOG(LogTemp, Warning, TEXT("Start Rotating val : %s"), *StartFiringRotation.ToString());
+		//UE_LOG(LogTemp, Warning, TEXT("Start Rotating val : %s"), *StartFiringRotation.ToString());
 	}
 
 	WeaponFX();
@@ -509,46 +492,12 @@ void AWeapon::Firing()
 	
 	GetWorldTimerManager().SetTimer(FiringTimer, this, &AWeapon::ReFiring, WeaponStat.SecondPerBullet, false);
 	LastFireTime = GetWorld()->GetTimeSeconds();
-
-	/*
-	bool bCanReFire = CheckRefire();
-	if (bCanReFire)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Firing:: Can Refire. Set Timer"));
-		//GetWorldTimerManager().SetTimer(FiringTimer,this, &AWeapon::Firing, WeaponStat.SecondPerBullet, false);
-		GetWorldTimerManager().SetTimer(FiringTimer, this, &AWeapon::ReFiring, WeaponStat.SecondPerBullet, false);
-	}
-	else
-	{
-		//Out of Ammo
-		// Check Ammo를 따로 한번 더 한다. 
-		// Burst mode일때는 탄이 충분해도, 격발 횟수에 따라 재사격을 못할때도 생기니, 
-		// Out of Ammo함수를 무조건 호출하는건 옳치 않음.
-		// 
-		// Burst mode일때는 탄약 체크를 한번 더 해야함.
-		//
-		//AimInitialize();
-		if (WeaponFiringMode == EWeaponFiringMode::EWFM_Burst)//EWeaponFiringMode::EWFM_Burst)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Firing:: Burst mode, Can NOT Refire, Call EndFiring"));
-			EndFiring();
-			//TempNewWeaponState(); //EndFiring을 호출하지 않고 이렇게 해봄
-			//CurrentWeaponState = EWeaponState::EWS_Idle;
-		}
-		else if (WeaponFiringMode == EWeaponFiringMode::EWFM_SemiAuto)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Firing:: Semi auto, Can NOT Refire, Call EndFiring"));
-			TempNewWeaponState();
-		}
-		
-	}	
-	*/	
-
 }
 
+//ReFiring을 할 수 있는지 확인하는 함수다.
 void AWeapon::ReFiring()
 {
-	//여기서는 격발 횟수 (FireCount)에 따라 Firing호출할지 말지 결정하자.
+	//실제로 체크하는 함수를 호출한다.
 	bool bCanReFire = CheckRefire();
 	if (bCanReFire)
 	{
@@ -562,49 +511,42 @@ void AWeapon::ReFiring()
 	
 }
 
+// Firing이 끝나면 각종 변수들을 초기화 시켜준다.
 void AWeapon::EndFiring()
 {
-	/* Firing이 끝나면 각종 변수들을 초기화 시켜준다. */
-	UE_LOG(LogTemp, Warning, TEXT("AWeapon::EndFiring"));
+	//UE_LOG(LogTemp, Warning, TEXT("AWeapon::EndFiring"));
 	bIsFiring = false;
 	GetWorldTimerManager().ClearTimer(FiringTimer);
-	//GetWorldTimerManager().ClearTimer(RecoilHandle);
+	
 	FireCount = 0;
 	CurrentWeaponState = EWeaponState::EWS_Idle; //Burst mode를 위함
 	PreviousSpread = FVector::ZeroVector;
 
 	RecoilTime = 0.f;
-	/* 사격을 끝냈을때 첫 사격 에임으로 되돌아 오는 기능*/
-	AimInitialize();
+
+	// 사격을 끝냈을때 첫 사격 에임으로 되돌아 오는 기능 ,,, test를 위해 잠시 기능을 off.
+	//AimInitialize();
 }
 
+//Refire가 가능한지 체크한다.
 bool AWeapon::CheckRefire()
 {
-	//UE_LOG(LogTemp, Warning, TEXT("AWeapon::CheckRefire"));
 	bool bFlag = false;
+	//격발이 가능한지 우선 체크하고
 	if (CanFire())
 	{
 		if (CurrentWeaponState == EWeaponState::EWS_Firing)
 		{
+			//Burst모드일때는 BurstRound이하로 쐈을때 refire가 가능하다.
 			switch (WeaponFiringMode)
 			{
-			case EWeaponFiringMode::EWFM_Safe:
-			case EWeaponFiringMode::EWFM_SemiAuto:
-				//UE_LOG(LogTemp, Warning, TEXT("CheckRefire:: Can't Refire"));
-				break;
 			case EWeaponFiringMode::EWFM_Burst:
 				if (FireCount > 0 && FireCount < WeaponStat.BurstRound)
 				{
-					//UE_LOG(LogTemp, Warning, TEXT("CheckRefire:: Can Refire"));
 					bFlag = true;
-				}
-				else
-				{
-					//UE_LOG(LogTemp, Warning, TEXT("CheckRefire:: Can't Refire"));
 				}
 				break;
 			case EWeaponFiringMode::EWFM_FullAuto:
-				//UE_LOG(LogTemp, Warning, TEXT("CheckRefire:: Can Refire"));
 				bFlag = true;
 				break;
 			}
@@ -613,16 +555,54 @@ bool AWeapon::CheckRefire()
 	return bFlag;
 }
 
+void AWeapon::UpdateAim()
+{
+	FTransform AimPos = GetAimPosition();
+	FVector EndVec = AimPos.GetLocation() + AimPos.GetRotation().Vector() * 3000.f;
+	FHitResult Hit = BulletTrace(AimPos.GetLocation(), EndVec);
+
+	/*if (bIsHighReady)
+	{
+		WeaponMuzzleLocation = SKMesh->GetSocketLocation(MuzzleFlashSocketName);
+		WorldAimPosition = WeaponMuzzleLocation + AimPos.GetRotation().GetForwardVector() * WeaponStat.WeaponRange;
+	}*/
+	//else
+	{
+		if (Hit.bBlockingHit)
+		{
+			//WeaponMuzzleLocation = SKMesh->GetSocketLocation(MuzzleFlashSocketName);
+			WorldAimPosition = Hit.Location;
 
 
+			FHitResult WeaponHit = BulletTrace(MainCon->Main->CameraFPS->GetComponentLocation(), Hit.Location);
 
+			//FHitResult WeaponHit = BulletTrace(WeaponMuzzleLocation, Hit.Location);
+			if (WeaponHit.bBlockingHit)
+			{
+				WorldAimPosition = WeaponHit.Location;
+			}
+		}
+		else
+		{
+			//DrawDebugPoint(GetWorld(), WorldAimPosition, 20.f, FColor::Blue, false, 0.1f);
+			WorldAimPosition = EndVec;
+		}
+	}
+
+	//DrawDebugPoint(GetWorld(), WorldAimPosition, 10.f, FColor::Green, false, -1.f);
+
+}
+
+/*
 FVector AWeapon::GetAimLocation_TEST()
 {
 	check(OwningPlayer)
-	AMainCharacter* MainChar = Cast<AMainCharacter>(OwningPlayer);
 
-	AMainController* MainCon = MainChar ? Cast<AMainController>(MainChar->MainController) : nullptr;
-
+	if (MainCon == nullptr)
+	{
+		AMainCharacter* MainChar = Cast<AMainCharacter>(OwningPlayer);
+		MainCon = MainChar ? Cast<AMainController>(MainChar->MainController) : nullptr;
+	}
 	//FVector ReturnAim = FTransform(FRotator::ZeroRotator, FVector::ZeroVector);
 	FVector ReturnAim = FVector::ZeroVector;
 
@@ -637,13 +617,12 @@ FVector AWeapon::GetAimLocation_TEST()
 	}
 	return ReturnAim;
 }
+*/
 
-/* 플레이어의 시점각도 (뷰포트가 바라보고 있는 회전각)를 Vector값으로 구한다.*/
+// 플레이어의 시점각도 (뷰포트가 바라보고 있는 회전각)를 Vector값으로 구한다.
 FTransform AWeapon::GetAimPosition()
 {
 	check(OwningPlayer)
-	AMainCharacter* MainChar = Cast<AMainCharacter>(OwningPlayer);
-	AMainController* MainCon = MainChar ? Cast<AMainController>(MainChar->MainController) : nullptr;
 
 	FTransform ReturnAim = FTransform(FRotator::ZeroRotator, FVector::ZeroVector);
 	//FVector ReturnAim = FVector::ZeroVector;
@@ -665,57 +644,19 @@ FTransform AWeapon::GetAimPosition()
 FVector AWeapon::GetTraceStartLocation(FVector Dir)
 {
 	check(OwningPlayer)
-	/*AMainCharacter* MainChar = Cast<AMainCharacter>(OwningPlayer);
-	
-	AMainController* MainCon = MainChar ? Cast<AMainController>(MainChar->MainController) : nullptr;*/
-	FVector ReturnLocation = FVector::ZeroVector;
+	check(MainCon)
 
+	FVector ReturnLocation;
+	FRotator Rot;
+	MainCon->GetPlayerViewPoint(ReturnLocation, Rot);
+	ReturnLocation = ReturnLocation + Dir * (OwningPlayer->GetActorLocation() - ReturnLocation | Dir);
+	//ReturnLocation = ReturnLocation + Rot.Vector() * (OwningPlayer->GetActorLocation() - ReturnLocation | Rot.Vector());
 
-	FVector WeaponMuzzleLocation = SKMesh->GetSocketLocation(MuzzleFlashSocketName);
-	ReturnLocation = WeaponMuzzleLocation;
+	//Weapon의 MuzzleLocation에서 다시 위 코드로 복구.
+	//WeaponMuzzleLocation = SKMesh->GetSocketLocation(MuzzleFlashSocketName);
+	//ReturnLocation = WeaponMuzzleLocation;
 
-	
-	//if (MainCon)
-	//{
-		//FRotator Rot;
-		//MainCon->GetPlayerViewPoint(ReturnLocation, Rot);
-		//ReturnLocation = ReturnLocation + Dir * (OwningPlayer->GetActorLocation() - ReturnLocation | Dir);
-
-		//ReturnLocation = WeaponMuzzleLocation;// +Dir;// *(OwningPlayer->GetActorLocation() - ReturnLocation | Dir);
-		//DrawDebugSphere(GetWorld(), ReturnLocation, 12.f, 6, FColor::Green, false, 2.f, (uint8)nullptr, 2.f);
-		
-		/*
-		* FVector CalcDistance = OwningPlayer->GetActorLocation() - ReturnLocation;
-		float DotP = FVector::DotProduct(CalcDistance, Dir);
-		UE_LOG(LogTemp, Warning, TEXT("======================================="));
-		UE_LOG(LogTemp, Warning, TEXT("ViewPoint Loc : %s , ViewPoint Rot : %s"), *ReturnLocation.ToString(), *Dir.ToString());
-		UE_LOG(LogTemp, Warning, TEXT("ActorLocation : %s"), *OwningPlayer->GetActorLocation().ToString());
-		UE_LOG(LogTemp, Warning, TEXT("ActorLocation - ViewPoint Loc  = %s"), *CalcDistance.ToString());
-		UE_LOG(LogTemp, Warning, TEXT("size : %f, OR : %f, Dot : %f"), CalcDistance.Size(), (CalcDistance | Dir), DotP);
-		UE_LOG(LogTemp, Warning, TEXT("---------------------------------------"));
-		//UE_LOG(LogTemp, Warning, TEXT("Result not - ViewPoint Loc= %s"), *(ReturnLocation + Dir * OwningPlayer->GetActorLocation()).ToString());
-		UE_LOG(LogTemp, Warning, TEXT(" Red  Result = %s"), *(ReturnLocation + Dir * CalcDistance).ToString());
-		
-		FVector tempLocation = ReturnLocation + Dir * (OwningPlayer->GetActorLocation() - ReturnLocation);
-		FVector NewTempLocation = ReturnLocation + Dir * 700;
-		FVector SizeTempLocation = ReturnLocation + Dir * CalcDistance.Size();
-		
-		FVector dotLocation = ReturnLocation + Dir * DotP;
-		*/
-		
-		
-		/*
-		DrawDebugSphere(GetWorld(), ReturnLocation, 12.f, 6, FColor::Green, true, 2.f, (uint8)nullptr, 2.f);
-		DrawDebugSphere(GetWorld(), tempLocation, 12.f, 6, FColor::Red, true, 2.f, (uint8)nullptr, 2.f);
-		DrawDebugSphere(GetWorld(), SizeTempLocation, 12.f, 6, FColor::Purple, true, 2.f, (uint8)nullptr, 2.f);
-		//DrawDebugSphere(GetWorld(), dotLocation, 12.f, 6, FColor::Blue, true, 2.f, (uint8)nullptr, 2.f);
-
-		UE_LOG(LogTemp, Warning, TEXT("Purple Result= %s"), *SizeTempLocation.ToString());
-		//UE_LOG(LogTemp, Warning, TEXT("Blue Result= %s"), *dotLocation.ToString());
-		UE_LOG(LogTemp, Warning, TEXT("Green Result = %s"), *ReturnLocation.ToString());
-		*/
-	//}
-	
+	//DrawDebugSphere(GetWorld(), ReturnLocation, 12.f, 6, FColor::Green, false, 2.f, (uint8)nullptr, 2.f);
 	return ReturnLocation;
 }
 
@@ -727,18 +668,9 @@ FHitResult AWeapon::BulletTrace(FVector StartTrace, FVector EndTrace)
 
 	FCollisionQueryParams params(NAME_None, true, GetInstigator()); //Instigator를 IgnoreActor로 하면된다.
 
-	
 	GetWorld()->LineTraceSingleByChannel(Hit, StartTrace, EndTrace, COLLISION_WEAPON_INST, params);
 
-
-	/* debug */
-	/*if (GetInstigator())
-	{
-		FString str = GetInstigator()->GetFName().ToString();
-		UE_LOG(LogTemp, Warning, TEXT("Isnt : GetInstigator: %s"), *str);
-	}
 	//DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor::Green,false,2.f,(uint8)nullptr,2.f);
-	*/	
 
 	return Hit;
 }
@@ -760,10 +692,9 @@ void AWeapon::WeaponFX()
 	if (FireMuzzleEffect)
 	{
 		const USkeletalMeshSocket* MuzzleSocket = SKMesh->GetSocketByName(MuzzleFlashSocketName);
-
+		
 		if (MuzzleSocket)
 		{
-			
 			FVector MuzzleLocation = SKMesh->GetSocketLocation(MuzzleFlashSocketName);
 			FRotator MuzzleRotation = SKMesh->GetSocketRotation(MuzzleFlashSocketName);
 
@@ -801,26 +732,27 @@ void AWeapon::AimInitialize()
 	UE_LOG(LogTemp, Warning, TEXT("AWeapon::AimInitialize"));
 	//UE_LOG(LogTemp, Warning, TEXT("Save End Firing Location And Init"));
 	EndFiringRotation = GetInstigatorController()->GetControlRotation();
+
+	//fire중 마우스 입력이 감지되면 AimInit을 단순히 아래로 내리게 한다.
 	if (bDetectLookInput)
 	{
 		bDetectLookInput = false;
-		FRotator NewStartRot = FRotator(EndFiringRotation.Pitch - 5.f, EndFiringRotation.Yaw, EndFiringRotation.Roll);
+		FRotator NewStartRot = FRotator(EndFiringRotation.Pitch - 3.f, EndFiringRotation.Yaw, EndFiringRotation.Roll);
 		StartFiringRotation = NewStartRot;
 	}
-	UE_LOG(LogTemp, Warning, TEXT("End Rotating val : %s"), *EndFiringRotation.ToString());
+	//UE_LOG(LogTemp, Warning, TEXT("End Rotating val : %s"), *EndFiringRotation.ToString());
 	Time = 0.f;
 	AlphaTime = 0.f;
 	GetWorldTimerManager().SetTimer(AimInitHandle, [=] {
-		//UE_LOG(LogTemp, Warning, TEXT("AimInit AlphaTime : %f"), AlphaTime);
+		
 		Time += GetWorld()->GetDeltaSeconds();
-		AlphaTime = Time / 0.6f; // Time/되돌아오는 시간 (스텟)
+		AlphaTime = Time / 0.8f; // : Time/되돌아오는 시간  (스텟)
+
+		//FRotator LerpAimRotation = FMath::RInterpTo(EndFiringRotation, StartFiringRotation, GetWorld()->GetDeltaSeconds(), 20.f);
 		FRotator LerpAimRotation = FMath::Lerp(EndFiringRotation, StartFiringRotation, AlphaTime);
 		GetInstigatorController()->SetControlRotation(LerpAimRotation);
-		/*UE_LOG(LogTemp, Warning, TEXT("Time : %f"), Time);
-		UE_LOG(LogTemp, Warning, TEXT("AlphaTime : %f"), AlphaTime);
-		UE_LOG(LogTemp, Warning, TEXT("StartFiringRotation : %s"), *StartFiringRotation.ToString());
-		UE_LOG(LogTemp, Warning, TEXT("EndFiringRotation : %s"), *EndFiringRotation.ToString());
-		UE_LOG(LogTemp, Warning, TEXT("LerpRotation : %s"), *LerpAimRotation.ToString());*/
+
+		//UE_LOG(LogTemp, Warning, TEXT("LerpRotation : %s"), *LerpAimRotation.ToString());
 		},GetWorld()->GetDeltaSeconds(),true);
 }
 
@@ -837,6 +769,7 @@ void AWeapon::Remove()
 			{
 				Main->ChangeWeapon(0);
 				Main->EquippedWeapon = nullptr;
+				//Main->SetEquippedWeapon(nullptr);
 				RifleAssign = ERifleAssign::ERA_MAX;
 			}
 
@@ -857,12 +790,41 @@ void AWeapon::Remove()
 }
 
 
-void AWeapon::OnBeginHighReady(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void AWeapon::OnCollisionBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	UE_LOG(LogTemp, Warning, TEXT(" Weapon Overlap begin"));
+	//UE_LOG(LogTemp, Warning, TEXT(" Weapon Overlap begin"));
+
+	if(OwningPlayer)
+	{
+		AMainCharacter* Main = Cast<AMainCharacter>(OwningPlayer);
+
+		if(Main->TPAnimInstance->bBeginHighReady == false)
+		{
+			//Weaponclass에 있는 bIsHighReady는 AnimInstance에서 완전히 내려왔을때 false를 시켜주도록 하자.
+			bIsHighReady = true;
+			Main->TPAnimInstance->bBeginHighReady = true;
+			Main->FPAnimInstance->bBeginHighReady = true;
+		}
+		
+		Main->TPAnimInstance->bEndHighReady = false;
+		Main->FPAnimInstance->bEndHighReady = false;
+
+	}
+
 }
 
-void AWeapon::OnEndHighReady(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+void AWeapon::OnCollisionEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	UE_LOG(LogTemp, Warning, TEXT(" Weapon Overlap End"));
+	//UE_LOG(LogTemp, Warning, TEXT(" Weapon Overlap End"));
+
+	if(OwningPlayer)
+	{
+		AMainCharacter* Main = Cast<AMainCharacter>(OwningPlayer);
+		bIsHighReady = false;
+		Main->TPAnimInstance->bBeginHighReady = false;
+		Main->FPAnimInstance->bBeginHighReady = false;
+		
+		Main->TPAnimInstance->bEndHighReady = true;
+		Main->FPAnimInstance->bEndHighReady = true;
+	}
 }

@@ -16,7 +16,12 @@ UCLASS()
 class OPENWORLDRPG_API UMainAnimInstance : public UAnimInstance
 {
 	GENERATED_BODY()
+private:
 
+	FRotator TP_NewALRot;
+	FRotator TP_NewARRot;
+	FRotator FP_NewRot;
+	
 public:
 
 	FStepSoundDelegate StepSound;
@@ -44,6 +49,22 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
 	int32 WeaponTypeNumber;
 
+
+	/* fix Clipping wall */
+	bool bBeginHighReady;
+	bool bEndHighReady;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = BoneMove)
+	FRotator TP_HighReadyRotator_Left;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = BoneMove)
+	FRotator TP_HighReadyRotator_Right;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = BoneMove)
+	FRotator FP_HighReadyRotator;
+
+	 
+
 	virtual void NativeInitializeAnimation() override;
 
 	UFUNCTION(BlueprintCallable, Category = AnimProperties)
@@ -51,6 +72,15 @@ public:
 
 	UFUNCTION()
 	void AnimNotify_StepSound();
+
+
+
+	void SetHighReady();
+
+	UFUNCTION()
+	void BeginHighReady();
+	UFUNCTION()
+	void EndHighReady();
 
 	
 };
