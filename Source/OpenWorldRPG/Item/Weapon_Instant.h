@@ -43,30 +43,38 @@ public:
 	UParticleSystem* BulletHitEffect;
 	
 	
-	//1~3발 동안 탄착지점을 올린뒤, 이후 탄착점을 위함.
-	float LastZpos;
-
-
-	/*FVector PreviousSpread;
-	FVector NextSpread;*/
+	
 protected:
 	float PitchValue;
 	float YawValue;
-
 	float WorldTime;
 	
 	
 public:
 
-	virtual void Old_BulletOut() override;
+	
 	virtual void New_BulletOut() override;
-	FVector BulletSpread(FVector Vec);
-
+	void ApplyRecoil();
 	void CheckHit(FHitResult& Hit);
 
-	void CalcRecoilNApply(FVector *PreSpread, FVector *NexSpread);
+
+
+	/********************************************/
+	/************* 아래는 사용하지 않음 ***********/
+	/********************************************/
+
+	//1~3발 동안 탄착지점을 올린뒤, 이후 탄착점을 위함.
+	//float LastZpos;
+
+	/*FVector PreviousSpread;
+	FVector NextSpread;*/
+
+	
+	//virtual void Old_BulletOut() override;
+	//FVector BulletSpread(FVector Vec);
+	//void CalcRecoilNApply(FVector *PreSpread, FVector *NexSpread);
 
 	//float PitchRecoilValue(float Zvalue);
 	//float YawRecoilValue(FVector Vec);
-	void ApplyRecoil();
+	
 };

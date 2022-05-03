@@ -26,61 +26,164 @@ AWeapon_Instant::AWeapon_Instant() : Super()
  */
 void AWeapon_Instant::New_BulletOut()
 {
-	//rpm이 950면, rps는 15.8, 0.06초당 1발
-	/* Curve Float 값 사이를 이동하기 위해서
-	* 마지막값과 현재값을 이용해야한다.
-	* 마지막 float값에서 현재flaot값을 뺀 만큼의 pitch,yaw를 올려줘야한다.
-	*/
 	FTransform AimPos = GetAimPosition();
 	FVector StartTrace = GetTraceStartLocation(AimPos.Rotator().Vector());
 
-	/*FVector Direction = (WorldAimPosition - StartTrace).GetSafeNormal();
-	FVector EndTrace = StartTrace + Direction * WeaponStat.WeaponRange;*/
-	//FHitResult Hit = BulletTrace(StartTrace, EndTrace);
-
-	//그냥 WorldAimPos를 EndPoint로 지정할경우. 가끔 딱 맞아떨어질때, Hit이 안먹힌다.
-	//따라서 거리를 살짝 더 늘려준다.
+	//그냥 WorldAimPos를 EndPoint로 지정할경우.
+	//가끔 딱 맞아떨어질때, Hit이 안먹히는 경우가 생겨 거리를 늘려준다.
 	FHitResult Hit = BulletTrace(StartTrace, WorldAimPosition+AimPos.Rotator().Vector()*30.f);
 
-	//DrawDebugLine(GetWorld(), StartTrace, WorldAimPosition, FColor::Green, false, 5.f);
-	//DrawDebugLine(GetWorld(), StartTrace, WorldAimPosition + AimPos.Rotator().Vector() * 30.f, FColor::Blue, false, 5.f);
-	//DrawDebugPoint(GetWorld(), WorldAimPosition, 10.f, FColor::Green, false, 5.f);
 	DrawDebugPoint(GetWorld(), Hit.Location, 10.f, FColor::Blue, false, 5.f);
-	//UE_LOG(LogTemp, Warning, TEXT("Start: %s, WorldAim : %s"), *StartTrace.ToString(), *WorldAimPosition.ToString());
-	//UE_LOG(LogTemp, Warning, TEXT("HitLocation : %s"), *Hit.Location.ToString());
 	CheckHit(Hit);
 
 	GetWorldTimerManager().ClearTimer(RecoilHandle);
+
+	//여기서, Burst모드일 때 따로 Recoil을 적용하기 위해 다른 함수를 호출하자.
+	//Burst모드는 Random으로 적용하자.
 	ApplyRecoil();
 }
 
+/* Recoil_X와 Recoil_Y는 Curve float 에디터에 생성해놓음.
+ * rpm이 950면, rps는 15.8, 0.06초당 1발
+ */
+void AWeapon_Instant::ApplyRecoil()
+{
+	if (WeaponStat.Recoil_X && WeaponStat.Recoil_Y)
+	{
+		/* Recoil Time은 AWeapon::EndFiring에서 0으로 초기화 된다.
+		 * Recoil Time을 기준으로 Curve Float값을 가져와 지난번과, 다음에 쏠 값을 가져와
+		 * 상승값을 구해 적용한다.
+		 */
+		float LastRecoilTime = RecoilTime - WeaponStat.SecondPerBullet;
+		float LastRecoilValue_X = WeaponStat.Recoil_X->GetFloatValue(LastRecoilTime);
+		float NextRecoilValue_X = WeaponStat.Recoil_X->GetFloatValue(RecoilTime);
+
+		float LastRecoilValue_Y = WeaponStat.Recoil_Y->GetFloatValue(LastRecoilTime);
+		float NextRecoilValue_Y = WeaponStat.Recoil_Y->GetFloatValue(RecoilTime);
+
+		PitchValue = (NextRecoilValue_X - LastRecoilValue_X);
+		YawValue = (NextRecoilValue_Y - LastRecoilValue_Y);
+
+		/* 조준 유무에 따라 반동을 준다. */
+		if (bIsAiming)
+		{
+			PitchValue *= WeaponStat.AimBulletSpread;
+			YawValue *= WeaponStat.AimBulletSpread;
+		}
+		else
+		{
+			PitchValue *= WeaponStat.HipBulletSpread;
+			YawValue *= WeaponStat.HipBulletSpread;
+		}
+
+		//초반 반동을 약하게 줬기때문에 (Semiauto, Fullauto시 한발씩 끊어쏠때 보정을 위함)
+		//Burst모드일때 너무 사기가 되버려 강제로 PitchValue를 더 준다.
+		if (WeaponFiringMode == EWeaponFiringMode::EWFM_Burst)
+		{
+			PitchValue *= 1.2f;
+		}
+
+		//UE_LOG(LogTemp, Warning, TEXT("Pitch : %f, Yaw : %f"), PitchValue, YawValue);
+
+		WorldTime = 0.f;
+		RecoilAlphaTime = 0.f;
+
+		GetWorldTimerManager().SetTimer(RecoilHandle, [=] {
+			WorldTime += GetWorld()->GetDeltaSeconds();
+			RecoilAlphaTime = WorldTime / (WeaponStat.SecondPerBullet * 1.5);
+
+			float LerpRecoilX = UKismetMathLibrary::Lerp(0, PitchValue, RecoilAlphaTime);
+			float LerpRecoilY = UKismetMathLibrary::Lerp(0, YawValue, RecoilAlphaTime);
+
+			//UE_LOG(LogTemp, Warning, TEXT("Lerp X : %f, Lerp Y: %f"), LerpRecoilX, LerpRecoilY);
+			GetInstigator()->AddControllerPitchInput(LerpRecoilX);
+			GetInstigator()->AddControllerYawInput(LerpRecoilY);
+
+			}, GetWorld()->GetDeltaSeconds(), true);
+
+		/*GetInstigator()->AddControllerPitchInput(PitchValue);
+		GetInstigator()->AddControllerYawInput(YawValue);*/
+
+		//리코일 타임은 1발을 쏠때의 타임만큼씩 증가해야한다.
+		RecoilTime = RecoilTime + WeaponStat.SecondPerBullet;
+		
+
+
+		//UE_LOG(LogTemp, Warning, TEXT("RecoilTime : %f"), RecoilTime);
+		if (RecoilTime > WeaponStat.SecondPerBullet * 30) //30을 나중에 탄창 최대개수로 바꾸면됨.
+		{
+			//UE_LOG(LogTemp, Warning, TEXT("RecoilTime max, set 0.5"));
+			RecoilTime = 0.3f;
+		}
+
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("there is no Recoil_X, Y file"));
+	}
+}
+
+
+void AWeapon_Instant::CheckHit(FHitResult& Hit)
+{
+	if (Hit.bBlockingHit)
+	{
+		if (Hit.GetActor())
+		{
+			//UE_LOG(LogTemp, Warning, TEXT("Hit Actor name : %s"), *Hit.GetActor()->GetFName().ToString());
+			//TakeDamage
+		}
+
+		if (BulletHitEffect)
+		{
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BulletHitEffect, Hit.Location, Hit.ImpactNormal.Rotation());
+		}
+
+		if (BulletHitSound)
+		{
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, Hit.Location);
+		}
+	}
+
+}
+
+
+/*******************************************************************************************/
+//************************        이하는 사용하지 않는 함수들     ****************************/
+/*******************************************************************************************/
+
+
+
+// Old_BulletOut 
 /* 이 함수는 더 이상 사용하지 않는다. New_BulletOut 함수를 사용할것.
  *
  * Random Stream을 이용한 방법과, Rand값을 이용한 방법을 사용했던 함수다.
  * Random Stream은 Spread를 따로 외우거나 익힐 필요 없는 단순한 반동이며
  * Rand값을 이용한 Spread는 개발자가 의도한 대로 Spread를 뿌려 줄 수 있지만, 한계가 있다.
  */
+
+/*
 void AWeapon_Instant::Old_BulletOut()
 {
 	//UE_LOG(LogTemp, Warning, TEXT("Weap_Instant::BulletOut"));
 	
-	/* Rondom Stream 을 이용한 Weapon Spread */
-	/*
-	int32 Seed = FMath::Rand();
-	FRandomStream BulletRandomStream(Seed);
-	float LastSpread = BulletStat.HipBulletSpread + CurFiringSpread; //함수로 빼서 AimBulletSpread추가.
-	float ConeHalfAngle = FMath::DegreesToRadians(LastSpread *0.5);
-	*/
+	// Rondom Stream 을 이용한 Weapon Spread 
+	
+	////int32 Seed = FMath::Rand();
+	////FRandomStream BulletRandomStream(Seed);
+	////float LastSpread = BulletStat.HipBulletSpread + CurFiringSpread; //함수로 빼서 AimBulletSpread추가.
+	////float ConeHalfAngle = FMath::DegreesToRadians(LastSpread *0.5);
+	
 
 	FVector Dir;// = GetAimRotation();
 	FVector StartTrace = GetTraceStartLocation(Dir);
 
-	/* 이어서 새로추가. (RandomStream을 이용한 Weapon Spread) */ 
-	/*
-	FVector ShootDir = BulletRandomStream.VRandCone(Dir, ConeHalfAngle*2, ConeHalfAngle);
-	DrawDebugCone(GetWorld(), StartTrace, Dir, WeaponStat.WeaponRange, ConeHalfAngle*2, ConeHalfAngle, 6, FColor::Green, false, 2.f, (uint8)nullptr, 4.f);	
-	FVector EndTrace = StartTrace + ShootDir * WeaponStat.WeaponRange;
-	*/
+	// 이어서 새로추가. (RandomStream을 이용한 Weapon Spread)  
+	
+	////FVector ShootDir = BulletRandomStream.VRandCone(Dir, ConeHalfAngle*2, ConeHalfAngle);
+	////DrawDebugCone(GetWorld(), StartTrace, Dir, WeaponStat.WeaponRange, ConeHalfAngle*2, ConeHalfAngle, 6, FColor::Green, false, 2.f, (uint8)nullptr, 4.f);	
+	////FVector EndTrace = StartTrace + ShootDir * WeaponStat.WeaponRange;
+	
 	
 	FVector EndTrace = StartTrace + Dir * WeaponStat.WeaponRange;
 	FVector SpreadPoint = BulletSpread(EndTrace);
@@ -97,16 +200,18 @@ void AWeapon_Instant::Old_BulletOut()
 
 	//CurFiringSpread = (10.f < CurFiringSpread + 1.f) ? 10.f : CurFiringSpread + 1.f; //RandomStream을 이용한 Spread.
 }
+*/
 
-/* 이 함수도 사용하지 않는다. Old_BulletOut에서 사용.
- */
+
+// BulletSpread 함수도 사용하지 않는다. Old_BulletOut에서 사용.
+/*
 FVector AWeapon_Instant::BulletSpread(FVector Vec)
 {
-	/* Random을 이용한 Weapon Spread */
+	// Random을 이용한 Weapon Spread 
 	FVector TempVector = Vec;
 	AMainCharacter* Main = Cast<AMainCharacter>(OwningPlayer);
 	
-	/* 초탄은 무조건 원하는 지점으로 가게 한다. */
+	// 초탄은 무조건 원하는 지점으로 가게 한다.
 	if (Main)
 	{
 		if (FireCount > 0)
@@ -163,31 +268,11 @@ FVector AWeapon_Instant::BulletSpread(FVector Vec)
 	}
 	return TempVector;
 }
+*/
 
-void AWeapon_Instant::CheckHit(FHitResult& Hit)
-{
-	if (Hit.bBlockingHit)
-	{
-		if (Hit.GetActor())
-		{
-			//UE_LOG(LogTemp, Warning, TEXT("Hit Actor name : %s"), *Hit.GetActor()->GetFName().ToString());
-			//TakeDamage
-		}
 
-		if (BulletHitEffect)
-		{
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BulletHitEffect,Hit.Location,Hit.ImpactNormal.Rotation());
-		}
-
-		if (BulletHitSound)
-		{
-			UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, Hit.Location);
-		}
-	}
-	
-}
-
-/* 이 함수도 사용하지 않는다. Old Bullet Out에서 사용.*/
+// CalcRecoilNApply함수도 사용하지 않는다. Old Bullet Out에서 사용.
+/*
 void AWeapon_Instant::CalcRecoilNApply(FVector *PreSpread, FVector *NexSpread)
 {
 	if (FireCount < 1)// || PreviousSpread != FVector::ZeroVector)
@@ -196,23 +281,22 @@ void AWeapon_Instant::CalcRecoilNApply(FVector *PreSpread, FVector *NexSpread)
 		return;
 	}
 
-	/*UE_LOG(LogTemp, Warning, TEXT("PreSpread : %s"), *(PreSpread->ToString()));
-	UE_LOG(LogTemp, Warning, TEXT("NexSpread : %s"), *(NexSpread->ToString()));*/
+	//UE_LOG(LogTemp, Warning, TEXT("PreSpread : %s"), *(PreSpread->ToString()));
+	//UE_LOG(LogTemp, Warning, TEXT("NexSpread : %s"), *(NexSpread->ToString()));
 
-	/* Left & Right 계산*/
-	//FVector CrossVec = FVector::CrossProduct(*PreSpread, *NexSpread).GetSafeNormal();
+	// Left & Right 계산
 	FVector CrossVec = FVector::CrossProduct(*PreSpread - GetInstigator()->GetActorLocation(), *NexSpread - GetInstigator()->GetActorLocation());
 	float YawJudge = FVector::DotProduct(CrossVec.GetSafeNormal(), GetInstigator()->GetActorUpVector());
 	//DrawDebugLine(GetWorld(), GetActorLocation(), CrossVec, FColor::Green, false, 1.f, (uint8)nullptr, 2.f);
 
 
-	/* Up & Down 계산*/
+	// Up & Down 계산
 	FVector PitchVector = FVector::CrossProduct(CrossVec - GetInstigator()->GetActorLocation(), GetInstigator()->GetActorUpVector());
 	float PitchJudge = FVector::DotProduct(PitchVector.GetSafeNormal(), GetInstigator()->GetActorForwardVector());
 	//DrawDebugLine(GetWorld(), GetActorLocation(), PitchVector, FColor::Green, false, 1.f, (uint8)nullptr, 2.f);
 	
 
-	/* 각도 계산 */
+	// 각도 계산 
 	float VectorAngle = FVector::DotProduct(*PreSpread, *NexSpread);
 	float SizeValue = PreSpread->Size() * NexSpread->Size();
 	float PitchAngle = FMath::Acos(VectorAngle / SizeValue);
@@ -229,14 +313,14 @@ void AWeapon_Instant::CalcRecoilNApply(FVector *PreSpread, FVector *NexSpread)
 		{
 			if (YawJudge > 0.f)
 			{
-				/*GEngine->AddOnScreenDebugMessage(1, 2.f, FColor::Green, TEXT("right"));
-				UE_LOG(LogTemp, Warning, TEXT("Right"));*/
+				//GEngine->AddOnScreenDebugMessage(1, 2.f, FColor::Green, TEXT("right"));
+				//UE_LOG(LogTemp, Warning, TEXT("Right"));
 				
 			}
 			else
 			{
-				/*GEngine->AddOnScreenDebugMessage(1, 2.f, FColor::Green, TEXT("left"));
-				UE_LOG(LogTemp, Warning, TEXT("LEFT"));*/
+				//GEngine->AddOnScreenDebugMessage(1, 2.f, FColor::Green, TEXT("left"));
+				//UE_LOG(LogTemp, Warning, TEXT("LEFT"));
 				
 			}
 			GetInstigator()->AddControllerYawInput(YawJudge);
@@ -244,114 +328,32 @@ void AWeapon_Instant::CalcRecoilNApply(FVector *PreSpread, FVector *NexSpread)
 
 		if (PitchJudge < 0.f)
 		{
-			/*UE_LOG(LogTemp, Warning, TEXT("Up"));
-			UE_LOG(LogTemp, Warning, TEXT("Pitch Angle : %f"), PitchAngle);*/
+			//UE_LOG(LogTemp, Warning, TEXT("Up"));
+			UE_LOG(LogTemp, Warning, TEXT("Pitch Angle : %f"), PitchAngle);
 			//GetInstigator()->AddControllerPitchInput(PitchAngle *-20);
 		}
 		else
 		{
-			/*UE_LOG(LogTemp, Warning, TEXT("Down"));
-			UE_LOG(LogTemp, Warning, TEXT("Pitch Angle : %f"), PitchAngle * -1);*/
+			//UE_LOG(LogTemp, Warning, TEXT("Down"));
+			//UE_LOG(LogTemp, Warning, TEXT("Pitch Angle : %f"), PitchAngle * -1);
 			//GetInstigator()->AddControllerPitchInput(PitchAngle);
 		}
 
 		
 	}
-	/*UE_LOG(LogTemp, Warning, TEXT("Yaw Judge : %f"), YawJudge);
-	UE_LOG(LogTemp, Warning, TEXT("Pitch Judge : %f"), PitchJudge);*/
-	/*UE_LOG(LogTemp, Warning, TEXT("Pitch Judge : %f"), PitchJudge);
-	UE_LOG(LogTemp, Warning, TEXT("CrossVec : %s"), *CrossVec.ToString());
-	UE_LOG(LogTemp, Warning, TEXT("PitchVector : %s"), *PitchVector.ToString());*/
+	//UE_LOG(LogTemp, Warning, TEXT("Yaw Judge : %f"), YawJudge);
+	//UE_LOG(LogTemp, Warning, TEXT("Pitch Judge : %f"), PitchJudge);
+	//UE_LOG(LogTemp, Warning, TEXT("Pitch Judge : %f"), PitchJudge);
+	//UE_LOG(LogTemp, Warning, TEXT("CrossVec : %s"), *CrossVec.ToString());
+	//UE_LOG(LogTemp, Warning, TEXT("PitchVector : %s"), *PitchVector.ToString());
 	
 	
 	//AMainCharacter* Main = Cast<AMainCharacter>(OwningPlayer);
 	
 }
+*/
 
 
-/* Recoil_X와 Recoil_Y는 Curve float 에디터에 생성해놓음.
- *
- */
-void AWeapon_Instant::ApplyRecoil()
-{
-	if (WeaponStat.Recoil_X && WeaponStat.Recoil_Y)
-	{
-		/* Recoil Time은 AWeapon::EndFiring에서 0으로 초기화 된다.
-		 *
-		 * Recoil Time을 기준으로 Curve Float값을 가져와 지난번과, 다음에 쏠 값을 가져와
-		 * 상승값을 구해 적용한다.
-		 */
-		float LastRecoilTime = RecoilTime - WeaponStat.SecondPerBullet;		
-		float LastRecoilValue_X = WeaponStat.Recoil_X->GetFloatValue(LastRecoilTime);
-		float NextRecoilValue_X = WeaponStat.Recoil_X->GetFloatValue(RecoilTime);
-
-		float LastRecoilValue_Y = WeaponStat.Recoil_Y->GetFloatValue(LastRecoilTime);
-		float NextRecoilValue_Y = WeaponStat.Recoil_Y->GetFloatValue(RecoilTime);
-
-		PitchValue = (NextRecoilValue_X - LastRecoilValue_X);
-		YawValue = (NextRecoilValue_Y - LastRecoilValue_Y);
-
-		/* 조준 유무에 따라 반동을 준다. */
-		if (bIsAiming)
-		{
-			PitchValue *= WeaponStat.AimBulletSpread;
-			YawValue *= WeaponStat.AimBulletSpread;
-		}
-		else
-		{
-			PitchValue *= WeaponStat.HipBulletSpread;
-			YawValue *= WeaponStat.HipBulletSpread;
-		}
-
-		//Spray는 Full Auto를 기준으로 만들었기 때문에
-		//Semiauto, Burst모드에서는 반동이 너무 심하거나, 너무 약함
-		if (WeaponFiringMode == EWeaponFiringMode::EWFM_Burst)
-		{
-			PitchValue *= 1.5;
-		}
-
-		//UE_LOG(LogTemp, Warning, TEXT("Pitch : %f, Yaw : %f"), PitchValue, YawValue);
-
-		WorldTime = 0.f;
-		RecoilAlphaTime = 0.f;
-
-		GetWorldTimerManager().SetTimer(RecoilHandle, [=] {
-			WorldTime += GetWorld()->GetDeltaSeconds();
-			RecoilAlphaTime = WorldTime / (WeaponStat.SecondPerBullet *1.5);
-
-			
-			//UE_LOG(LogTemp, Warning, TEXT("alpha time : %f"), RecoilAlphaTime);
-
-
-			float LerpRecoilX = UKismetMathLibrary::Lerp(0, PitchValue, RecoilAlphaTime);
-			float LerpRecoilY = UKismetMathLibrary::Lerp(0, YawValue, RecoilAlphaTime);
-
-			//UE_LOG(LogTemp, Warning, TEXT("Lerp X : %f, Lerp Y: %f"), LerpRecoilX, LerpRecoilY);
-			GetInstigator()->AddControllerPitchInput(LerpRecoilX);
-			GetInstigator()->AddControllerYawInput(LerpRecoilY);
-
-			}, GetWorld()->GetDeltaSeconds(), true);
-
-		/*GetInstigator()->AddControllerPitchInput(PitchValue);
-		GetInstigator()->AddControllerYawInput(YawValue);*/
-		
-
-		//리코일 타임은 1발을 쏠때의 타임만큼씩 증가해야한다.
-		RecoilTime = RecoilTime + WeaponStat.SecondPerBullet;
-
-		//UE_LOG(LogTemp, Warning, TEXT("RecoilTime : %f"), RecoilTime);
-		if (RecoilTime > WeaponStat.SecondPerBullet * 30) //30을 나중에 탄창 최대개수로 바꾸면됨.
-		{
-			//UE_LOG(LogTemp, Warning, TEXT("RecoilTime max, set 0.5"));
-			RecoilTime = 0.3f;
-		}
-
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("there is no Recoil_X, Y file"));
-	}
-}
 //
 //float AWeapon_Instant::PitchRecoilValue(float Zvalue)
 //{

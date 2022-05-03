@@ -192,6 +192,16 @@ void AWeapon::GunAttachToMesh(AActor* Actor)
 	}
 }
 
+FTransform AWeapon::GetSightSocketTransform()
+{
+	//if have any sight device. return that location.
+	
+	FTransform ReturnTransform;
+
+	ReturnTransform = SKMesh->GetSocketTransform("AimPos", ERelativeTransformSpace::RTS_World);
+
+	return ReturnTransform;
+}
 
 void AWeapon::FPS_AimAttachToMesh(AActor* Actor)
 {

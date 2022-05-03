@@ -257,6 +257,8 @@ public:
 
 	void FPS_AimAttachToMesh(AActor* Actor);
 
+	FTransform GetSightSocketTransform();
+
 	//virtual void Drop() override;
 	
 	void ChangeSafetyLever();

@@ -8,6 +8,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Components/PawnNoiseEmitterComponent.h"
 #include "Sound/SoundCue.h"
 #include "Camera/CameraComponent.h"
@@ -465,6 +466,10 @@ void AMainCharacter::SetAimMode(EAimMode Mode)
 	AimMode = Mode;
 	if (EquippedWeapon)
 	{
+		FTransform FPMeshOriginTransform = FPMesh->GetComponentTransform();
+		UE_LOG(LogTemp, Warning, TEXT("FPMesh Rleative Trans : %s"), *FPMeshOriginTransform.ToString());
+
+
 		switch (AimMode)
 		{
 		case EAimMode::EAM_Aim:
@@ -472,14 +477,12 @@ void AMainCharacter::SetAimMode(EAimMode Mode)
 			bIsAim = true;
 			EquippedWeapon->bIsAiming = true;
 			GetCharacterMovement()->MaxWalkSpeed = MinWalkSpeed;
+
 			if (CameraMode == ECameraMode::ECM_TPS)
 			{
-				GetCharacterMovement()->bOrientRotationToMovement = false; //움직인 방향을 진행방향으로 설정하지 않는다.
-
-				bUseControllerRotationYaw = true; //3인칭에 Aim상태면 Yaw를 잡아준다.
-
-				//TPS모드 + Aim상태일때 카메라를 살짝 앞으로 땡겨준다.
-				BeforeCameraLength = CameraBoom->TargetArmLength; //현재 SprintArm의 길이를 저장한다.
+				//TPS모드 + Aim상태일때는 카메라를 살짝 앞으로 땡겨준다.
+				//현재 SprintArm의 길이를 저장한다.
+				BeforeCameraLength = CameraBoom->TargetArmLength; 
 				//float CameraLength = FMath::FInterpTo(BeforeCameraLength, MINCameraLength, GetWorld()->GetDeltaSeconds(), 15.f);
 				CameraBoom->TargetArmLength = MINCameraLength;
 				
@@ -487,10 +490,50 @@ void AMainCharacter::SetAimMode(EAimMode Mode)
 			}
 			else if (CameraMode == ECameraMode::ECM_FPS)
 			{
+				
+				//EquippedWeapon에서 SightSocket을 Get하는 함수를 호출한다.
+				FTransform SightTransform = EquippedWeapon->GetSightSocketTransform(); //Worldlocation.
+				UE_LOG(LogTemp, Warning, TEXT("SightTransform World Lo : %s"), *SightTransform.ToString());
+
+				//FPMesh의 World transform을 가져온다.
+				FTransform FPMeshTransform = FPMesh->GetComponentTransform();
+				UE_LOG(LogTemp, Warning, TEXT("FPMeshTransform World Lo : %s"), *FPMeshTransform.ToString());
+
+				//Relative Transfrom을 위 두개의 Transform으로 생성하여
+				//FPMesh와 SightSocket의 Offset을 구해
+
+
+				//explain Make Relative Transform
+				//Example: ChildOffset = MakeRelativeTransform(Child.GetActorTransform(), Parent.GetActorTransform())
+				//This computes the relative transform of the Child from the Parent.
+
+				FTransform  Offset = UKismetMathLibrary::MakeRelativeTransform(FPMeshTransform, SightTransform);
+				//FTransform  Offset = UKismetMathLibrary::MakeRelativeTransform(SightTransform, FPMeshTransform);
+				FTransform  OffsetInverse= FPMeshTransform.GetRelativeTransform(SightTransform).Inverse();
+				FTransform  OffsetReverse = FPMeshTransform.GetRelativeTransformReverse(SightTransform);
+
+				
+				UE_LOG(LogTemp, Warning, TEXT("Offset Normal : %s"), *Offset.ToString());
+				UE_LOG(LogTemp, Warning, TEXT("Offset Inverse: %s"), *OffsetInverse.ToString());
+				UE_LOG(LogTemp, Warning, TEXT("Offset Reverse : %s"), *OffsetReverse.ToString());
+
+				//FPMesh를 해당 Offset만큼 이동, Camera의 중앙에 오도록 한다.
+
+				// x : -35.f, y : -16.f,  z: -137.f가 되어야함.
+				//FPMesh->SetRelativeTransform(FTransform(OffsetInverse));
+				FPMesh->SetRelativeTransform(Offset);
+				//FPMesh->SetRelativeLocation(FVector(OffsetInverse.GetTranslation().X, OffsetInverse.GetTranslation().Y, OffsetInverse.GetTranslation().Z));
+
+				FTransform FPMeshAfter = FPMesh->GetRelativeTransform();
+				UE_LOG(LogTemp, Warning, TEXT("FPMeshAfter : %s"), *FPMeshAfter.ToString());
+				
+
+
+
 				/* Aim mode + FPS모드 전용의 소켓을 추가,
 				   해당소켓으로 부착시켜 주기 위해 함수를 호출한다.*/
-				EquippedWeapon->FPS_AimAttachToMesh(this);
-				FPSAimLocationAdjust();
+				//EquippedWeapon->FPS_AimAttachToMesh(this);
+				//FPSAimLocationAdjust();
 			}
 			break;
 		}
@@ -499,6 +542,7 @@ void AMainCharacter::SetAimMode(EAimMode Mode)
 			bIsAim = false;
 			EquippedWeapon->bIsAiming = false;
 			GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
+
 			if (CameraMode == ECameraMode::ECM_TPS)
 			{
 				if(EquippedWeapon)
@@ -522,10 +566,14 @@ void AMainCharacter::SetAimMode(EAimMode Mode)
 			}
 			else if (CameraMode == ECameraMode::ECM_FPS)
 			{
+
+				//FPMesh->SetRelativeTransform(FPMeshOriginTransform);
+				FPMesh->SetWorldTransform(FPMeshOriginTransform);
+
 				/* Aim mode + FPS모드 전용의 소켓을 추가, 부착 시켰기 때문에
 				원복을 해준다.*/
-				EquippedWeapon->FPS_AimAttachToMesh(this);
-				FPSAimLocationAdjust();
+				//EquippedWeapon->FPS_AimAttachToMesh(this);
+				//FPSAimLocationAdjust();
 			}
 			break;
 		}
