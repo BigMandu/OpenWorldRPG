@@ -96,7 +96,9 @@ void UMainAnimInstance::BeginHighReady()
 
 
 		/* FPMeshÀÇ Rotation °ª */
-		FP_NewRot = FRotator(90.f, 0.f, 0.f);
+
+
+		FP_NewRot = FRotator(60.f, 0.f, 0.f);
 		FP_HighReadyRotator = FMath::RInterpTo(FP_HighReadyRotator, FP_NewRot, GetWorld()->GetDeltaSeconds(), 5.0f);
 		
 

@@ -162,6 +162,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UCapsuleComponent* CapsuleComp;
 
+	FTransform OriginalWeaponTransform;
+
 	bool bIsFiring;
 	bool bIsAiming; //Main에서 값을 단순히 넣어주기만 한다.
 
@@ -212,7 +214,6 @@ public:
 	FTimerHandle RecoilHandle;
 	
 protected:
-
 	//for gun spread
 	int32 FireCount;
 
@@ -220,12 +221,35 @@ protected:
 
 	bool bLMBDown;	
 
+	bool bIsHighReady;
+
 	float LastFireTime;
+
+	
+	float WeaponClippingLength;
 
 	FTimerHandle FiringTimer;
 
+	//WeaponClipping을 위해 Hand와 Muzzle의 Relative값.
+	FTransform MuzzleRelative;
+	
+
 	FVector WorldAimPosition;
-	FVector WeaponMuzzleLocation;
+	//FVector WeaponMuzzleLocation;
+
+	//FPMesh의 WeaponGrip 소켓에 붙일 Weapon의 Transform값.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")
+	FTransform FPMeshAttachTransform;
+
+	//TPMesh에 Weapon을 Attach할 소켓의 Transform값.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")
+	FTransform PrimaryWeaponAttachTransform;
+
+	//TPMesh에 Weapon을 Attach할 소켓의 Transform값.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")
+	FTransform SubWeaponAttachTransform;
+
+
 
 	/* Aim Initialize에서 사용 */
 	FRotator StartFiringRotation;
@@ -238,11 +262,11 @@ protected:
 	FVector PreviousSpread;
 	FVector NextSpread;
 
-	bool bIsHighReady;
+	
 
 private:
 	void UpdateAim();
-	
+	void WeaponClipping();
 	
 public:
 
@@ -255,7 +279,7 @@ public:
 	
 	void GunAttachToMesh(AActor* Actor);
 
-	void FPS_AimAttachToMesh(AActor* Actor);
+	//void FPS_AimAttachToMesh(AActor* Actor);
 
 	FTransform GetSightSocketTransform();
 

@@ -47,10 +47,13 @@ void AWeapon::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	
 	/* New Aim System, */
-	if (MainCon != nullptr) //if (OwningPlayer != nullptr)
+	if (MainCon != nullptr ) //if (OwningPlayer != nullptr)
 	{
-		UpdateAim();
-		
+		if (MainCon->Main->EquippedWeapon == this)
+		{
+			UpdateAim();
+			WeaponClipping();
+		}
 	}
 }
 
@@ -68,9 +71,6 @@ void AWeapon::PostInitializeComponents()
 	//MainChar (GTC2 : GameTraceChannel2), WorldDynamic은 무시
 	CapsuleComp->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel2, ECollisionResponse::ECR_Ignore);
 	CapsuleComp->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic, ECollisionResponse::ECR_Ignore);
-
-
-	
 }
 
 void AWeapon::Equip(AActor* Char)
@@ -80,6 +80,8 @@ void AWeapon::Equip(AActor* Char)
 	check(Main);
 
 	CapsuleComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+
+	UE_LOG(LogTemp, Warning, TEXT("Weapon Transform : %s"), *OriginalWeaponTransform.ToString());
 
 	if (RifleAssign == ERifleAssign::ERA_MAX)
 	{
@@ -136,6 +138,7 @@ void AWeapon::Equip(AActor* Char)
 	Main->Equipment->AddEquipment(this);
 	
 	GunAttachToMesh(Char);
+
 	
 }
 
@@ -144,16 +147,30 @@ void AWeapon::GunAttachToMesh(AActor* Actor)
 	AMainCharacter* Main = Cast<AMainCharacter>(Actor);
 	if (Main)
 	{
-		/* 이미 들고 있는 무기가 있고, 들고있는 무기와 이 무기가 다른경우
-		* 이미 들고 있는 무기를 'SubWeapon Attach' 소켓에 부착시킨다.
+		/* 들고 있었던 무기가 있고, 들고있었던 무기와 이 무기가 다른경우
+		* 들고 있었던 무기를 'SubWeapon Attach' 소켓에 부착시킨다.
 		*/
 		if (Main->EquippedWeapon && (Main->EquippedWeapon != this))// && ItemState == EItemState::EIS_Spawn)
 		{
-			const USkeletalMeshSocket* SubSocket = Main->GetMesh()->GetSocketByName("SubWeaponAttachSocket");
+			const USkeletalMeshSocket* AttachSocket;
+			FTransform AttachTransform;
 
-			SubSocket->AttachActor(Main->EquippedWeapon, Main->GetMesh());
-			Main->EquippedWeapon->SetActorRelativeTransform(MeshAttachTransform);
+			if(Main->EquippedWeapon->RifleAssign == ERifleAssign::ERA_Primary)
+			{
+				AttachSocket = Main->GetMesh()->GetSocketByName("PrimaryWeaponAttachSocket");
+				AttachTransform = PrimaryWeaponAttachTransform;
+			}
+			else
+			{
+				AttachSocket = Main->GetMesh()->GetSocketByName("SubWeaponAttachSocket");
+				AttachTransform = SubWeaponAttachTransform;
+			}
 
+			if (AttachSocket)
+			{
+				AttachSocket->AttachActor(Main->EquippedWeapon, Main->GetMesh());
+				Main->EquippedWeapon->SetActorRelativeTransform(AttachTransform);
+			}
 			/*SubSocket->AttachActor(this, Main->GetMesh());
 			SetActorRelativeTransform(MeshAttachTransform);*/
 
@@ -168,25 +185,25 @@ void AWeapon::GunAttachToMesh(AActor* Actor)
 			switch (Main->CameraMode)
 			{
 			case ECameraMode::ECM_FPS:
-
-				//AttachToActor(Main,)
 				if (FPSocket->AttachActor(this, Main->FPMesh))
 				{
-					Main->BaseWeapTransform = SKMesh->GetRelativeTransform();
+					SetActorRelativeTransform(FPMeshAttachTransform);
+					//Main->BaseWeapTransform = SKMesh->GetRelativeTransform();
 				}
 				break;
 			case ECameraMode::ECM_TPS:
 				if (TPSocket->AttachActor(this, Main->GetMesh()))
 				{
-
+					SetActorRelativeTransform(MeshAttachTransform);
 				}
 				break;
 			}				
 
-			//SKMesh->SetVisibility(true);
 			SKMesh->SetHiddenInGame(false);
 			Main->SetEquippedWeapon(this);
-			//Main->EquippedWeapon = this;
+			
+
+
 		}		
 
 	}
@@ -203,6 +220,7 @@ FTransform AWeapon::GetSightSocketTransform()
 	return ReturnTransform;
 }
 
+/*
 void AWeapon::FPS_AimAttachToMesh(AActor* Actor)
 {
 	AMainCharacter* Main = Cast<AMainCharacter>(Actor);
@@ -227,6 +245,7 @@ void AWeapon::FPS_AimAttachToMesh(AActor* Actor)
 		}
 	}
 }
+*/
 
 //void AWeapon::Drop()
 //{
@@ -565,44 +584,6 @@ bool AWeapon::CheckRefire()
 	return bFlag;
 }
 
-void AWeapon::UpdateAim()
-{
-	FTransform AimPos = GetAimPosition();
-	FVector EndVec = AimPos.GetLocation() + AimPos.GetRotation().Vector() * 3000.f;
-	FHitResult Hit = BulletTrace(AimPos.GetLocation(), EndVec);
-
-	/*if (bIsHighReady)
-	{
-		WeaponMuzzleLocation = SKMesh->GetSocketLocation(MuzzleFlashSocketName);
-		WorldAimPosition = WeaponMuzzleLocation + AimPos.GetRotation().GetForwardVector() * WeaponStat.WeaponRange;
-	}*/
-	//else
-	{
-		if (Hit.bBlockingHit)
-		{
-			//WeaponMuzzleLocation = SKMesh->GetSocketLocation(MuzzleFlashSocketName);
-			WorldAimPosition = Hit.Location;
-
-
-			FHitResult WeaponHit = BulletTrace(MainCon->Main->CameraFPS->GetComponentLocation(), Hit.Location);
-
-			//FHitResult WeaponHit = BulletTrace(WeaponMuzzleLocation, Hit.Location);
-			if (WeaponHit.bBlockingHit)
-			{
-				WorldAimPosition = WeaponHit.Location;
-			}
-		}
-		else
-		{
-			//DrawDebugPoint(GetWorld(), WorldAimPosition, 20.f, FColor::Blue, false, 0.1f);
-			WorldAimPosition = EndVec;
-		}
-	}
-
-	//DrawDebugPoint(GetWorld(), WorldAimPosition, 10.f, FColor::Green, false, -1.f);
-
-}
-
 /*
 FVector AWeapon::GetAimLocation_TEST()
 {
@@ -799,7 +780,103 @@ void AWeapon::Remove()
 	}
 }
 
+void AWeapon::UpdateAim()
+{
+	FTransform AimPos = GetAimPosition();
+	FVector EndVec = AimPos.GetLocation() + AimPos.GetRotation().Vector() * 3000.f;
+	FHitResult Hit = BulletTrace(AimPos.GetLocation(), EndVec);
 
+	/*if (bIsHighReady)
+	{
+		WeaponMuzzleLocation = SKMesh->GetSocketLocation(MuzzleFlashSocketName);
+		WorldAimPosition = WeaponMuzzleLocation + AimPos.GetRotation().GetForwardVector() * WeaponStat.WeaponRange;
+	}*/
+	//else
+	{
+		if (Hit.bBlockingHit)
+		{
+			//WeaponMuzzleLocation = SKMesh->GetSocketLocation(MuzzleFlashSocketName);
+			WorldAimPosition = Hit.Location;
+
+
+			FHitResult WeaponHit = BulletTrace(MainCon->Main->CameraFPS->GetComponentLocation(), Hit.Location);
+
+			//FHitResult WeaponHit = BulletTrace(WeaponMuzzleLocation, Hit.Location);
+			if (WeaponHit.bBlockingHit)
+			{
+				WorldAimPosition = WeaponHit.Location;
+			}
+		}
+		else
+		{
+			//DrawDebugPoint(GetWorld(), WorldAimPosition, 20.f, FColor::Blue, false, 0.1f);
+			WorldAimPosition = EndVec;
+		}
+	}
+
+	//DrawDebugPoint(GetWorld(), WorldAimPosition, 10.f, FColor::Green, false, -1.f);
+
+}
+
+void AWeapon::WeaponClipping()
+{
+	FTransform CurrentMeshAttachTransform;
+	FVector CurrentMeshRightHand;
+	if (ECameraMode::ECM_FPS == MainCon->Main->CameraMode)
+	{
+		CurrentMeshAttachTransform = FPMeshAttachTransform;
+		CurrentMeshRightHand = MainCon->Main->FPMesh->GetSocketLocation("Hand_R");
+
+	}
+	else 
+	{
+		CurrentMeshAttachTransform = MeshAttachTransform;
+		CurrentMeshRightHand = MainCon->Main->GetMesh()->GetSocketLocation("hand_r");
+	}
+
+	//LienTrace의 길이는 Weapon에 부착된 CapsuleComp길이
+	float Length = CapsuleComp->GetScaledCapsuleHalfHeight() * 4;
+
+	//방향벡터는 AimPosition으로 한다.
+	FVector EndLo = CurrentMeshRightHand + GetAimPosition().GetRotation().GetForwardVector() * Length;
+	TArray<AActor*> IgnoreActorList;
+	IgnoreActorList.Add(GetInstigator());
+	FHitResult Hit;
+
+	UKismetSystemLibrary::SphereTraceSingle(GetWorld(), CurrentMeshRightHand, EndLo, 5.f, ETraceTypeQuery::TraceTypeQuery1, false,
+		IgnoreActorList, EDrawDebugTrace::ForDuration, Hit, true);
+	
+	
+	if(Hit.bBlockingHit)
+	{
+		FVector CurVec = CurrentMeshAttachTransform.GetTranslation();
+		//FVector CalcVec = CurrentMeshAttachTransform.GetTranslation() - (NewY * 50.f);
+		
+		FRotator CurRot = CurrentMeshAttachTransform.GetRotation().Rotator();
+
+		//Why Roll?? -> Skeleton에서 무기를 넣고 위로 돌리니 Roll값만 바껴서 Roll로 한거임.
+		// Hit.Distance / Length하게되면 0부터 1이 나오는데.
+		// Hit.Distance == Length -> 1이됨. 즉, 1일때는 0이되고 0일때는 90도가 되어야함.
+		// 때문에 90을 곱했고, 90을 걍 곱해버리면 1일때 90이 되버림. 그리고 어차피 각도가 -90이 되야 위로 올라가니
+		// 0*90 = 0, 0.5*90 = 45, 1*90 = 90이라 걍 -90을 빼버렸음,
+		// 최종값은 0일때 -90, 0.5일때 -45, 1일때 0이 나옴.
+		FRotator CalcRot = FRotator(CurRot.Pitch, CurRot.Yaw, (CurRot.Roll + (Hit.Distance / Length)*90.f) - 90.f);
+		UE_LOG(LogTemp, Warning, TEXT("Calc Rot ; %s"), *CalcRot.ToString());
+
+		//OriginalWeaponTransform.SetLocation(CalcVec);
+		FTransform NewTransform = FTransform(CalcRot, CurVec);
+		//NewTransform.SetLocation(CalcVec);
+		SetActorRelativeTransform(NewTransform);
+	}
+	else
+	{
+		SetActorRelativeTransform(CurrentMeshAttachTransform);
+	}
+	//GetWorld()->
+}
+
+
+/* Fix Clipping wall */
 void AWeapon::OnCollisionBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	//UE_LOG(LogTemp, Warning, TEXT(" Weapon Overlap begin"));
@@ -812,12 +889,23 @@ void AWeapon::OnCollisionBegin(UPrimitiveComponent* OverlappedComponent, AActor*
 		{
 			//Weaponclass에 있는 bIsHighReady는 AnimInstance에서 완전히 내려왔을때 false를 시켜주도록 하자.
 			bIsHighReady = true;
-			Main->TPAnimInstance->bBeginHighReady = true;
-			Main->FPAnimInstance->bBeginHighReady = true;
+			//Main->TPAnimInstance->bBeginHighReady = true;
+			//Main->FPAnimInstance->bBeginHighReady = true;
+
+			/* New Fix Clipping wall*/
+			//Tick에서 Sphere Line Trace를 쏘는데, distance와 radius는 설정 가능함.(총마다 다를수 있으니..)
+			//hit이 있다면, Original Transform에서 Location값  - (0.f,0.f, Curve.evaluate(hit.distance / distance)
+			//이렇게 해서 나온값을 NewTransform.location으로 지정해주면 된다.
+			
+
+
+			FVector WeaponLocation = GetActorLocation();
+			FVector OwnerLocation = Main->GetActorLocation();
+
 		}
 		
-		Main->TPAnimInstance->bEndHighReady = false;
-		Main->FPAnimInstance->bEndHighReady = false;
+		//Main->TPAnimInstance->bEndHighReady = false;
+		//Main->FPAnimInstance->bEndHighReady = false;
 
 	}
 
@@ -831,8 +919,8 @@ void AWeapon::OnCollisionEnd(UPrimitiveComponent* OverlappedComponent, AActor* O
 	{
 		AMainCharacter* Main = Cast<AMainCharacter>(OwningPlayer);
 		bIsHighReady = false;
-		Main->TPAnimInstance->bBeginHighReady = false;
-		Main->FPAnimInstance->bBeginHighReady = false;
+		//Main->TPAnimInstance->bBeginHighReady = false;
+		//Main->FPAnimInstance->bBeginHighReady = false;
 		
 		Main->TPAnimInstance->bEndHighReady = true;
 		Main->FPAnimInstance->bEndHighReady = true;

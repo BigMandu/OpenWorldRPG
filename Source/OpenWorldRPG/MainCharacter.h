@@ -80,6 +80,11 @@ public:
 
 	/**********   카메라 *************/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
+	float BaseTurnRate;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
+	float BaseLookupRate;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	USpringArmComponent* CameraBoom;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
@@ -88,19 +93,22 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	UCameraComponent* CameraFPS; //1인칭 카메라
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
-	float BaseTurnRate;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
-	float BaseLookupRate;
+	//1인칭 카메라의 초기 위치값.
+	FTransform CameraFPSTransform = FTransform(FRotator(0.f,0.f,0.f),FVector(-7.f,11.8f,57.f));
+	//1인칭 카메라의 FOV값.
+	float BaseCamFPSfov;
 
+	//3인칭 카메라의 Aim을 위한 위치값.
+	float BaseCamTPSfov;
 	const FVector TPSCam_Rel_Location = FVector(0.f, 0.f, 8.f);
 	const FVector TPSCam_Aim_Rel_Location = FVector(0.f, 18.5f, -8.f);
 	const float MAXCameraLength = 170.f;
 	const float MINCameraLength = 80.f;
 	float BeforeCameraLength;
 
+	//아래는 안쓰는 변수들.
+	FTransform FPMeshOriginTransform;
 	/* FPS Aim을 위한 저장값*/
-	float BaseCamFPSfov;
 	FTransform BaseFPMeshTransform;
 	FTransform BaseWeapTransform;
 

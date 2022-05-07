@@ -86,7 +86,7 @@ AMainCharacter::AMainCharacter()
 	CameraTPS->SetRelativeLocation(TPSCam_Rel_Location); //3인칭 카메라를 살짝 우측으로 치우지게 한다.
 
 	CameraFPS->bUsePawnControlRotation = true;
-	CameraFPS->SetRelativeLocationAndRotation(FVector(0.f, 8.f, 0.f), FRotator(-90.f, 0.f, 90.f));
+	CameraFPS->SetRelativeTransform(CameraFPSTransform);//SetRelativeLocationAndRotation(FVector(0.f, 8.f, 0.f), FRotator(-90.f, 0.f, 90.f));
 
 	BaseTurnRate = 45.f;
 	BaseLookupRate = 45.f;
@@ -200,10 +200,11 @@ void AMainCharacter::PostInitializeComponents()
 	StimuliSourceComp->RegisterForSense(Sight);
 	StimuliSourceComp->RegisterForSense(Hearing);
 
-
+	FPMeshOriginTransform = FPMesh->GetRelativeTransform();
 	FPMesh->SetHiddenInGame(true);
 
 	/* FPS Aim관련 기본 설정 값 저장*/
+	BaseCamTPSfov = CameraTPS->FieldOfView;
 	BaseCamFPSfov = CameraFPS->FieldOfView;
 	BaseFPMeshTransform = FPMesh->GetRelativeTransform();
 	
@@ -370,7 +371,8 @@ void AMainCharacter::SetMainCharacterStatus(EPlayerStatus Type) //플레이어의 상�
 	}
 }
 
-void AMainCharacter::SetCameraMode(ECameraMode Type) //플레이어 시점 상태 -> VKeyDN
+//플레이어 시점 상태 -> VKeyDN
+void AMainCharacter::SetCameraMode(ECameraMode Type)
 {
 	CameraMode = Type;
 	switch (CameraMode)
@@ -459,17 +461,15 @@ void AMainCharacter::SetCameraMode(ECameraMode Type) //플레이어 시점 상태 -> VKe
 	default:
 		break;
 	}
+
 }
 
+//RMB Down
 void AMainCharacter::SetAimMode(EAimMode Mode)
 {
 	AimMode = Mode;
 	if (EquippedWeapon)
 	{
-		FTransform FPMeshOriginTransform = FPMesh->GetComponentTransform();
-		UE_LOG(LogTemp, Warning, TEXT("FPMesh Rleative Trans : %s"), *FPMeshOriginTransform.ToString());
-
-
 		switch (AimMode)
 		{
 		case EAimMode::EAM_Aim:
@@ -484,52 +484,41 @@ void AMainCharacter::SetAimMode(EAimMode Mode)
 				//현재 SprintArm의 길이를 저장한다.
 				BeforeCameraLength = CameraBoom->TargetArmLength; 
 				//float CameraLength = FMath::FInterpTo(BeforeCameraLength, MINCameraLength, GetWorld()->GetDeltaSeconds(), 15.f);
-				CameraBoom->TargetArmLength = MINCameraLength;
-				
+				CameraBoom->TargetArmLength = MINCameraLength + 20.f;
 				CameraTPS->SetRelativeLocation(TPSCam_Aim_Rel_Location);
+				CameraTPS->FieldOfView = 77.f;
 			}
 			else if (CameraMode == ECameraMode::ECM_FPS)
 			{
-				
+				//정확한 위치를 받아오기 위해 Animation을 끈다.
+				FPMesh->bPauseAnims = true;
+
 				//EquippedWeapon에서 SightSocket을 Get하는 함수를 호출한다.
-				FTransform SightTransform = EquippedWeapon->GetSightSocketTransform(); //Worldlocation.
-				UE_LOG(LogTemp, Warning, TEXT("SightTransform World Lo : %s"), *SightTransform.ToString());
+				FTransform SightTransform = EquippedWeapon->GetSightSocketTransform();
+				FTransform FPMeshWorld = FPMesh->GetComponentTransform();
 
-				//FPMesh의 World transform을 가져온다.
-				FTransform FPMeshTransform = FPMesh->GetComponentTransform();
-				UE_LOG(LogTemp, Warning, TEXT("FPMeshTransform World Lo : %s"), *FPMeshTransform.ToString());
 
-				//Relative Transfrom을 위 두개의 Transform으로 생성하여
-				//FPMesh와 SightSocket의 Offset을 구해
-
+				//SightSocket에서  FPMesh의 Relative Transform을 구한다.
+				//이렇게 구한 Offset을 Mesh의 Transform에 적용한다.
 
 				//explain Make Relative Transform
 				//Example: ChildOffset = MakeRelativeTransform(Child.GetActorTransform(), Parent.GetActorTransform())
 				//This computes the relative transform of the Child from the Parent.
 
-				FTransform  Offset = UKismetMathLibrary::MakeRelativeTransform(FPMeshTransform, SightTransform);
-				//FTransform  Offset = UKismetMathLibrary::MakeRelativeTransform(SightTransform, FPMeshTransform);
-				FTransform  OffsetInverse= FPMeshTransform.GetRelativeTransform(SightTransform).Inverse();
-				FTransform  OffsetReverse = FPMeshTransform.GetRelativeTransformReverse(SightTransform);
-
 				
-				UE_LOG(LogTemp, Warning, TEXT("Offset Normal : %s"), *Offset.ToString());
-				UE_LOG(LogTemp, Warning, TEXT("Offset Inverse: %s"), *OffsetInverse.ToString());
-				UE_LOG(LogTemp, Warning, TEXT("Offset Reverse : %s"), *OffsetReverse.ToString());
+				FTransform  Offset = FPMeshWorld.GetRelativeTransform(SightTransform);
+
+				// Weapon의 Clipping을 위한 Trace를 FPMesh일때 Aim, NotAim을 보완하기 위해 Aim일때 Mesh를 앞으로 좀 나가게 한다.
+				// (기존 Aim때는 FPMesh가 뒤로 들어가버려 Clipping문제가 안일어 났음.)
+				FTransform OffsetWithoutX = FTransform(Offset.GetRotation(), FVector(5.f, Offset.GetTranslation().Y, Offset.GetTranslation().Z));
+				
 
 				//FPMesh를 해당 Offset만큼 이동, Camera의 중앙에 오도록 한다.
-
-				// x : -35.f, y : -16.f,  z: -137.f가 되어야함.
-				//FPMesh->SetRelativeTransform(FTransform(OffsetInverse));
-				FPMesh->SetRelativeTransform(Offset);
-				//FPMesh->SetRelativeLocation(FVector(OffsetInverse.GetTranslation().X, OffsetInverse.GetTranslation().Y, OffsetInverse.GetTranslation().Z));
-
-				FTransform FPMeshAfter = FPMesh->GetRelativeTransform();
-				UE_LOG(LogTemp, Warning, TEXT("FPMeshAfter : %s"), *FPMeshAfter.ToString());
-				
+				FPMesh->SetRelativeTransform(OffsetWithoutX);
+				CameraFPS->FieldOfView = 75.f;
 
 
-
+				//아래는 안씀.
 				/* Aim mode + FPS모드 전용의 소켓을 추가,
 				   해당소켓으로 부착시켜 주기 위해 함수를 호출한다.*/
 				//EquippedWeapon->FPS_AimAttachToMesh(this);
@@ -563,13 +552,14 @@ void AMainCharacter::SetAimMode(EAimMode Mode)
 				float CameraLength = FMath::FInterpTo(CurrentLength, BeforeCameraLength, GetWorld()->GetDeltaSeconds(), 15.f);*/
 				CameraBoom->TargetArmLength = BeforeCameraLength;
 				CameraTPS->SetRelativeLocation(TPSCam_Rel_Location);
+				CameraTPS->FieldOfView = BaseCamTPSfov;
 			}
 			else if (CameraMode == ECameraMode::ECM_FPS)
 			{
+				FPMesh->bPauseAnims = false;
+				FPMesh->SetRelativeTransform(FPMeshOriginTransform);
 
-				//FPMesh->SetRelativeTransform(FPMeshOriginTransform);
-				FPMesh->SetWorldTransform(FPMeshOriginTransform);
-
+				CameraFPS->FieldOfView = BaseCamFPSfov;
 				/* Aim mode + FPS모드 전용의 소켓을 추가, 부착 시켰기 때문에
 				원복을 해준다.*/
 				//EquippedWeapon->FPS_AimAttachToMesh(this);
@@ -946,6 +936,7 @@ void AMainCharacter::SetEquippedWeapon(AWeapon* Weapon)
 	if (Weapon)
 	{
 		EquippedWeapon = Weapon;
+		
 		//EquippedWeapon->OnBeginHighReady.AddDynamic(this, &UMainAnimInstance::BeginHighReady);
 		//EquippedWeapon->OnEndHighReady.AddDynamic(this, &AMainCharacter::EndHighReady);
 		
