@@ -3,9 +3,9 @@
 
 #include "BTTask_GetAttackableArea.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "EnemyCharacter.h"
-#include "EnemyAIController.h"
-#include "MainCharacter.h"
+#include "OpenWorldRPG/EnemyCharacter.h"
+#include "OpenWorldRPG/EnemyAIController.h"
+#include "OpenWorldRPG/MainCharacter.h"
 #include "Math/Vector.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Math/UnrealMathUtility.h"

@@ -639,8 +639,17 @@ FVector AWeapon::GetTraceStartLocation(FVector Dir)
 
 	FVector ReturnLocation;
 	FRotator Rot;
-	MainCon->GetPlayerViewPoint(ReturnLocation, Rot);
-	ReturnLocation = ReturnLocation + Dir * (OwningPlayer->GetActorLocation() - ReturnLocation | Dir);
+
+	if(bIsHighReady)
+	{
+		FVector WeaponMuzzleLocation = SKMesh->GetSocketLocation(MuzzleFlashSocketName);
+		ReturnLocation = WeaponMuzzleLocation;
+	}
+	else
+	{
+		MainCon->GetPlayerViewPoint(ReturnLocation, Rot);
+		ReturnLocation = ReturnLocation + Dir * (OwningPlayer->GetActorLocation() - ReturnLocation | Dir);
+	}
 	//ReturnLocation = ReturnLocation + Rot.Vector() * (OwningPlayer->GetActorLocation() - ReturnLocation | Rot.Vector());
 
 	//Weapon의 MuzzleLocation에서 다시 위 코드로 복구.
@@ -649,6 +658,23 @@ FVector AWeapon::GetTraceStartLocation(FVector Dir)
 
 	//DrawDebugSphere(GetWorld(), ReturnLocation, 12.f, 6, FColor::Green, false, 2.f, (uint8)nullptr, 2.f);
 	return ReturnLocation;
+}
+
+FVector AWeapon::GetTraceEndLocation(FVector StartVector, FVector Dir)
+{
+	FVector ReturnVec;
+	if(bIsHighReady)
+	{
+		//FRotationMatrix::MakeFromX()
+		FVector Upvector = GetActorForwardVector(); //GetInstigator()->GetActorUpVector();
+		DrawDebugSphere(GetWorld(), Upvector, 15.f, 3, FColor::Green, false, 5.f,0,3.f);
+		ReturnVec = StartVector + Upvector * WeaponStat.WeaponRange;
+	}
+	else
+	{
+		ReturnVec = WorldAimPosition + Dir * 30.f;
+	}
+	return ReturnVec;
 }
 
 
@@ -799,8 +825,8 @@ void AWeapon::UpdateAim()
 			WorldAimPosition = Hit.Location;
 
 
+			//FPS시점에서 Trace를 같은곳에 한번 더 쏴서 맞으면 맞은 위치로 AimPos를 옮긴다.
 			FHitResult WeaponHit = BulletTrace(MainCon->Main->CameraFPS->GetComponentLocation(), Hit.Location);
-
 			//FHitResult WeaponHit = BulletTrace(WeaponMuzzleLocation, Hit.Location);
 			if (WeaponHit.bBlockingHit)
 			{
@@ -843,8 +869,10 @@ void AWeapon::WeaponClipping()
 	IgnoreActorList.Add(GetInstigator());
 	FHitResult Hit;
 
-	UKismetSystemLibrary::SphereTraceSingle(GetWorld(), CurrentMeshRightHand, EndLo, 5.f, ETraceTypeQuery::TraceTypeQuery1, false,
-		IgnoreActorList, EDrawDebugTrace::ForDuration, Hit, true);
+	ETraceTypeQuery TTQ = UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_GameTraceChannel2);
+
+	UKismetSystemLibrary::SphereTraceSingle(GetWorld(), CurrentMeshRightHand, EndLo, 5.f, TTQ, false,
+		IgnoreActorList, EDrawDebugTrace::None, Hit, true);
 	
 	
 	if(Hit.bBlockingHit)
@@ -861,16 +889,18 @@ void AWeapon::WeaponClipping()
 		// 0*90 = 0, 0.5*90 = 45, 1*90 = 90이라 걍 -90을 빼버렸음,
 		// 최종값은 0일때 -90, 0.5일때 -45, 1일때 0이 나옴.
 		FRotator CalcRot = FRotator(CurRot.Pitch, CurRot.Yaw, (CurRot.Roll + (Hit.Distance / Length)*90.f) - 90.f);
-		UE_LOG(LogTemp, Warning, TEXT("Calc Rot ; %s"), *CalcRot.ToString());
+		//UE_LOG(LogTemp, Warning, TEXT("Calc Rot ; %s"), *CalcRot.ToString());
 
 		//OriginalWeaponTransform.SetLocation(CalcVec);
 		FTransform NewTransform = FTransform(CalcRot, CurVec);
 		//NewTransform.SetLocation(CalcVec);
 		SetActorRelativeTransform(NewTransform);
+		bIsHighReady = true;
 	}
 	else
 	{
 		SetActorRelativeTransform(CurrentMeshAttachTransform);
+		bIsHighReady = false;
 	}
 	//GetWorld()->
 }

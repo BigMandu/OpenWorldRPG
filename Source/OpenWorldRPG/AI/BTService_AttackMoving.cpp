@@ -3,9 +3,9 @@
 
 #include "BTService_AttackMoving.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "MainCharacter.h"
-#include "EnemyCharacter.h"
-#include "EnemyAIController.h"
+#include "OpenWorldRPG/MainCharacter.h"
+#include "OpenWorldRPG/EnemyCharacter.h"
+#include "OpenWorldRPG/EnemyAIController.h"
 #include "Kismet/KismetSystemLibrary.h"
 
 UBTService_AttackMoving::UBTService_AttackMoving()

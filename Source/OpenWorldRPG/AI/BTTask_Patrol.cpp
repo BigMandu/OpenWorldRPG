@@ -2,8 +2,8 @@
 
 
 #include "BTTask_Patrol.h"
-#include "EnemyAIController.h"
-#include "EnemyCharacter.h"
+#include "OpenWorldRPG/EnemyAIController.h"
+#include "OpenWorldRPG/EnemyCharacter.h"
 
 UBTTask_Patrol::UBTTask_Patrol()
 {

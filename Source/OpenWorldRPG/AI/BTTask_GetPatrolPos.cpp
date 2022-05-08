@@ -2,8 +2,8 @@
 
 
 #include "BTTask_GetPatrolPos.h"
-#include "EnemyCharacter.h"
-#include "EnemyAIController.h"
+#include "OpenWorldRPG/EnemyCharacter.h"
+#include "OpenWorldRPG/EnemyAIController.h"
 #include "NavigationSystem.h"
 #include "BehaviorTree/BlackboardComponent.h"
 

@@ -28,10 +28,16 @@ void AWeapon_Instant::New_BulletOut()
 {
 	FTransform AimPos = GetAimPosition();
 	FVector StartTrace = GetTraceStartLocation(AimPos.Rotator().Vector());
+	FVector EndTrace = GetTraceEndLocation(StartTrace, AimPos.Rotator().Vector());
 
+
+	
 	//그냥 WorldAimPos를 EndPoint로 지정할경우.
 	//가끔 딱 맞아떨어질때, Hit이 안먹히는 경우가 생겨 거리를 늘려준다.
-	FHitResult Hit = BulletTrace(StartTrace, WorldAimPosition+AimPos.Rotator().Vector()*30.f);
+	//FHitResult Hit = BulletTrace(StartTrace, WorldAimPosition + AimPos.Rotator().Vector() * 30.f);
+	FHitResult Hit = BulletTrace(StartTrace, EndTrace);
+
+	DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor::Green, false, 2.f, (uint8)nullptr, 2.f);
 
 	DrawDebugPoint(GetWorld(), Hit.Location, 10.f, FColor::Blue, false, 5.f);
 	CheckHit(Hit);

@@ -167,6 +167,9 @@ public:
 	bool bIsFiring;
 	bool bIsAiming; //Main에서 값을 단순히 넣어주기만 한다.
 
+	//Clipping을 하고있을때 Aim을 막고, BulletOut의 Trace를 수정하기 위한 boolean
+	bool bIsHighReady;
+
 	UPROPERTY(EditAnywhere, Category = "WeaponStat")
 	FWeaponStat WeaponStat;
 
@@ -220,8 +223,6 @@ protected:
 	bool bDetectLookInput;
 
 	bool bLMBDown;	
-
-	bool bIsHighReady;
 
 	float LastFireTime;
 
@@ -314,6 +315,7 @@ public:
 	void AimInitialize();
 	FTransform GetAimPosition();
 	FVector GetTraceStartLocation(FVector Dir = FVector::ZeroVector);
+	FVector GetTraceEndLocation(FVector StartVector = FVector::ZeroVector, FVector Dir = FVector::ZeroVector);
 	FHitResult BulletTrace(FVector StartTrace, FVector EndTrace);
 	
 	/* Setting New Weapon State, And Call SetWeaponState func */

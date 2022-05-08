@@ -2,8 +2,8 @@
 
 
 #include "BTTask_UpdateTargetPos.h"
-#include "EnemyAIController.h"
-#include "EnemyCharacter.h"
+#include "OpenWorldRPG/EnemyAIController.h"
+#include "OpenWorldRPG/EnemyCharacter.h"
 #include "Engine/TargetPoint.h"
 #include "BehaviorTree/BlackboardComponent.h"
 

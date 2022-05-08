@@ -806,15 +806,18 @@ void AMainCharacter::RMBDown()
 	{
 		if (EquippedWeapon != nullptr)
 		{
-			if (bAimToggle && bIsAim)
+			if (EquippedWeapon->bIsHighReady == false)
 			{
-				SetAimMode(EAimMode::EAM_NotAim);
-				UE_LOG(LogTemp, Warning, TEXT("Aim off"));
-			}
-			else
-			{
-				SetAimMode(EAimMode::EAM_Aim);
-				UE_LOG(LogTemp, Warning, TEXT("Aim on"));
+				if (bAimToggle && bIsAim)
+				{
+					SetAimMode(EAimMode::EAM_NotAim);
+					UE_LOG(LogTemp, Warning, TEXT("Aim off"));
+				}
+				else
+				{
+					SetAimMode(EAimMode::EAM_Aim);
+					UE_LOG(LogTemp, Warning, TEXT("Aim on"));
+				}
 			}
 		}
 	}
