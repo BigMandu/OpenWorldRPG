@@ -665,8 +665,11 @@ FVector AWeapon::GetTraceEndLocation(FVector StartVector, FVector Dir)
 	FVector ReturnVec;
 	if(bIsHighReady)
 	{
-		//FRotationMatrix::MakeFromX()
-		FVector Upvector = GetActorForwardVector(); //GetInstigator()->GetActorUpVector();
+		
+		FVector Vec = GetInstigator()->GetActorLocation();
+		FMatrix RotMat = FRotationMatrix::MakeFromYZ(Vec, Vec);
+		
+		FVector Upvector = RotMat.ToQuat().GetForwardVector(); //GetInstigator()->GetActorUpVector();
 		DrawDebugSphere(GetWorld(), Upvector, 15.f, 3, FColor::Green, false, 5.f,0,3.f);
 		ReturnVec = StartVector + Upvector * WeaponStat.WeaponRange;
 	}
