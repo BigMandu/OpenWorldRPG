@@ -24,7 +24,7 @@ void UEquipWidget::EquipInitialize(UEquipmentComponent* p_EquipComp)
 	if (EquipComp)
 	{
 		EquipComp->OnEquipmentUpdated.AddUFunction(this, FName("RefreshEquipWidget"));
-		UE_LOG(LogTemp, Warning, TEXT("UEquipWidget:: Bind Success"));
+		//UE_LOG(LogTemp, Warning, TEXT("UEquipWidget:: Bind Success"));
 	}
 
 	RefreshEquipWidget();

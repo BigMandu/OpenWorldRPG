@@ -13,6 +13,9 @@ class ULootBoxWidget;
 class UUserWidget;
 class AItem;
 class AMainController;
+
+class UAIPerceptionStimuliSourceComponent;
+class UAISense_Sight;
 //class AMainCharacter;
 
 
@@ -36,6 +39,9 @@ public:
 	
 	ULootBoxWidget* LootBoxWidget;
 
+	UPROPERTY(EditDefaultsOnly, Category = AI)
+	UAIPerceptionStimuliSourceComponent* StimuliComp;
+
 	/*UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = LootBox)
 	int32 LootItemCount;*/
 
@@ -54,13 +60,14 @@ public:
 	//AMainCharacter* Main;
 	AMainController* MainCon;
 
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 public:
 	//void SelectAndStoreLootItem();
-
+	virtual void PostInitializeComponents() override;
 	void OpenBox(AActor* Actor);
 	void ShowWidget();
 	//void CloseBox(AActor* Actor);

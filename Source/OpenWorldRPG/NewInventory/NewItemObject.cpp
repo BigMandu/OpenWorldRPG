@@ -28,7 +28,7 @@ UClass* UNewItemObject::GetItemClass()
 
 void UNewItemObject::ItemRotate()
 {
-	UE_LOG(LogTemp, Warning, TEXT("NewItemObj::ItemRotate func called"));
+	//UE_LOG(LogTemp, Warning, TEXT("NewItemObj::ItemRotate func called"));
 	if (bCanRotated)
 	{	
 		//회전을 했다면 item size를 swap해줌.

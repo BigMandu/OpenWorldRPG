@@ -13,7 +13,7 @@
  */
 class UNewItemObject;
 class UMaterialInterface;
-
+class UAIPerceptionStimuliSourceComponent;
 
 //UENUM(BlueprintType)
 //enum class EEquipmentType : uint8
@@ -82,6 +82,9 @@ public:
 	bool bCanEquip;
 
 
+	UPROPERTY(EditDefaultsOnly, Category = AI)
+	UAIPerceptionStimuliSourceComponent* StimuliComp;
+
 
 
 
@@ -91,7 +94,9 @@ protected:
 
 
 public:
-	
+
+	virtual void PostInitializeComponents() override;
+
 	FORCEINLINE EItemState GetItemState() { return ItemState; }
 
 	FORCEINLINE void SetItemState(EItemState State) { ItemState = State; }

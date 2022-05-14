@@ -29,7 +29,7 @@ void AWeapon_Instant::New_BulletOut()
 	FTransform AimPos = GetAimPosition();
 	FVector StartTrace = GetTraceStartLocation(AimPos.Rotator().Vector());
 	FVector EndTrace = GetTraceEndLocation(StartTrace, AimPos.Rotator().Vector());
-
+	 
 
 	
 	//그냥 WorldAimPos를 EndPoint로 지정할경우.

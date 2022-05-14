@@ -14,7 +14,7 @@ class ALootBox;
 
 class UAISense_Sight;
 class UAISense_Hearing;
-class UAIPerceptionStimuliSourceComponent;
+//class UAIPerceptionStimuliSourceComponent;
 class UCameraComponent;
 class UInputComponent;
 class UInventoryComponent;
@@ -169,10 +169,6 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interactive")
 	ALootBox* InteractLootBox;
 
-	/**************    Perception Source ฐüทร   ******************/
-	UAIPerceptionStimuliSourceComponent* StimuliSourceComp;
-	TSubclassOf<UAISense_Sight> Sight;
-	TSubclassOf<UAISense_Hearing> Hearing;
 
 	/**********  Sounds ************/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Sounds)
@@ -208,7 +204,6 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item | Weapon")
 	AWeapon* PistolWeapon;
 
-	void SetEquippedWeapon(AWeapon* Weapon);
 
 	
 protected:
@@ -262,6 +257,7 @@ public:
 	
 	void FPSAimLocationAdjust();
 
+	void SetEquippedWeapon(AWeapon* Weapon);
 	void ChangePrimaryWeapon();
 	void ChangeSubWeapon();
 	void ChangePistolWeapon();
@@ -294,6 +290,6 @@ public:
 
 	/********** Perception ********/
 	virtual bool CanBeSeenFrom(const FVector& ObserverLocation, FVector& OutSeenLocation, int32& NumberOfLoSChecksPerformed, float& OutSightStrength, const AActor* IgnoreActor, const bool* bWasVisible, int32* UserData) const;
-	//virtual bool CanBeSeenFrom(const FVector& ObserverLocation, FVector& OutSeenLocation, int32& NumberOfLoSChecksPerformed, float& OutSightStrength, const AActor* IgnoreActor) const;
+	
 
 };

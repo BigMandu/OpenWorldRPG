@@ -15,9 +15,9 @@
 #include "Engine/SkeletalMeshSocket.h"
 #include "Engine/EngineTypes.h"
 
-#include "Perception/AISightTargetInterface.h"
-#include "Perception/AIPerceptionStimuliSourceComponent.h"
-#include "Perception/AISense_Sight.h"
+//#include "Perception/AISightTargetInterface.h"
+//#include "Perception/AIPerceptionStimuliSourceComponent.h"
+//#include "Perception/AISense_Sight.h"
 #include "Perception/AISense_Hearing.h"
 
 #include "OpenWorldRPG/Item/EquipmentComponent.h"
@@ -33,6 +33,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/PoseableMeshComponent.h"
 #include "BoneControllers/AnimNode_ModifyBone.h"
+#include "Perception/AISenseConfig_Sight.h"
 
 // Sets default values
 AMainCharacter::AMainCharacter()
@@ -120,62 +121,8 @@ AMainCharacter::AMainCharacter()
 	/********** 초기 세팅 ************/
 	SetCameraMode(ECameraMode::ECM_TPS); //초기 카메라 모드는 3인칭 모드로.
 	SetAimMode(EAimMode::EAM_NotAim);
-	
-
-	/******  Perception ****/
-	StimuliSourceComp = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("StimuliSource"));
-
-	
 }
 
-// Called to bind functionality to input
-void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-	/************** Movement & sight key bind ***************/
-	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &AMainCharacter::MyJump);
-	PlayerInputComponent->BindAction("Jump", IE_Released, this, &AMainCharacter::MyStopJumping);
-
-	PlayerInputComponent->BindAxis("MoveForward", this, &AMainCharacter::MoveForward);
-	PlayerInputComponent->BindAxis("MoveRight", this, &AMainCharacter::MoveRight);
-
-	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
-	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
-	PlayerInputComponent->BindAxis("TurnRate", this, &AMainCharacter::TurnAtRate);
-	PlayerInputComponent->BindAxis("LookUpRate", this, &AMainCharacter::LookUpAtRate);
-
-	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &AMainCharacter::MyCrouch);
-	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &AMainCharacter::MyUnCrouch);
-
-	PlayerInputComponent->BindAction("Walk", IE_Pressed, this, &AMainCharacter::Walk);
-	PlayerInputComponent->BindAction("Walk", IE_Released, this, &AMainCharacter::UnWalk);
-
-	PlayerInputComponent->BindAction("ScrollDN", IE_Pressed, this, &AMainCharacter::ScrollDN);
-	PlayerInputComponent->BindAction("ScrollUP", IE_Pressed, this, &AMainCharacter::ScrollUP);
-
-	PlayerInputComponent->BindAction("Camera", IE_Pressed, this, &AMainCharacter::VKeyDN);
-
-	PlayerInputComponent->BindAction("LMB", IE_Pressed, this, &AMainCharacter::LMBDown);
-	PlayerInputComponent->BindAction("LMB", IE_Released, this, &AMainCharacter::LMBUp);
-
-	PlayerInputComponent->BindAction("RMB", IE_Pressed, this, &AMainCharacter::RMBDown);
-	PlayerInputComponent->BindAction("RMB", IE_Released, this, &AMainCharacter::RMBUp);
-
-	PlayerInputComponent->BindAction("ChangeSafetyLever", IE_Pressed, this, &AMainCharacter::ChangeSafetyLever);
-
-	/******** Weapon Quick Swap ***********/
-	PlayerInputComponent->BindAction("Primary", IE_Pressed, this, &AMainCharacter::ChangePrimaryWeapon);
-	PlayerInputComponent->BindAction("Sub", IE_Pressed, this, &AMainCharacter::ChangeSubWeapon);
-	PlayerInputComponent->BindAction("Pistol", IE_Pressed, this, &AMainCharacter::ChangePistolWeapon);
-
-	/************** Interactive & Inventory key bind ************/
-
-	PlayerInputComponent->BindAction("Tab", IE_Pressed, this, &AMainCharacter::TabKeyDown);
-
-	PlayerInputComponent->BindAction("Interactive", IE_Pressed, this, &AMainCharacter::EKeyDown);
-
-}
 
 void AMainCharacter::PostInitializeComponents()
 {
@@ -195,10 +142,6 @@ void AMainCharacter::PostInitializeComponents()
 		FPAnimInstance->WeaponTypeNumber = 0;
 	}
 
-	/**** Perception StimuliSource 제공 (Sight, Hearing Sense) ****/	
-	StimuliSourceComp->bAutoRegister = true;
-	StimuliSourceComp->RegisterForSense(Sight);
-	StimuliSourceComp->RegisterForSense(Hearing);
 
 	FPMeshOriginTransform = FPMesh->GetRelativeTransform();
 	FPMesh->SetHiddenInGame(true);
@@ -207,7 +150,7 @@ void AMainCharacter::PostInitializeComponents()
 	BaseCamTPSfov = CameraTPS->FieldOfView;
 	BaseCamFPSfov = CameraFPS->FieldOfView;
 	BaseFPMeshTransform = FPMesh->GetRelativeTransform();
-	
+
 
 	//GetCapsuleComponent()->SetCollisionProfileName(FName("MainChar"));
 	GetCapsuleComponent()->SetCollisionObjectType(ECollisionChannel::ECC_GameTraceChannel2);
@@ -371,6 +314,82 @@ void AMainCharacter::SetMainCharacterStatus(EPlayerStatus Type) //플레이어의 상�
 	}
 }
 
+
+// Called to bind functionality to input
+void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+	/************** Movement & sight key bind ***************/
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &AMainCharacter::MyJump);
+	PlayerInputComponent->BindAction("Jump", IE_Released, this, &AMainCharacter::MyStopJumping);
+
+	PlayerInputComponent->BindAxis("MoveForward", this, &AMainCharacter::MoveForward);
+	PlayerInputComponent->BindAxis("MoveRight", this, &AMainCharacter::MoveRight);
+
+	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
+	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
+	PlayerInputComponent->BindAxis("TurnRate", this, &AMainCharacter::TurnAtRate);
+	PlayerInputComponent->BindAxis("LookUpRate", this, &AMainCharacter::LookUpAtRate);
+
+	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &AMainCharacter::MyCrouch);
+	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &AMainCharacter::MyUnCrouch);
+
+	PlayerInputComponent->BindAction("Walk", IE_Pressed, this, &AMainCharacter::Walk);
+	PlayerInputComponent->BindAction("Walk", IE_Released, this, &AMainCharacter::UnWalk);
+
+	PlayerInputComponent->BindAction("ScrollDN", IE_Pressed, this, &AMainCharacter::ScrollDN);
+	PlayerInputComponent->BindAction("ScrollUP", IE_Pressed, this, &AMainCharacter::ScrollUP);
+
+	PlayerInputComponent->BindAction("Camera", IE_Pressed, this, &AMainCharacter::VKeyDN);
+
+	PlayerInputComponent->BindAction("LMB", IE_Pressed, this, &AMainCharacter::LMBDown);
+	PlayerInputComponent->BindAction("LMB", IE_Released, this, &AMainCharacter::LMBUp);
+
+	PlayerInputComponent->BindAction("RMB", IE_Pressed, this, &AMainCharacter::RMBDown);
+	PlayerInputComponent->BindAction("RMB", IE_Released, this, &AMainCharacter::RMBUp);
+
+	PlayerInputComponent->BindAction("ChangeSafetyLever", IE_Pressed, this, &AMainCharacter::ChangeSafetyLever);
+
+	/******** Weapon Quick Swap ***********/
+	PlayerInputComponent->BindAction("Primary", IE_Pressed, this, &AMainCharacter::ChangePrimaryWeapon);
+	PlayerInputComponent->BindAction("Sub", IE_Pressed, this, &AMainCharacter::ChangeSubWeapon);
+	PlayerInputComponent->BindAction("Pistol", IE_Pressed, this, &AMainCharacter::ChangePistolWeapon);
+
+	/************** Interactive & Inventory key bind ************/
+
+	PlayerInputComponent->BindAction("Tab", IE_Pressed, this, &AMainCharacter::TabKeyDown);
+
+	PlayerInputComponent->BindAction("Interactive", IE_Pressed, this, &AMainCharacter::EKeyDown);
+
+}
+
+
+void AMainCharacter::FPSAimLocationAdjust()
+{
+	if (CameraFPS)
+	{
+		if (bIsAim)
+		{
+			//각 총마다 FPMesh의 올바른 위치에 부착하기 위해
+			//Weapon Class에 Transform 변수를 만들어줬다.
+			const FTransform NewFPMeshTransform = EquippedWeapon->CharFPMeshTransform;
+			const FTransform NewWeaponTransform = EquippedWeapon->WeapSKMeshTransform;
+			CameraFPS->SetFieldOfView(70.f);
+			//FPMesh->SetRelativeLocation(NewFPMeshLocation);
+			FPMesh->SetRelativeTransform(NewFPMeshTransform);
+			EquippedWeapon->SKMesh->SetRelativeTransform(NewWeaponTransform);
+		}
+		else
+		{
+			CameraFPS->SetFieldOfView(BaseCamFPSfov);
+			FPMesh->SetRelativeTransform(BaseFPMeshTransform);
+			EquippedWeapon->SKMesh->SetRelativeTransform(BaseWeapTransform);
+		}
+	}
+}
+
+
 //플레이어 시점 상태 -> VKeyDN
 void AMainCharacter::SetCameraMode(ECameraMode Type)
 {
@@ -432,7 +451,7 @@ void AMainCharacter::SetCameraMode(ECameraMode Type)
 		/*  Character Mesh 설정 */
 		FPMesh->SetHiddenInGame(false);
 		GetMesh()->SetHiddenInGame(true);
-		
+
 
 		/* 장착 무기 Mesh에 부착 */
 		if (EquippedWeapon)
@@ -482,7 +501,7 @@ void AMainCharacter::SetAimMode(EAimMode Mode)
 			{
 				//TPS모드 + Aim상태일때는 카메라를 살짝 앞으로 땡겨준다.
 				//현재 SprintArm의 길이를 저장한다.
-				BeforeCameraLength = CameraBoom->TargetArmLength; 
+				BeforeCameraLength = CameraBoom->TargetArmLength;
 				//float CameraLength = FMath::FInterpTo(BeforeCameraLength, MINCameraLength, GetWorld()->GetDeltaSeconds(), 15.f);
 				CameraBoom->TargetArmLength = MINCameraLength + 20.f;
 				CameraTPS->SetRelativeLocation(TPSCam_Aim_Rel_Location);
@@ -505,13 +524,13 @@ void AMainCharacter::SetAimMode(EAimMode Mode)
 				//Example: ChildOffset = MakeRelativeTransform(Child.GetActorTransform(), Parent.GetActorTransform())
 				//This computes the relative transform of the Child from the Parent.
 
-				
+
 				FTransform  Offset = FPMeshWorld.GetRelativeTransform(SightTransform);
 
 				// Weapon의 Clipping을 위한 Trace를 FPMesh일때 Aim, NotAim을 보완하기 위해 Aim일때 Mesh를 앞으로 좀 나가게 한다.
 				// (기존 Aim때는 FPMesh가 뒤로 들어가버려 Clipping문제가 안일어 났음.)
 				FTransform OffsetWithoutX = FTransform(Offset.GetRotation(), FVector(5.f, Offset.GetTranslation().Y, Offset.GetTranslation().Z));
-				
+
 
 				//FPMesh를 해당 Offset만큼 이동, Camera의 중앙에 오도록 한다.
 				FPMesh->SetRelativeTransform(OffsetWithoutX);
@@ -521,8 +540,8 @@ void AMainCharacter::SetAimMode(EAimMode Mode)
 				//아래는 안씀.
 				/* Aim mode + FPS모드 전용의 소켓을 추가,
 				   해당소켓으로 부착시켜 주기 위해 함수를 호출한다.*/
-				//EquippedWeapon->FPS_AimAttachToMesh(this);
-				//FPSAimLocationAdjust();
+				   //EquippedWeapon->FPS_AimAttachToMesh(this);
+				   //FPSAimLocationAdjust();
 			}
 			break;
 		}
@@ -534,7 +553,7 @@ void AMainCharacter::SetAimMode(EAimMode Mode)
 
 			if (CameraMode == ECameraMode::ECM_TPS)
 			{
-				if(EquippedWeapon)
+				if (EquippedWeapon)
 				{
 					GetCharacterMovement()->bOrientRotationToMovement = false;
 					bUseControllerRotationYaw = true; //false; //3인칭에 Aim상태가 아니면, Yaw를 풀어준다.
@@ -545,8 +564,8 @@ void AMainCharacter::SetAimMode(EAimMode Mode)
 					bUseControllerRotationYaw = false; //3인칭에 Aim상태가 아니면, Yaw를 풀어준다.
 				}
 
-				
-				
+
+
 				//땡긴 카메라를 다시 원복 시킨다.
 				/*float CurrentLength = CameraBoom->TargetArmLength;
 				float CameraLength = FMath::FInterpTo(CurrentLength, BeforeCameraLength, GetWorld()->GetDeltaSeconds(), 15.f);*/
@@ -597,7 +616,7 @@ void AMainCharacter::MoveForward(float Value)
 
 		// forward벡터를 구한다.
 		FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-		
+
 		//그 방향으로 value만큼 간다.
 		AddMovementInput(Direction, Value);
 		/*UE_LOG(LogTemp, Warning, TEXT("my  ForVec = %s"), *Direction.ToString());
@@ -609,13 +628,13 @@ void AMainCharacter::MoveRight(float Value)
 {
 	if (MainController != NULL && Value != 0.f)
 	{
-		
+
 		FRotator Rotation = MainController->GetControlRotation();
 		FRotator YawRotation = FRotator(0.f, Rotation.Yaw, 0.f);
 
 		//right 벡터
 		FVector Direction = FRotationMatrix(Rotation).GetUnitAxis(EAxis::Y);
-		
+
 		AddMovementInput(Direction, Value);
 		/*UE_LOG(LogTemp, Warning, TEXT("my  RigVec = %s"), *Direction.ToString());
 		UE_LOG(LogTemp, Warning, TEXT("Actor::RigVec = %s"), *GetActorRightVector().ToString());*/
@@ -748,30 +767,6 @@ void AMainCharacter::VKeyDN()
 			break;
 		default:
 			break;
-		}
-	}
-}
-
-void AMainCharacter::FPSAimLocationAdjust()
-{
-	if (CameraFPS)
-	{
-		if (bIsAim)
-		{
-			//각 총마다 FPMesh의 올바른 위치에 부착하기 위해
-			//Weapon Class에 Transform 변수를 만들어줬다.
-			const FTransform NewFPMeshTransform = EquippedWeapon->CharFPMeshTransform;
-			const FTransform NewWeaponTransform = EquippedWeapon->WeapSKMeshTransform;
-			CameraFPS->SetFieldOfView(70.f);
-			//FPMesh->SetRelativeLocation(NewFPMeshLocation);
-			FPMesh->SetRelativeTransform(NewFPMeshTransform);
-			EquippedWeapon->SKMesh->SetRelativeTransform(NewWeaponTransform);
-		}
-		else
-		{
-			CameraFPS->SetFieldOfView(BaseCamFPSfov);
-			FPMesh->SetRelativeTransform(BaseFPMeshTransform);
-			EquippedWeapon->SKMesh->SetRelativeTransform(BaseWeapTransform);
 		}
 	}
 }
@@ -964,31 +959,6 @@ FTransform AMainCharacter::LeftHandik()
 	return Transform;
 }
 
-//void AMainCharacter::BeginHighReady()
-//{
-//	
-//	const USkeletalMeshSocket* TP_ArmLeft = GetMesh()->GetSocketByName("upperarm_l");
-//	const USkeletalMeshSocket* TP_ArmRight = GetMesh()->GetSocketByName("upperarm_r");
-//
-//	const USkeletalMeshSocket* FP_Arms = FPMesh->GetSocketByName("spine_03");
-//	/*const USkeletalMeshSocket* FP_ArmLeft = FPMesh->GetSocketByName("UpperArm_L");
-//	const USkeletalMeshSocket* FP_ArmRight = FPMesh->GetSocketByName("UpperArm_R");*/
-//
-//	FRotator NewRot = FRotator(0.f, 0.f, 200.f);
-//
-//	//TP_ArmLeft->RelativeRotation = NewRot;
-//	FAnimNode_ModifyBone ModBone;
-//	const FBoneReference Bone("upperarm_l");
-//	ModBone.BoneToModify = Bone.BoneName;
-//	ModBone.Rotation = FRotator(0.f, 0.f, 120.f);
-//}
-//
-//void AMainCharacter::EndHighReady()
-//{
-//	
-//}
-
-
 
 /*************************  Interaction 관련 ***************************************************/
 
@@ -1082,14 +1052,24 @@ void AMainCharacter::StepSound()
 	{
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), StepSoundCue, GetActorLocation());
 	}
+
+	
+
+	/*UAISense_Hearing* HearingClass = Cast<UAISense_Hearing>(Hearing->GetClass());
+	if (HearingClass)
+	{
+		HearingClass->ReportNoiseEvent(GetWorld(), GetActorLocation(), 1.f, this);
+	}*/
+	
 	UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), 1.f, this);
 
 }
 
-//bool AMainCharacter::CanBeSeenFrom(const FVector& ObserverLocation, FVector& OutSeenLocation, int32& NumberOfLoSChecksPerformed, float& OutSightStrength, const AActor* IgnoreActor) const
+
 
 bool AMainCharacter::CanBeSeenFrom(const FVector& ObserverLocation, FVector& OutSeenLocation, int32& NumberOfLoSChecksPerformed, float& OutSightStrength, const AActor* IgnoreActor, const bool* bWasVisible, int32* UserData) const
 {
+	
 	FHitResult HitResult;
 	FVector PlayerLocation;
 	bool bResult = false;
@@ -1102,8 +1082,8 @@ bool AMainCharacter::CanBeSeenFrom(const FVector& ObserverLocation, FVector& Out
 	else PlayerLocation = GetActorLocation(); //없으면 Actor의 위치를(정가운데)
 
 
-	/* FCollisionObjectQueryParams에는 	FCollisionObjectQueryParams(int32 InObjectTypesToQuery)를 사용할거다.
-	* 이를 사용하기 위해서는 To do this, use ECC_TO_BITFIELD to convert to bit field 이렇게 하라고 한다.        */
+	// FCollisionObjectQueryParams에는 	FCollisionObjectQueryParams(int32 InObjectTypesToQuery)를 사용할거다.
+	// 이를 사용하기 위해서는 To do this, use ECC_TO_BITFIELD to convert to bit field 이렇게 하라고 한다. 
 
 	//WorldDynamic, WorldStatic, IgnoreActor를 (관측자의 위치에서 Player의 위치의 범위) LineTrace로 감지. 
 	bool bHit = GetWorld()->LineTraceSingleByObjectType(HitResult, ObserverLocation, PlayerLocation
@@ -1128,5 +1108,3 @@ bool AMainCharacter::CanBeSeenFrom(const FVector& ObserverLocation, FVector& Out
 	}
 	return bResult;
 }
-
-

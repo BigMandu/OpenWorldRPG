@@ -53,6 +53,8 @@ void AWeapon::Tick(float DeltaTime)
 		{
 			UpdateAim();
 			WeaponClipping();
+
+			//DrawDebugLine(GetWorld(), GetActorForwardVector(), GetActorLocation() + GetActorRotation().Vector() * 100.f, FColor::Cyan, false, 1.f, 0, 2.f);
 		}
 	}
 }
@@ -640,38 +642,32 @@ FVector AWeapon::GetTraceStartLocation(FVector Dir)
 	FVector ReturnLocation;
 	FRotator Rot;
 
+	//ClippingWall 함수가 실행되면, 탄 시작 위치를 Muzzle의 위치로 바꾼다.
+	//함수가 실행되지 않으면,  탄시작 위치는 Actor와(Actor-CamLo = Actor의 옆위치가 된다) Dir의 사이각이 된다.
 	if(bIsHighReady)
 	{
 		FVector WeaponMuzzleLocation = SKMesh->GetSocketLocation(MuzzleFlashSocketName);
-		ReturnLocation = WeaponMuzzleLocation;
+		ReturnLocation = WeaponMuzzleLocation; //GetActorLocation();
 	}
 	else
 	{
 		MainCon->GetPlayerViewPoint(ReturnLocation, Rot);
 		ReturnLocation = ReturnLocation + Dir * (OwningPlayer->GetActorLocation() - ReturnLocation | Dir);
 	}
-	//ReturnLocation = ReturnLocation + Rot.Vector() * (OwningPlayer->GetActorLocation() - ReturnLocation | Rot.Vector());
-
-	//Weapon의 MuzzleLocation에서 다시 위 코드로 복구.
-	//WeaponMuzzleLocation = SKMesh->GetSocketLocation(MuzzleFlashSocketName);
-	//ReturnLocation = WeaponMuzzleLocation;
-
-	//DrawDebugSphere(GetWorld(), ReturnLocation, 12.f, 6, FColor::Green, false, 2.f, (uint8)nullptr, 2.f);
+	
 	return ReturnLocation;
 }
 
 FVector AWeapon::GetTraceEndLocation(FVector StartVector, FVector Dir)
 {
 	FVector ReturnVec;
+
+	//ClippingWall함수가 실행되면 탄의 종료 위치는 Muzzle의 방향*거리가 되며
+	//함수가 실행되지 않으면, WorldAimPosition이 된다.
 	if(bIsHighReady)
 	{
-		
-		FVector Vec = GetInstigator()->GetActorLocation();
-		FMatrix RotMat = FRotationMatrix::MakeFromYZ(Vec, Vec);
-		
-		FVector Upvector = RotMat.ToQuat().GetForwardVector(); //GetInstigator()->GetActorUpVector();
-		DrawDebugSphere(GetWorld(), Upvector, 15.f, 3, FColor::Green, false, 5.f,0,3.f);
-		ReturnVec = StartVector + Upvector * WeaponStat.WeaponRange;
+		FRotator MuzzleRotation = SKMesh->GetSocketRotation(MuzzleFlashSocketName);
+		ReturnVec = StartVector + MuzzleRotation.Vector() * WeaponStat.WeaponRange;
 	}
 	else
 	{
@@ -894,10 +890,11 @@ void AWeapon::WeaponClipping()
 		FRotator CalcRot = FRotator(CurRot.Pitch, CurRot.Yaw, (CurRot.Roll + (Hit.Distance / Length)*90.f) - 90.f);
 		//UE_LOG(LogTemp, Warning, TEXT("Calc Rot ; %s"), *CalcRot.ToString());
 
-		//OriginalWeaponTransform.SetLocation(CalcVec);
-		FTransform NewTransform = FTransform(CalcRot, CurVec);
-		//NewTransform.SetLocation(CalcVec);
-		SetActorRelativeTransform(NewTransform);
+		
+		//FTransform NewTransform = FTransform(CalcRot, CurVec);
+		CurrentMeshAttachTransform = FTransform(CalcRot, CurVec);
+		
+		SetActorRelativeTransform(CurrentMeshAttachTransform);
 		bIsHighReady = true;
 	}
 	else
@@ -905,7 +902,6 @@ void AWeapon::WeaponClipping()
 		SetActorRelativeTransform(CurrentMeshAttachTransform);
 		bIsHighReady = false;
 	}
-	//GetWorld()->
 }
 
 

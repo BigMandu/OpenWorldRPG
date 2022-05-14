@@ -12,6 +12,7 @@ UBTTask_GetPatrolPos::UBTTask_GetPatrolPos()
 	NodeName = TEXT("GetPatrolPos");
 }
 
+//Random Patrol을 할때 최소 거리 이상의 Patrol Point를 얻어온다.
 EBTNodeResult::Type UBTTask_GetPatrolPos::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	Super::ExecuteTask(OwnerComp, NodeMemory);
@@ -30,6 +31,7 @@ EBTNodeResult::Type UBTTask_GetPatrolPos::ExecuteTask(UBehaviorTreeComponent& Ow
 			{
 				const FVector OriginPos = BBComp->GetValueAsVector(AIController->OriginPosKey);
 				FVector CurrentEnemyPos = Enemy->GetActorLocation();
+
 				FVector NewPatrolPos;
 				FNavLocation NavLocation;
 				float sub = 0.f;

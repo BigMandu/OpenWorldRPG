@@ -5,8 +5,10 @@
 #include "OpenWorldRPG/MainCharacter.h"
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
 #include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
-#include "Materials/MaterialInterface.h"
+#include "Perception/AIPerceptionStimuliSourceComponent.h"
+#include "Perception/AISense_Sight.h"
 #include "DrawDebugHelpers.h"
+
 
 AItem::AItem()
 {
@@ -23,7 +25,18 @@ AItem::AItem()
 	
 	ItemSize = FIntPoint(1, 1);
 	bCanRotate = true;
+
+	StimuliComp = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("StimuliComp"));
+	StimuliComp->bAutoRegister = true;
 	
+}
+
+void AItem::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	StimuliComp->RegisterForSense(UAISense_Sight::StaticClass());
+	StimuliComp->RegisterWithPerceptionSystem();
 }
 
 void AItem::BeginPlay()

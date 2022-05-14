@@ -6,11 +6,11 @@
 #include "GameFramework/Actor.h"
 #include "Interactive_Interface.h"
 #include "OpenWorldRPG/Item/ItemInterface.h"
-#include "Engine/BlendableInterface.h"
 #include "Interactable.generated.h"
 
 class UStaticMeshComponent;
 class USkeletalMesh;
+
 
 //UENUM(BlueprintType)
 //enum class EInteractType : uint8
@@ -62,7 +62,4 @@ public:
 
 	void SetOutline();
 	void UnsetOutline();
-
-
-
 };

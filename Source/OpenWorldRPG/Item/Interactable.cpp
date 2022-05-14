@@ -5,7 +5,7 @@
 #include "Item.h"
 #include "Equipment.h"
 #include "LootBox.h"
-#include "OpenWorldRPG/MainCharacter.h"
+#include "Perception/AISense_Sight.h"
 #include "Components/StaticMeshComponent.h"
 
 // Sets default values
@@ -22,8 +22,7 @@ AInteractable::AInteractable()
 // Called when the game starts or when spawned
 void AInteractable::BeginPlay()
 {
-	Super::BeginPlay();
-	
+	Super::BeginPlay();	
 }
 
 

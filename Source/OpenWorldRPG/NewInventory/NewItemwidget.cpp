@@ -62,7 +62,7 @@ void UNewItemwidget::Refresh()
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("sizebox is invalid"));
+		//UE_LOG(LogTemp, Warning, TEXT("sizebox is invalid"));
 	}
 	
 }

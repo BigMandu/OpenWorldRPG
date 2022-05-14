@@ -10,6 +10,14 @@
 /**
  * 
  */
+class AMainCharacter;
+class AEnemyCharacter;
+class UAIPerceptionComponent;
+class UAISenseConfig_Sight;
+class UAISenseConfig_Hearing;
+class UBehaviorTreeComponent;
+class UBlackboardComponent;
+
 UCLASS()
 class OPENWORLDRPG_API AEnemyAIController : public AAIController
 {
@@ -18,30 +26,32 @@ class OPENWORLDRPG_API AEnemyAIController : public AAIController
 public:
 	AEnemyAIController(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
-	class AEnemyCharacter* Enemy;
+	AEnemyCharacter* Enemy;
 
 	/*********** AI Perception ***************/
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = AI)
-	class UAISenseConfig_Sight* SightConfig;
+	/*UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = AI)
+	UAIPerceptionComponent* PerceptionComp;*/
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = AI)
-	class UAISenseConfig_Hearing* HearingConfig;
+	UAISenseConfig_Sight* SightConfig;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = AI)
+	UAISenseConfig_Hearing* HearingConfig;
 
 	FTimerHandle TargetLostTimer;
 	FTimerDelegate TargetLostDelegate;
 
 	/************* Behavior Tree *************/
 	UPROPERTY()
-	class UBehaviorTreeComponent* BTComp;
+	UBehaviorTreeComponent* BTComp;
 	UPROPERTY()
-	class UBlackboardComponent* BBComp;
+	UBlackboardComponent* BBComp;
 
 	/**********  Blackboard Key   **********/
 
 	const FName OriginPosKey = FName(TEXT("OriginPos"));
 	const FName PatrolPosKey = FName(TEXT("PatrolPos"));
-	const FName bHasTargetPointsKey = FName(TEXT("HasTargetPoints"));
-	const FName TargetPointIndexKey = FName(TEXT("TargetPointIndex"));
+	const FName bHasPatrolPointsKey = FName(TEXT("HasPatrolPoints"));
+	const FName PatrolPointIndexKey = FName(TEXT("PatrolPointIndex"));
 	const FName PlayerKey = FName(TEXT("Player"));
 	const FName HearLocation = FName(TEXT("HearLocation"));
 	const FName bSeePlayerKey = FName(TEXT("SeePlayer"));
@@ -68,12 +78,15 @@ public:
 	UFUNCTION()
 	void DetectedTarget(AActor* Target, FAIStimulus Stimulus);
 
+	void DetectedPlayer(AMainCharacter* Player, FAIStimulus Stimulus);
+
+
 	UFUNCTION()
-	void LostTarget(AActor* Target);
+	void LostTarget(AMainCharacter* Target); //AActor* Target);
 
 	virtual void OnPossess(APawn* InPawn) override;
 
-	void UpdateTargetPointIndex(int32 index);
+	void UpdatePatrolPointIndex(int32 index);
 	void UpdatePatrolPosKey(FVector NewPatrolPos);
 	void UpdatePlayerKey(AActor* Actor);
 	void UpdateHearLocationKey(FVector Location);

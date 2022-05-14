@@ -10,6 +10,8 @@
 #include "OpenWorldRPG/NewInventory/LootBoxWidget.h"
 #include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
 #include "OpenWorldRPG/NewInventory/NewInventory.h"
+#include "Perception/AIPerceptionStimuliSourceComponent.h"
+#include "Perception/AISense_Sight.h"
 
 ALootBox::ALootBox()
 {
@@ -22,6 +24,9 @@ ALootBox::ALootBox()
 
 	BoxInventoryComp = CreateDefaultSubobject<UNewInventoryComponent>(TEXT("BoxInventoryComp"));
 
+
+	StimuliComp = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("StimuliComp"));
+	StimuliComp->bAutoRegister = true;
 
 	//WidgetBlueprint'/Game/Inventory/WBP_LootBox.WBP_LootBox'
 	//위젯 하드코딩
@@ -48,10 +53,21 @@ ALootBox::ALootBox()
 	//LootItemCount = 1;
 }
 
+void ALootBox::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	StimuliComp->RegisterForSense(UAISense_Sight::StaticClass());
+	StimuliComp->RegisterWithPerceptionSystem();
+}
+
 void ALootBox::BeginPlay()
 {
 	Super::BeginPlay();
 	MainCon = Cast<AMainController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+
+	
+
 
 	/*if (WLootBoxWidget && MainCon)
 	{

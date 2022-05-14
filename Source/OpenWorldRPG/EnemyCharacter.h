@@ -6,6 +6,17 @@
 #include "GameFramework/Character.h"
 #include "EnemyCharacter.generated.h"
 
+UENUM(BlueprintType)
+enum class EAIStatus : uint8
+{
+	EAS_Dead		UMETA(DisplayName = "Dead"),
+	EAS_Normal		UMETA(DisplayName = "Normal"), //Patrol, Peace상태
+	EAS_Search		UMETA(DisplayName = "Search"), //뭔가를 듣거나, Player를 수색중일때
+	EAS_Attack		UMETA(DisplayName = "Attack"), //Player가 시야에 보일때
+
+	EAS_MAX		UMETA(DisplayName = "DefaultMAX")
+};
+
 UCLASS()
 class OPENWORLDRPG_API AEnemyCharacter : public ACharacter
 {
@@ -17,6 +28,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = AI)
 	class UBehaviorTree* BTAsset; //AIController의 BTComp에 넣어주기 위함.
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Enums")
+	EAIStatus AIStatus;
 
 	UPROPERTY(EditAnywhere, Category = AI)
 	bool bHasPatrolPoints;
@@ -38,6 +52,14 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = Combat)
 	float Range; // Enemy의 사거리 -> 무기의 Range로 교체 할 예정임.
+
+	//Enemy의 최대, 최소 속도
+	UPROPERTY(EditDefaultsOnly, Category = AI)
+	float MaxWalkSpeed = 600.f;
+	UPROPERTY(EditDefaultsOnly, Category = AI)
+	float MinWalkSpeed = 300.f;
+	
+
 
 	/******* 디버깅용 ********/
 	UPROPERTY(VisibleAnywhere, Category = AI)

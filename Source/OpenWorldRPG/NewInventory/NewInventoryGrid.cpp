@@ -34,11 +34,11 @@ UNewInventoryGrid::UNewInventoryGrid(const FObjectInitializer& ObjectInitializer
 	if (BrushAsset.Succeeded())
 	{
 		Brush = BrushAsset.Object;
-		UE_LOG(LogTemp, Warning, TEXT("NewInventoryGrid::BrushAsset load success."));
+		//UE_LOG(LogTemp, Warning, TEXT("NewInventoryGrid::BrushAsset load success."));
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("NewInventoryGrid::BrushAsset load failed."));
+		//UE_LOG(LogTemp, Warning, TEXT("NewInventoryGrid::BrushAsset load failed."));
 	}
 
 }
@@ -51,7 +51,7 @@ void UNewInventoryGrid::NativeConstruct()
 
 void UNewInventoryGrid::GridInitialize(UNewInventoryComponent* p_InvComp, float p_TileSize)
 {
-	UE_LOG(LogTemp, Warning, TEXT("InvGrid:: called GridInit func"));
+	//UE_LOG(LogTemp, Warning, TEXT("InvGrid:: called GridInit func"));
 	check(p_InvComp);
 
 	InventoryComp = p_InvComp;
@@ -238,7 +238,7 @@ void UNewInventoryGrid::OnItemRemove(UObject* T_ItemObj)
 				/* Drop widget 상태 변환 */
 				if (Dropwidget && !MainCon->bIsInteractLootBox)
 				{
-					UE_LOG(LogTemp, Warning, TEXT("InvGrid:: Drop Widget Change 'Drop' State "));
+					//UE_LOG(LogTemp, Warning, TEXT("InvGrid:: Drop Widget Change 'Drop' State "));
 					Dropwidget->ChangeState();
 				}
 			}
@@ -248,7 +248,7 @@ void UNewInventoryGrid::OnItemRemove(UObject* T_ItemObj)
 
 bool UNewInventoryGrid::MoveItemInSameContainer(UNewItemObject* Item)
 {
-	UE_LOG(LogTemp, Warning, TEXT("UNewInventoryGrid::MoveItemInSameContainer() is called"));
+	//UE_LOG(LogTemp, Warning, TEXT("UNewInventoryGrid::MoveItemInSameContainer() is called"));
 	FTile DraggedTile;
 	DraggedTile.X = DraggedTopLeftTile.X;
 	DraggedTile.Y = DraggedTopLeftTile.Y;
@@ -285,7 +285,7 @@ bool UNewInventoryGrid::NativeOnDrop(const FGeometry& InGeometry, const FDragDro
 {
 	bool bReturn = Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);
 
-	UE_LOG(LogTemp, Warning, TEXT("NewInventoryGrid::OnDrop func called"));
+	//UE_LOG(LogTemp, Warning, TEXT("NewInventoryGrid::OnDrop func called"));
 
 	UNewItemObject* ItemObj = Cast<UNewItemObject>(InOperation->Payload);
 	if (ItemObj)
@@ -300,7 +300,7 @@ bool UNewInventoryGrid::NativeOnDrop(const FGeometry& InGeometry, const FDragDro
 		// Drop widget 상태 변환 
 		if (Dropwidget && MainCon && !MainCon->bIsInteractLootBox)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("InvGrid:: Drop Widget Change 'Normal' State "));
+			//UE_LOG(LogTemp, Warning, TEXT("InvGrid:: Drop Widget Change 'Normal' State "));
 			Dropwidget->bReturnNormal = true;
 			Dropwidget->ChangeState();
 		}
@@ -464,7 +464,7 @@ void UNewInventoryGrid::DrawDropLocation(FPaintContext& Context) const
 
 FReply UNewInventoryGrid::NativeOnPreviewKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
 {
-	UE_LOG(LogTemp, Warning, TEXT("NewInventoryGrid::OnPreviewKeyDown"));
+	//UE_LOG(LogTemp, Warning, TEXT("NewInventoryGrid::OnPreviewKeyDown"));
 	FReply Reply = Super::NativeOnPreviewKeyDown(InGeometry, InKeyEvent);
 	
 	bool bDragging = UWidgetBlueprintLibrary::IsDragDropping();
