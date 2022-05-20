@@ -26,12 +26,12 @@ EBTNodeResult::Type UBTTask_GetAttackableArea::ExecuteTask(UBehaviorTreeComponen
 	AEnemyCharacter* Enemy = Cast<AEnemyCharacter>(AICon->GetCharacter());
 	check(Enemy);
 
-	AMainCharacter* Main = Cast<AMainCharacter>(BBComp->GetValueAsObject(AICon->PlayerKey));
-	check(Main);
+	ABaseCharacter* Char = Cast<ABaseCharacter>(BBComp->GetValueAsObject(AICon->EnemyKey));
+	check(Char);
 
-	BBComp->ClearValue(AICon->AttackableLocationKey);
+	BBComp->ClearValue(AICon->TargetLocationKey);
 
-	FVector PlayerLo = Main->GetActorLocation();
+	FVector PlayerLo = Char->GetActorLocation();
 	FVector AILo = Enemy->GetActorLocation();
 	 
 
@@ -58,6 +58,8 @@ EBTNodeResult::Type UBTTask_GetAttackableArea::ExecuteTask(UBehaviorTreeComponen
 		UKismetSystemLibrary::DrawDebugSphere(this, NewAILocation, 20.f, 8, FLinearColor::Yellow, 2.f, 2.f);
 
 	}
-	AICon->UpdateAttackableLocationKey(NewAILocation);
+
+	AICon->UpdateBBCompVectorKey(AICon->TargetLocationKey, NewAILocation);
+	//AICon->UpdateAttackableLocationKey(NewAILocation);
 	return Result;
 }

@@ -8,56 +8,41 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "Kismet/KismetMathLibrary.h"
 #include "Components/PawnNoiseEmitterComponent.h"
-#include "Sound/SoundCue.h"
 #include "Camera/CameraComponent.h"
-#include "Engine/SkeletalMeshSocket.h"
 #include "Engine/EngineTypes.h"
-
-//#include "Perception/AISightTargetInterface.h"
-//#include "Perception/AIPerceptionStimuliSourceComponent.h"
-//#include "Perception/AISense_Sight.h"
-#include "Perception/AISense_Hearing.h"
-
-#include "OpenWorldRPG/Item/EquipmentComponent.h"
-#include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
-
 #include "OpenWorldRPG/Item/Interactive_Interface.h"
-//#include "OpenWorldRPG/Item/InventoryComponent.h"
 #include "OpenWorldRPG/Item/Interactable.h"
 #include "OpenWorldRPG/Item/Equipment.h"
 #include "OpenWorldRPG/Item/Weapon.h"
-
-#include "DrawDebugHelpers.h" //디버깅용
 #include "Components/CapsuleComponent.h"
-#include "Components/PoseableMeshComponent.h"
-#include "BoneControllers/AnimNode_ModifyBone.h"
-#include "Perception/AISenseConfig_Sight.h"
+#include "DrawDebugHelpers.h" //디버깅용
+
 
 // Sets default values
 AMainCharacter::AMainCharacter()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	//PrimaryActorTick.bCanEverTick = true;
 
-	HeadSocketName = FName("headsocket");
+	//To base
+	/*HeadSocketName = FName("headsocket");
 	GripSocketName = FName("WeaponGrip");
-	WeaponLeftHandSocketName = FName("LeftHandPos");
+	WeaponLeftHandSocketName = FName("LeftHandPos");*/
 
 
 	/******** Movement ********/
-	GetCharacterMovement()->bOrientRotationToMovement = true; //움직인 방향 = 진행방향으로 설정
-	GetCharacterMovement()->RotationRate = FRotator(0.f, 540.f, 0.f); //회전속도
-	GetCharacterMovement()->JumpZVelocity = 540.f;
-	GetCharacterMovement()->AirControl = 0.2f;
+	//GetCharacterMovement()->bOrientRotationToMovement = true; //움직인 방향 = 진행방향으로 설정
+	//GetCharacterMovement()->RotationRate = FRotator(0.f, 540.f, 0.f); //회전속도
+	//GetCharacterMovement()->JumpZVelocity = 540.f;
+	//GetCharacterMovement()->AirControl = 0.2f;
 
-	GetCharacterMovement()->NavAgentProps.bCanCrouch = true; //웅크리기를 할 수 있도록 true로 해준다.
-	GetCharacterMovement()->CrouchedHalfHeight = GetDefaultHalfHeight() / 1.4f; //웅크린 크기를 기본HalfHeight의 /1.6으로 지정한다.
-	
-	GetCharacterMovement()->MaxWalkSpeedCrouched = 300.f;
-	GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
-	bIsWalking = false; //걷기 기본설정은 false.
+	//GetCharacterMovement()->NavAgentProps.bCanCrouch = true; //웅크리기를 할 수 있도록 true로 해준다.
+	//GetCharacterMovement()->CrouchedHalfHeight = GetDefaultHalfHeight() / 1.4f; //웅크린 크기를 기본HalfHeight의 /1.6으로 지정한다.
+	//
+	//GetCharacterMovement()->MaxWalkSpeedCrouched = 300.f;
+	//GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
+	//bIsWalking = false; //걷기 기본설정은 false.
 	
 
 	/********** Input ***********/
@@ -112,9 +97,9 @@ AMainCharacter::AMainCharacter()
 	PistolRelativeLoRo.SetRotation(FRotator(10.704832, 163.24559, -8.476412).Quaternion());*/
 
 	/****** Item ****/
-	Inventory = CreateDefaultSubobject<UInventoryComponent>(TEXT("Inventory"));
+	/*Inventory = CreateDefaultSubobject<UInventoryComponent>(TEXT("Inventory"));
 	InventoryComp = CreateDefaultSubobject<UNewInventoryComponent>(TEXT("InventoryComp"));
-	Equipment = CreateDefaultSubobject<UEquipmentComponent>(TEXT("Equipment"));
+	Equipment = CreateDefaultSubobject<UEquipmentComponent>(TEXT("Equipment"));*/
 
 	ActiveInteractDistance = 200.f; //상호작용 아이템이 표시되는 최대거리.
 
@@ -129,16 +114,14 @@ void AMainCharacter::PostInitializeComponents()
 	Super::PostInitializeComponents();
 
 	/* Player의 AnimInstance를 불러온다. */
-	TPAnimInstance = Cast<UMainAnimInstance>(GetMesh()->GetAnimInstance()); 
+	//TPAnimInstance = Cast<UMainAnimInstance>(GetMesh()->GetAnimInstance()); 
 	FPAnimInstance = Cast<UMainAnimInstance>(FPMesh->GetAnimInstance());
 
-	if (TPAnimInstance && FPAnimInstance)
+	if (FPAnimInstance)//TPAnimInstance && FPAnimInstance)
 	{
 		/* 사운드는 TP Animation을 기준으로 출력한다. */ //AnimInstance의 StepSound_Notify에서 호출.
-		TPAnimInstance->StepSound.AddUObject(this, &AMainCharacter::StepSound); 
-
-
-		TPAnimInstance->WeaponTypeNumber = 0;
+		//TPAnimInstance->StepSound.AddUObject(this, &AMainCharacter::StepSound); 
+		//TPAnimInstance->WeaponTypeNumber = 0;
 		FPAnimInstance->WeaponTypeNumber = 0;
 	}
 
@@ -182,16 +165,16 @@ void AMainCharacter::Tick(float DeltaTime)
 		bIsLookInput = true;
 	}
 
-	//bIsAccelerating 세팅.
-	FVector VecLength = FVector(0.f);
-	if (GetVelocity().Size() > VecLength.Size())
-	{
-		bIsAccelerating = true;
-	}
-	else
-	{
-		bIsAccelerating = false;
-	}
+	//bIsAccelerating 세팅., To base
+	//FVector VecLength = FVector(0.f);
+	//if (GetVelocity().Size() > VecLength.Size())
+	//{
+	//	bIsAccelerating = true;
+	//}
+	//else
+	//{
+	//	bIsAccelerating = false;
+	//}
 
 
 	/* 상호작용 Line Trace 변경 . ver2  아래 코드를 GetPlayerViewPoint함수를 이용해 간략화 시켰다. */
@@ -294,25 +277,25 @@ void AMainCharacter::Tick(float DeltaTime)
 
 
 /***************************** enum 함수********************************/
-void AMainCharacter::SetMainCharacterStatus(EPlayerStatus Type) //플레이어의 상태
-{
-	MainChracterStatus = Type;
-	switch (MainChracterStatus)
-	{
-	case EPlayerStatus::EPS_Normal:
-		GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
-		bIsWalking = false;
-		break;
-	case EPlayerStatus::EPS_Walk:
-		GetCharacterMovement()->MaxWalkSpeed = MinWalkSpeed;
-		bIsWalking = true;
-		break;
-	case EPlayerStatus::EPS_Sprint:
-		break;
-	default:
-		break;
-	}
-}
+//void AMainCharacter::SetMainCharacterStatus(EPlayerStatus Type) //플레이어의 상태
+//{
+//	MainChracterStatus = Type;
+//	switch (MainChracterStatus)
+//	{
+//	case EPlayerStatus::EPS_Normal:
+//		GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
+//		bIsWalking = false;
+//		break;
+//	case EPlayerStatus::EPS_Walk:
+//		GetCharacterMovement()->MaxWalkSpeed = MinWalkSpeed;
+//		bIsWalking = true;
+//		break;
+//	case EPlayerStatus::EPS_Sprint:
+//		break;
+//	default:
+//		break;
+//	}
+//}
 
 
 // Called to bind functionality to input
@@ -661,14 +644,16 @@ void AMainCharacter::MyCrouch()
 		{
 			Super::UnCrouch();
 			UE_LOG(LogTemp, Warning, TEXT("Crouch:: UnCrouch"));
-			SetMainCharacterStatus(EPlayerStatus::EPS_Normal);
+			//SetMainCharacterStatus(EPlayerStatus::EPS_Normal);
+			SetCharacterStatus(ECharacterStatus::EPS_Normal);
 		}
 
 		if (bIsCrouched == false)
 		{
 			Super::Crouch();
 			UE_LOG(LogTemp, Warning, TEXT("Crouch:: Crouch"));
-			SetMainCharacterStatus(EPlayerStatus::EPS_Crouch);
+			//SetMainCharacterStatus(EPlayerStatus::EPS_Crouch);
+			SetCharacterStatus(ECharacterStatus::EPS_Crouch);
 		}
 	}
 }
@@ -682,7 +667,8 @@ void AMainCharacter::MyUnCrouch()
 		{
 			Super::UnCrouch();
 			UE_LOG(LogTemp, Warning, TEXT("UnCrouch:: UnCrouch"));
-			SetMainCharacterStatus(EPlayerStatus::EPS_Normal);
+			//SetMainCharacterStatus(EPlayerStatus::EPS_Normal);
+			SetCharacterStatus(ECharacterStatus::EPS_Normal);
 		}
 	}
 }
@@ -694,7 +680,8 @@ void AMainCharacter::Walk()
 		if (bWalkToggle && bIsWalking && AimMode != EAimMode::EAM_Aim)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Walk:: UnWalk"));
-			SetMainCharacterStatus(EPlayerStatus::EPS_Normal);
+			//SetMainCharacterStatus(EPlayerStatus::EPS_Normal);
+			SetCharacterStatus(ECharacterStatus::EPS_Normal);
 			//bIsWalking = false; -> Set enum함수에서 변경해줬다.
 			return;
 		}
@@ -702,7 +689,8 @@ void AMainCharacter::Walk()
 		if (bIsWalking == false && AimMode != EAimMode::EAM_Aim)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Walk:: Walk"));
-			SetMainCharacterStatus(EPlayerStatus::EPS_Walk);
+			SetCharacterStatus(ECharacterStatus::EPS_Walk);
+			//SetMainCharacterStatus(EPlayerStatus::EPS_Walk);
 			//bIsWalking = true;
 			return;
 		}
@@ -716,7 +704,8 @@ void AMainCharacter::UnWalk()
 		if (bWalkToggle == false && bIsWalking == true && AimMode != EAimMode::EAM_Aim)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("UnWalk:: UnWalk"));
-			SetMainCharacterStatus(EPlayerStatus::EPS_Normal);
+			SetCharacterStatus(ECharacterStatus::EPS_Normal);
+			//SetMainCharacterStatus(EPlayerStatus::EPS_Normal);
 			//bIsWalking = false;		
 		}
 	}
@@ -929,6 +918,7 @@ void AMainCharacter::ChangePistolWeapon()
 	ChangeWeapon(3);
 }
 
+/* To Base
 void AMainCharacter::SetEquippedWeapon(AWeapon* Weapon)
 {
 	if (Weapon)
@@ -939,11 +929,12 @@ void AMainCharacter::SetEquippedWeapon(AWeapon* Weapon)
 		//EquippedWeapon->OnEndHighReady.AddDynamic(this, &AMainCharacter::EndHighReady);
 		
 	}
-}
+}*/
 
 
 
 /* Rifle, Pistol의 LeftHand 위치 */
+/* To Base
 FTransform AMainCharacter::LeftHandik()
 {
 	FTransform Transform;
@@ -958,7 +949,7 @@ FTransform AMainCharacter::LeftHandik()
 
 	return Transform;
 }
-
+*/
 
 /*************************  Interaction 관련 ***************************************************/
 
@@ -973,6 +964,7 @@ FHitResult AMainCharacter::InteractableLineTrace(const FVector& StartLo, const F
 	 
 	//GetWorld()->LineTraceSingleByChannel(Hit, StartLo, EndLo, ECollisionChannel::ECC_WorldStatic, Params); // LineTraceSingle에서 
 	
+	//GetWorld()->SweepSingleByChannel(Hit, StartLo, EndLo, FQuat::Identity, ECollisionChannel::ECC_WorldDynamic, Shape, Params);
 	GetWorld()->SweepSingleByChannel(Hit, StartLo, EndLo, FQuat::Identity, ECollisionChannel::ECC_WorldStatic, Shape, Params); //SweepSingle로 변경, 캡슐형태의 모양으로 LineTrace.
 	
 	/* debug */
@@ -1044,6 +1036,7 @@ void AMainCharacter::Interactive()
 }
 
 /******************************************************************************/
+/*
 void AMainCharacter::StepSound()
 {
 	//UE_LOG(LogTemp, Warning, TEXT("AnimNotify -> AMainChar:: StepSound()"));
@@ -1055,18 +1048,18 @@ void AMainCharacter::StepSound()
 
 	
 
-	/*UAISense_Hearing* HearingClass = Cast<UAISense_Hearing>(Hearing->GetClass());
-	if (HearingClass)
-	{
-		HearingClass->ReportNoiseEvent(GetWorld(), GetActorLocation(), 1.f, this);
-	}*/
+	//UAISense_Hearing* HearingClass = Cast<UAISense_Hearing>(Hearing->GetClass());
+	//if (HearingClass)
+	//{
+	//	HearingClass->ReportNoiseEvent(GetWorld(), GetActorLocation(), 1.f, this);
+	//}
 	
 	UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), 1.f, this);
 
 }
+*/
 
-
-
+/*
 bool AMainCharacter::CanBeSeenFrom(const FVector& ObserverLocation, FVector& OutSeenLocation, int32& NumberOfLoSChecksPerformed, float& OutSightStrength, const AActor* IgnoreActor, const bool* bWasVisible, int32* UserData) const
 {
 	
@@ -1108,3 +1101,4 @@ bool AMainCharacter::CanBeSeenFrom(const FVector& ObserverLocation, FVector& Out
 	}
 	return bResult;
 }
+*/

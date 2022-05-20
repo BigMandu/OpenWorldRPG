@@ -10,8 +10,9 @@
 /**
  * 
  */
-class AMainCharacter;
+class ABaseCharacter;
 class AEnemyCharacter;
+class ALootBox;
 class UAIPerceptionComponent;
 class UAISenseConfig_Sight;
 class UAISenseConfig_Hearing;
@@ -26,7 +27,7 @@ class OPENWORLDRPG_API AEnemyAIController : public AAIController
 public:
 	AEnemyAIController(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
-	AEnemyCharacter* Enemy;
+	AEnemyCharacter* OwnerActor;
 
 	/*********** AI Perception ***************/
 	/*UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = AI)
@@ -40,6 +41,13 @@ public:
 	FTimerHandle TargetLostTimer;
 	FTimerDelegate TargetLostDelegate;
 
+
+
+	float Alpha;
+	float AttackMVDist;
+	bool bUpdateEnemyLo;
+	FVector EnemyAttackLo;
+
 	/************* Behavior Tree *************/
 	UPROPERTY()
 	UBehaviorTreeComponent* BTComp;
@@ -47,24 +55,30 @@ public:
 	UBlackboardComponent* BBComp;
 
 	/**********  Blackboard Key   **********/
+	//Object
+	const FName EnemyKey = FName("Enemy");
+	const FName TargetKey = FName("Target");
 
-	const FName OriginPosKey = FName(TEXT("OriginPos"));
-	const FName PatrolPosKey = FName(TEXT("PatrolPos"));
-	const FName bHasPatrolPointsKey = FName(TEXT("HasPatrolPoints"));
-	const FName PatrolPointIndexKey = FName(TEXT("PatrolPointIndex"));
-	const FName PlayerKey = FName(TEXT("Player"));
-	const FName HearLocation = FName(TEXT("HearLocation"));
-	const FName bSeePlayerKey = FName(TEXT("SeePlayer"));
-	const FName bHearPlayerKey = FName(TEXT("HearPlayer"));
-	const FName AttackableLocationKey = FName(TEXT("AttackableLocation"));
-	const FName CanAttackKey = FName(TEXT("CanAttack"));
+	//FVector
+	const FName OriginPosKey = FName("OriginPos");
+	const FName PatrolPointIndexKey = FName("PatrolPointIndex");
+	const FName TargetLocationKey = FName("TargetLocation");
+	//const FName PatrolPosKey = FName("PatrolPos");
+	//const FName HearLocation = FName("HearLocation");
+	//const FName AttackableLocationKey = FName("AttackableLocation");
+	//const FName LootingLocationKey = FName("LootingLocation");
+
+	//Boolean
+	const FName bSeeEnemyKey = FName("SeeEnemy");
+	const FName bHearEnemyKey = FName("HearEnemy");
+	const FName bCanAttackKey = FName("CanAttack");
+	const FName bHasPatrolPointsKey = FName("HasPatrolPoints");
+	const FName bOutOfAmmoKey = FName("OutOfAmmo");
+	const FName bTryFindObejct = FName("TryFindObject");
+
 
 	/*********************************************/
 
-	float Alpha;
-	float AttackMVDist;
-	bool bUpdateEnemyLo;
-	FVector EnemyAttackLo;
 
 
 protected:
@@ -74,18 +88,33 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 	virtual void PostInitializeComponents() override;
+	virtual void OnPossess(APawn* InPawn) override;
+
+
+	bool CheckIsEnemy(ABaseCharacter* Target);
 
 	UFUNCTION()
 	void DetectedTarget(AActor* Target, FAIStimulus Stimulus);
 
-	void DetectedPlayer(AMainCharacter* Player, FAIStimulus Stimulus);
-
+	void DetectedCharacter(ABaseCharacter* Player, FAIStimulus Stimulus);
+	void DetectedLootBox(ALootBox* Loot, FAIStimulus Stimulus);
 
 	UFUNCTION()
-	void LostTarget(AMainCharacter* Target); //AActor* Target);
+	void LostTarget(ABaseCharacter* Target); //AActor* Target);
 
-	virtual void OnPossess(APawn* InPawn) override;
 
+	void CalcAttackDist(float DeltaTime);
+	void AttackMoving(const FVector Vec, FVector RightVec);
+
+	/**********   Update BlackBoard Key func  ***********/
+	//BT Task에서 사용하기 위한 함수인데 여기에서도 씀.
+	void UpdateBBCompVectorKey(FName KeyName, FVector Vector);
+	void UpdateBBCompBoolKey(FName KeyName, bool bBool);
+	void UpdateBBCompIntegerKey(FName KeyName, int32 Numb);
+	void UpdateBBCompObjectKey(FName KeyName, AActor* Actor);
+
+
+	/*
 	void UpdatePatrolPointIndex(int32 index);
 	void UpdatePatrolPosKey(FVector NewPatrolPos);
 	void UpdatePlayerKey(AActor* Actor);
@@ -93,7 +122,7 @@ public:
 	void UpdateSeePlayerKey(bool HasSee);
 	void UpdateHearPlayerKey(bool HasHear);
 	void UpdateAttackableLocationKey(FVector Location);
-
-	void AttackMoving(const FVector Vec, FVector RightVec);
+	*/
+	
 	
 };

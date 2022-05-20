@@ -63,16 +63,15 @@ void AWeapon::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	CapsuleComp->SetHiddenInGame(false);//for debug
+	CapsuleComp->SetHiddenInGame(false); //for debug
 
-	CapsuleComp->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnCollisionBegin);
-	CapsuleComp->OnComponentEndOverlap.AddDynamic(this, &AWeapon::OnCollisionEnd);
+	//CapsuleComp->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnCollisionBegin);
+	//CapsuleComp->OnComponentEndOverlap.AddDynamic(this, &AWeapon::OnCollisionEnd);
 
-	CapsuleComp->SetCollisionObjectType(ECollisionChannel::ECC_GameTraceChannel3); //Weapon콜리전 Object로 지정.
-	CapsuleComp->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
-	//MainChar (GTC2 : GameTraceChannel2), WorldDynamic은 무시
-	CapsuleComp->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel2, ECollisionResponse::ECR_Ignore);
-	CapsuleComp->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic, ECollisionResponse::ECR_Ignore);
+	//CapsuleComp->SetCollisionObjectType(ECollisionChannel::ECC_GameTraceChannel3); //Weapon콜리전 Object로 지정.
+	//CapsuleComp->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
+	//CapsuleComp->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel2, ECollisionResponse::ECR_Ignore);
+	//CapsuleComp->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic, ECollisionResponse::ECR_Ignore);
 }
 
 void AWeapon::Equip(AActor* Char)
@@ -906,6 +905,7 @@ void AWeapon::WeaponClipping()
 
 
 /* Fix Clipping wall */
+/*
 void AWeapon::OnCollisionBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	//UE_LOG(LogTemp, Warning, TEXT(" Weapon Overlap begin"));
@@ -913,7 +913,7 @@ void AWeapon::OnCollisionBegin(UPrimitiveComponent* OverlappedComponent, AActor*
 	if(OwningPlayer)
 	{
 		AMainCharacter* Main = Cast<AMainCharacter>(OwningPlayer);
-
+		
 		if(Main->TPAnimInstance->bBeginHighReady == false)
 		{
 			//Weaponclass에 있는 bIsHighReady는 AnimInstance에서 완전히 내려왔을때 false를 시켜주도록 하자.
@@ -921,7 +921,7 @@ void AWeapon::OnCollisionBegin(UPrimitiveComponent* OverlappedComponent, AActor*
 			//Main->TPAnimInstance->bBeginHighReady = true;
 			//Main->FPAnimInstance->bBeginHighReady = true;
 
-			/* New Fix Clipping wall*/
+			// New Fix Clipping wall
 			//Tick에서 Sphere Line Trace를 쏘는데, distance와 radius는 설정 가능함.(총마다 다를수 있으니..)
 			//hit이 있다면, Original Transform에서 Location값  - (0.f,0.f, Curve.evaluate(hit.distance / distance)
 			//이렇게 해서 나온값을 NewTransform.location으로 지정해주면 된다.
@@ -955,3 +955,4 @@ void AWeapon::OnCollisionEnd(UPrimitiveComponent* OverlappedComponent, AActor* O
 		Main->FPAnimInstance->bEndHighReady = true;
 	}
 }
+*/

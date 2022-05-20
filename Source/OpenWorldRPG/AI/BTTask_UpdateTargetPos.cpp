@@ -28,17 +28,21 @@ EBTNodeResult::Type UBTTask_UpdateTargetPos::ExecuteTask(UBehaviorTreeComponent&
 
 	ATargetPoint* TP = Enemy->TargetPoints[TPindex]; //index번째의 TargetPoint를 가져온다.
 	FVector NewLocation = TP->GetActorLocation();
-	AIController->UpdatePatrolPosKey(NewLocation); //가져온TP의 Location을 PatrolPos에 업데이트 한다.
+
+	AIController->UpdateBBCompVectorKey(AIController->TargetLocationKey, NewLocation);
+	//AIController->UpdatePatrolPosKey(NewLocation); //가져온TP의 Location을 PatrolPos에 업데이트 한다.
 
 
 	//업데이트 한 뒤, TPindex를 +1 시켜준다.
 	if (TPindex + 1 >= TPNum)
 	{
-		AIController->UpdatePatrolPointIndex(0);
+		AIController->UpdateBBCompIntegerKey(AIController->PatrolPointIndexKey, 0);
+		//AIController->UpdatePatrolPointIndex(0);
 	}
 	else
 	{
-		AIController->UpdatePatrolPointIndex(TPindex+1);
+		AIController->UpdateBBCompIntegerKey(AIController->PatrolPointIndexKey, TPindex+1);
+		//AIController->UpdatePatrolPointIndex(TPindex+1);
 	}
 	
 	Result = EBTNodeResult::Succeeded;

@@ -2,8 +2,6 @@
 
 
 #include "BTTask_Patrol.h"
-
-#include "GameFramework/CharacterMovementComponent.h"
 #include "OpenWorldRPG/EnemyAIController.h"
 #include "OpenWorldRPG/EnemyCharacter.h"
 
@@ -20,8 +18,7 @@ EBTNodeResult::Type UBTTask_Patrol::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 	AEnemyCharacter* Enemy = Cast<AEnemyCharacter>(AICon->GetCharacter());
 	check(Enemy);
 
-	//Patrol노드가 사용중일때는 최대속도를 걷는 속도로 지정한다.
-	Enemy->GetCharacterMovement()->MaxWalkSpeed = Enemy->MinWalkSpeed;
-	AcceptableRadius = Enemy->PatrolAcceptableRadius;
+	Enemy->SetAIStatus(EAIStatus::EAS_Patrol);
+	//AcceptableRadius = Enemy->PatrolAcceptableRadius;
 	return Result;
 }

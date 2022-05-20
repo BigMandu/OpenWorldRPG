@@ -25,7 +25,7 @@ void UBTService_AttackMoving::TickNode(UBehaviorTreeComponent& OwnerComp, uint8*
 	check(BBComp);
 	check(AICon);
 	AEnemyCharacter* Enemy = Cast<AEnemyCharacter>(AICon->GetCharacter());
-	AMainCharacter* Main = Cast<AMainCharacter>(BBComp->GetValueAsObject(AICon->PlayerKey));
+	AMainCharacter* Main = Cast<AMainCharacter>(BBComp->GetValueAsObject(AICon->EnemyKey));
 	check(Enemy);
 	check(Main);
 

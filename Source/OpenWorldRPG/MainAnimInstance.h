@@ -44,7 +44,7 @@ public:
 	class APawn* Pawn;
 
 	UPROPERTY(BlueprintReadOnly)
-	class AMainCharacter* Player;
+	class ABaseCharacter* Player;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
 	int32 WeaponTypeNumber;
@@ -77,10 +77,10 @@ public:
 
 	void SetHighReady();
 
-	UFUNCTION()
+	/*UFUNCTION()
 	void BeginHighReady();
 	UFUNCTION()
-	void EndHighReady();
+	void EndHighReady();*/
 
 	
 };

@@ -46,7 +46,7 @@ EBTNodeResult::Type UBTTask_GetPatrolPos::ExecuteTask(UBehaviorTreeComponent& Ow
 						sub = abs(CurrentEnemyPos.Size() - NewPatrolPos.Size());
 					}
 				}
-				BBComp->SetValueAsVector(AIController->PatrolPosKey, NewPatrolPos);
+				BBComp->SetValueAsVector(AIController->TargetLocationKey, NewPatrolPos);
 				//AIController->UpdatePatrolPosKey(NewPatrolPos);
 
 				Result = EBTNodeResult::Succeeded;

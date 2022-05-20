@@ -15,18 +15,27 @@
 
 ALootBox::ALootBox()
 {
-	Mesh->SetSimulatePhysics(true);
+	BoxInventoryComp = CreateDefaultSubobject<UNewInventoryComponent>(TEXT("BoxInventoryComp"));
+	StimuliComp = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("StimuliComp"));
+	StimuliComp->bAutoRegister = true;
+
+
+	Mesh->SetSimulatePhysics(false);
 	Mesh->SetEnableGravity(true);
 	Mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 
 	Mesh->SetCollisionObjectType(ECollisionChannel::ECC_WorldStatic);
 	Mesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
+	
+	/*Mesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
+	Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_EngineTraceChannel2, ECollisionResponse::ECR_Block);*/
 
-	BoxInventoryComp = CreateDefaultSubobject<UNewInventoryComponent>(TEXT("BoxInventoryComp"));
+
+	
 
 
-	StimuliComp = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("StimuliComp"));
-	StimuliComp->bAutoRegister = true;
+	
 
 	//WidgetBlueprint'/Game/Inventory/WBP_LootBox.WBP_LootBox'
 	//위젯 하드코딩

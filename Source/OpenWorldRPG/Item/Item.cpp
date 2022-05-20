@@ -18,10 +18,18 @@ AItem::AItem()
 	Mesh->SetSimulatePhysics(true);
 	Mesh->SetEnableGravity(true);
 	Mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	Mesh->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
 
-	Mesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
-	Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
-	Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel2, ECollisionResponse::ECR_Overlap);
+	Mesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+
+	Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
+	Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_EngineTraceChannel2, ECollisionResponse::ECR_Block);
+
+	//Mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);	
+	//Mesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
+	//Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+	
+	//Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel2, ECollisionResponse::ECR_Overlap);
 	
 	ItemSize = FIntPoint(1, 1);
 	bCanRotate = true;

@@ -61,7 +61,8 @@ void AInteractable::Interaction(class AActor* Actor)
 	{
 		ALootBox* Box = Cast<ALootBox>(this);
 		if (Box)
-		{	
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Call Open Box"));
 			Box->OpenBox(Actor);
 		}
 	}

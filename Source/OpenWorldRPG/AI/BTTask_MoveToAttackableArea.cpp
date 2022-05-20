@@ -2,7 +2,8 @@
 
 
 #include "BTTask_MoveToAttackableArea.h"
-
+#include "OpenWorldRPG/EnemyAIController.h"
+#include "OpenWorldRPG/EnemyCharacter.h"
 
 
 UBTTask_MoveToAttackableArea::UBTTask_MoveToAttackableArea()
@@ -13,5 +14,12 @@ EBTNodeResult::Type UBTTask_MoveToAttackableArea::ExecuteTask(UBehaviorTreeCompo
 {
 	EBTNodeResult::Type Result = Super::ExecuteTask(OwnerComp, NodeMemory);
 	bUsePathfinding = true;
+
+	AEnemyAIController* AICon = Cast<AEnemyAIController>(OwnerComp.GetAIOwner());
+	check(AICon);
+	AEnemyCharacter* Enemy = Cast<AEnemyCharacter>(AICon->GetCharacter());
+	check(Enemy);
+
+	Enemy->SetAIStatus(EAIStatus::EAS_Attack);
 	return Result;
 }

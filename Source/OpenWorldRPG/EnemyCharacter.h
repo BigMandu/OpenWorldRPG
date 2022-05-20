@@ -3,22 +3,23 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Character.h"
+#include "OpenWorldRPG/BaseCharacter.h"
 #include "EnemyCharacter.generated.h"
 
 UENUM(BlueprintType)
 enum class EAIStatus : uint8
 {
 	EAS_Dead		UMETA(DisplayName = "Dead"),
-	EAS_Normal		UMETA(DisplayName = "Normal"), //Patrol, Peace상태
-	EAS_Search		UMETA(DisplayName = "Search"), //뭔가를 듣거나, Player를 수색중일때
+	EAS_Patrol		UMETA(DisplayName = "Patrol"),//Patrol 상태 -> 최저 이동속도.
+	EAS_Normal		UMETA(DisplayName = "Normal"), //Peace상태.
+	EAS_Scout		UMETA(DisplayName = "Scout"), //뭔가를 듣거나, Player를 수색중일때 ->최저 이동속도
 	EAS_Attack		UMETA(DisplayName = "Attack"), //Player가 시야에 보일때
 
 	EAS_MAX		UMETA(DisplayName = "DefaultMAX")
 };
 
 UCLASS()
-class OPENWORLDRPG_API AEnemyCharacter : public ACharacter
+class OPENWORLDRPG_API AEnemyCharacter : public ABaseCharacter
 {
 	GENERATED_BODY()
 
@@ -53,13 +54,6 @@ public:
 	UPROPERTY(EditAnywhere, Category = Combat)
 	float Range; // Enemy의 사거리 -> 무기의 Range로 교체 할 예정임.
 
-	//Enemy의 최대, 최소 속도
-	UPROPERTY(EditDefaultsOnly, Category = AI)
-	float MaxWalkSpeed = 600.f;
-	UPROPERTY(EditDefaultsOnly, Category = AI)
-	float MinWalkSpeed = 300.f;
-	
-
 
 	/******* 디버깅용 ********/
 	UPROPERTY(VisibleAnywhere, Category = AI)
@@ -77,6 +71,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	//virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	void SetAIStatus(EAIStatus Status);
 };

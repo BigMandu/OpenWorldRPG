@@ -13,8 +13,8 @@
  */
 #define COLLISION_WEAPON_INST	ECC_GameTraceChannel1
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBeginHighReady);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEndHighReady);
+//DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBeginHighReady);
+//DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEndHighReady);
 
 class UMatineeCameraShake;
 class UCameraShake;
@@ -156,8 +156,8 @@ public:
 	//UEquipmentComponent* OwningEquipment;
 	//AActor* OwningPlayer;
 
-	FOnBeginHighReady OnBeginHighReady;
-	FOnEndHighReady OnEndHighReady;
+	//FOnBeginHighReady OnBeginHighReady;
+	//FOnEndHighReady OnEndHighReady;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UCapsuleComponent* CapsuleComp;
@@ -305,10 +305,12 @@ public:
 	virtual void Old_BulletOut() PURE_VIRTUAL(AWeapon::BulletOut);
 	virtual void New_BulletOut() PURE_VIRTUAL(AWeapon::New_BulletOut);
 
+	/*
 	UFUNCTION()
 	void OnCollisionBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	UFUNCTION()
 	void OnCollisionEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	*/
 
 
 	//FVector GetAimLocation_TEST();
