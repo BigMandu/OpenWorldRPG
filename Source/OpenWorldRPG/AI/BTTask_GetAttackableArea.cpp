@@ -8,6 +8,9 @@
 #include "OpenWorldRPG/MainCharacter.h"
 #include "Math/Vector.h"
 #include "Kismet/KismetSystemLibrary.h"
+//#include "EnvironmentQuery/EnvQuery.h"
+//#include "EnvironmentQuery/EnvQueryManager.h"
+
 #include "Math/UnrealMathUtility.h"
 
 UBTTask_GetAttackableArea::UBTTask_GetAttackableArea()
@@ -28,6 +31,9 @@ EBTNodeResult::Type UBTTask_GetAttackableArea::ExecuteTask(UBehaviorTreeComponen
 
 	ABaseCharacter* Char = Cast<ABaseCharacter>(BBComp->GetValueAsObject(AICon->EnemyKey));
 	check(Char);
+
+	/*QueryReq = FEnvQueryRequest(Query, AICon);
+	QueryReq.Execute(EEnvQueryRunMode::SingleResult, this, &UBTTask_GetAttackableArea::QueryFinished);*/
 
 	BBComp->ClearValue(AICon->TargetLocationKey);
 
@@ -63,3 +69,10 @@ EBTNodeResult::Type UBTTask_GetAttackableArea::ExecuteTask(UBehaviorTreeComponen
 	//AICon->UpdateAttackableLocationKey(NewAILocation);
 	return Result;
 }
+
+//void UBTTask_GetAttackableArea::QueryFinished(TSharedPtr<FEnvQueryRequest>* Result)
+//{
+//	
+//}
+
+

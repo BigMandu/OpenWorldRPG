@@ -2,7 +2,7 @@
 
 
 #include "Item.h"
-#include "OpenWorldRPG/MainCharacter.h"
+#include "OpenWorldRPG/BaseCharacter.h"
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
 #include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
@@ -93,14 +93,14 @@ UNewItemObject* AItem::GetDefaultItemObj()
 void AItem::Pickup(class AActor* Actor)
 {
 	//UE_LOG(LogTemp, Warning, TEXT("AItem::Pickup"));
-	AMainCharacter* Main = Cast<AMainCharacter>(Actor);
-	if (Main)
+	ABaseCharacter* BChar = Cast<ABaseCharacter>(Actor);
+	if (BChar)
 	{
 		//UE_LOG(LogTemp, Warning, TEXT("AItem::Add To Inventory"));
 	
-		if (Main->InventoryComp)
+		if (BChar->InventoryComp)
 		{
-			if (Main->InventoryComp->TryAddItem(ItemObj))
+			if (BChar->InventoryComp->TryAddItem(ItemObj))
 			{
 				SetItemState(EItemState::EIS_Pickup);
 				Destroy();
@@ -166,8 +166,8 @@ void AItem::Drop()
 void AItem::Use(AActor* Actor)
 {
 	//UE_LOG(LogTemp, Warning, TEXT("AItem::Use"));
-	AMainCharacter* Main = Cast<AMainCharacter>(Actor);
-	if (Main)
+	ABaseCharacter* BChar = Cast<ABaseCharacter>(Actor);
+	if (BChar)
 	{
 		
 		/* debug */

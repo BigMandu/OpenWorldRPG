@@ -12,7 +12,7 @@
  */
 class ABaseCharacter;
 class AEnemyCharacter;
-class ALootBox;
+class AInteractable;
 class UAIPerceptionComponent;
 class UAISenseConfig_Sight;
 class UAISenseConfig_Hearing;
@@ -57,7 +57,7 @@ public:
 	/**********  Blackboard Key   **********/
 	//Object
 	const FName EnemyKey = FName("Enemy");
-	const FName TargetKey = FName("Target");
+	const FName ObjectKey = FName("Object");
 
 	//FVector
 	const FName OriginPosKey = FName("OriginPos");
@@ -97,7 +97,7 @@ public:
 	void DetectedTarget(AActor* Target, FAIStimulus Stimulus);
 
 	void DetectedCharacter(ABaseCharacter* Player, FAIStimulus Stimulus);
-	void DetectedLootBox(ALootBox* Loot, FAIStimulus Stimulus);
+	void DetectedLootBox(AInteractable* Obj, FAIStimulus Stimulus);
 
 	UFUNCTION()
 	void LostTarget(ABaseCharacter* Target); //AActor* Target);

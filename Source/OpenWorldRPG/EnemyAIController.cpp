@@ -135,16 +135,16 @@ void AEnemyAIController::DetectedTarget(AActor* Target, FAIStimulus Stimulus)
 	if (Target)
 	{
 		ABaseCharacter* Char = Cast<ABaseCharacter>(Target);
-		ALootBox* LootBox = Cast<ALootBox>(Target);
+		AInteractable* Object = Cast<AInteractable>(Target);
 		if (Char && CheckIsEnemy(Char))
 		{
 			DetectedCharacter(Char, Stimulus);
 			UE_LOG(LogTemp, Warning, TEXT("AI Found Player!"));
 		}
 
-		if(LootBox)
+		if(Object)
 		{
-			DetectedLootBox(LootBox, Stimulus);
+			DetectedLootBox(Object, Stimulus);
 			UE_LOG(LogTemp, Warning, TEXT("AI Found LootBox !"));
 		}
 		
@@ -269,15 +269,13 @@ void AEnemyAIController::DetectedCharacter(ABaseCharacter* Player, FAIStimulus S
 	}
 }
 
-void AEnemyAIController::DetectedLootBox(ALootBox* Loot, FAIStimulus Stimulus)
+void AEnemyAIController::DetectedLootBox(AInteractable* Obj, FAIStimulus Stimulus)
 {
 	if(Stimulus.WasSuccessfullySensed())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("AI : Detected LootBox, "));
-
-		UpdateBBCompVectorKey(TargetLocationKey, Stimulus.StimulusLocation);
-		//UpdateBBCompVectorKey(FName("TestVector"), Stimulus.StimulusLocation);
-		UpdateBBCompObjectKey(TargetKey, Loot);
+		//LootBox는 StaticMesh로 지정해야함 -> NavMesh가 적용되지 않아서 Location이 아닌 Object로 이동되게 한다.
+		UpdateBBCompObjectKey(ObjectKey, Obj);
 		
 	}
 }

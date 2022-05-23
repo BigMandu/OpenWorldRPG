@@ -10,6 +10,7 @@
  * 
  */
 class AMainController;
+class AEnemyAIController;
 class USkeletalMeshComponent;
 class UEquipmentComponent;
 class USoundCue;
@@ -44,6 +45,7 @@ public:
 	virtual UNewItemObject* GetDefaultItemObj() override;
 
 	AMainController* MainCon;
+	AEnemyAIController* AICon;
 	UEquipmentComponent* OwningEquipment;
 	AActor* OwningPlayer;
 

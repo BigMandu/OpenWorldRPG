@@ -1,6 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
+#include "Equipment.h"
+#include "Equipment.h"
 #include "OpenWorldRPG/Item/Equipment.h"
 #include "OpenWorldRPG/Item/EquipmentComponent.h"
 #include "OpenWorldRPG/Item/Weapon.h"
@@ -8,6 +10,8 @@
 #include "OpenWorldRPG/NewInventory/NewInventoryGrid.h"
 #include "OpenWorldRPG/MainCharacter.h"
 #include "OpenWorldRPG/MainController.h"
+#include "OpenWorldRPG/EnemyAIController.h"
+
 #include "Engine/SkeletalMeshSocket.h"
 #include "Kismet/GameplayStatics.h"
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
@@ -74,12 +78,22 @@ void AEquipment::SetOwningPlayer(AActor* Actor)
 {
 	if (OwningPlayer != Actor)
 	{
-		AMainCharacter* Main = Cast<AMainCharacter>(Actor);
-		if (Main)
+		ABaseCharacter* BChar = Cast<ABaseCharacter>(Actor);
+		if (BChar)
 		{
-			MainCon = Main->MainController;
-			OwningPlayer = Main;
-			SetInstigator(Main); //Instigator 설정.
+			AMainController* TMainCon = Cast<AMainController>(BChar->GetController());
+			AEnemyAIController* TAICon = Cast<AEnemyAIController>(BChar->GetController());
+			if(TMainCon)
+			{
+				MainCon = TMainCon;
+			}
+			else if(TAICon)
+			{
+				AICon = TAICon;
+			}
+
+			OwningPlayer = BChar;
+			SetInstigator(BChar); //Instigator 설정.
 		}
 	}
 }
@@ -87,21 +101,21 @@ void AEquipment::SetOwningPlayer(AActor* Actor)
 void AEquipment::StepEquip(AActor* Actor)
 {
 	UE_LOG(LogTemp, Warning, TEXT("AEquipment::StepEquip func called"));
-	AMainCharacter* Main = Cast<AMainCharacter>(Actor);
+	ABaseCharacter* BChar = Cast<ABaseCharacter>(Actor);
 
-	if (Main)
+	if (BChar)
 	{
 		/*이 무기의 타입과 일치하는 무기가 이미 있다면
 		 * 1. 이 무기가 월드에 스폰된 상태라면, Inventory에 추가를 시도한다.
 		 * 2. 이 무기가 Inventory에 있는 상태라면 원래 장착된 장비와 바꿔 장착 한다.
 		 * 일치하는 무기가 없다면 Equip함수를 호출한다.
 		 */
-		if (Main->Equipment->IsSameTypeExist(this))
+		if (BChar->Equipment->IsSameTypeExist(this))
 		{
 			if (GetItemState() == EItemState::EIS_Spawn)
 			{
 				//인벤토리로 이 item을 보내고 함수를 종료한다.
-				SendToInventory(Main);
+				SendToInventory(BChar);
 				return;
 			}
 			else if (GetItemState() == EItemState::EIS_Pickup)
@@ -109,11 +123,11 @@ void AEquipment::StepEquip(AActor* Actor)
 				/* 장착 하려는 장비가 Pickup상태(Inventory에 있는 상태)면
 				 * 장비 Swap을 진행한다.
 				 */
-				AEquipment* Beforeweapon = Main->Equipment->GetEquippedWeaponSameType(this);
+				AEquipment* Beforeweapon = BChar->Equipment->GetEquippedWeaponSameType(this);
 				if (Beforeweapon)
 				{
- 					Main->Equipment->SwapEquipment(Beforeweapon, this);
-					Beforeweapon->SendToInventory(Main);
+					BChar->Equipment->SwapEquipment(Beforeweapon, this);
+					Beforeweapon->SendToInventory(BChar);
 					/*this를 SpawnActor해서 Data를 이관하는 작업을 하는 함수를 호출해야한다.
 					 * UEqupmentSlot::NativeDrop에서 하는 루틴을 함수화 해야함.
 					 *
@@ -127,7 +141,7 @@ void AEquipment::StepEquip(AActor* Actor)
 
 void AEquipment::Equip(AActor* Actor)
 {
-	AMainCharacter* Main = Cast<AMainCharacter>(Actor);
+	ABaseCharacter* BChar = Cast<ABaseCharacter>(Actor);
 	switch (EquipmentType)
 	{
 	//case EEquipmentType::EET_Pistol:
@@ -191,10 +205,10 @@ void AEquipment::Equip(AActor* Actor)
 		//break;
 	case EEquipmentType::EET_Helmet:
 	{
-		const USkeletalMeshSocket* Socket = Main->GetMesh()->GetSocketByName("headsocket");
+		const USkeletalMeshSocket* Socket = BChar->GetMesh()->GetSocketByName("headsocket");
 		if (Socket)
 		{
-			if (Socket->AttachActor(this, Main->GetMesh()))
+			if (Socket->AttachActor(this, BChar->GetMesh()))
 			{
 				SetActorRelativeTransform(MeshAttachTransform);
 			}
@@ -204,10 +218,10 @@ void AEquipment::Equip(AActor* Actor)
 	case EEquipmentType::EET_Vest:
 	{
 		//장착
-		const USkeletalMeshSocket* Socket = Main->GetMesh()->GetSocketByName("VestSocket");
+		const USkeletalMeshSocket* Socket = BChar->GetMesh()->GetSocketByName("VestSocket");
 		if(Socket)
 		{
-			if(Socket->AttachActor(this, Main->GetMesh()))
+			if(Socket->AttachActor(this, BChar->GetMesh()))
 			{
 				SetActorRelativeTransform(MeshAttachTransform);
 			}			
@@ -216,10 +230,10 @@ void AEquipment::Equip(AActor* Actor)
 	break;
 	case EEquipmentType::EET_Backpack:
 	{
-		const USkeletalMeshSocket* Socket = Main->GetMesh()->GetSocketByName("BackpackSocket");
+		const USkeletalMeshSocket* Socket = BChar->GetMesh()->GetSocketByName("BackpackSocket");
 		if (Socket)
 		{
-			if (Socket->AttachActor(this, Main->GetMesh()))
+			if (Socket->AttachActor(this, BChar->GetMesh()))
 			{
 				SetActorRelativeTransform(MeshAttachTransform);
 			}
@@ -230,8 +244,8 @@ void AEquipment::Equip(AActor* Actor)
 	
 
 	//Main에 있는 Equipment에 Add해준다.
-	Main->Equipment->AddEquipment(this);
-	SetOwningPlayer(Main);
+	BChar->Equipment->AddEquipment(this);
+	SetOwningPlayer(BChar);
 
 	
 	SKMesh->SetHiddenInGame(false);
@@ -254,8 +268,8 @@ void AEquipment::Equip(AActor* Actor)
 
 void AEquipment::SendToInventory(AActor* Actor)
 {
-	AMainCharacter* Main = Cast<AMainCharacter>(Actor);
-	check(Main);
+	ABaseCharacter* BChar = Cast<ABaseCharacter>(Actor);
+	check(BChar);
 
 	//이 무기와 같은 타입의 무기가 이미 장착되어있고 (Rifle인 경우 2개 장착가능)
 	//if (Main->Equipment->IsWeaponExist(this))
@@ -266,7 +280,7 @@ void AEquipment::SendToInventory(AActor* Actor)
 			OwningEquipment = nullptr;
 			ItemObj->bIsDestoryed = true;
 			//Inventory로 이동해야함.
-			Pickup(Main);
+			Pickup(BChar);
 	//		return true;
 		}
 		//else //Pickup상태면 (Inventory에 있는 무기임) -> 스왑해준다 //얘는 따로 빼서 함수를 구현해야할듯하다.
