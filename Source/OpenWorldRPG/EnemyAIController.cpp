@@ -1,6 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
+
+
 #include "EnemyAIController.h"
 #include "Navigation/CrowdFollowingComponent.h"
 #include "EnemyCharacter.h"
@@ -145,7 +147,7 @@ void AEnemyAIController::DetectedTarget(AActor* Target, FAIStimulus Stimulus)
 		if(Object)
 		{
 			DetectedLootBox(Object, Stimulus);
-			UE_LOG(LogTemp, Warning, TEXT("AI Found LootBox !"));
+			UE_LOG(LogTemp, Warning, TEXT("AI Found Object !"));
 		}
 		
 	}
@@ -154,9 +156,9 @@ void AEnemyAIController::DetectedTarget(AActor* Target, FAIStimulus Stimulus)
 
 void AEnemyAIController::LostTarget(ABaseCharacter* Target) //AActor* Target)
 {
-	if (GetWorldTimerManager().IsTimerActive(TargetLostTimer)) //타이머 초기화
+	if (GetWorldTimerManager().IsTimerActive(EnemyLostTimer)) //타이머 초기화
 	{
-		GetWorldTimerManager().ClearTimer(TargetLostTimer);
+		GetWorldTimerManager().ClearTimer(EnemyLostTimer);
 	}
 	if (BBComp->GetValueAsBool(bHearEnemyKey))
 	{
@@ -169,6 +171,9 @@ void AEnemyAIController::LostTarget(ABaseCharacter* Target) //AActor* Target)
 	{
 		Enemy->bHearPlayer = false;
 	}*/
+	
+	//새로 추가함.
+	GetPerceptionComponent()->ForgetActor(Target); //test
 
 	UpdateBBCompObjectKey(EnemyKey, nullptr);
 	UpdateBBCompVectorKey(TargetLocationKey, FVector::ZeroVector);
@@ -179,6 +184,18 @@ void AEnemyAIController::LostTarget(ABaseCharacter* Target) //AActor* Target)
 	UE_LOG(LogTemp, Warning, TEXT("AI : Target Lost!, Lost Target : %s"), *Target->GetFName().ToString());
 }
 
+
+void AEnemyAIController::LostObject(AActor* InteractActor)
+{
+	UpdateBBCompObjectKey(ObjectKey, nullptr);
+
+	//새로추가 
+	GetPerceptionComponent()->ForgetActor(InteractActor); //test용
+	/*if (GetWorldTimerManager().IsTimerActive(ObjectLostTimer))
+	{
+		GetWorldTimerManager().ClearTimer(ObjectLostTimer);
+	}*/
+}
 
 
 
@@ -200,9 +217,9 @@ void AEnemyAIController::DetectedCharacter(ABaseCharacter* Player, FAIStimulus S
 
 	if (Stimulus.WasSuccessfullySensed())
 	{
-		if (GetWorldTimerManager().IsTimerActive(TargetLostTimer)) //타이머 초기화
+		if (GetWorldTimerManager().IsTimerActive(EnemyLostTimer)) //타이머 초기화
 		{
-			GetWorldTimerManager().ClearTimer(TargetLostTimer);
+			GetWorldTimerManager().ClearTimer(EnemyLostTimer);
 		}
 
 		//DominantSense는 GetLastStimuliLocation함수에만 쓰이는것 같다. 
@@ -245,8 +262,8 @@ void AEnemyAIController::DetectedCharacter(ABaseCharacter* Player, FAIStimulus S
 			//UpdateHearLocationKey(Stimulus.StimulusLocation);
 
 			//청각만 들었을때 Hearing의 MaxAge이후 LostTarget을 실행한다.
-			TargetLostDelegate = FTimerDelegate::CreateUObject(this, &AEnemyAIController::LostTarget, Player); // Target);
-			GetWorldTimerManager().SetTimer(TargetLostTimer, TargetLostDelegate, HearingConfig->GetMaxAge(), false);
+			EnemyLostDelegate = FTimerDelegate::CreateUObject(this, &AEnemyAIController::LostTarget, Player); // Target);
+			GetWorldTimerManager().SetTimer(EnemyLostTimer, EnemyLostDelegate, HearingConfig->GetMaxAge(), false);
 			UE_LOG(LogTemp, Warning, TEXT("AI : Hearing, Sense ID : %d"), HearingSenseID.Index);
 			UE_LOG(LogTemp, Warning, TEXT("Stimulus Age is : %f, HearingMaxAge is : %f"), Stimulus.GetAge(), HearingConfig->GetMaxAge());
 		}
@@ -261,8 +278,8 @@ void AEnemyAIController::DetectedCharacter(ABaseCharacter* Player, FAIStimulus S
 		//UpdateSeePlayerKey(false);
 		//Enemy->bHearPlayer = false; //디버깅
 
-		TargetLostDelegate = FTimerDelegate::CreateUObject(this, &AEnemyAIController::LostTarget, Player); // Target);
-		GetWorldTimerManager().SetTimer(TargetLostTimer, TargetLostDelegate, SightConfig->GetMaxAge(), false); //특정초 이후에 LostTarget함수를 호출한다.
+		EnemyLostDelegate = FTimerDelegate::CreateUObject(this, &AEnemyAIController::LostTarget, Player); // Target);
+		GetWorldTimerManager().SetTimer(EnemyLostTimer, EnemyLostDelegate, SightConfig->GetMaxAge(), false); //특정초 이후에 LostTarget함수를 호출한다.
 
 		UE_LOG(LogTemp, Warning, TEXT("AI : Missing!! / Last Location : %s"), *DetectedLocation.ToString());
 	
@@ -276,7 +293,6 @@ void AEnemyAIController::DetectedLootBox(AInteractable* Obj, FAIStimulus Stimulu
 		UE_LOG(LogTemp, Warning, TEXT("AI : Detected LootBox, "));
 		//LootBox는 StaticMesh로 지정해야함 -> NavMesh가 적용되지 않아서 Location이 아닌 Object로 이동되게 한다.
 		UpdateBBCompObjectKey(ObjectKey, Obj);
-		
 	}
 }
 

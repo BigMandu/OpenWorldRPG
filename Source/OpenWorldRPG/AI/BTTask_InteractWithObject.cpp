@@ -8,7 +8,6 @@
 #include "OpenWorldRPG/Item/Interactable.h"
 
 
-
 UBTTask_InteractWithObject::UBTTask_InteractWithObject()
 {
 
@@ -29,18 +28,7 @@ EBTNodeResult::Type UBTTask_InteractWithObject::ExecuteTask(UBehaviorTreeCompone
 		if(Inter)
 		{
 			Inter->Interaction(EChar);
-
-			/*switch(Inter->InteractType)
-			{
-			case EInteractType::EIT_Equipment:
-				
-				break;
-			case EInteractType::EIT_Item:
-				break;
-			case EInteractType::EIT_LootBox:
-				break;
-
-			}*/
+			AICon->LostObject(Inter);
 		}
 	}
 

@@ -265,17 +265,17 @@ public:
 	void FPSAimLocationAdjust();
 
 	//void SetEquippedWeapon(AWeapon* Weapon);
-	void ChangePrimaryWeapon();
+	/*void ChangePrimaryWeapon();
 	void ChangeSubWeapon();
-	void ChangePistolWeapon();
+	void ChangePistolWeapon();*/
 
 	/* Change Weapon Firing Mode*/
-	void ChangeSafetyLever();
+	//void ChangeSafetyLever();
 
-	void ChangeWeapon(int32 index);
+	virtual void ChangeWeapon(int32 index) override;
 
-	UFUNCTION(BlueprintCallable)
-	void UseItem(AActor* Item);
+	//UFUNCTION(BlueprintCallable)
+	//void UseItem(AActor* Item);
 
 	/********  Hand ik ******/
 	/*UFUNCTION(BlueprintCallable)

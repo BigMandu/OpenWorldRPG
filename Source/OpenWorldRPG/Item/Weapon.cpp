@@ -77,8 +77,8 @@ void AWeapon::PostInitializeComponents()
 void AWeapon::Equip(AActor* Char)
 {
 	Super::Equip(Char);
-	AMainCharacter* Main = Cast<AMainCharacter>(Char);
-	check(Main);
+	ABaseCharacter* BChar = Cast<ABaseCharacter>(Char);
+	check(BChar);
 
 	CapsuleComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 
@@ -89,42 +89,42 @@ void AWeapon::Equip(AActor* Char)
 		/* 1,2,3을 눌렀을때 Quick Swap하기 위해 */
 		if (EquipmentType == EEquipmentType::EET_Rifle) //라이플이고
 		{
-			if (Main->PrimaryWeapon) //이미 주무기가 있으면
+			if (BChar->PrimaryWeapon) //이미 주무기가 있으면
 			{
 				RifleAssign = ERifleAssign::ERA_Sub;
-				Main->SubWeapon = this;// (AWeapon*)this; //부무기로 지정
+				BChar->SubWeapon = this;// (AWeapon*)this; //부무기로 지정
 			}
 			else //주무기가 없으면
 			{
 				RifleAssign = ERifleAssign::ERA_Primary;
-				Main->PrimaryWeapon = this;// (AWeapon*)this; //주무기로
+				BChar->PrimaryWeapon = this;// (AWeapon*)this; //주무기로
 			}
 		}
 		else //피스톨
 		{
-			Main->PistolWeapon = this; // (AWeapon*)this;
+			BChar->PistolWeapon = this; // (AWeapon*)this;
 		}
 	}
 
 
 	//들고 있는 무기가 없을 경우 지금 Weapon을 들도록 한다.
-	if (Main->EquippedWeapon == nullptr)
+	if (BChar->EquippedWeapon == nullptr)
 	{
 		if (EquipmentType == EEquipmentType::EET_Rifle)
 		{
-			if (Main->PrimaryWeapon)
+			if (BChar->PrimaryWeapon)
 			{
-				Main->ChangeWeapon(1);
+				BChar->ChangeWeapon(1);
 			}
-			else if (Main->SubWeapon)
+			else if (BChar->SubWeapon)
 			{
-				Main->ChangeWeapon(2);
+				BChar->ChangeWeapon(2);
 			}
 
 		}
 		else
 		{
-			Main->ChangeWeapon(3);
+			BChar->ChangeWeapon(3);
 		}
 
 		//GunAttachToMesh(Main);
@@ -136,41 +136,43 @@ void AWeapon::Equip(AActor* Char)
 	WeaponStat.SecondPerBullet = 1 / WeaponStat.FireRatePerSec; //0.06
 
 	//broadcast를 위해 AddEquipment 함수를 호출한다. 이미 추가되어있기 때문에, broadcast말고는 하는게 없다.
-	Main->Equipment->AddEquipment(this);
+	BChar->Equipment->AddEquipment(this);
 	
-	GunAttachToMesh(Char);
+	GunAttachToMesh(BChar);
 
 	
 }
 
 void AWeapon::GunAttachToMesh(AActor* Actor)
 {
-	AMainCharacter* Main = Cast<AMainCharacter>(Actor);
-	if (Main)
+	ABaseCharacter* BChar = Cast<ABaseCharacter>(Actor);
+	AMainCharacter* Main = Cast<AMainCharacter>(BChar);
+
+	if (BChar)
 	{
 		/* 들고 있었던 무기가 있고, 들고있었던 무기와 이 무기가 다른경우
 		* 들고 있었던 무기를 'SubWeapon Attach' 소켓에 부착시킨다.
 		*/
-		if (Main->EquippedWeapon && (Main->EquippedWeapon != this))// && ItemState == EItemState::EIS_Spawn)
+		if (BChar->EquippedWeapon && (BChar->EquippedWeapon != this))// && ItemState == EItemState::EIS_Spawn)
 		{
 			const USkeletalMeshSocket* AttachSocket;
 			FTransform AttachTransform;
 
-			if(Main->EquippedWeapon->RifleAssign == ERifleAssign::ERA_Primary)
+			if(BChar->EquippedWeapon->RifleAssign == ERifleAssign::ERA_Primary)
 			{
-				AttachSocket = Main->GetMesh()->GetSocketByName("PrimaryWeaponAttachSocket");
+				AttachSocket = BChar->GetMesh()->GetSocketByName("PrimaryWeaponAttachSocket");
 				AttachTransform = PrimaryWeaponAttachTransform;
 			}
 			else
 			{
-				AttachSocket = Main->GetMesh()->GetSocketByName("SubWeaponAttachSocket");
+				AttachSocket = BChar->GetMesh()->GetSocketByName("SubWeaponAttachSocket");
 				AttachTransform = SubWeaponAttachTransform;
 			}
 
 			if (AttachSocket)
 			{
-				AttachSocket->AttachActor(Main->EquippedWeapon, Main->GetMesh());
-				Main->EquippedWeapon->SetActorRelativeTransform(AttachTransform);
+				AttachSocket->AttachActor(BChar->EquippedWeapon, BChar->GetMesh());
+				BChar->EquippedWeapon->SetActorRelativeTransform(AttachTransform);
 			}
 			/*SubSocket->AttachActor(this, Main->GetMesh());
 			SetActorRelativeTransform(MeshAttachTransform);*/
@@ -178,34 +180,52 @@ void AWeapon::GunAttachToMesh(AActor* Actor)
 		}
 		
 	
-		const USkeletalMeshSocket* TPSocket = Main->GetMesh()->GetSocketByName("WeaponGrip");
-		const USkeletalMeshSocket* FPSocket = Main->FPMesh->GetSocketByName("WeaponGrip");
 
-		if (TPSocket && FPSocket)
+		// 1, 3인칭 변경시 weapon attach를 변경한다. (Main에만 적용)
+		if (Main)
 		{
-			switch (Main->CameraMode)
+			const USkeletalMeshSocket* TPSocket = Main->GetMesh()->GetSocketByName("WeaponGrip");
+			const USkeletalMeshSocket* FPSocket = Main->FPMesh->GetSocketByName("WeaponGrip");
+
+			if (TPSocket && FPSocket)
 			{
-			case ECameraMode::ECM_FPS:
-				if (FPSocket->AttachActor(this, Main->FPMesh))
+				switch (Main->CameraMode)
 				{
-					SetActorRelativeTransform(FPMeshAttachTransform);
-					//Main->BaseWeapTransform = SKMesh->GetRelativeTransform();
+				case ECameraMode::ECM_FPS:
+					if (FPSocket->AttachActor(this, Main->FPMesh))
+					{
+						SetActorRelativeTransform(FPMeshAttachTransform);
+						//Main->BaseWeapTransform = SKMesh->GetRelativeTransform();
+					}
+					break;
+				case ECameraMode::ECM_TPS:
+					if (TPSocket->AttachActor(this, Main->GetMesh()))
+					{
+						SetActorRelativeTransform(MeshAttachTransform);
+					}
+					break;
 				}
-				break;
-			case ECameraMode::ECM_TPS:
-				if (TPSocket->AttachActor(this, Main->GetMesh()))
+
+				SKMesh->SetHiddenInGame(false);
+				Main->SetEquippedWeapon(this);
+			}
+		}
+
+		//AI에만 적용되게 BChar만 null이 아닌경우
+		if (BChar && Main == nullptr)
+		{
+			const USkeletalMeshSocket* WeaponSocket = BChar->GetMesh()->GetSocketByName("WeaponGrip");
+			if (WeaponSocket)
+			{
+				if (WeaponSocket->AttachActor(this, BChar->GetMesh()))
 				{
 					SetActorRelativeTransform(MeshAttachTransform);
+					//SKMesh->SetHiddenInGame(false);
+					BChar->SetEquippedWeapon(this);
 				}
-				break;
-			}				
+			}
 
-			SKMesh->SetHiddenInGame(false);
-			Main->SetEquippedWeapon(this);
-			
-
-
-		}		
+		}
 
 	}
 }
@@ -777,28 +797,28 @@ void AWeapon::Remove()
 	Super::Remove();	
 	if (OwningPlayer)
 	{
-		AMainCharacter* Main = Cast<AMainCharacter>(OwningPlayer);
-		if (Main)
+		ABaseCharacter* BChar = Cast<ABaseCharacter>(OwningPlayer);
+		if (BChar)
 		{
-			if (Main->EquippedWeapon == this)
+			if (BChar->EquippedWeapon == this)
 			{
-				Main->ChangeWeapon(0);
-				Main->EquippedWeapon = nullptr;
+				BChar->ChangeWeapon(0);
+				BChar->EquippedWeapon = nullptr;
 				//Main->SetEquippedWeapon(nullptr);
 				RifleAssign = ERifleAssign::ERA_MAX;
 			}
 
-			if (Main->PrimaryWeapon == this)
+			if (BChar->PrimaryWeapon == this)
 			{
-				Main->PrimaryWeapon = nullptr;
+				BChar->PrimaryWeapon = nullptr;
 			}
-			else if(Main->SubWeapon == this)
+			else if(BChar->SubWeapon == this)
 			{
-				Main->SubWeapon = nullptr;
+				BChar->SubWeapon = nullptr;
 			}
-			else if(Main->PistolWeapon == this)
+			else if(BChar->PistolWeapon == this)
 			{
-				Main->PistolWeapon = nullptr;
+				BChar->PistolWeapon = nullptr;
 			}
 		}
 	}

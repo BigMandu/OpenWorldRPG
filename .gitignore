@@ -17,3 +17,4 @@ Content/*
 *.xcodeproj
 *.xcworkspace
 *_BuiltData.uasset
+Config/DefaultEngine.ini

@@ -332,12 +332,12 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAction("RMB", IE_Pressed, this, &AMainCharacter::RMBDown);
 	PlayerInputComponent->BindAction("RMB", IE_Released, this, &AMainCharacter::RMBUp);
 
-	PlayerInputComponent->BindAction("ChangeSafetyLever", IE_Pressed, this, &AMainCharacter::ChangeSafetyLever);
+	PlayerInputComponent->BindAction("ChangeSafetyLever", IE_Pressed, this, &ABaseCharacter::ChangeSafetyLever);
 
 	/******** Weapon Quick Swap ***********/
-	PlayerInputComponent->BindAction("Primary", IE_Pressed, this, &AMainCharacter::ChangePrimaryWeapon);
-	PlayerInputComponent->BindAction("Sub", IE_Pressed, this, &AMainCharacter::ChangeSubWeapon);
-	PlayerInputComponent->BindAction("Pistol", IE_Pressed, this, &AMainCharacter::ChangePistolWeapon);
+	PlayerInputComponent->BindAction("Primary", IE_Pressed, this, &ABaseCharacter::ChangePrimaryWeapon);
+	PlayerInputComponent->BindAction("Sub", IE_Pressed, this, &ABaseCharacter::ChangeSubWeapon);
+	PlayerInputComponent->BindAction("Pistol", IE_Pressed, this, &ABaseCharacter::ChangePistolWeapon);
 
 	/************** Interactive & Inventory key bind ************/
 
@@ -841,21 +841,22 @@ void AMainCharacter::EKeyDown()
 
 /*************************  Weapon, Item ฐüทร ***************************************************/
 
+/*
 void AMainCharacter::UseItem(class AActor* Item)
 {
 	if (Item)
 	{
 		//Item->Use(this);
 	}
-}
+}*/
 
-void AMainCharacter::ChangeSafetyLever()
-{
-	if (EquippedWeapon)
-	{
-		EquippedWeapon->ChangeSafetyLever();
-	}
-}
+//void AMainCharacter::ChangeSafetyLever()
+//{
+//	if (EquippedWeapon)
+//	{
+//		EquippedWeapon->ChangeSafetyLever();
+//	}
+//}
 
 void AMainCharacter::ChangeWeapon(int32 index)
 {
@@ -905,6 +906,7 @@ void AMainCharacter::ChangeWeapon(int32 index)
 	}
 }
 
+/*
 void AMainCharacter::ChangePrimaryWeapon()
 {
 	ChangeWeapon(1);
@@ -917,6 +919,7 @@ void AMainCharacter::ChangePistolWeapon()
 {
 	ChangeWeapon(3);
 }
+*/
 
 /* To Base
 void AMainCharacter::SetEquippedWeapon(AWeapon* Weapon)

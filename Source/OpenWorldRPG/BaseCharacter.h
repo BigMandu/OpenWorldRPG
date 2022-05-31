@@ -124,6 +124,19 @@ public:
 
 	void SetEquippedWeapon(AWeapon* Weapon);
 
+	void ChangePrimaryWeapon();
+	void ChangeSubWeapon();
+	void ChangePistolWeapon();
+
+	/* Change Weapon Firing Mode*/
+	void ChangeSafetyLever();
+
+	virtual void ChangeWeapon(int32 index);
+
+	UFUNCTION(BlueprintCallable)
+	void UseItem(AActor* Item);
+
+
 	UFUNCTION(BlueprintCallable)
 	FTransform LeftHandik();
 

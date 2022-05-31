@@ -27,7 +27,7 @@ AEquipment::AEquipment() : Super()
 	Mesh->SetupAttachment(GetRootComponent());
 	//Mesh->CanCharacterStepUpOn = ECB_No;
 
-	SKMesh->SetHiddenInGame(true);
+	SKMesh->SetHiddenInGame(true); //AI debug때문에 임시로 false시킴
 
 }
 

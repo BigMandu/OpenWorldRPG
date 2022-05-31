@@ -38,8 +38,11 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = AI)
 	UAISenseConfig_Hearing* HearingConfig;
 
-	FTimerHandle TargetLostTimer;
-	FTimerDelegate TargetLostDelegate;
+	FTimerHandle EnemyLostTimer;
+	FTimerDelegate EnemyLostDelegate;
+
+	/*FTimerHandle ObjectLostTimer;
+	FTimerDelegate ObjectLostDelegate;*/
 
 
 
@@ -101,6 +104,9 @@ public:
 
 	UFUNCTION()
 	void LostTarget(ABaseCharacter* Target); //AActor* Target);
+
+	//UFUNCTION()
+	void LostObject(AActor* InteractActor);
 
 
 	void CalcAttackDist(float DeltaTime);
