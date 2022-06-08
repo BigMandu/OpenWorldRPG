@@ -30,8 +30,9 @@ public:
 	//UPROPERTY(BlueprintAssignable, Category = Inventory)
 	//FOnInventoryUpdated OnInventoryUpdated;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Items)
-	TArray<AActor*> InventoryItems; //inventory에 있는 item들
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Items)
+	//TArray<AItem*> InventoryItems;
+	TArray<TSubclassOf<AItem>> InventoryItems; //inventory에 있는 item들
 
 protected:
 	// Called when the game starts

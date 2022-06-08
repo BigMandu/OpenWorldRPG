@@ -55,8 +55,8 @@ public:
 	
 	virtual void New_BulletOut() override;
 	void ApplyRecoil();
-	void CheckHit(FHitResult& Hit);
-
+	void CheckHit(const FHitResult& Hit, const FVector Dir);
+	void ApplyDamage(const FHitResult& Hit, const FVector Dir);
 
 
 	/********************************************/

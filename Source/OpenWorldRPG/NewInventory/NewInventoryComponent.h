@@ -37,6 +37,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InventoryComp")
 	TArray<UNewItemObject*> InventoryItems;
 
+
 private:
 	UNewItemObject* GetItemAtIndex(int32 index);
 

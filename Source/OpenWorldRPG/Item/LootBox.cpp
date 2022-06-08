@@ -5,17 +5,21 @@
 #include "Item.h"
 #include "Kismet/GameplayStatics.h"
 #include "Blueprint/UserWidget.h"
+#include "OpenWorldRPG/EnemyAIController.h"
 #include "OpenWorldRPG/MainCharacter.h"
 #include "OpenWorldRPG/MainController.h"
 #include "OpenWorldRPG/NewInventory/LootBoxWidget.h"
 #include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
 #include "OpenWorldRPG/NewInventory/NewInventory.h"
+#include "OpenWorldRPG/NewInventory/LootWidgetComponent.h"
+#include "OpenWorldRPG/NewInventory/NewItemObject.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "Perception/AISense_Sight.h"
 
 ALootBox::ALootBox()
 {
 	BoxInventoryComp = CreateDefaultSubobject<UNewInventoryComponent>(TEXT("BoxInventoryComp"));
+	LootWidgetComp = CreateDefaultSubobject<ULootWidgetComponent>(TEXT("LootWidgetComp"));
 	StimuliComp = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("StimuliComp"));
 	StimuliComp->bAutoRegister = true;
 
@@ -26,7 +30,8 @@ ALootBox::ALootBox()
 
 	Mesh->SetCollisionObjectType(ECollisionChannel::ECC_WorldStatic);
 	Mesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
-	
+
+	bHasSpawnItem = false;
 	/*Mesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
 	Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_EngineTraceChannel2, ECollisionResponse::ECR_Block);*/
@@ -67,37 +72,54 @@ void ALootBox::PostInitializeComponents()
 	Super::PostInitializeComponents();
 
 	StimuliComp->RegisterForSense(UAISense_Sight::StaticClass());
-	StimuliComp->RegisterWithPerceptionSystem();
+	StimuliComp->RegisterWithPerceptionSystem();	
 }
 
 void ALootBox::BeginPlay()
 {
 	Super::BeginPlay();
-	MainCon = Cast<AMainController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	//MainCon = Cast<AMainController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 
-	
-
-
-	/*if (WLootBoxWidget && MainCon)
+	//InventoryComponent의 초기화가 BeginPlay에서 되기때문에 여기다 했다.
+	if (bHasSpawnItem)
 	{
-		LootBoxWidget = CreateWidget<ULootBoxWidget>(MainCon, WLootBoxWidget);
-		if (LootBoxWidget)
+		SpawnItem();
+	}
+}
+
+void ALootBox::SpawnItem()
+{
+	for (auto AddItem : SpawnItemList)
+	{
+		AItem* Item = GetWorld()->SpawnActor<AItem>(AddItem);
+		if (Item)
 		{
-			LootBoxWidget->InitLootBoxWidget(this);
+			//Item->Pickup(this);
+
+			if (BoxInventoryComp->TryAddItem(Item->GetDefaultItemObj()))
+			{
+				Item->GetDefaultItemObj()->bIsDestoryed = true;
+				Item->Destroy();
+			}
 		}
-	}	*/
+	}
 }
 
 void ALootBox::OpenBox(AActor* Actor)
 {
 	UE_LOG(LogTemp, Warning, TEXT("LootBox::OpenBox, BoxName : %s"), *this->GetFName().ToString());
 
-	AMainCharacter* Main = Cast<AMainCharacter>(Actor);
-	if (Main)
+	AMainController* MainCon = Cast<AMainController>(Actor->GetInstigatorController());
+	AEnemyAIController* AICon = Cast<AEnemyAIController>(Actor->GetInstigatorController());
+	if (MainCon)
 	{
-		MainCon = Main->MainController;
 		MainCon->bIsInteractLootBox = true;
-		ShowWidget();
+		ShowWidget(MainCon);
+	}
+
+	if(AICon)
+	{
+		AICon->ItemFarming(this);
 	}
 }
 
@@ -105,23 +127,25 @@ void ALootBox::OpenBox(AActor* Actor)
 	시작하자마자 LootBox Interaction시 LootBox위젯이 나오지 않음.
 	인벤토리를 한번 보고나면 보임... ->> 해결해야됨.
 */
-void ALootBox::ShowWidget()
+void ALootBox::ShowWidget(AMainController* MainCon)
 {
 	UNewInventory* MainInventory = Cast<UNewInventory>(MainCon->NewInventory);
 	if (MainInventory)
 	{
-		LootBoxWidget = CreateWidget<ULootBoxWidget>(MainCon, WLootBoxWidget);
-		if (LootBoxWidget)
-		{
-			LootBoxWidget->InitLootBoxWidget(this);
+		LootWidgetComp->CreateInteractionWidget(MainCon, this); //새로추가
 
-			UE_LOG(LogTemp, Warning, TEXT("LootBox::ShowWidget, Widget name : %s"), *LootBoxWidget->GetFName().ToString());
-			MainInventory->SetRightWidget(LootBoxWidget);
-			MainCon->ShowInventory_Implementation();// ToggleInventory();
-		}
+		//LootBoxWidget = CreateWidget<ULootBoxWidget>(MainCon, WLootBoxWidget);
+		//if (LootBoxWidget)
+		//{
+		//	LootBoxWidget->InitLootBoxWidget(this);
+
+		//	UE_LOG(LogTemp, Warning, TEXT("LootBox::ShowWidget, Widget name : %s"), *LootBoxWidget->GetFName().ToString());
+		//	//NewInventory의 오른쪽 위젯에 LootBoxWidget을 넣어준다.
+		//	MainInventory->SetRightWidget(LootBoxWidget);
+		//	MainCon->ShowInventory_Implementation();// ToggleInventory();
+		//}
 	}
 }
-
 
 
 

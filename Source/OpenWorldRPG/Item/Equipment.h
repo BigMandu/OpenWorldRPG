@@ -9,6 +9,7 @@
 /**
  * 
  */
+class ABaseCharacter;
 class AMainController;
 class AEnemyAIController;
 class USkeletalMeshComponent;
@@ -47,7 +48,7 @@ public:
 	AMainController* MainCon;
 	AEnemyAIController* AICon;
 	UEquipmentComponent* OwningEquipment;
-	AActor* OwningPlayer;
+	ABaseCharacter* OwningPlayer;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Equipment")
 	USkeletalMeshComponent* SKMesh;

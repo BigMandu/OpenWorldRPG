@@ -14,6 +14,7 @@
 class UNewItemObject;
 class UMaterialInterface;
 class UAIPerceptionStimuliSourceComponent;
+class ABaseCharacter;
 
 //UENUM(BlueprintType)
 //enum class EEquipmentType : uint8
@@ -104,7 +105,12 @@ public:
 	/* child class에서 override할 예정임*/
 	virtual UNewItemObject* GetDefaultItemObj();
 
-	void Pickup(AActor* Actor);
+	bool Pickup(AActor* Actor);
+
+	bool AddAtBackPack(ABaseCharacter* BChar);
+	bool AddAtVest(ABaseCharacter* BChar);
+	bool AddAtPocket(ABaseCharacter* BChar);
+	bool AddAtSecureBox(ABaseCharacter* BChar);
 	
 	UFUNCTION(BlueprintCallable)
 	virtual void Drop();

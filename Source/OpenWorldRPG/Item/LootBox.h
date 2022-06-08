@@ -7,16 +7,18 @@
 #include "LootBox.generated.h"
 
 class UNewInventoryComponent;
+class ULootWidgetComponent;
 class UInventoryWidget;
 class UNewInventoryGrid;
 class ULootBoxWidget;
 class UUserWidget;
-class AItem;
-class AMainController;
 
 class UAIPerceptionStimuliSourceComponent;
 class UAISense_Sight;
-//class AMainCharacter;
+
+class AItem;
+class AMainController;
+
 
 
 //DECLARE_DYNAMIC_MULTICAST_DELEGATE(FLootBoxOpen);
@@ -34,13 +36,23 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = LootBox)
 	UNewInventoryComponent* BoxInventoryComp;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = LootBox)
-	TSubclassOf<ULootBoxWidget>WLootBoxWidget;
-	
-	ULootBoxWidget* LootBoxWidget;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item")
+	ULootWidgetComponent* LootWidgetComp;
+
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = LootBox)
+	//TSubclassOf<ULootBoxWidget>WLootBoxWidget;
+
+	//ULootBoxWidget* LootBoxWidget;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = LootBox)
+	bool bHasSpawnItem;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = LootBox)
+	TArray<TSubclassOf<AItem>> SpawnItemList;
 
 	UPROPERTY(EditDefaultsOnly, Category = AI)
 	UAIPerceptionStimuliSourceComponent* StimuliComp;
+
+	
 
 	/*UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = LootBox)
 	int32 LootItemCount;*/
@@ -58,7 +70,7 @@ public:
 	//UInventoryWidget* WidgetInv;
 
 	//AMainCharacter* Main;
-	AMainController* MainCon;
+	//AMainController* MainCon;
 
 
 protected:
@@ -69,7 +81,8 @@ public:
 	//void SelectAndStoreLootItem();
 	virtual void PostInitializeComponents() override;
 	void OpenBox(AActor* Actor);
-	void ShowWidget();
+	void ShowWidget(AMainController* MainCon);
+	void SpawnItem();
 	//void CloseBox(AActor* Actor);
 	
 };

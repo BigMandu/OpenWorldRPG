@@ -33,7 +33,9 @@ public:
 	AMainCharacter* Main;
 
 	//UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UNewInventoryComponent* InventoryComp;
+	UNewInventoryComponent* PocketInventoryComp;
+	UNewInventoryComponent* SecureBoxInventoryComp;
+
 	UEquipmentComponent* EquipComp;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -52,7 +54,7 @@ public:
 	UNewInventoryGrid* GridWidget;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UEquipWidget* EquipWidget;
+	UEquipWidget* EquipmentWidget;
 
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))

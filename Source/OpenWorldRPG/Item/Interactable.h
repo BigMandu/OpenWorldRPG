@@ -60,6 +60,6 @@ protected:
 public:	
 	virtual void Interaction(AActor* Actor) override;
 
-	void SetOutline();
-	void UnsetOutline();
+	virtual void SetOutline() override;
+	virtual void UnsetOutline() override;
 };

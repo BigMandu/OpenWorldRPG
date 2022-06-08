@@ -27,7 +27,8 @@ AEquipment::AEquipment() : Super()
 	Mesh->SetupAttachment(GetRootComponent());
 	//Mesh->CanCharacterStepUpOn = ECB_No;
 
-	SKMesh->SetHiddenInGame(true); //AI debug때문에 임시로 false시킴
+	SKMesh->SetHiddenInGame(true);
+	SKMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_EngineTraceChannel2, ECollisionResponse::ECR_Overlap);
 
 }
 
@@ -49,15 +50,24 @@ void AEquipment::ReInitialize(UNewItemObject* Obj)
 		ItemObj = Obj;
 		if(bHasStorage)
 		{
-			if (MainCon == nullptr) 
+			/*if (MainCon == nullptr) 
 			{
 				MainCon = Cast<AMainController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-			}
+			}*/
 			//AMainController* MainCon = Cast<AMainController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-			if (WEquipGridWidget && MainCon)
+			if (WEquipGridWidget)
 			{
-				EquipGridWidget = CreateWidget<UNewInventoryGrid>(MainCon, WEquipGridWidget);
-				EquipGridWidget->GridInitialize(EquipInventoryComp, EquipInventoryComp->TileSize);
+				if(MainCon)
+				{
+					EquipGridWidget = CreateWidget<UNewInventoryGrid>(MainCon, WEquipGridWidget);
+					EquipGridWidget->GridInitialize(EquipInventoryComp, EquipInventoryComp->TileSize);
+				}
+				/*else if(AICon)
+				{
+					EquipGridWidget = CreateWidget<UNewInventoryGrid>(AICon, WEquipGridWidget);
+				}*/
+				
+				
 			}
 		}
 	}
@@ -123,7 +133,7 @@ void AEquipment::StepEquip(AActor* Actor)
 				/* 장착 하려는 장비가 Pickup상태(Inventory에 있는 상태)면
 				 * 장비 Swap을 진행한다.
 				 */
-				AEquipment* Beforeweapon = BChar->Equipment->GetEquippedWeaponSameType(this);
+				AEquipment* Beforeweapon = BChar->Equipment->GetEquippedWeaponSameType(EEquipmentType::EET_MAX, this);
 				if (Beforeweapon)
 				{
 					BChar->Equipment->SwapEquipment(Beforeweapon, this);

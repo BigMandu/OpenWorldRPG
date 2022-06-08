@@ -71,15 +71,18 @@ void UEquipWidget::RefreshEquipWidget()
 				case EEquipmentType::EET_Vest:
 					SetSlot(ele, VestSlot);
 					if (VestOverlay && ele->bHasStorage && ele->EquipGridWidget)
-					{ 
+					{
 						VestOverlay->AddChild(ele->EquipGridWidget);//°¡²û error
 					}
 					break;
 				case EEquipmentType::EET_Backpack:
-					SetSlot(ele, BackpackSlot);
-					if (BackpackOverlay && ele->bHasStorage && ele->EquipGridWidget)
+					if (ele)
 					{
-						BackpackOverlay->AddChild(ele->EquipGridWidget);
+						SetSlot(ele, BackpackSlot);
+						if (BackpackOverlay && ele->bHasStorage && ele->EquipGridWidget)
+						{
+							BackpackOverlay->AddChild(ele->EquipGridWidget);
+						}
 					}
 					break;
 
@@ -110,6 +113,10 @@ void UEquipWidget::SetSlot(AEquipment* Equip, UEquipmentSlot* EquipSlot)
 			EquipSlot->PaintBGBorder();
 
 		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Eqiupwidget :: Item widget is null"));
 	}
 }
 

@@ -23,11 +23,20 @@ UNewInventory::UNewInventory(const FObjectInitializer& ObjectInitializer) : Supe
 void UNewInventory::NativeConstruct()
 {
 	Super::NativeConstruct();
-	if (InventoryComp)
+	if (PocketInventoryComp)
 	{
-		GridWidget->GridInitialize(InventoryComp, InventoryComp->TileSize);
+		GridWidget->GridInitialize(PocketInventoryComp, PocketInventoryComp->TileSize);
+		
+	}
+	if(SecureBoxInventoryComp)
+	{
+		GridWidget->GridInitialize(SecureBoxInventoryComp, SecureBoxInventoryComp->TileSize);
 		GridWidget->BindDropWidget(DropWidget);
-		EquipWidget->EquipInitialize(EquipComp);
+		
+	}
+	if (EquipComp)
+	{
+		EquipmentWidget->EquipInitialize(EquipComp);
 	}
 }
 
@@ -38,9 +47,17 @@ bool UNewInventory::Initialize()
 
 	AMainCharacter* TMain = Cast<AMainCharacter>(GetOwningPlayerPawn());
 	Main = (TMain == nullptr) ? nullptr : TMain;
-	if (Main && Main->InventoryComp)
+	if (Main) 
 	{
-		InventoryComp = Main->InventoryComp;
+		if (Main->PocketInventoryComp)
+		{
+			PocketInventoryComp = Main->PocketInventoryComp;
+		}
+		if(Main->SecureBoxInventoryComp)
+		{
+			SecureBoxInventoryComp = Main->SecureBoxInventoryComp;
+		}
+
 		EquipComp = Main->Equipment;
 		//GridWidget->GridInitialize(InventoryComp, InventoryComp->TileSize);
 	}
@@ -49,12 +66,11 @@ bool UNewInventory::Initialize()
 
 void UNewInventory::SetRightWidget(UUserWidget* Widget)
 {
+	ContentBorder->ClearChildren();
 	if (Widget)
 	{
 		//RightWidgetScrollBox->ClearChildren();
 		//RightWidgetScrollBox->AddChild(Widget);
-		
-		ContentBorder->ClearChildren();
 		ContentBorder->AddChild(Widget);
 		Widget->SetVisibility(ESlateVisibility::Visible);
 		UE_LOG(LogTemp, Warning, TEXT("Inventory::SetRightWidget, Widget name : %s"), *Widget->GetFName().ToString());
@@ -70,12 +86,13 @@ void UNewInventory::ChangeRightSwitcher()
 		AMainController* MainCon = Main->MainController;
 		if (MainCon)
 		{
-			if (MainCon->bIsInteractLootBox)
+			if (MainCon->bIsInteractLootBox || MainCon->bIsInteractCharacterLoot)
 			{
 				RightWidgetSwitcher->SetActiveWidgetIndex(2);
 			}
 			else
 			{
+				SetRightWidget(nullptr);
 				RightWidgetSwitcher->SetActiveWidgetIndex(1);
 			}
 		}

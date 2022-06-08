@@ -6,6 +6,8 @@
 #include "OpenWorldRPG/BaseCharacter.h"
 #include "EnemyCharacter.generated.h"
 
+class AEquipment;
+
 UENUM(BlueprintType)
 enum class EAIStatus : uint8
 {
@@ -54,7 +56,6 @@ public:
 	UPROPERTY(EditAnywhere, Category = Combat)
 	float Range; // Enemy의 사거리 -> 무기의 Range로 교체 할 예정임.
 
-
 	/******* 디버깅용 ********/
 	UPROPERTY(VisibleAnywhere, Category = AI)
 	bool bSeePlayer;
@@ -74,4 +75,6 @@ public:
 	//virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	void SetAIStatus(EAIStatus Status);
+
+	bool CheckEquipped(AActor* Actor);
 };

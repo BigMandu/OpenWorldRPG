@@ -8,11 +8,16 @@
 UBTTask_MoveToTarget::UBTTask_MoveToTarget()
 {
 	NodeName = TEXT("MoveToTarget");
+
+	//완전 겹치지 않아도 Interact가능하도록 Acceptable Radius를 Editor에서 설정한다.
+	//AcceptableRadius = 120.f;
 }
 
 EBTNodeResult::Type UBTTask_MoveToTarget::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	EBTNodeResult::Type Return = Super::ExecuteTask(OwnerComp, NodeMemory);
+
+	
 
 	AEnemyAIController* AICon = Cast<AEnemyAIController>(OwnerComp.GetAIOwner());
 	check(AICon);

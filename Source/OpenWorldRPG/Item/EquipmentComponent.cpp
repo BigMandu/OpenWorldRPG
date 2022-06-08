@@ -47,10 +47,20 @@ bool UEquipmentComponent::AddEquipment(AEquipment* Equip)
 			EquipmentItems.Add(Equip);
 			Equip->SKMesh->SetHiddenInGame(false); //임시로 해둔것임.
 
-			//EquipWidget::RefreshEquipWidget과 bind시킴.
+			//Backpack, Vest의 장착 여부를 확인한다.
+			if(Equip->EquipmentType == EEquipmentType::EET_Backpack)
+			{
+				bHasBackpack = true;
+			}
+			else if(Equip->EquipmentType == EEquipmentType::EET_Vest)
+			{
+				bHasVest = true;
+			}
+			
 
 			bReturn = true;
 		}
+		//EquipWidget::RefreshEquipWidget과 bind시킴.
 			OnEquipmentUpdated.Broadcast();
 
 			UE_LOG(LogTemp, Warning, TEXT("EquipComp : AddSuccess"));
@@ -63,10 +73,16 @@ bool UEquipmentComponent::RemoveEquipment(AEquipment* Equip)
 {
 	if (Equip)
 	{
-		/*if (Equip->SKMesh)
+		//Backpack, Vest의 장착 여부를 확인한다.
+		if (Equip->EquipmentType == EEquipmentType::EET_Backpack)
 		{
-			Equip->SKMesh->SetHiddenInGame(true);
-		}*/
+			bHasBackpack = false;
+		}
+		else if (Equip->EquipmentType == EEquipmentType::EET_Vest)
+		{
+			bHasVest = false;
+		}
+
 		EquipmentItems.RemoveSingle(Equip);
 		Equip->OwningPlayer = nullptr;
 		Equip->Destroy();
@@ -107,16 +123,26 @@ bool UEquipmentComponent::IsSameTypeExist(AEquipment* Equip)
 	return false;
 }
 
-AEquipment* UEquipmentComponent::GetEquippedWeaponSameType(AEquipment* Equip)
+AEquipment* UEquipmentComponent::GetEquippedWeaponSameType(EEquipmentType EquipType, AEquipment* Equip)
 {
 	for (auto& EquipItem : EquipmentItems)
 	{
 		AEquipment* Equipped = Cast<AEquipment>(EquipItem);
 		if (Equipped)
 		{
-			if (Equipped->EquipmentType == Equip->EquipmentType)
+			if (Equip != nullptr && EquipType == EEquipmentType::EET_MAX)
 			{
-				return Equipped;
+				if (Equipped->EquipmentType == Equip->EquipmentType)
+				{
+					return Equipped;
+				}
+			}
+			else
+			{
+				if(Equipped->EquipmentType == EquipType)
+				{
+					return Equipped;
+				}
 			}
 		}
 	}

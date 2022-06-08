@@ -131,6 +131,7 @@ void AMainController::HideInventory_Implementation()
 
 		bIsInventoryVisible = false;
 		bIsInteractLootBox = false;
+		bIsInteractCharacterLoot = false;
 	}
 }
 

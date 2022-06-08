@@ -272,6 +272,8 @@ public:
 	/* Change Weapon Firing Mode*/
 	//void ChangeSafetyLever();
 
+
+	//FPMesh때문에 override해서 FPAnim을 따로 갱신해준다.
 	virtual void ChangeWeapon(int32 index) override;
 
 	//UFUNCTION(BlueprintCallable)

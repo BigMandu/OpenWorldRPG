@@ -40,7 +40,8 @@ bool UInventoryComponent::AddItem(class AItem* Item)
 
 	UE_LOG(LogTemp, Warning, TEXT(" Item Add Successfully "));
 	Item->OwningInventory = this;
-	InventoryItems.Add(Item);
+	InventoryItems.Add(Item->StaticClass());
+	//InventoryItems.Add(Item);
 
 	
 	//OnInventoryUpdated.Broadcast();
@@ -53,7 +54,8 @@ bool UInventoryComponent::RemoveItem(class AItem* Item)
 	if (Item)
 	{
 		//Item->OwningInventory = nullptr;
-		InventoryItems.RemoveSingle(Item);
+		InventoryItems.RemoveSingle(Item->StaticClass());
+		//InventoryItems.RemoveSingle(Item);
 
 		//OnInventoryUpdated.Broadcast();
 

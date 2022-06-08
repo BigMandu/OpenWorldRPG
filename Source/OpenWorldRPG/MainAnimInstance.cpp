@@ -3,13 +3,13 @@
 
 #include "MainAnimInstance.h"
 #include "BaseCharacter.h"
-#include "MainCharacter.h"
-#include "MainController.h"
-#include "Animation/AnimNode_SequencePlayer.h"
-#include "Item/Weapon.h"
+//#include "MainCharacter.h"
+//#include "MainController.h"
+//#include "Animation/AnimNode_SequencePlayer.h"
+//#include "Item/Weapon.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "BoneControllers/AnimNode_ModifyBone.h"
-#include "Engine/SkeletalMeshSocket.h"
+//#include "BoneControllers/AnimNode_ModifyBone.h"
+//#include "Engine/SkeletalMeshSocket.h"
 
 void UMainAnimInstance::NativeInitializeAnimation()
 {
@@ -18,7 +18,7 @@ void UMainAnimInstance::NativeInitializeAnimation()
 		Pawn = TryGetPawnOwner();
 		if (Pawn)
 		{
-			Player = Cast<AMainCharacter>(Pawn);
+			Player = Cast<ABaseCharacter>(Pawn);
 		}
 	}
 }
@@ -30,14 +30,14 @@ void UMainAnimInstance::UpdateAnimationProperties()
 		Pawn = TryGetPawnOwner();
 		if (Pawn)
 		{
-			Player = Cast<AMainCharacter>(Pawn);
+			Player = Cast<ABaseCharacter>(Pawn);
 		}
 	}
 	
 	if (Player)
 	{
 		bIsinAir = Player->GetCharacterMovement()->IsFalling();
-		AMainController* MainCon = Cast<AMainController>(Player->GetController());
+		//AMainController* MainCon = Cast<AMainController>(Player->GetController());
 		FVector Speed = Player->GetVelocity();
 		FVector LateralSpeed = FVector(Speed.X, Speed.Y, 0.f);
 		MovementSpeed = LateralSpeed.Size(); //속도계산
@@ -54,8 +54,8 @@ void UMainAnimInstance::UpdateAnimationProperties()
 		
 		FRotator NewRotate = FMath::RInterpTo(Current, Delta, GetWorld()->GetDeltaSeconds(), 15.f); //부드럽게 회전시킨다
 
-		FRotator NewRotYaw = FRotator(0.f, NewRotate.Yaw, 0.f);
-		FRotator NewRotPitch = FRotator(NewRotate.Pitch, 0.f, 0.f);
+		//FRotator NewRotYaw = FRotator(0.f, NewRotate.Yaw, 0.f);
+		//FRotator NewRotPitch = FRotator(NewRotate.Pitch, 0.f, 0.f);
 		
 		Yaw = NewRotate.Yaw;//NewRotYaw.ClampAxis(90.f); //각각 회전의 제한을 걸어준다.
 		Pitch = NewRotate.Pitch;//NewRotPitch.ClampAxis(90.f);

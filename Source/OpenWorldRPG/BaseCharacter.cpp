@@ -2,7 +2,16 @@
 
 
 #include "BaseCharacter.h"
+
+#include "MainController.h"
+#include "EnemyAIController.h"
 #include "MainAnimInstance.h"
+#include "Components/CapsuleComponent.h"
+#include "Components/SkeletalMeshComponent.h"
+
+
+#include "OpenWorldRPG/NewInventory/LootWidgetComponent.h"
+#include "OpenWorldRPG/NewInventory/CharacterLootWidget.h"
 #include "OpenWorldRPG/Item/EquipmentComponent.h"
 #include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
 #include "OpenWorldRPG/Item/Equipment.h"
@@ -10,6 +19,7 @@
 
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "NewInventory/NewInventory.h"
 #include "Perception/AISense_Hearing.h"
 #include "Sound/SoundCue.h"
 
@@ -33,10 +43,13 @@ ABaseCharacter::ABaseCharacter()
 	GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
 	bIsWalking = false; //걷기 기본설정은 false.
 
-
+	Health = 100.f;
 	
-	InventoryComp = CreateDefaultSubobject<UNewInventoryComponent>(TEXT("InventoryComp"));
+	PocketInventoryComp = CreateDefaultSubobject<UNewInventoryComponent>(TEXT("PocketInventoryComp"));
+	SecureBoxInventoryComp= CreateDefaultSubobject<UNewInventoryComponent>(TEXT("SecureBoxInventoryComp"));
+
 	Equipment = CreateDefaultSubobject<UEquipmentComponent>(TEXT("Equipment"));
+	LootWidgetComp = CreateDefaultSubobject<ULootWidgetComponent>(TEXT("LootWidgetComp"));
 
 }
 
@@ -145,7 +158,7 @@ void ABaseCharacter::ChangeWeapon(int32 index)
 			if (PrimaryWeapon && (PrimaryWeapon != EquippedWeapon))
 			{
 				PrimaryWeapon->GunAttachToMesh(this);
-				if (TPAnimInstance && FPAnimInstance)
+				if (TPAnimInstance)// && FPAnimInstance)
 				{
 					TPAnimInstance->WeaponTypeNumber = 1;
 					//FPAnimInstance->WeaponTypeNumber = 1;
@@ -157,10 +170,10 @@ void ABaseCharacter::ChangeWeapon(int32 index)
 			if (SubWeapon && (SubWeapon != EquippedWeapon))
 			{
 				SubWeapon->GunAttachToMesh(this);
-				if (TPAnimInstance && FPAnimInstance)
+				if (TPAnimInstance)// && FPAnimInstance)
 				{
 					TPAnimInstance->WeaponTypeNumber = 1;
-					FPAnimInstance->WeaponTypeNumber = 1;
+					//FPAnimInstance->WeaponTypeNumber = 1;
 					//EquippedWeapon = SubWeapon;
 				}
 			}
@@ -169,10 +182,10 @@ void ABaseCharacter::ChangeWeapon(int32 index)
 			if (PistolWeapon && (PistolWeapon != EquippedWeapon))
 			{
 				PistolWeapon->GunAttachToMesh(this);
-				if (TPAnimInstance && FPAnimInstance)
+				if (TPAnimInstance)// && FPAnimInstance)
 				{
 					TPAnimInstance->WeaponTypeNumber = 2;
-					FPAnimInstance->WeaponTypeNumber = 2;
+					//FPAnimInstance->WeaponTypeNumber = 2;
 					//EquippedWeapon = PistolWeapon;
 				}
 			}
@@ -218,9 +231,56 @@ void ABaseCharacter::StepSound()
 	}
 }
 
+float ABaseCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,	AActor* DamageCauser)
+{
+	float ApplyDmg = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	if(ApplyDmg > 0.f)
+	{
+		Health -= ApplyDmg;
+		if(Health <= 0.f)
+		{
+			Die();
+		}
+	}
+	return ApplyDmg;
+}
+
+void ABaseCharacter::Die()
+{
+	AEnemyAIController* AICon = Cast<AEnemyAIController>(GetController());
+	if(AICon)
+	{
+		//AICon->UnPossess();
+		DetachFromControllerPendingDestroy();
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
+
+		GetCharacterMovement()->StopMovementImmediately();
+		GetCharacterMovement()->DisableMovement();
+		GetCharacterMovement()->SetComponentTickEnabled(false);
+		
+		/* set Ragdoll */
+		USkeletalMeshComponent* TPMesh = GetMesh();
+		if(TPMesh)
+		{
+			TPMesh->SetCollisionProfileName(FName("RagDoll"));
+
+			TPMesh->SetSimulatePhysics(true);
+			TPMesh->WakeAllRigidBodies();
+			TPMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
+			
+			bIsDie = true;
+		}
+	}
+}
+
+/* Perception */
+
 bool ABaseCharacter::CanBeSeenFrom(const FVector& ObserverLocation, FVector& OutSeenLocation,
-	int32& NumberOfLoSChecksPerformed, float& OutSightStrength, const AActor* IgnoreActor, const bool* bWasVisible,
-	int32* UserData) const
+                                   int32& NumberOfLoSChecksPerformed, float& OutSightStrength, const AActor* IgnoreActor, const bool* bWasVisible,
+                                   int32* UserData) const
 {
 	FHitResult HitResult;
 	FVector PlayerLocation;
@@ -261,3 +321,60 @@ bool ABaseCharacter::CanBeSeenFrom(const FVector& ObserverLocation, FVector& Out
 	return bResult;
 }
 
+
+
+
+/**********************************************************/
+/**************        Interaction        *****************/
+/**********************************************************/
+void ABaseCharacter::Interaction(AActor* Actor)
+{
+	APawn* Pawn = Cast<APawn>(Actor);
+	if (Pawn && bIsDie)
+	{
+
+		//UE_LOG(LogTemp, Warning, TEXT("Actor name : %s"), *Actor->GetFName().ToString());
+		UE_LOG(LogTemp, Warning, TEXT("Character Interaction"));
+
+		AMainController* MainCon = Cast<AMainController>(Pawn->GetController());
+		AEnemyAIController* AICon = Cast<AEnemyAIController>(Pawn->GetController());
+
+		if (MainCon)
+		{
+			MainCon->bIsInteractCharacterLoot = true;
+			LootWidgetComp->CreateInteractionWidget(MainCon, this); //새로추가
+
+			/*UNewInventory* MainInventory = Cast<UNewInventory>(MainCon->NewInventory);
+			if (MainInventory)
+			{
+				CharLootWidget = CreateWidget<UCharacterLootWidget>(MainCon, WCharLootWidget);
+				if (CharLootWidget)
+				{
+					CharLootWidget->InitCharLootWidget(this);
+
+					MainInventory->SetRightWidget(CharLootWidget);
+					MainCon->ShowInventory_Implementation();
+				}
+			}*/
+		}
+
+		if (AICon)
+		{
+			AICon->ItemFarming(this);
+		}
+
+	}
+}
+
+void ABaseCharacter::SetOutline()
+{
+	if (bIsDie)
+	{
+		GetMesh()->SetRenderCustomDepth(true);
+	}
+}
+
+void ABaseCharacter::UnsetOutline()
+{
+	GetMesh()->SetRenderCustomDepth(false);
+}

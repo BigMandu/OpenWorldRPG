@@ -3,11 +3,14 @@
 
 #include "Item.h"
 #include "OpenWorldRPG/BaseCharacter.h"
+#include "OpenWorldRPG/Item/EquipmentComponent.h"
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
 #include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
+
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "Perception/AISense_Sight.h"
 #include "DrawDebugHelpers.h"
+#include "Equipment.h"
 
 
 AItem::AItem()
@@ -90,15 +93,47 @@ UNewItemObject* AItem::GetDefaultItemObj()
 * Actor의 Equipment에서 Storage를 갖고있는 Backpack이나 Vest를 우선 탐색해서
 * 있다면 그곳에 넣어야됨.
 */
-void AItem::Pickup(class AActor* Actor)
+bool AItem::Pickup(class AActor* Actor)
 {
+	bool bReturn = false;
 	//UE_LOG(LogTemp, Warning, TEXT("AItem::Pickup"));
+	bool bFlag = false;
+
 	ABaseCharacter* BChar = Cast<ABaseCharacter>(Actor);
 	if (BChar)
 	{
 		//UE_LOG(LogTemp, Warning, TEXT("AItem::Add To Inventory"));
-	
-		if (BChar->InventoryComp)
+		
+		if (BChar->Equipment)
+		{
+			//백팩이 있으면 추가
+			if(BChar->Equipment->bHasBackpack)
+			{
+				bFlag = AddAtBackPack(BChar);
+			}
+			//조끼가 있거나 , 백팩 추가 실패 && 조끼 있으면  추가
+			else if(BChar->Equipment->bHasVest || (bFlag == false && BChar->Equipment->bHasVest))
+			{
+				bFlag = AddAtVest(BChar);
+			}
+			//위 전부 실패시 포켓, 시큐어 박스에 추가
+			else if(bFlag == false)
+			{
+				bFlag = AddAtPocket(BChar);
+				if(bFlag == false)
+				{
+					bFlag = AddAtSecureBox(BChar);
+					if(bFlag == false)
+					{
+						UE_LOG(LogTemp, Warning, TEXT("Item Add fail."));
+					}
+				}
+			}
+
+			
+		}
+		
+		/*if (BChar->InventoryComp)
 		{
 			if (BChar->InventoryComp->TryAddItem(ItemObj))
 			{
@@ -111,21 +146,53 @@ void AItem::Pickup(class AActor* Actor)
 			{
 				UE_LOG(LogTemp, Warning, TEXT("fail to Add item"));
 			}
-		}
-		/*
-		if (Main->Inventory->AddItem(this))//OwningInventory세팅 및 Tarray에 넣어줌.
-		{
-			SetItemState(EItemState::EIS_Pickup);
-
-			Mesh->SetSimulatePhysics(false);
-			Mesh->SetEnableGravity(false);
-
-			Mesh->SetHiddenInGame(true);	//Mesh->bHiddenInGame = true;
-			Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		}
-		*/
+		}*/
 	}
-	
+	bReturn = bFlag;
+	return bReturn;
+}
+
+bool AItem::AddAtBackPack(ABaseCharacter* BChar)
+{
+	AEquipment* Equipped = BChar->Equipment->GetEquippedWeaponSameType(EEquipmentType::EET_Backpack);
+	if (Equipped->EquipInventoryComp->TryAddItem(ItemObj))
+	{
+		SetItemState(EItemState::EIS_Pickup);
+		Destroy();
+		return true;
+	}
+	return false;
+}
+bool AItem::AddAtVest(ABaseCharacter* BChar)
+{
+	AEquipment* Equipped = BChar->Equipment->GetEquippedWeaponSameType(EEquipmentType::EET_Vest);
+	if (Equipped->EquipInventoryComp->TryAddItem(ItemObj))
+	{
+		SetItemState(EItemState::EIS_Pickup);
+		Destroy();
+		return true;
+	}
+	return false;
+}
+bool AItem::AddAtPocket(ABaseCharacter* BChar)
+{
+	if(BChar->PocketInventoryComp->TryAddItem(ItemObj))
+	{
+		SetItemState(EItemState::EIS_Pickup);
+		Destroy();
+		return true;
+	}
+	return false;
+}
+bool AItem::AddAtSecureBox(ABaseCharacter* BChar)
+{
+	if (BChar->SecureBoxInventoryComp->TryAddItem(ItemObj))
+	{
+		SetItemState(EItemState::EIS_Pickup);
+		Destroy();
+		return true;
+	}
+	return false;
 }
 
 void AItem::Drop()

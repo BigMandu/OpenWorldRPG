@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ItemInterface.h"
 #include "Components/ActorComponent.h"
 #include "EquipmentComponent.generated.h"
 
@@ -14,7 +15,7 @@ class AEquipment;
 DECLARE_MULTICAST_DELEGATE(FOnEquipmentUpdated);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class OPENWORLDRPG_API UEquipmentComponent : public UActorComponent
+class OPENWORLDRPG_API UEquipmentComponent : public UActorComponent, public IItemInterface
 {
 	GENERATED_BODY()
 
@@ -28,6 +29,10 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Equipment)
 	TArray<AEquipment*> EquipmentItems;
 
+	//Pickup일때 해당 bool변수가 체크 되어있으면
+	//해당 장비의 Inventory부터 채워나가기 위함.
+	bool bHasBackpack;
+	bool bHasVest;
 	
 
 protected:
@@ -43,7 +48,7 @@ public:
 	bool IsSameTypeExist(AEquipment* Equip);
 	
 	//Weapon파라미터와 같은 타입의 장비를 리턴
-	AEquipment* GetEquippedWeaponSameType(AEquipment* Equip);
+	AEquipment* GetEquippedWeaponSameType(EEquipmentType EquipType, AEquipment* Equip = nullptr);
 
 	bool SwapEquipment(AEquipment* Before, AEquipment* Next);
 };

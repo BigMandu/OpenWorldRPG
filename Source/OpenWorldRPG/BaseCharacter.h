@@ -4,13 +4,17 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "OpenWorldRPG/Item/Interactive_Interface.h"
 #include "Perception/AISightTargetInterface.h"
 #include "BaseCharacter.generated.h"
 
 class UMainAnimInstance;
 class UNewInventoryComponent;
 class UEquipmentComponent;
+class ULootWidgetComponent;
+class UCharacterLootWidget;
 class USoundCue;
+
 
 
 class ALootBox;
@@ -39,7 +43,7 @@ enum class ECharacterStatus : uint8
 
 
 UCLASS()
-class OPENWORLDRPG_API ABaseCharacter : public ACharacter, public IAISightTargetInterface
+class OPENWORLDRPG_API ABaseCharacter : public ACharacter, public IAISightTargetInterface, public IInteractive_Interface
 {
 	GENERATED_BODY()
 
@@ -60,6 +64,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enums")
 	ETeamType TeamType;
 
+	/* Stats */
+	UPROPERTY(EditDefaultsOnly, Category = Stats)
+	float Health;
+
+
+
+	bool bIsDie;
 
 	/* Movement */
 	UPROPERTY(EditDefaultsOnly, Category = Movement)
@@ -79,6 +90,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Sounds)
 	USoundCue* StepSoundCue;
 
+	
 
 	/* Weapon */
 
@@ -94,12 +106,25 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item | Weapon")
 	AWeapon* PistolWeapon;
 
+	//아래 Widget들을 대신해 Widgetcomponent를 사용함.
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LootWidget")
+	//TSubclassOf<UCharacterLootWidget> WCharLootWidget;
+
+	//UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "LootWidget")
+	//UCharacterLootWidget* CharLootWidget;
+
 	/*  Components */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item")
-	UNewInventoryComponent* InventoryComp;
+	UNewInventoryComponent* PocketInventoryComp;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item")
+	UNewInventoryComponent* SecureBoxInventoryComp;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item")
 	UEquipmentComponent* Equipment;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item")
+	ULootWidgetComponent* LootWidgetComp;
 
 	/* Anim Instance */
 	UMainAnimInstance* TPAnimInstance;
@@ -136,11 +161,19 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void UseItem(AActor* Item);
 
-
 	UFUNCTION(BlueprintCallable)
 	FTransform LeftHandik();
 
 	void StepSound();
+
+	float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
+	void Die();
+
+	/*******************************/
+	virtual void Interaction(AActor* Actor) override;
+	virtual void SetOutline() override;
+	virtual void UnsetOutline() override;
 
 	/********** Perception ********/
 	virtual bool CanBeSeenFrom(const FVector& ObserverLocation, FVector& OutSeenLocation, int32& NumberOfLoSChecksPerformed, float& OutSightStrength, const AActor* IgnoreActor, const bool* bWasVisible, int32* UserData) const;

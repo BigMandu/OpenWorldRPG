@@ -57,8 +57,15 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets | LootBox")
 	UUserWidget* LootBoxWidget;
 
-	bool bIsInteractLootBox;
+	/* Dead Looting Widget */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LootWidget")
+	TSubclassOf<UUserWidget> WCharLootWidget;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "LootWidget")
+	UUserWidget* CharLootWidget;
+
+	bool bIsInteractLootBox;
+	bool bIsInteractCharacterLoot;
 	bool bIsInventoryVisible;
 
 protected:

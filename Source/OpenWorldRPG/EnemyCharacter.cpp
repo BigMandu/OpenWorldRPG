@@ -4,6 +4,8 @@
 #include "EnemyCharacter.h"
 #include "EnemyAIController.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "OpenWorldRPG/Item/Equipment.h"
+#include "Item/EquipmentComponent.h"
 
 // Sets default values
 AEnemyCharacter::AEnemyCharacter()
@@ -76,3 +78,18 @@ void AEnemyCharacter::SetAIStatus(EAIStatus Status)
 	}
 }
 
+//이미 장착하고있는 장비를 인지하면 True를 리턴, 그외는 false리턴.
+bool AEnemyCharacter::CheckEquipped(AActor* Actor)
+{
+	if(Equipment)
+	{
+		for(auto Equipped : Equipment->EquipmentItems)
+		{
+			if(Actor == Equipped)
+			{
+				return true;
+			}
+		}
+	}
+	return false;
+}

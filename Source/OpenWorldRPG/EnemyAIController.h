@@ -13,11 +13,13 @@
 class ABaseCharacter;
 class AEnemyCharacter;
 class AInteractable;
+
 class UAIPerceptionComponent;
 class UAISenseConfig_Sight;
 class UAISenseConfig_Hearing;
 class UBehaviorTreeComponent;
 class UBlackboardComponent;
+class UNewInventoryComponent;
 
 UCLASS()
 class OPENWORLDRPG_API AEnemyAIController : public AAIController
@@ -100,7 +102,7 @@ public:
 	void DetectedTarget(AActor* Target, FAIStimulus Stimulus);
 
 	void DetectedCharacter(ABaseCharacter* Player, FAIStimulus Stimulus);
-	void DetectedLootBox(AInteractable* Obj, FAIStimulus Stimulus);
+	void DetectedObject(AInteractable* Obj, FAIStimulus Stimulus);
 
 	UFUNCTION()
 	void LostTarget(ABaseCharacter* Target); //AActor* Target);
@@ -108,9 +110,15 @@ public:
 	//UFUNCTION()
 	void LostObject(AActor* InteractActor);
 
+	bool CanInteraction(AActor* Object);
+
+	void ItemFarming(AActor* InteractActor);
+	void ItemChoice(UNewInventoryComponent* GiverInvComp);
 
 	void CalcAttackDist(float DeltaTime);
 	void AttackMoving(const FVector Vec, FVector RightVec);
+
+	
 
 	/**********   Update BlackBoard Key func  ***********/
 	//BT Task에서 사용하기 위한 함수인데 여기에서도 씀.

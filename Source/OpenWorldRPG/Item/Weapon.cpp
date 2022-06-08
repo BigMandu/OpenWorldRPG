@@ -92,17 +92,17 @@ void AWeapon::Equip(AActor* Char)
 			if (BChar->PrimaryWeapon) //이미 주무기가 있으면
 			{
 				RifleAssign = ERifleAssign::ERA_Sub;
-				BChar->SubWeapon = this;// (AWeapon*)this; //부무기로 지정
+				BChar->SubWeapon = this; //부무기로 지정
 			}
 			else //주무기가 없으면
 			{
 				RifleAssign = ERifleAssign::ERA_Primary;
-				BChar->PrimaryWeapon = this;// (AWeapon*)this; //주무기로
+				BChar->PrimaryWeapon = this; //주무기로
 			}
 		}
 		else //피스톨
 		{
-			BChar->PistolWeapon = this; // (AWeapon*)this;
+			BChar->PistolWeapon = this;
 		}
 	}
 
@@ -195,6 +195,7 @@ void AWeapon::GunAttachToMesh(AActor* Actor)
 					if (FPSocket->AttachActor(this, Main->FPMesh))
 					{
 						SetActorRelativeTransform(FPMeshAttachTransform);
+
 						//Main->BaseWeapTransform = SKMesh->GetRelativeTransform();
 					}
 					break;
@@ -211,7 +212,7 @@ void AWeapon::GunAttachToMesh(AActor* Actor)
 			}
 		}
 
-		//AI에만 적용되게 BChar만 null이 아닌경우
+		//BChar만 null이 아닌경우 -> AI에만 해당
 		if (BChar && Main == nullptr)
 		{
 			const USkeletalMeshSocket* WeaponSocket = BChar->GetMesh()->GetSocketByName("WeaponGrip");

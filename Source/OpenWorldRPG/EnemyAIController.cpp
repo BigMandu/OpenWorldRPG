@@ -16,8 +16,12 @@
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Item/Equipment.h"
 #include "Item/LootBox.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "NewInventory/NewInventoryComponent.h"
+#include "NewInventory/NewItemObject.h"
+
 
 AEnemyAIController::AEnemyAIController(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer.SetDefaultSubobjectClass<UCrowdFollowingComponent>(TEXT("PathFollowingComponent")))
@@ -138,64 +142,24 @@ void AEnemyAIController::DetectedTarget(AActor* Target, FAIStimulus Stimulus)
 	{
 		ABaseCharacter* Char = Cast<ABaseCharacter>(Target);
 		AInteractable* Object = Cast<AInteractable>(Target);
+
+		//Character를 감지했을 경우 Enemy인지 확인한다.
 		if (Char && CheckIsEnemy(Char))
 		{
 			DetectedCharacter(Char, Stimulus);
 			UE_LOG(LogTemp, Warning, TEXT("AI Found Player!"));
 		}
 
-		if(Object)
+		//Object를 감지했을경우는 Interact를 할수있는지 check한다.
+		if(Object && CanInteraction(Target))
 		{
-			DetectedLootBox(Object, Stimulus);
+			DetectedObject(Object, Stimulus);
 			UE_LOG(LogTemp, Warning, TEXT("AI Found Object !"));
 		}
-		
+		UE_LOG(LogTemp, Warning, TEXT("Target name : %s"),*Target->GetFName().ToString());
 	}
 }
 
-
-void AEnemyAIController::LostTarget(ABaseCharacter* Target) //AActor* Target)
-{
-	if (GetWorldTimerManager().IsTimerActive(EnemyLostTimer)) //타이머 초기화
-	{
-		GetWorldTimerManager().ClearTimer(EnemyLostTimer);
-	}
-	if (BBComp->GetValueAsBool(bHearEnemyKey))
-	{
-		UpdateBBCompBoolKey(bHearEnemyKey, false);
-		//UpdateHearPlayerKey(false);
-	}
-
-	//디버깅용
-	/*if (Enemy->bHearPlayer)
-	{
-		Enemy->bHearPlayer = false;
-	}*/
-	
-	//새로 추가함.
-	GetPerceptionComponent()->ForgetActor(Target); //test
-
-	UpdateBBCompObjectKey(EnemyKey, nullptr);
-	UpdateBBCompVectorKey(TargetLocationKey, FVector::ZeroVector);
-
-	//UpdatePlayerKey(nullptr);
-	//UpdateHearLocationKey(FVector::ZeroVector);
-	//PerceptionComp->ForgetActor(Target);
-	UE_LOG(LogTemp, Warning, TEXT("AI : Target Lost!, Lost Target : %s"), *Target->GetFName().ToString());
-}
-
-
-void AEnemyAIController::LostObject(AActor* InteractActor)
-{
-	UpdateBBCompObjectKey(ObjectKey, nullptr);
-
-	//새로추가 
-	GetPerceptionComponent()->ForgetActor(InteractActor); //test용
-	/*if (GetWorldTimerManager().IsTimerActive(ObjectLostTimer))
-	{
-		GetWorldTimerManager().ClearTimer(ObjectLostTimer);
-	}*/
-}
 
 
 
@@ -286,13 +250,137 @@ void AEnemyAIController::DetectedCharacter(ABaseCharacter* Player, FAIStimulus S
 	}
 }
 
-void AEnemyAIController::DetectedLootBox(AInteractable* Obj, FAIStimulus Stimulus)
+void AEnemyAIController::DetectedObject(AInteractable* Obj, FAIStimulus Stimulus)
 {
 	if(Stimulus.WasSuccessfullySensed())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("AI : Detected LootBox, "));
-		//LootBox는 StaticMesh로 지정해야함 -> NavMesh가 적용되지 않아서 Location이 아닌 Object로 이동되게 한다.
-		UpdateBBCompObjectKey(ObjectKey, Obj);
+		//AI가 들고있는 무기의 경우 Perception 시야에 지속적으로 감지가 되어 에러가 생긴다.
+		//AI가 장착한 무기를 Ignore시킨다.
+		//bool bCheckAlreadyHave = OwnerActor->CheckEquippedWeapon(Obj);
+
+		//False면 감지한 Obj가 장착한 무기가 아님.
+		//if (bCheckAlreadyHave == false)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("AI : Detected Object "));
+			//LootBox는 StaticMesh로 지정해야함 -> NavMesh가 적용되지 않아서 Location이 아닌 Object로 이동되게 한다.
+			UpdateBBCompObjectKey(ObjectKey, Obj);
+		}
+		//test
+		//if(bCheckAlreadyHave)
+		{
+		//	LostObject(Obj);
+		//	UE_LOG(LogTemp, Warning, TEXT("AI : It's My weapon!!"));
+		}
+	}
+}
+
+
+
+void AEnemyAIController::LostTarget(ABaseCharacter* Target) //AActor* Target)
+{
+	if (GetWorldTimerManager().IsTimerActive(EnemyLostTimer)) //타이머 초기화
+	{
+		GetWorldTimerManager().ClearTimer(EnemyLostTimer);
+	}
+	if (BBComp->GetValueAsBool(bHearEnemyKey))
+	{
+		UpdateBBCompBoolKey(bHearEnemyKey, false);
+		//UpdateHearPlayerKey(false);
+	}
+
+	//디버깅용
+	/*if (Enemy->bHearPlayer)
+	{
+		Enemy->bHearPlayer = false;
+	}*/
+
+	//새로 추가함.
+	GetPerceptionComponent()->ForgetActor(Target); //test
+
+	UpdateBBCompObjectKey(EnemyKey, nullptr);
+	UpdateBBCompVectorKey(TargetLocationKey, FVector::ZeroVector);
+
+	//UpdatePlayerKey(nullptr);
+	//UpdateHearLocationKey(FVector::ZeroVector);
+	//PerceptionComp->ForgetActor(Target);
+	UE_LOG(LogTemp, Warning, TEXT("AI : Target Lost!, Lost Target : %s"), *Target->GetFName().ToString());
+}
+
+void AEnemyAIController::LostObject(AActor* InteractActor)
+{
+	UpdateBBCompObjectKey(ObjectKey, nullptr);
+
+	//Perception에 Sight된 Log를 삭제하고
+	GetPerceptionComponent()->ForgetActor(InteractActor);
+
+	//Perception IgnoreActor에 추가한다.
+	//OwnerActor->PerceptionIgnoreActor.Add(InteractActor);
+}
+
+/********************************************************************/
+
+/*
+ * Interactable class의 Interaction함수에서 각각의 Object마다 호출.
+ * ex) Equipment의 Equip함수에서 호출
+*/
+//True - Interact가능, false - 불가능
+bool AEnemyAIController::CanInteraction(AActor* Object)
+{
+	bool bCanInteract = true;
+
+	AEquipment* Equip = Cast<AEquipment>(Object);
+
+	//AI가 장착한 장비거나, 다른 캐릭터가 장착중인 장비는 Interaction이 불가능하다.
+	if(OwnerActor->CheckEquipped(Object) == true || Equip && Equip->OwningPlayer != nullptr)
+	{
+		bCanInteract = false;
+	}
+
+	return bCanInteract;
+}
+
+//LootBox의 OpenBox함수에서 ItemFarming함수 호출
+void AEnemyAIController::ItemFarming(AActor* InteractActor)
+{
+	//AInteractable* Interact = Cast<AInteractable>(InteractActor);
+	if(InteractActor)//if (Interact)
+	{
+		//switch (Interact->InteractType)
+		//{
+		//case EInteractType::EIT_LootBox:
+			ALootBox* Box = Cast<ALootBox>(InteractActor);
+			ABaseCharacter* Char = Cast<ABaseCharacter>(InteractActor);
+			if (Box)
+			{
+				ItemChoice(Box->BoxInventoryComp);
+			}
+
+			if(Char)
+			{
+				//손봐야됨 Char의 모든 InvComp를 넘겨줘야됨.
+				ItemChoice(Char->PocketInventoryComp);
+			}
+		//}
+	}
+}
+
+void AEnemyAIController::ItemChoice(UNewInventoryComponent* GiverInvComp)
+{
+	if(GiverInvComp)
+	{
+		for(auto ItemObj : GiverInvComp->InventoryItems)
+		{
+			if (ItemObj == nullptr)
+			{
+				break;
+			}
+
+			//Pickup에 성공하면 Item이 있던 Component에서 삭제한다.
+			if (ItemObj->item->Pickup(OwnerActor))
+			{
+				GiverInvComp->RemoveItem(ItemObj);
+			}
+		}
 	}
 }
 

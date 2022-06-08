@@ -40,7 +40,7 @@ void AWeapon_Instant::New_BulletOut()
 	DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor::Green, false, 2.f, (uint8)nullptr, 2.f);
 
 	DrawDebugPoint(GetWorld(), Hit.Location, 10.f, FColor::Blue, false, 5.f);
-	CheckHit(Hit);
+	CheckHit(Hit, AimPos.Rotator().Vector());
 
 	GetWorldTimerManager().ClearTimer(RecoilHandle);
 
@@ -130,14 +130,15 @@ void AWeapon_Instant::ApplyRecoil()
 }
 
 
-void AWeapon_Instant::CheckHit(FHitResult& Hit)
+void AWeapon_Instant::CheckHit(const FHitResult& Hit, const FVector Dir)
 {
 	if (Hit.bBlockingHit)
 	{
 		if (Hit.GetActor())
 		{
-			//UE_LOG(LogTemp, Warning, TEXT("Hit Actor name : %s"), *Hit.GetActor()->GetFName().ToString());
-			//TakeDamage
+			UE_LOG(LogTemp, Warning, TEXT("Hit Actor name : %s"), *Hit.GetActor()->GetFName().ToString());
+
+			ApplyDamage(Hit, Dir);
 		}
 
 		if (BulletHitEffect)
@@ -151,6 +152,17 @@ void AWeapon_Instant::CheckHit(FHitResult& Hit)
 		}
 	}
 
+}
+
+void AWeapon_Instant::ApplyDamage(const FHitResult& Hit, const FVector Dir)
+{
+	FPointDamageEvent PointDmgEvt;
+	PointDmgEvt.HitInfo = Hit;
+	PointDmgEvt.ShotDirection = Dir.GetSafeNormal();
+	PointDmgEvt.Damage = 90.f; //юс╫ц
+		
+	Hit.GetActor()->TakeDamage(PointDmgEvt.Damage, PointDmgEvt, OwningPlayer->GetController(), this);
+	//TakeDamage(10.f, PointDmgEvent, OwningPlayer->GetInstigatorController(), this);
 }
 
 

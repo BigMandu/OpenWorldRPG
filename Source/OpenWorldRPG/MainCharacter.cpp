@@ -11,7 +11,7 @@
 #include "Components/PawnNoiseEmitterComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Engine/EngineTypes.h"
-#include "OpenWorldRPG/Item/Interactive_Interface.h"
+//#include "OpenWorldRPG/Item/Interactive_Interface.h"
 #include "OpenWorldRPG/Item/Interactable.h"
 #include "OpenWorldRPG/Item/Equipment.h"
 #include "OpenWorldRPG/Item/Weapon.h"
@@ -238,9 +238,10 @@ void AMainCharacter::Tick(float DeltaTime)
 		}
 		else //InteractActor가 없을 경우
 		{
-			AInteractable* Interactable = Cast<AInteractable>(HitActor);
-			if (Interactable)
+			//AInteractable* Interactable = Cast<AInteractable>(HitActor);
+			//if (Interactable)
 			{
+				//SetInteractActor(HitActor); //Interactable인 경우 Set을 해준다.
 				SetInteractActor(HitActor); //Interactable인 경우 Set을 해준다.
 			}
 		}
@@ -386,40 +387,11 @@ void AMainCharacter::SetCameraMode(ECameraMode Type)
 		/* 회전시 카메라에만 영향 가도록 설정 */
 		bUseControllerRotationPitch = false;
 		bUseControllerRotationRoll = false;
-		bUseControllerRotationYaw = false;
+		bUseControllerRotationYaw = true;
 
 		/* Character Mesh 설정 */
 		FPMesh->SetHiddenInGame(true);  //1인칭 Mesh 숨김
 		GetMesh()->SetHiddenInGame(false); //3인칭 Mesh 안숨김
-
-		if (EquippedWeapon) //현재 장착무기가 있으면 First,Third mesh에 따라 소켓에 부착.
-		{
-			EquippedWeapon->GunAttachToMesh(this);
-
-			//장착 무기가 있으면, 컨트롤러의 회전에 따라 캐릭터를 회전하도록 한다.
-			bUseControllerRotationYaw = true;
-			//const USkeletalMeshSocket* TPSocket = GetMesh()->GetSocketByName(GripSocketName);
-			//if (TPSocket)
-			//{
-			//	TPSocket->AttachActor(EquippedWeapon, GetMesh());
-			//	FTransform socketform = TPSocket->GetSocketLocalTransform();
-			//	/* weapon Type에 따른 weapon의 위치,회전 설정 */
-			//	if (EquippedWeapon->WeaponType == EWeaponType::EWT_Rifle)
-			//	{
-			//		TPSocket->RelativeLocation = FVector(1, 1, 1); //RifleRelativeLoRo.GetLocation();
-			//		socketform.SetLocation(RifleRelativeLoRo.GetLocation());
-			//		socketform.SetRotation(RifleRelativeLoRo.GetRotation());
-			//		
-			//	}
-			//	else
-			//	{
-			//		socketform.SetLocation(PistolRelativeLoRo.GetLocation());
-			//		socketform.SetRotation(PistolRelativeLoRo.GetRotation());
-			//		
-			//	}
-			//}
-		}
-
 		break;
 
 	case ECameraMode::ECM_FPS:
@@ -434,34 +406,15 @@ void AMainCharacter::SetCameraMode(ECameraMode Type)
 		/*  Character Mesh 설정 */
 		FPMesh->SetHiddenInGame(false);
 		GetMesh()->SetHiddenInGame(true);
-
-
-		/* 장착 무기 Mesh에 부착 */
-		if (EquippedWeapon)
-		{
-			EquippedWeapon->GunAttachToMesh(this);
-			//const USkeletalMeshSocket* FPSocket = FPMesh->GetSocketByName(GripSocketName);
-			//if (FPSocket)
-			//{
-			//	FPSocket->AttachActor(EquippedWeapon, FPMesh);
-			//	FTransform socketform = FPSocket->GetSocketLocalTransform();
-			//	/* weapon Type에 따른 weapon의 위치,회전 설정 */
-			//	if (EquippedWeapon->WeaponType == EWeaponType::EWT_Rifle)
-			//	{
-			//		socketform.SetLocation(RifleRelativeLoRo.GetLocation());
-			//		socketform.SetRotation(RifleRelativeLoRo.GetRotation());
-			//	}
-			//	else
-			//	{
-			//		socketform.SetLocation(PistolRelativeLoRo.GetLocation());
-			//		socketform.SetRotation(PistolRelativeLoRo.GetRotation());
-			//	}
-			//	
-			//}
-		}
 		break;
 	default:
 		break;
+	}
+
+	/* 장착 무기 Mesh에 부착 */
+	if (EquippedWeapon)
+	{
+		EquippedWeapon->GunAttachToMesh(this);
 	}
 
 }
@@ -858,8 +811,10 @@ void AMainCharacter::UseItem(class AActor* Item)
 //	}
 //}
 
+
 void AMainCharacter::ChangeWeapon(int32 index)
 {
+	//Super::ChangeWeapon(index);
 	switch (index)
 	{
 	case 0:
@@ -984,15 +939,17 @@ void AMainCharacter::SetInteractActor(AActor* Actor)
 	//if (InteractActor == nullptr) //붙어있으면 바뀌지 않기때문에 조건문 삭제.
 	{
 		InteractActor = Actor;
-		AInteractable* InActor = Cast<AInteractable>(InteractActor);
-		if (InActor)
+		//AInteractable* InActor = Cast<AInteractable>(InteractActor);
+		IInteractive_Interface* InterfaceActor = Cast<IInteractive_Interface>(InteractActor);
+		if (InterfaceActor)//InActor)
 		{
-			InActor->SetOutline();
+			InterfaceActor->SetOutline();
 
 			//InteractActor의 Static Mesh의 위치를 기준으로 거리를 구한다.
 
 			//InteractActor->GetActorLocation()
-			if ((GetActorLocation() - InActor->Mesh->GetComponentLocation()).Size() <= ActiveInteractDistance) //특정거리 이내면 Text Show.
+			//if ((GetActorLocation() - InActor->Mesh->GetComponentLocation()).Size() <= ActiveInteractDistance) //특정거리 이내면 Text Show.
+			if((GetActorLocation() - InteractActor->GetActorLocation()).Size() <= ActiveInteractDistance)
 			{
 				MainController->ShowInteractText();
 			}
@@ -1008,10 +965,13 @@ void AMainCharacter::UnsetInteractActor()
 {
 	if (InteractActor)
 	{
-		AInteractable* InActor = Cast<AInteractable>(InteractActor);
-		if (InActor)
+		//AInteractable* InActor = Cast<AInteractable>(InteractActor);
+		//if (InActor)
+		IInteractive_Interface* InterfaceActor = Cast<IInteractive_Interface>(InteractActor);
+		if(InterfaceActor)
 		{
-			InActor->UnsetOutline();
+			InterfaceActor->UnsetOutline();
+			//InActor->UnsetOutline();
 		}
 		InteractActor = nullptr;
 		MainController->HideInteractText();
@@ -1025,10 +985,11 @@ void AMainCharacter::Interactive()
 	if (InteractActor)
 	{
 		IInteractive_Interface* Interface = Cast<IInteractive_Interface>(InteractActor);
-		AInteractable* InActor = Cast<AInteractable>(InteractActor);
-		if (Interface && InActor)
+		//AInteractable* InActor = Cast<AInteractable>(InteractActor);
+		if (Interface)// && InActor)
 		{
-			if ((GetActorLocation() - InActor->Mesh->GetComponentLocation()).Size() <= ActiveInteractDistance)
+			//if ((GetActorLocation() - InActor->Mesh->GetComponentLocation()).Size() <= ActiveInteractDistance)
+			if ((GetActorLocation() - InteractActor->GetActorLocation()).Size() <= ActiveInteractDistance)
 			{
 				//Interface->OnInteract.Broadcast();
 				Interface->Interaction(this);
