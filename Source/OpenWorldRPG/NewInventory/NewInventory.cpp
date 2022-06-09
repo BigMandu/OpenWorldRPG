@@ -7,6 +7,7 @@
 #include "OpenWorldRPG/NewInventory/DropWidget.h"
 #include "OpenWorldRPG/NewInventory/LootBoxWidget.h"
 #include "OpenWorldRPG/NewInventory/EquipWidget.h"
+#include "OpenWorldRPG/NewInventory/CharacterInventory.h"
 
 #include "OpenWorldRPG/MainCharacter.h"
 #include "OpenWorldRPG/MainController.h"
@@ -23,20 +24,26 @@ UNewInventory::UNewInventory(const FObjectInitializer& ObjectInitializer) : Supe
 void UNewInventory::NativeConstruct()
 {
 	Super::NativeConstruct();
-	if (PocketInventoryComp)
-	{
-		GridWidget->GridInitialize(PocketInventoryComp, PocketInventoryComp->TileSize);
-		
-	}
-	if(SecureBoxInventoryComp)
-	{
-		GridWidget->GridInitialize(SecureBoxInventoryComp, SecureBoxInventoryComp->TileSize);
-		GridWidget->BindDropWidget(DropWidget);
-		
-	}
+	//if (PocketInventoryComp)
+	//{
+	//	PocketWidget->GridInitialize(PocketInventoryComp, PocketInventoryComp->TileSize);
+	//	
+	//}
+	//if(SecureBoxInventoryComp)
+	//{
+	//	SecureBoxWidget->GridInitialize(SecureBoxInventoryComp, SecureBoxInventoryComp->TileSize);
+	//	//GridWidget->BindDropWidget(DropWidget);
+	//	
+	//}
+
 	if (EquipComp)
 	{
 		EquipmentWidget->EquipInitialize(EquipComp);
+	}
+
+	if (CharInvWidget)
+	{
+		CharInvWidget->InitializeInventory(Main);
 	}
 }
 
@@ -49,14 +56,14 @@ bool UNewInventory::Initialize()
 	Main = (TMain == nullptr) ? nullptr : TMain;
 	if (Main) 
 	{
-		if (Main->PocketInventoryComp)
+		/*if (Main->PocketInventoryComp)
 		{
 			PocketInventoryComp = Main->PocketInventoryComp;
 		}
 		if(Main->SecureBoxInventoryComp)
 		{
 			SecureBoxInventoryComp = Main->SecureBoxInventoryComp;
-		}
+		}*/
 
 		EquipComp = Main->Equipment;
 		//GridWidget->GridInitialize(InventoryComp, InventoryComp->TileSize);

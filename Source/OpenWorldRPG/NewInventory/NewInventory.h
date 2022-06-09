@@ -16,9 +16,10 @@ class UScrollBox;
 class UEquipmentComponent;
 class UNewInventoryComponent;
 class UNewInventoryGrid;
+class UEquipWidget;
+class UCharacterInventory;
 class UDropWidget;
 class ULootBoxWidget;
-class UEquipWidget;
 
 class AMainCharacter;
 
@@ -50,8 +51,14 @@ public:
 	/*UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UScrollBox* RightWidgetScrollBox;*/
 
+	/*UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UNewInventoryGrid* PocketWidget;
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UNewInventoryGrid* GridWidget;
+	UNewInventoryGrid* SecureBoxWidget;*/
+
+	UPROPERTY(meta = (BindWidget))
+	UCharacterInventory* CharInvWidget;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UEquipWidget* EquipmentWidget;

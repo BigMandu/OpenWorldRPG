@@ -106,23 +106,26 @@ bool AItem::Pickup(class AActor* Actor)
 		
 		if (BChar->Equipment)
 		{
-			//백팩이 있으면 추가
+			//if equipped backpack, first
 			if(BChar->Equipment->bHasBackpack)
 			{
-				bFlag = AddAtBackPack(BChar);
+				AEquipment* Equipped = BChar->Equipment->GetEquippedWeaponSameType(EEquipmentType::EET_Backpack);
+				bFlag = AddAtEquip(Equipped);
 			}
-			//조끼가 있거나 , 백팩 추가 실패 && 조끼 있으면  추가
+			//if have vest not backpack || fail add at backpack && have vest
 			else if(BChar->Equipment->bHasVest || (bFlag == false && BChar->Equipment->bHasVest))
 			{
-				bFlag = AddAtVest(BChar);
+				AEquipment* Equipped = BChar->Equipment->GetEquippedWeaponSameType(EEquipmentType::EET_Vest);
+				bFlag = AddAtEquip(Equipped);
 			}
-			//위 전부 실패시 포켓, 시큐어 박스에 추가
+			//pocket, secure box
 			else if(bFlag == false)
 			{
-				bFlag = AddAtPocket(BChar);
+				
+				bFlag = AddAtCharInv(BChar->PocketInventoryComp);
 				if(bFlag == false)
 				{
-					bFlag = AddAtSecureBox(BChar);
+					bFlag = AddAtCharInv(BChar->SecureBoxInventoryComp);
 					if(bFlag == false)
 					{
 						UE_LOG(LogTemp, Warning, TEXT("Item Add fail."));
@@ -133,6 +136,8 @@ bool AItem::Pickup(class AActor* Actor)
 			
 		}
 		
+		//old version
+
 		/*if (BChar->InventoryComp)
 		{
 			if (BChar->InventoryComp->TryAddItem(ItemObj))
@@ -152,45 +157,31 @@ bool AItem::Pickup(class AActor* Actor)
 	return bReturn;
 }
 
-bool AItem::AddAtBackPack(ABaseCharacter* BChar)
+bool AItem::AddAtEquip(AEquipment* Equipped)
 {
-	AEquipment* Equipped = BChar->Equipment->GetEquippedWeaponSameType(EEquipmentType::EET_Backpack);
-	if (Equipped->EquipInventoryComp->TryAddItem(ItemObj))
+	//AEquipment* Equipped = BChar->Equipment->GetEquippedWeaponSameType(EEquipmentType::EET_Backpack);
+	if (Equipped)
 	{
-		SetItemState(EItemState::EIS_Pickup);
-		Destroy();
-		return true;
+		if (Equipped->EquipInventoryComp->TryAddItem(ItemObj))
+		{
+			SetItemState(EItemState::EIS_Pickup);
+			Destroy();
+			return true;
+		}
 	}
 	return false;
 }
-bool AItem::AddAtVest(ABaseCharacter* BChar)
+
+bool AItem::AddAtCharInv(UNewInventoryComponent* InvComp)
 {
-	AEquipment* Equipped = BChar->Equipment->GetEquippedWeaponSameType(EEquipmentType::EET_Vest);
-	if (Equipped->EquipInventoryComp->TryAddItem(ItemObj))
+	if (InvComp)
 	{
-		SetItemState(EItemState::EIS_Pickup);
-		Destroy();
-		return true;
-	}
-	return false;
-}
-bool AItem::AddAtPocket(ABaseCharacter* BChar)
-{
-	if(BChar->PocketInventoryComp->TryAddItem(ItemObj))
-	{
-		SetItemState(EItemState::EIS_Pickup);
-		Destroy();
-		return true;
-	}
-	return false;
-}
-bool AItem::AddAtSecureBox(ABaseCharacter* BChar)
-{
-	if (BChar->SecureBoxInventoryComp->TryAddItem(ItemObj))
-	{
-		SetItemState(EItemState::EIS_Pickup);
-		Destroy();
-		return true;
+		if (InvComp->TryAddItem(ItemObj))
+		{
+			SetItemState(EItemState::EIS_Pickup);
+			Destroy();
+			return true;
+		}
 	}
 	return false;
 }

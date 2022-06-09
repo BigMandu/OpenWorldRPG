@@ -345,22 +345,19 @@ void AEnemyAIController::ItemFarming(AActor* InteractActor)
 	//AInteractable* Interact = Cast<AInteractable>(InteractActor);
 	if(InteractActor)//if (Interact)
 	{
-		//switch (Interact->InteractType)
-		//{
-		//case EInteractType::EIT_LootBox:
-			ALootBox* Box = Cast<ALootBox>(InteractActor);
-			ABaseCharacter* Char = Cast<ABaseCharacter>(InteractActor);
-			if (Box)
-			{
-				ItemChoice(Box->BoxInventoryComp);
-			}
+		ALootBox* Box = Cast<ALootBox>(InteractActor);
+		ABaseCharacter* Char = Cast<ABaseCharacter>(InteractActor);
+		if (Box)
+		{
+			ItemChoice(Box->BoxInventoryComp);
+		}
 
-			if(Char)
-			{
-				//손봐야됨 Char의 모든 InvComp를 넘겨줘야됨.
-				ItemChoice(Char->PocketInventoryComp);
-			}
-		//}
+		if(Char)
+		{
+			//손봐야됨 Char의 모든 InvComp를 넘겨줘야됨.
+			//Char의 InvComp를 넘겨주는 함수를 만들던지, 여기서 하던지 해야됨
+			ItemChoice(Char->PocketInventoryComp);
+		}
 	}
 }
 
@@ -375,6 +372,12 @@ void AEnemyAIController::ItemChoice(UNewInventoryComponent* GiverInvComp)
 				break;
 			}
 
+
+			//지금은 무조건 넣는데, Value값이 얼마 이상이거나, (비교는 ..좀 비용 낭비임)
+			// 아니면, 자기가 갖고있는 Inventory가치를 평가해서 
+			// 갖고있는 가치가 천원 이상이면 500원 미만짜리는 거들떠 보지도 않는식으로 하면 좋을지도??
+			// 
+			
 			//Pickup에 성공하면 Item이 있던 Component에서 삭제한다.
 			if (ItemObj->item->Pickup(OwnerActor))
 			{

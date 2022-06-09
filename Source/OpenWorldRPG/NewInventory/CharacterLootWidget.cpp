@@ -2,11 +2,10 @@
 
 
 #include "OpenWorldRPG/NewInventory/CharacterLootWidget.h"
-
-#include "NewInventoryComponent.h"
+#include "OpenWorldRPG/NewInventory/CharacterInventory.h"
 #include "OpenWorldRPG/NewInventory/EquipWidget.h"
 #include "OpenWorldRPG/NewInventory/NewInventoryGrid.h"
-
+#include "NewInventoryComponent.h"
 #include "OpenWorldRPG/BaseCharacter.h"
 //#include "OpenWorldRPG/EnemyCharacter.h"
 
@@ -14,7 +13,7 @@ void UCharacterLootWidget::InitCharLootWidget(ABaseCharacter* DeadChar)
 {
 	//ABaseCharacter* BChar = Cast<ABaseCharacter>(DeadChar);
 	//AEnemyCharacter* AIChar = Cast<AEnemyCharacter>(DeadChar);
-	if(DeadChar && EquipWidget)
+	if(DeadChar && EquipWidget && CharInv)
 	{
 		if(DeadChar->Equipment)
 		{
@@ -22,8 +21,9 @@ void UCharacterLootWidget::InitCharLootWidget(ABaseCharacter* DeadChar)
 			EquipWidget->RefreshEquipWidget();
 
 			//Widget ¼ÕºÁ¾ßÇÔ. Pocket, SecureBoxÃß°¡ÇØ¾ßµÊ.
-			InvenWidget->GridInitialize(DeadChar->PocketInventoryComp, DeadChar->PocketInventoryComp->TileSize);
+			//InvenWidget->GridInitialize(DeadChar->PocketInventoryComp, DeadChar->PocketInventoryComp->TileSize);
 		}
+		CharInv->InitializeInventory(DeadChar);
 	}
 }
 

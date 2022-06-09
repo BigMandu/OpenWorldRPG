@@ -11,7 +11,10 @@
  */
 class UEquipWidget;
 class UNewInventoryGrid;
+class UCharacterInventory;
+
 class ABaseCharacter;
+
 
 UCLASS()
 class OPENWORLDRPG_API UCharacterLootWidget : public UUserWidget
@@ -21,8 +24,10 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UEquipWidget* EquipWidget;
 
+	/*UPROPERTY(meta = (BindWidget))
+	UNewInventoryGrid* InvenWidget;*/
 	UPROPERTY(meta = (BindWidget))
-	UNewInventoryGrid* InvenWidget;
+	UCharacterInventory* CharInv;
 
 	void InitCharLootWidget(ABaseCharacter* DeadChar);
 

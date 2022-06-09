@@ -11,10 +11,12 @@
 /**
  * 
  */
+class UNewInventoryComponent;
 class UNewItemObject;
 class UMaterialInterface;
 class UAIPerceptionStimuliSourceComponent;
 class ABaseCharacter;
+class AEquipment;
 
 //UENUM(BlueprintType)
 //enum class EEquipmentType : uint8
@@ -107,10 +109,9 @@ public:
 
 	bool Pickup(AActor* Actor);
 
-	bool AddAtBackPack(ABaseCharacter* BChar);
-	bool AddAtVest(ABaseCharacter* BChar);
-	bool AddAtPocket(ABaseCharacter* BChar);
-	bool AddAtSecureBox(ABaseCharacter* BChar);
+	bool AddAtEquip(AEquipment* Equipped);
+	bool AddAtCharInv(UNewInventoryComponent* InvComp);
+
 	
 	UFUNCTION(BlueprintCallable)
 	virtual void Drop();
