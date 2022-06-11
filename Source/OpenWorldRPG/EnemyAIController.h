@@ -102,7 +102,8 @@ public:
 	void DetectedTarget(AActor* Target, FAIStimulus Stimulus);
 
 	void DetectedCharacter(ABaseCharacter* Player, FAIStimulus Stimulus);
-	void DetectedObject(AInteractable* Obj, FAIStimulus Stimulus);
+	//void DetectedObject(AInteractable* Obj, FAIStimulus Stimulus);
+	void DetectedObject(AActor* Obj, FAIStimulus  Stimulus);
 
 	UFUNCTION()
 	void LostTarget(ABaseCharacter* Target); //AActor* Target);

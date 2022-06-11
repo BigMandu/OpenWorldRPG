@@ -16,7 +16,7 @@ class UCharacterLootWidget;
 class USoundCue;
 
 
-
+class AItem;
 class ALootBox;
 class AWeapon;
 
@@ -113,11 +113,19 @@ public:
 	//UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "LootWidget")
 	//UCharacterLootWidget* CharLootWidget;
 
+
+	/* Spawn Items */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "SpawnItems")
+	bool bHasSpawnItems;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "SpawnItems")
+	TArray<TSubclassOf<AItem>> SpawnItemList;
+
+
 	/*  Components */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
 	UNewInventoryComponent* PocketInventoryComp;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
 	UNewInventoryComponent* SecureBoxInventoryComp;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item")
@@ -146,6 +154,9 @@ public:
 	void SetTeamType(ETeamType Team);
 	FORCEINLINE ETeamType GetTeamType() { return TeamType; }
 
+	/**** Spawn items *******/
+	void SpawnItems();
+
 
 	void SetEquippedWeapon(AWeapon* Weapon);
 
@@ -161,6 +172,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void UseItem(AActor* Item);
 
+	// AIController::ItemFarming함수에서 사용됨
+	UNewInventoryComponent* GetAllInvComp(int32 index);
+
 	UFUNCTION(BlueprintCallable)
 	FTransform LeftHandik();
 
@@ -169,6 +183,7 @@ public:
 	float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
 	void Die();
+
 
 	/*******************************/
 	virtual void Interaction(AActor* Actor) override;

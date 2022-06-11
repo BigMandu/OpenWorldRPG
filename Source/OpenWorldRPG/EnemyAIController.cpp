@@ -141,7 +141,7 @@ void AEnemyAIController::DetectedTarget(AActor* Target, FAIStimulus Stimulus)
 	if (Target)
 	{
 		ABaseCharacter* Char = Cast<ABaseCharacter>(Target);
-		AInteractable* Object = Cast<AInteractable>(Target);
+		//AInteractable* Object = Cast<AInteractable>(Target);
 
 		//Character를 감지했을 경우 Enemy인지 확인한다.
 		if (Char && CheckIsEnemy(Char))
@@ -149,11 +149,10 @@ void AEnemyAIController::DetectedTarget(AActor* Target, FAIStimulus Stimulus)
 			DetectedCharacter(Char, Stimulus);
 			UE_LOG(LogTemp, Warning, TEXT("AI Found Player!"));
 		}
-
 		//Object를 감지했을경우는 Interact를 할수있는지 check한다.
-		if(Object && CanInteraction(Target))
+		else if(CanInteraction(Target))//Object && CanInteraction(Target))
 		{
-			DetectedObject(Object, Stimulus);
+			DetectedObject(Target, Stimulus);
 			UE_LOG(LogTemp, Warning, TEXT("AI Found Object !"));
 		}
 		UE_LOG(LogTemp, Warning, TEXT("Target name : %s"),*Target->GetFName().ToString());
@@ -250,7 +249,7 @@ void AEnemyAIController::DetectedCharacter(ABaseCharacter* Player, FAIStimulus S
 	}
 }
 
-void AEnemyAIController::DetectedObject(AInteractable* Obj, FAIStimulus Stimulus)
+void AEnemyAIController::DetectedObject(AActor* Obj, FAIStimulus  Stimulus)//AInteractable* Obj, FAIStimulus Stimulus)
 {
 	if(Stimulus.WasSuccessfullySensed())
 	{
@@ -352,12 +351,20 @@ void AEnemyAIController::ItemFarming(AActor* InteractActor)
 			ItemChoice(Box->BoxInventoryComp);
 		}
 
-		if(Char)
+		if (Char)
 		{
-			//손봐야됨 Char의 모든 InvComp를 넘겨줘야됨.
-			//Char의 InvComp를 넘겨주는 함수를 만들던지, 여기서 하던지 해야됨
-			ItemChoice(Char->PocketInventoryComp);
+
+			//backpack, vest, pocket, secure box 순으로 InvComp를 가져온다. 
+			for (int32 iter = 0; iter < 4; ++iter)
+			{
+				UNewInventoryComponent* InvCmp = Char->GetAllInvComp(iter);
+				if (InvCmp != nullptr)
+				{
+					ItemChoice(InvCmp);
+				}
+			}
 		}
+
 	}
 }
 

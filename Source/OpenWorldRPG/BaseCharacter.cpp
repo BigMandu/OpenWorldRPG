@@ -12,10 +12,14 @@
 
 #include "OpenWorldRPG/NewInventory/LootWidgetComponent.h"
 #include "OpenWorldRPG/NewInventory/CharacterLootWidget.h"
-#include "OpenWorldRPG/Item/EquipmentComponent.h"
 #include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
+#include "OpenWorldRPG/NewInventory/NewItemObject.h"
+
+#include "OpenWorldRPG/Item/Item.h"
 #include "OpenWorldRPG/Item/Equipment.h"
 #include "OpenWorldRPG/Item/Weapon.h"
+#include "OpenWorldRPG/Item/EquipmentComponent.h"
+
 
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -91,6 +95,11 @@ void ABaseCharacter::PostInitializeComponents()
 	}
 
 	SetTeamType(TeamType);
+
+	if (bHasSpawnItems)
+	{
+		SpawnItems();
+	}
 }
 
 void ABaseCharacter::SetTeamType(ETeamType Team)
@@ -118,6 +127,25 @@ void ABaseCharacter::SetCharacterStatus(ECharacterStatus Type)
 	}
 }
 
+void ABaseCharacter::SpawnItems()
+{
+	for (auto AddItem : SpawnItemList)
+	{
+		AItem* Item = GetWorld()->SpawnActor<AItem>(AddItem);
+		if (Item)
+		{
+			if (PocketInventoryComp)
+			{
+				if (PocketInventoryComp->TryAddItem(Item->GetDefaultItemObj()))
+				{
+					Item->GetDefaultItemObj()->bIsDestoryed = true;
+					Item->Destroy();
+				}
+			}
+		}
+	}
+}
+
 void ABaseCharacter::SetEquippedWeapon(AWeapon* Weapon)
 {
 	if (Weapon)
@@ -134,6 +162,39 @@ void ABaseCharacter::UseItem(class AActor* Item)
 		//Item->Use(this);
 	}
 }
+
+// AIController::ItemFarming함수에서 사용됨
+UNewInventoryComponent* ABaseCharacter::GetAllInvComp(int32 index)
+{
+	switch (index)
+	{
+	case 0:
+	{
+		AEquipment* Backpack = Equipment->GetEquippedWeaponSameType(EEquipmentType::EET_Backpack);
+		if (Backpack && Backpack->bHasStorage)
+		{
+			return Backpack->EquipInventoryComp;
+		}
+	}
+	break;
+	case 1:
+	{
+		AEquipment* Vest = Equipment->GetEquippedWeaponSameType(EEquipmentType::EET_Vest);
+		if (Vest && Vest->bHasStorage)
+		{
+			return Vest->EquipInventoryComp;
+		}
+		break;
+	}
+	case 2:
+		return this->PocketInventoryComp;
+	case 3:
+		return this->SecureBoxInventoryComp;
+	}
+
+	return nullptr;
+}
+
 
 void ABaseCharacter::ChangeSafetyLever()
 {
