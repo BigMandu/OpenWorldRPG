@@ -11,7 +11,7 @@
  */
 class UEquipWidget;
 class UNewInventoryGrid;
-class UCharacterInventory;
+class UCharacterInventoryWidget;
 
 class ABaseCharacter;
 
@@ -27,7 +27,7 @@ public:
 	/*UPROPERTY(meta = (BindWidget))
 	UNewInventoryGrid* InvenWidget;*/
 	UPROPERTY(meta = (BindWidget))
-	UCharacterInventory* CharInv;
+	UCharacterInventoryWidget* CharInvWidget;
 
 	void InitCharLootWidget(ABaseCharacter* DeadChar);
 

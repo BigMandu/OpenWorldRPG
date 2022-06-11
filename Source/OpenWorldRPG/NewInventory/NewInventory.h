@@ -17,7 +17,7 @@ class UEquipmentComponent;
 class UNewInventoryComponent;
 class UNewInventoryGrid;
 class UEquipWidget;
-class UCharacterInventory;
+class UCharacterInventoryWidget;
 class UDropWidget;
 class ULootBoxWidget;
 
@@ -58,7 +58,7 @@ public:
 	UNewInventoryGrid* SecureBoxWidget;*/
 
 	UPROPERTY(meta = (BindWidget))
-	UCharacterInventory* CharInvWidget;
+	UCharacterInventoryWidget* CharInvWidget;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UEquipWidget* EquipmentWidget;

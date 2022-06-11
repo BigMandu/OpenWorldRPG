@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "CharacterInventory.generated.h"
+#include "CharacterInventoryWidget.generated.h"
 
 /**
  * 
@@ -14,7 +14,7 @@ class UNewInventoryGrid;
 class UNewInventoryComponent;
 
 UCLASS()
-class OPENWORLDRPG_API UCharacterInventory : public UUserWidget
+class OPENWORLDRPG_API UCharacterInventoryWidget : public UUserWidget
 {
 	GENERATED_BODY()
 	

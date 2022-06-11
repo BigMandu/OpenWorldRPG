@@ -7,7 +7,7 @@
 #include "OpenWorldRPG/NewInventory/DropWidget.h"
 #include "OpenWorldRPG/NewInventory/LootBoxWidget.h"
 #include "OpenWorldRPG/NewInventory/EquipWidget.h"
-#include "OpenWorldRPG/NewInventory/CharacterInventory.h"
+#include "OpenWorldRPG/NewInventory/CharacterInventoryWidget.h"
 
 #include "OpenWorldRPG/MainCharacter.h"
 #include "OpenWorldRPG/MainController.h"
