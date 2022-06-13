@@ -135,7 +135,10 @@ void UNewItemwidget::NativeOnDragDetected(const FGeometry& InGeometry, const FPo
 	{
 		
 		DDOper->Payload = ItemObj;
-		DDOper->DefaultDragVisual = this;
+
+		//this로 박아버리니 size가 크면 Grid를 가려버리는 문제가 발생함.
+		DDOper->DefaultDragVisual = this; 
+
 
 		/*OutOperation->Payload = ItemObj;
 		OutOperation->DefaultDragVisual = this;*/

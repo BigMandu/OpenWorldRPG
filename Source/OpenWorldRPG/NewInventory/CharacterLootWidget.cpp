@@ -26,6 +26,7 @@ void UCharacterLootWidget::InitCharLootWidget(ABaseCharacter* DeadChar)
 	{
 		if(DeadChar->Equipment)
 		{
+			EquipWidget->LootedChar_Owner = DeadChar;
 			EquipWidget->EquipInitialize(DeadChar->Equipment);
 			EquipWidget->RefreshEquipWidget();
 

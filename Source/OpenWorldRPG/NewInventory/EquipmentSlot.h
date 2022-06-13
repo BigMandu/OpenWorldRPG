@@ -16,6 +16,8 @@ class UImage;
 class UBorder;
 class UNewItemObject;
 
+class ABaseCharacter;
+
 UENUM(BlueprintType)
 enum class ERifleSlot :uint8
 {
@@ -43,6 +45,8 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
 	UBorder* BGBorder;
 
+
+	ABaseCharacter* LootedChar_Owner;
 
 	void PaintBGBorder(UNewItemObject* Obj = nullptr);
 

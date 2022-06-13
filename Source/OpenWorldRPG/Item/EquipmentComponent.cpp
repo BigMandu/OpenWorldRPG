@@ -57,7 +57,7 @@ bool UEquipmentComponent::AddEquipment(AEquipment* Equip)
 				bHasVest = true;
 			}
 			
-
+			
 			bReturn = true;
 		}
 		//EquipWidget::RefreshEquipWidget과 bind시킴.
@@ -73,7 +73,11 @@ bool UEquipmentComponent::RemoveEquipment(AEquipment* Equip)
 {
 	if (Equip)
 	{
-		//Backpack, Vest의 장착 여부를 확인한다.
+		/*
+		* EquipSlot::Ondrop에서 기존 SpawnActor의 루틴이 변경됨에 따라
+		* RemoveSingle시에 같지 않게 됨.
+		* 따라서 remove를 변경해야됨.
+		*/
 		if (Equip->EquipmentType == EEquipmentType::EET_Backpack)
 		{
 			bHasBackpack = false;
@@ -83,12 +87,25 @@ bool UEquipmentComponent::RemoveEquipment(AEquipment* Equip)
 			bHasVest = false;
 		}
 
-		EquipmentItems.RemoveSingle(Equip);
-		Equip->OwningPlayer = nullptr;
-		Equip->Destroy();
-		
-		OnEquipmentUpdated.Broadcast();
-		return true;
+		AEquipment* InnerEquipment = GetEquippedWeaponSameType(Equip->EquipmentType);
+		if (InnerEquipment)
+		{
+			//이름을 비교해서 같은 이름을 갖고있는 객체를 EquipmentItems Array에서 삭제하고
+			// Equip Object를 Destory해준다.
+			if (InnerEquipment->ItemName.EqualTo(Equip->ItemName))
+			{
+				EquipmentItems.RemoveSingle(InnerEquipment);
+
+				Equip->OwningPlayer = nullptr;
+				InnerEquipment->OwningPlayer = nullptr;
+				Equip->Destroy();
+				InnerEquipment->Destroy();
+
+				OnEquipmentUpdated.Broadcast();
+
+				return true;
+			}
+		}
 	}
 	return false;
 }

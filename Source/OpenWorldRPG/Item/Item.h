@@ -63,6 +63,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Item)
 	UMaterialInterface* IconRotated;
 
+	/*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Item)
+	FText ItemName;*/
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Item)
 	FText ItemDescription;
 

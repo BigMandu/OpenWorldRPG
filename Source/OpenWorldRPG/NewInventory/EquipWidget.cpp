@@ -25,6 +25,17 @@ void UEquipWidget::EquipInitialize(UEquipmentComponent* p_EquipComp)
 	{
 		EquipComp->OnEquipmentUpdated.AddUFunction(this, FName("RefreshEquipWidget"));
 		//UE_LOG(LogTemp, Warning, TEXT("UEquipWidget:: Bind Success"));
+
+		if (LootedChar_Owner)
+		{
+			HelmetSlot->LootedChar_Owner = LootedChar_Owner;
+			PlateSlot->LootedChar_Owner = LootedChar_Owner;
+			PistolSlot->LootedChar_Owner = LootedChar_Owner;
+			PrimarySlot->LootedChar_Owner = LootedChar_Owner;
+			SubSlot->LootedChar_Owner = LootedChar_Owner;
+			VestSlot->LootedChar_Owner = LootedChar_Owner;
+			BackpackSlot->LootedChar_Owner = LootedChar_Owner;
+		}
 	}
 
 	RefreshEquipWidget();
@@ -108,6 +119,11 @@ void UEquipWidget::SetSlot(AEquipment* Equip, UEquipmentSlot* EquipSlot)
 			ItemWidget->Tilesize = EquipSlot->GetDesiredSize().X;
 			ItemWidget->ItemObj = Equip->ItemObj; // ele.Key;
 			ItemWidget->Refresh();
+			
+			if(LootedChar_Owner != nullptr)
+			{
+				EquipSlot->LootedChar_Owner = LootedChar_Owner;
+			}
 			
 			EquipSlot->BGBorder->AddChild(ItemWidget);
 			EquipSlot->PaintBGBorder();

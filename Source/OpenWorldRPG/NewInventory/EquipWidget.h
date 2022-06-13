@@ -11,6 +11,7 @@
 /*
 각 슬롯을 생성.
 */
+class ABaseCharacter;
 class AEquipment;
 class UEquipmentSlot;
 class UEquipmentComponent;
@@ -25,6 +26,8 @@ class OPENWORLDRPG_API UEquipWidget : public UUserWidget, public IItemInterface
 public:
 	/*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WidgetVariable")
 	EEquipmentType SlotType;*/
+
+	ABaseCharacter* LootedChar_Owner;
 	
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
 	UEquipmentSlot* HelmetSlot;

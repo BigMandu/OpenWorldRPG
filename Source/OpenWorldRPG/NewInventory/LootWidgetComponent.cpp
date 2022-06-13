@@ -43,8 +43,8 @@ void ULootWidgetComponent::CreateInteractionWidget(AMainController* MainCon, AAc
 			case EWidgetType::EWT_Character:
 			{
 				//UEquipWidget* Widget = CreateWidget<UEquipWidget>(MainCon, WBPWidget);
-				UCharacterLootWidget* LWidget = CreateWidget<UCharacterLootWidget>(MainCon, WBPWidget);
 				ABaseCharacter* BChar = Cast<ABaseCharacter>(actor);
+				UCharacterLootWidget* LWidget = CreateWidget<UCharacterLootWidget>(MainCon, WBPWidget);//(BChar, WBPWidget);
 				if (LWidget && BChar)
 				{
 					LWidget->InitCharLootWidget(BChar);

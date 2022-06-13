@@ -42,11 +42,11 @@ void UEquipmentSlot::NativeOnDragLeave(const FDragDropEvent& InDragDropEvent, UD
 
 void UEquipmentSlot::PaintBGBorder(UNewItemObject* Obj)
 {
+	FLinearColor Red = FLinearColor(1.f, 0.f, 0.f, 0.25f);
+	FLinearColor Green = FLinearColor(0.f, 1.f, 0.f, 0.25f);
+	FLinearColor Black = FLinearColor(0.f, 0.f, 0.f, 0.25f);
 	if (Obj != nullptr)
 	{
-		FLinearColor Green = FLinearColor(0.f, 1.f, 0.f, 0.25f);
-		FLinearColor Red = FLinearColor(1.f, 0.f, 0.f, 0.25f);
-		
 		if (BGBorder)
 		{
 			if (IsSupportedEquip(Obj))
@@ -62,8 +62,7 @@ void UEquipmentSlot::PaintBGBorder(UNewItemObject* Obj)
 		}
 	}
 	else
-	{
-		FLinearColor Black = FLinearColor(0.f, 0.f, 0.f, 0.25f);
+	{	
 		BGBorder->SetBrushColor(Black);
 		bCanDrop = false;
 	}
@@ -84,27 +83,43 @@ bool UEquipmentSlot::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEv
 
 			check(ItemObj->item);
 			
-			ABaseCharacter* BChar = Cast<ABaseCharacter>(GetOwningPlayerPawn());
-			if (ItemObj->bIsDestoryed)
+			//GetOwningPlayerPawn으로 가져오면, Player가 된다. Widget의 소유권을 확실히 해야됨
+			ABaseCharacter* BChar;
+			if (LootedChar_Owner != nullptr)
 			{
-				AEquipment* Equipment = Cast<AEquipment>(GetWorld()->SpawnActor<AActor>(ItemObj->GetItemClass()));
-				if (Equipment)
-				{
-					ItemObj->bIsDestoryed = false;
-					Equipment->ReInitialize(ItemObj);
-					Equipment->SetItemState(EItemState::EIS_Pickup);
-					ItemObj->MotherContainer = nullptr;
-					Equipment->StepEquip(BChar);
-				}
+				BChar = LootedChar_Owner;
 			}
 			else
 			{
-				AEquipment* Equipment = Cast<AEquipment>(ItemObj->item);
-				if (Equipment)
+				BChar = Cast<ABaseCharacter>(GetOwningPlayerPawn());
+			}
+
+			if (BChar != nullptr)
+			{
+				if (ItemObj->bIsDestoryed)
 				{
-					Equipment->StepEquip(BChar);
+					AEquipment* Equipment = Cast<AEquipment>(GetWorld()->SpawnActor<AActor>(ItemObj->GetItemClass()));
+					if (Equipment)
+					{
+						ItemObj->bIsDestoryed = false;
+						Equipment->ReInitialize(ItemObj);
+						Equipment->SetItemState(EItemState::EIS_Pickup);
+						ItemObj->MotherContainer = nullptr;
+						Equipment->StepEquip(BChar);
+					}
+				}
+				else
+				{
+					AEquipment* Equipment = Cast<AEquipment>(ItemObj->item);
+					if (Equipment)
+					{
+						Equipment->StepEquip(BChar);
+					}
 				}
 			}
+
+			//old version
+
 			/*
 			AMainCharacter* Main = Cast<AMainCharacter>(GetOwningPlayerPawn());
 			AEquipment* Equipment = Cast<AEquipment>(ItemObj->item);
@@ -162,7 +177,7 @@ bool UEquipmentSlot::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEv
 				ItemObj->MotherContainer = nullptr;
 				*/
 
-				//아래 주석은 안쓰는부분.
+				//아래 /**/ 주석은 안쓰는부분.
 				/*AWeapon* T_Weapon = Cast<AWeapon>(Equipment);
 				if (T_Weapon)
 				{
