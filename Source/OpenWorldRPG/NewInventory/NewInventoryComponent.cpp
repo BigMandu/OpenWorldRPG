@@ -106,9 +106,11 @@ bool UNewInventoryComponent::TryAddItem(UNewItemObject* ItemObj)
 
 bool UNewInventoryComponent::TryAddItemStep(UNewItemObject* ItemObj)
 {
+	UE_LOG(LogTemp, Warning, TEXT("UNEWINVCOMP : TryaddItemStep"));
 	bool bResult = false;
 	if (ItemObj)
 	{
+		UE_LOG(LogTemp, Warning,  TEXT("UNEWINVCOMP : Item Obj is valid"));
 		for (int32 iter = 0; iter < InventoryItems.Num(); ++iter)
 		{
 			bResult = IsAvailableSpace(ItemObj, iter);
@@ -117,7 +119,12 @@ bool UNewInventoryComponent::TryAddItemStep(UNewItemObject* ItemObj)
 				AddItemAtIndex(ItemObj, iter);
 				return bResult;
 			}
+			UE_LOG(LogTemp, Warning, TEXT("UNEWINVCOMP : there is no space"));
 		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("UNEWINVCOMP : Item Obj is invalid"));
 	}
 	return bResult;
 }

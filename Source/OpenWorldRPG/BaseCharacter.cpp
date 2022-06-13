@@ -129,18 +129,15 @@ void ABaseCharacter::SetCharacterStatus(ECharacterStatus Type)
 
 void ABaseCharacter::SpawnItems()
 {
-	for (auto AddItem : SpawnItemList)
+	for (auto& AddItem : SpawnItemList)
 	{
 		AItem* Item = GetWorld()->SpawnActor<AItem>(AddItem);
 		if (Item)
 		{
-			if (PocketInventoryComp)
+			if (PocketInventoryComp->TryAddItem(Item->GetDefaultItemObj()))
 			{
-				if (PocketInventoryComp->TryAddItem(Item->GetDefaultItemObj()))
-				{
-					Item->GetDefaultItemObj()->bIsDestoryed = true;
-					Item->Destroy();
-				}
+				Item->GetDefaultItemObj()->bIsDestoryed = true;
+				Item->Destroy();
 			}
 		}
 	}
@@ -404,19 +401,6 @@ void ABaseCharacter::Interaction(AActor* Actor)
 		{
 			MainCon->bIsInteractCharacterLoot = true;
 			LootWidgetComp->CreateInteractionWidget(MainCon, this); //새로추가
-
-			/*UNewInventory* MainInventory = Cast<UNewInventory>(MainCon->NewInventory);
-			if (MainInventory)
-			{
-				CharLootWidget = CreateWidget<UCharacterLootWidget>(MainCon, WCharLootWidget);
-				if (CharLootWidget)
-				{
-					CharLootWidget->InitCharLootWidget(this);
-
-					MainInventory->SetRightWidget(CharLootWidget);
-					MainCon->ShowInventory_Implementation();
-				}
-			}*/
 		}
 
 		if (AICon)

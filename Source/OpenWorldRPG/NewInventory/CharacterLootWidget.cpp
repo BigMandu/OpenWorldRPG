@@ -9,6 +9,15 @@
 #include "OpenWorldRPG/BaseCharacter.h"
 //#include "OpenWorldRPG/EnemyCharacter.h"
 
+
+
+bool UCharacterLootWidget::Initialize()
+{
+	bool bReturn = Super::Initialize();
+
+	return bReturn;
+}
+
 void UCharacterLootWidget::InitCharLootWidget(ABaseCharacter* DeadChar)
 {
 	//ABaseCharacter* BChar = Cast<ABaseCharacter>(DeadChar);

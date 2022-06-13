@@ -147,15 +147,15 @@ void AEnemyAIController::DetectedTarget(AActor* Target, FAIStimulus Stimulus)
 		if (Char && CheckIsEnemy(Char))
 		{
 			DetectedCharacter(Char, Stimulus);
-			UE_LOG(LogTemp, Warning, TEXT("AI Found Player!"));
+			//UE_LOG(LogTemp, Warning, TEXT("AI Found Player!"));
 		}
 		//Object를 감지했을경우는 Interact를 할수있는지 check한다.
 		else if(CanInteraction(Target))//Object && CanInteraction(Target))
 		{
 			DetectedObject(Target, Stimulus);
-			UE_LOG(LogTemp, Warning, TEXT("AI Found Object !"));
+			//UE_LOG(LogTemp, Warning, TEXT("AI Found Object !"));
 		}
-		UE_LOG(LogTemp, Warning, TEXT("Target name : %s"),*Target->GetFName().ToString());
+		//UE_LOG(LogTemp, Warning, TEXT("Target name : %s"),*Target->GetFName().ToString());
 	}
 }
 
@@ -204,8 +204,8 @@ void AEnemyAIController::DetectedCharacter(ABaseCharacter* Player, FAIStimulus S
 			//UpdateSeePlayerKey(true);
 			//UpdateHearPlayerKey(false);
 			//UpdatePlayerKey(Player); //Player를 Setting해준다.
-			UE_LOG(LogTemp, Warning, TEXT("AI : Sight, Sense ID : %d"), SightSenseID.Index);
-			UE_LOG(LogTemp, Warning, TEXT("Stimulus Age is : %f, SightMaxAge is : %f"), Stimulus.GetAge(), SightConfig->GetMaxAge());
+			//UE_LOG(LogTemp, Warning, TEXT("AI : Sight, Sense ID : %d"), SightSenseID.Index);
+			//UE_LOG(LogTemp, Warning, TEXT("Stimulus Age is : %f, SightMaxAge is : %f"), Stimulus.GetAge(), SightConfig->GetMaxAge());
 		}
 		//hearing만 감지 했을때
 		else if (Stimulus.Type == HearingSenseID && info->IsSenseActive(SightSenseID) == false)// && Stimulus.Strength >= 1.f) //Hearing을 감지했을때
@@ -227,8 +227,8 @@ void AEnemyAIController::DetectedCharacter(ABaseCharacter* Player, FAIStimulus S
 			//청각만 들었을때 Hearing의 MaxAge이후 LostTarget을 실행한다.
 			EnemyLostDelegate = FTimerDelegate::CreateUObject(this, &AEnemyAIController::LostTarget, Player); // Target);
 			GetWorldTimerManager().SetTimer(EnemyLostTimer, EnemyLostDelegate, HearingConfig->GetMaxAge(), false);
-			UE_LOG(LogTemp, Warning, TEXT("AI : Hearing, Sense ID : %d"), HearingSenseID.Index);
-			UE_LOG(LogTemp, Warning, TEXT("Stimulus Age is : %f, HearingMaxAge is : %f"), Stimulus.GetAge(), HearingConfig->GetMaxAge());
+			//UE_LOG(LogTemp, Warning, TEXT("AI : Hearing, Sense ID : %d"), HearingSenseID.Index);
+			//UE_LOG(LogTemp, Warning, TEXT("Stimulus Age is : %f, HearingMaxAge is : %f"), Stimulus.GetAge(), HearingConfig->GetMaxAge());
 		}
 		//UE_LOG(LogTemp, Warning, TEXT("AI : Detected!! / Detect Location : %s"), *DetectedLocation.ToString());
 
@@ -244,7 +244,7 @@ void AEnemyAIController::DetectedCharacter(ABaseCharacter* Player, FAIStimulus S
 		EnemyLostDelegate = FTimerDelegate::CreateUObject(this, &AEnemyAIController::LostTarget, Player); // Target);
 		GetWorldTimerManager().SetTimer(EnemyLostTimer, EnemyLostDelegate, SightConfig->GetMaxAge(), false); //특정초 이후에 LostTarget함수를 호출한다.
 
-		UE_LOG(LogTemp, Warning, TEXT("AI : Missing!! / Last Location : %s"), *DetectedLocation.ToString());
+		//UE_LOG(LogTemp, Warning, TEXT("AI : Missing!! / Last Location : %s"), *DetectedLocation.ToString());
 	
 	}
 }
@@ -260,7 +260,7 @@ void AEnemyAIController::DetectedObject(AActor* Obj, FAIStimulus  Stimulus)//AIn
 		//False면 감지한 Obj가 장착한 무기가 아님.
 		//if (bCheckAlreadyHave == false)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("AI : Detected Object "));
+			//UE_LOG(LogTemp, Warning, TEXT("AI : Detected Object "));
 			//LootBox는 StaticMesh로 지정해야함 -> NavMesh가 적용되지 않아서 Location이 아닌 Object로 이동되게 한다.
 			UpdateBBCompObjectKey(ObjectKey, Obj);
 		}
@@ -302,7 +302,7 @@ void AEnemyAIController::LostTarget(ABaseCharacter* Target) //AActor* Target)
 	//UpdatePlayerKey(nullptr);
 	//UpdateHearLocationKey(FVector::ZeroVector);
 	//PerceptionComp->ForgetActor(Target);
-	UE_LOG(LogTemp, Warning, TEXT("AI : Target Lost!, Lost Target : %s"), *Target->GetFName().ToString());
+	//UE_LOG(LogTemp, Warning, TEXT("AI : Target Lost!, Lost Target : %s"), *Target->GetFName().ToString());
 }
 
 void AEnemyAIController::LostObject(AActor* InteractActor)

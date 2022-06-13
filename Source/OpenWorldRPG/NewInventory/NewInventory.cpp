@@ -54,7 +54,7 @@ bool UNewInventory::Initialize()
 
 	AMainCharacter* TMain = Cast<AMainCharacter>(GetOwningPlayerPawn());
 	Main = (TMain == nullptr) ? nullptr : TMain;
-	if (Main) 
+	if (Main)
 	{
 		/*if (Main->PocketInventoryComp)
 		{

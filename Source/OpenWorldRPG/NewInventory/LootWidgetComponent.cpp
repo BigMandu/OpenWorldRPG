@@ -24,28 +24,28 @@ void ULootWidgetComponent::CreateInteractionWidget(AMainController* MainCon, AAc
 	if (MainCon)
 	{
 		UNewInventory* MainInventory = Cast<UNewInventory>(MainCon->NewInventory);
-		switch (WidgetType)
+		if (MainInventory)
 		{
-		case EWidgetType::EWT_LootBox:
-			if (MainInventory)
+			switch (WidgetType)
 			{
-				ULootBoxWidget* Widget = CreateWidget<ULootBoxWidget>(MainCon, WBPWidget);
-				if (Widget)
+			case EWidgetType::EWT_LootBox:
 				{
-					Widget->InitLootBoxWidget(actor);
-					MainInventory->SetRightWidget(Widget);
-					//NewInventory의 오른쪽 위젯에 LootBoxWidget을 넣어준다.
-				
+					ULootBoxWidget* Widget = CreateWidget<ULootBoxWidget>(MainCon, WBPWidget);
+					if (Widget)
+					{
+						Widget->InitLootBoxWidget(actor);
+						MainInventory->SetRightWidget(Widget);
+						//NewInventory의 오른쪽 위젯에 LootBoxWidget을 넣어준다.
+
+					}
 				}
-			}
-			break;
-		case EWidgetType::EWT_Character:
-			if(MainInventory)
+				break;
+			case EWidgetType::EWT_Character:
 			{
 				//UEquipWidget* Widget = CreateWidget<UEquipWidget>(MainCon, WBPWidget);
 				UCharacterLootWidget* LWidget = CreateWidget<UCharacterLootWidget>(MainCon, WBPWidget);
 				ABaseCharacter* BChar = Cast<ABaseCharacter>(actor);
-				if(LWidget && BChar)
+				if (LWidget && BChar)
 				{
 					LWidget->InitCharLootWidget(BChar);
 					//ABaseCharacter* BChar = Cast<ABaseCharacter>(actor);
@@ -53,12 +53,12 @@ void ULootWidgetComponent::CreateInteractionWidget(AMainController* MainCon, AAc
 					MainInventory->SetRightWidget(LWidget);
 				}
 			}
-			break;
-		case EWidgetType::EWT_StorageEquip:
-			break;
-		}
+				break;
+			case EWidgetType::EWT_StorageEquip:
+				break;
+			}
 
-	
+		}
 		MainCon->ShowInventory_Implementation();// ToggleInventory();
 	}
 }

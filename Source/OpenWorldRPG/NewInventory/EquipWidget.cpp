@@ -35,7 +35,7 @@ void UEquipWidget::RefreshEquipWidget()
 	RemoveSlot();
 	if (EquipComp)
 	{
-		for (auto ele : EquipComp->EquipmentItems)
+		for (auto& ele : EquipComp->EquipmentItems)
 		{
 			if (ele != nullptr)
 			{

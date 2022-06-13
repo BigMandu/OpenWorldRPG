@@ -22,7 +22,7 @@ void UBTService_TryFindObject::TickNode(UBehaviorTreeComponent& OwnerComp, uint8
 	Time += DeltaSeconds;
 	float AlphaTime = Time / FindTime;
 
-	UE_LOG(LogTemp, Warning, TEXT("Time : %f / AlphaTime : %f"), Time, AlphaTime);
+	//UE_LOG(LogTemp, Warning, TEXT("Time : %f / AlphaTime : %f"), Time, AlphaTime);
 	if(AlphaTime >= 1.0f || BBComp->GetValueAsBool(AICon->bOutOfAmmoKey))
 	{
 		//Time = 0.f;
