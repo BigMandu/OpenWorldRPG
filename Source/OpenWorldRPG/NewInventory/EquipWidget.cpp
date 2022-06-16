@@ -111,6 +111,7 @@ void UEquipWidget::SetSlot(AEquipment* Equip, UEquipmentSlot* EquipSlot)
 
 		if (ItemWidget)
 		{
+			EquipSlot->Initialize();
 			ItemWidget->OnRemoved.AddUFunction(this, FName("RemoveEquipment"));
 			EquipSlot->BGBorder->ClearChildren();
 			//VestOverlay->ClearChildren();

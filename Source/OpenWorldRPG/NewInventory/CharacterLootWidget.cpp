@@ -28,12 +28,13 @@ void UCharacterLootWidget::InitCharLootWidget(ABaseCharacter* DeadChar)
 		{
 			EquipWidget->LootedChar_Owner = DeadChar;
 			EquipWidget->EquipInitialize(DeadChar->Equipment);
-			EquipWidget->RefreshEquipWidget();
+			//EquipWidget->RefreshEquipWidget();
 
 			//Widget ¼ÕºÁ¾ßÇÔ. Pocket, SecureBoxÃß°¡ÇØ¾ßµÊ.
 			//InvenWidget->GridInitialize(DeadChar->PocketInventoryComp, DeadChar->PocketInventoryComp->TileSize);
 		}
 		CharInvWidget->InitializeInventory(DeadChar);
+		//EquipWidget->RefreshEquipWidget();
 	}
 }
 

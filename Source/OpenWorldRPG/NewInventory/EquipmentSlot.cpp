@@ -96,25 +96,28 @@ bool UEquipmentSlot::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEv
 
 			if (BChar != nullptr)
 			{
+				AEquipment* Equipment = nullptr;
 				if (ItemObj->bIsDestoryed)
 				{
-					AEquipment* Equipment = Cast<AEquipment>(GetWorld()->SpawnActor<AActor>(ItemObj->GetItemClass()));
+					Equipment = Cast<AEquipment>(GetWorld()->SpawnActor<AActor>(ItemObj->GetItemClass()));
 					if (Equipment)
 					{
 						ItemObj->bIsDestoryed = false;
 						Equipment->ReInitialize(ItemObj);
 						Equipment->SetItemState(EItemState::EIS_Pickup);
 						ItemObj->MotherContainer = nullptr;
-						Equipment->StepEquip(BChar);
+						
 					}
 				}
 				else
 				{
-					AEquipment* Equipment = Cast<AEquipment>(ItemObj->item);
-					if (Equipment)
-					{
-						Equipment->StepEquip(BChar);
-					}
+					Equipment = Cast<AEquipment>(ItemObj->item);
+				}
+
+
+				if (Equipment != nullptr)
+				{
+					Equipment->StepEquip(BChar);
 				}
 			}
 
@@ -182,7 +185,7 @@ bool UEquipmentSlot::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEv
 				if (T_Weapon)
 				{
 					T_Weapon->RifleAssign = Weapon->RifleAssign;
-					T_Weapon->StepEquip(Main);
+					T_Weapon->StepEquip(Main
 				}*/
 				//else
 				//{
