@@ -93,6 +93,7 @@ void UEquipWidget::RefreshEquipWidget()
 						if (BackpackOverlay && ele->bHasStorage && ele->EquipGridWidget)
 						{
 							BackpackOverlay->AddChild(ele->EquipGridWidget);
+							
 						}
 					}
 					break;
