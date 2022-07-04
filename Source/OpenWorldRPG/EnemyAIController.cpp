@@ -124,15 +124,15 @@ void AEnemyAIController::OnPossess(APawn* InPawn)
 //BaseCharacter에 설정한 TeamType을 비교해서 적을 판별한다.
 bool AEnemyAIController::CheckIsEnemy(ABaseCharacter* Target)
 {
-	bool bEnemy = false;
+	bool bIsEnemy = false;
 	if(Target && OwnerActor)
 	{
 		if(OwnerActor->GetTeamType() != Target->GetTeamType())
 		{
-			bEnemy = true;
+			bIsEnemy = true;
 		}
 	}
-	return bEnemy;
+	return bIsEnemy;
 }
 
 
@@ -311,7 +311,14 @@ void AEnemyAIController::LostObject(AActor* InteractActor)
 
 	//Perception에 Sight된 Log를 삭제하고
 	GetPerceptionComponent()->ForgetActor(InteractActor);
-
+	/*AInteractable* Inter = Cast<AInteractable>(InteractActor);
+	if (Inter)
+	{
+		if (Inter->bIsPreOccupied)
+		{
+			Inter->bIsPreOccupied = false;
+		}
+	}*/
 	//Perception IgnoreActor에 추가한다.
 	//OwnerActor->PerceptionIgnoreActor.Add(InteractActor);
 }
@@ -330,9 +337,21 @@ bool AEnemyAIController::CanInteraction(AActor* Object)
 	AEquipment* Equip = Cast<AEquipment>(Object);
 
 	//AI가 장착한 장비거나, 다른 캐릭터가 장착중인 장비는 Interaction이 불가능하다.
-	if(OwnerActor->CheckEquipped(Object) == true || Equip && Equip->OwningPlayer != nullptr)
+	//여기서 추가해야할것 -> 다른 AI가 이미 먼저 식별했을 경우의 조건도 추가해야함.
+	//Equip에 boolean 변수를 하나 추가해서. OtherCharacter의 occupy선점 여부를 확인 하는거 ㄹ추가하면 될듯?
+
+	
+	//if (Equip && Equip->bIsPreOccupied == false)
 	{
-		bCanInteract = false;
+		UE_LOG(LogTemp, Warning, TEXT("PreOccupied is false, Check Equip, Owning"));
+		//AI가 해당 Equip을 장착하지 않았거나, OwningPlayer가 없다면
+		if (Equip && Equip->OwningPlayer != nullptr) //OwnerActor->CheckEquipped(Object) != true) || Equip && Equip->OwningPlayer == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Can Interaction"));
+			//Interact가 가능하다
+			//Equip->bIsPreOccupied = true;
+			bCanInteract = false;
+		}
 	}
 
 	return bCanInteract;

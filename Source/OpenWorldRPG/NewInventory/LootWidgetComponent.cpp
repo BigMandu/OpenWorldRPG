@@ -42,15 +42,14 @@ void ULootWidgetComponent::CreateInteractionWidget(AMainController* MainCon, AAc
 				break;
 			case EWidgetType::EWT_Character:
 			{
-				//UEquipWidget* Widget = CreateWidget<UEquipWidget>(MainCon, WBPWidget);
 				ABaseCharacter* BChar = Cast<ABaseCharacter>(actor);
-				UCharacterLootWidget* LWidget = CreateWidget<UCharacterLootWidget>(MainCon, WBPWidget);//(BChar, WBPWidget);
-				if (LWidget && BChar)
+				UCharacterLootWidget* RWidget = CreateWidget<UCharacterLootWidget>(MainCon, WBPWidget);//(BChar, WBPWidget);
+				if (RWidget && BChar)
 				{
-					LWidget->InitCharLootWidget(BChar);
+					RWidget->InitCharLootWidget(BChar);
 					//ABaseCharacter* BChar = Cast<ABaseCharacter>(actor);
 					//Widget->EquipInitialize(BChar->Equipment);
-					MainInventory->SetRightWidget(LWidget);
+					MainInventory->SetRightWidget(RWidget);
 				}
 			}
 				break;

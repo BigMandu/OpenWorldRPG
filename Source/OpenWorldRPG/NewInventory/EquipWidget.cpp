@@ -16,6 +16,8 @@
 //#include "Components/Border.h"
 //#include "Components/CanvasPanelSlot.h"
 //#include "Components/CanvasPanel.h"
+#include "Components/CanvasPanelSlot.h"
+
 #include "Blueprint/DragDropOperation.h"
 
 void UEquipWidget::EquipInitialize(UEquipmentComponent* p_EquipComp)
@@ -38,7 +40,11 @@ void UEquipWidget::EquipInitialize(UEquipmentComponent* p_EquipComp)
 		}
 	}
 
-	RefreshEquipWidget();
+	if (LootedChar_Owner == nullptr)
+	{
+		RefreshEquipWidget();
+	}
+	
 }
 
 void UEquipWidget::RefreshEquipWidget()
@@ -62,42 +68,47 @@ void UEquipWidget::RefreshEquipWidget()
 					SetSlot(ele, PistolSlot);
 					break;
 				case EEquipmentType::EET_Rifle:
-					{
+				{
 					AWeapon* Weapon = Cast<AWeapon>(ele);
-						if(Weapon)
+					if (Weapon)
+					{
+						switch (Weapon->RifleAssign)
 						{
-							switch(Weapon->RifleAssign)
-							{
-							case ERifleAssign::ERA_Primary:
-								SetSlot(ele, PrimarySlot);
-								break;
-							case ERifleAssign::ERA_Sub:
-								SetSlot(ele, SubSlot);
-								break;
-							}
+						case ERifleAssign::ERA_Primary:
+							SetSlot(ele, PrimarySlot);
+							break;
+						case ERifleAssign::ERA_Sub:
+							SetSlot(ele, SubSlot);
+							break;
 						}
 					}
-					
-					break;
+				}
+
+				break;
 				case EEquipmentType::EET_Vest:
 					SetSlot(ele, VestSlot);
-					if (VestOverlay && ele->bHasStorage && ele->EquipGridWidget)
+					if (VestOverlay && ele->bHasStorage )
 					{
-						VestOverlay->AddChild(ele->EquipGridWidget);//가끔 error
+						ele->SettingStorage();
+						//VestOverlay->ClearChildren();	
+						if (ele->EquipGridWidget)
+						{
+							VestOverlay->AddChild(ele->EquipGridWidget);//가끔 error
+						}
 					}
 					break;
 				case EEquipmentType::EET_Backpack:
-					if (ele)
+					SetSlot(ele, BackpackSlot);
+					if (BackpackOverlay && ele->bHasStorage)// && ele->EquipGridWidget)
 					{
-						SetSlot(ele, BackpackSlot);
-						if (BackpackOverlay && ele->bHasStorage && ele->EquipGridWidget)
+						ele->SettingStorage();
+						//BackpackOverlay->ClearChildren();
+						if (ele->EquipGridWidget)
 						{
-							BackpackOverlay->AddChild(ele->EquipGridWidget);
-							
+							BackpackOverlay->AddChild(ele->EquipGridWidget); //가끔 error
 						}
 					}
 					break;
-
 				}
 			}
 		}
@@ -116,9 +127,10 @@ void UEquipWidget::SetSlot(AEquipment* Equip, UEquipmentSlot* EquipSlot)
 			ItemWidget->OnRemoved.AddUFunction(this, FName("RemoveEquipment"));
 			EquipSlot->BGBorder->ClearChildren();
 			//VestOverlay->ClearChildren();
-			
 
-			ItemWidget->Tilesize = EquipSlot->GetDesiredSize().X;
+			
+			ItemWidget->Tilesize =  200.f; //test임, GetDesiredSize는 widget이 화면에 출력되야 구할수 있는건데 ..  //EquipSlot->GetDesiredSize().X;
+			
 			ItemWidget->ItemObj = Equip->ItemObj; // ele.Key;
 			ItemWidget->Refresh();
 			
@@ -158,9 +170,12 @@ void UEquipWidget::RemoveEquipment(UObject* T_ItemObj)
 
 void UEquipWidget::RemoveSlot()
 {
-	VestOverlay->ClearChildren();
-	BackpackOverlay->ClearChildren();
-	PrimarySlot->BGBorder->ClearChildren();
-	SubSlot->BGBorder->ClearChildren();
+	if (VestOverlay && BackpackOverlay && PrimarySlot && SubSlot)
+	{
+		VestOverlay->ClearChildren();
+		BackpackOverlay->ClearChildren();
+		PrimarySlot->BGBorder->ClearChildren();
+		SubSlot->BGBorder->ClearChildren();
+	}
 }
 

@@ -28,10 +28,14 @@ EBTNodeResult::Type UBTTask_InteractWithObject::ExecuteTask(UBehaviorTreeCompone
 		ABaseCharacter* BChar = Cast<ABaseCharacter>(BBComp->GetValueAsObject(AICon->ObjectKey));
 		if(Inter)
 		{
-			Inter->Interaction(EChar);
+			//if (Inter->bIsPreOccupied == false)
+			{
+				//Inter->bIsPreOccupied = true;
+				Inter->Interaction(EChar);
 
-			//Interaction을 하고나서 Focus와 Perception Ignore에 추가하기 위해 함수를 호출
-			AICon->LostObject(Inter);
+				//Interaction을 하고나서 Focus와 Perception Ignore에 추가하기 위해 함수를 호출
+				AICon->LostObject(Inter);
+			}
 		}
 		if (BChar)
 		{

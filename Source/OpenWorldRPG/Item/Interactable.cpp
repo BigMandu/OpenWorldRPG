@@ -26,6 +26,20 @@ void AInteractable::BeginPlay()
 }
 
 
+void AInteractable::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	
+	/*switch (InteractType)
+	{
+	case EInteractType::EIT_Equipment:
+	case EInteractType::EIT_Item:
+		bIsPreOccupied = false;
+		break;
+	}*/
+
+}
+
 void AInteractable::Interaction(class AActor* Actor)
 {
 	//UE_LOG(LogTemp, Warning, TEXT("Interactive_Interface , Interaction function"));

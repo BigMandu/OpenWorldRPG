@@ -36,10 +36,15 @@ class OPENWORLDRPG_API UNewItemwidget : public UUserWidget
 	GENERATED_BODY()
 
 private:
+	//전체적인 이 Widget의 사이즈
 	FVector2D widgetsize;
+
+	//검은색
 	const FLinearColor NormalColor = FLinearColor(0.0, 0.0, 0.0, 0.5);
+	//붉은색
 	const FLinearColor HoverColor = FLinearColor(0.5, 0.5, 0.5, 0.2);
 	
+	//Horver했을때 나오는 Tooltip widget
 	UTooltipWidget* Tooltip;
 
 
@@ -51,8 +56,8 @@ public:
 	/* delegate, NewItemwidget::GetIconIamge,, NativeOnDragDetected 에서 broad cast, 
 	* NewInventoryGrid::RefreshInventory에서 NewInventoryGrid::OnItemRemove
 	* 와 bind시킴.
-	* Item을 삭제했을때 호출되도록.
-	*/
+	* Item을 삭제했을때 호출되도록
+	*/ 
 	FOnRemoved OnRemoved;
 	FOnDragDetect OnDragDetect;
 	

@@ -35,30 +35,32 @@ UCLASS()
 class OPENWORLDRPG_API AEquipment : public AItem
 {
 	GENERATED_BODY()
+
 private:
 
-
 	//TSubclassOf<UNewInventoryGrid>WEquipGridWidget;
+	UPROPERTY(EditDefaultsOnly, Category = "Equipment")
+	USoundCue* EquippedSound;
+
+protected:
+	UPROPERTY(EditAnywhere, Category = "Equipment")
+	FTransform MeshAttachTransform;
+
+
 public:
 
 	AEquipment();
-
-	virtual UNewItemObject* GetDefaultItemObj() override;
 
 	AMainController* MainCon;
 	AEnemyAIController* AICon;
 	UEquipmentComponent* OwningEquipment;
 	ABaseCharacter* OwningPlayer;
-
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Equipment")
 	USkeletalMeshComponent* SKMesh;
 
 	/*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")
 	EEquipmentType EquipmentType;*/
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Equipment")
-	USoundCue* EquippedSound;
-
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")
 	bool bHasStorage;
@@ -74,18 +76,21 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")
 	UNewInventoryComponent* EquipInventoryComp;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")
-	FTransform MeshAttachTransform;
+	
+	
+private:
+
+	void SetOwningPlayer(AActor* Actor);
+	void SendToInventory(AActor* Actor);
 	
 
 protected:
 	virtual void BeginPlay() override;
 
 public:
-	void ReInitialize(UNewItemObject* Obj);
-	void SetOwningPlayer(AActor* Actor);
+	virtual UNewItemObject* GetDefaultItemObj() override;
 
-	void SendToInventory(AActor* Actor);
+	void ReInitialize(UNewItemObject* Obj);
 
 	void SettingStorage();
 

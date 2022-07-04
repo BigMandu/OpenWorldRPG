@@ -36,10 +36,10 @@ void AEquipment::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (bHasStorage)
+	/*if (bHasStorage)
 	{
 		SettingStorage();
-	}
+	}*/
 
 }
 

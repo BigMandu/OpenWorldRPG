@@ -160,13 +160,13 @@ void UNewInventoryGrid::RefreshInventory()
 	{
 		//TMap<UNewItemObject*, FTile> ItemsMap;
 		GridCanvasPanel->ClearChildren();
-		const auto ItemsMap = InventoryComp->GetAllItems();
-		
+
+		//const auto ItemsMap = InventoryComp->GetAllItems();
+		const TMap<UNewItemObject*, FTile> ItemsMap = InventoryComp->GetAllItems();
+		 
 		for (auto ele : ItemsMap)
 		{
 			UNewItemwidget* Itemwidget = CreateWidget<UNewItemwidget>(this, WNewItemWidget);
-			//newitemwidget = CreateWidget<UNewItemwidget>(this, WNewItemWidget);
-
 			if (Itemwidget)
 			{
 				Itemwidget->OnRemoved.AddUFunction(this, FName("OnItemRemove"));

@@ -53,11 +53,18 @@ public:
 	UPROPERTY(EditAnywhere, Category = Item)
 	EInteractType InteractType;
 
+
+	//AI끼리 충돌방지, 먼저 선점(인식) 했는지 여부.
+	bool bIsPreOccupied;
+
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 public:	
+
+	virtual void PostInitializeComponents() override;
 	virtual void Interaction(AActor* Actor) override;
 
 	virtual void SetOutline() override;

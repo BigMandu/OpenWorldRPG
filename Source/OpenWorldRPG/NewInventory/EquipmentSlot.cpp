@@ -67,7 +67,7 @@ void UEquipmentSlot::PaintBGBorder(UNewItemObject* Obj)
 		bCanDrop = false;
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("UEquipmentSlot bCanDrop = %s"), bCanDrop ? "true" : "false");
+	//UE_LOG(LogTemp, Warning, TEXT("UEquipmentSlot bCanDrop = %d"), bCanDrop ? 1 : 0); //한자로 나옴 왜이럼?
 }
 
 bool UEquipmentSlot::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)

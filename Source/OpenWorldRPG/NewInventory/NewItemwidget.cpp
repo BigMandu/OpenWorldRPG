@@ -43,15 +43,25 @@ void UNewItemwidget::Refresh()
 	
 	if (ItemObj && BGSizeBox && ItemIcon && BGBorder)
 	{
+		
 		FIntPoint Itemsize = ItemObj->GetItemSize();
-
+		
+		//Item의 사이즈를 가져와서 TileSize만큼 곱해 Widget의 사이즈를 결정한다.
 		widgetsize = FVector2D(Itemsize.X * Tilesize, Itemsize.Y * Tilesize);
 
-		BGSizeBox->SetWidthOverride(widgetsize.X);
-		BGSizeBox->SetHeightOverride(widgetsize.Y); //error
+		BGSizeBox->SetWidthOverride(widgetsize.X); //0나옴
+		BGSizeBox->SetHeightOverride(widgetsize.Y);
 		
 		BGBorder->SetBrushColor(NormalColor);
-		
+		//ItemIcon->SetBrush(GetIconImage());
+
+
+		/*UE_LOG(LogTemp, Warning, TEXT("Widget size : %s"), *widgetsize.ToString());
+		UE_LOG(LogTemp, Warning, TEXT("sizebox size : %s"), *BGSizeBox->GetDesiredSize().ToString());
+		UE_LOG(LogTemp, Warning, TEXT("Border size : %s"), *BGBorder->GetDesiredSize().ToString());
+		UE_LOG(LogTemp, Warning, TEXT("Item icon size : %s"), *ItemIcon->Brush.GetImageSize().ToString());*/
+
+		//그림넣기
 		UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(ItemIcon->Slot);
 		if (CanvasSlot)
 		{
