@@ -93,7 +93,7 @@ public:
 	//virtual void SynchronizeProperties() override;
 	
 	
-	void Refresh();
+	void Refresh();// float var_tilesize);
 
 	virtual void NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 	virtual void NativeOnMouseLeave(const FPointerEvent& InMouseEvent) override;

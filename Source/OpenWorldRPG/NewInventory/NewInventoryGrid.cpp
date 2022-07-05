@@ -172,9 +172,9 @@ void UNewInventoryGrid::RefreshInventory()
 				Itemwidget->OnRemoved.AddUFunction(this, FName("OnItemRemove"));
 				Itemwidget->OnDragDetect.AddUFunction(this, FName("PendingRemoveItem"));
 				
-				Itemwidget->Tilesize = TileSize;
+				Itemwidget->Tilesize = TileSize; //제대로 넘겨줌. 40.f
 				Itemwidget->ItemObj = ele.Key;
-				Itemwidget->Refresh();
+				Itemwidget->Refresh();// TileSize);
 				
 				Itemwidget->MotherContainer = this;
 				
@@ -403,7 +403,7 @@ void UNewInventoryGrid::NativeOnDragEnter(const FGeometry& InGeometry, const FDr
 	Super::NativeOnDragEnter(InGeometry, InDragDropEvent, InOperation);
 	bNeedDropLocation = true;
 	bCanDrop = true;
-	UE_LOG(LogTemp, Warning, TEXT("InvGrid bCanDrop = %s"), bCanDrop ? "true" : "false");
+	//UE_LOG(LogTemp, Warning, TEXT("InvGrid bCanDrop = %s"), bCanDrop ? "true" : "false");
 }
 
 void UNewInventoryGrid::NativeOnDragLeave(const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
@@ -411,7 +411,7 @@ void UNewInventoryGrid::NativeOnDragLeave(const FDragDropEvent& InDragDropEvent,
 	Super::NativeOnDragLeave(InDragDropEvent, InOperation);
 	bNeedDropLocation = false;
 	bCanDrop = false;
-	UE_LOG(LogTemp, Warning, TEXT("InvGrid bCanDrop = %s"), bCanDrop ? "true" : "false");
+	//UE_LOG(LogTemp, Warning, TEXT("InvGrid bCanDrop = %s"), bCanDrop ? "true" : "false");
 }
 
 void UNewInventoryGrid::DrawDropLocation(FPaintContext& Context) const

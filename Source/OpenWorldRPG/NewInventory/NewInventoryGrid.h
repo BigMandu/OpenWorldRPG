@@ -71,7 +71,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Settings)
 	float Columns;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Settings)
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Settings)
 	float TileSize;
 
 	UPROPERTY(EditDefaultsOnly, Category = "WidgetVariable", meta = (BindWidget))
