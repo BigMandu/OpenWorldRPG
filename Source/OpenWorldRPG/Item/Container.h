@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Interactable.h"
-#include "LootBox.generated.h"
+#include "Container.generated.h"
 
 class UNewInventoryComponent;
 class ULootWidgetComponent;
 class UInventoryWidget;
 class UNewInventoryGrid;
-class ULootBoxWidget;
+class UContainerWidget;
 class UUserWidget;
 
 class UAIPerceptionStimuliSourceComponent;
@@ -24,17 +24,17 @@ class AMainController;
 //DECLARE_DYNAMIC_MULTICAST_DELEGATE(FLootBoxOpen);
 
 UCLASS()
-class OPENWORLDRPG_API ALootBox : public AInteractable
+class OPENWORLDRPG_API AContainer : public AInteractable
 {
 	GENERATED_BODY()
 public:
-	ALootBox();
+	AContainer();
 
 	/*UPROPERTY(BlueprintAssignable, Category = Lootbox)
 	FLootBoxOpen LootBoxOpen;*/
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = LootBox)
-	UNewInventoryComponent* BoxInventoryComp;
+	UNewInventoryComponent* ContainerInventoryComp;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item")
 	ULootWidgetComponent* LootWidgetComp;
@@ -80,7 +80,7 @@ protected:
 public:
 	//void SelectAndStoreLootItem();
 	virtual void PostInitializeComponents() override;
-	void OpenBox(AActor* Actor);
+	void OpenContainer(AActor* Actor);
 	void ShowWidget(AMainController* MainCon);
 	void SpawnItem();
 	//void CloseBox(AActor* Actor);

@@ -166,37 +166,40 @@ void UNewInventoryGrid::RefreshInventory()
 		 
 		for (auto ele : ItemsMap)
 		{
-			UNewItemwidget* Itemwidget = CreateWidget<UNewItemwidget>(this, WNewItemWidget);
-			if (Itemwidget)
+			if (ele.Key != nullptr) //ItemsMap에 null이 들어와버려서 한번 더 검증.
 			{
-				Itemwidget->OnRemoved.AddUFunction(this, FName("OnItemRemove"));
-				Itemwidget->OnDragDetect.AddUFunction(this, FName("PendingRemoveItem"));
-				
-				Itemwidget->Tilesize = TileSize; //제대로 넘겨줌. 40.f
-				Itemwidget->ItemObj = ele.Key;
-				Itemwidget->Refresh();// TileSize);
-				
-				Itemwidget->MotherContainer = this;
-				
-				UNewItemObject* tempObj = Cast<UNewItemObject>(ele.Key);
-				if (tempObj)
+				UNewItemwidget* Itemwidget = CreateWidget<UNewItemwidget>(this, WNewItemWidget);
+				if (Itemwidget)
 				{
-					tempObj->MotherContainer = this;
-				}
+					Itemwidget->OnRemoved.AddUFunction(this, FName("OnItemRemove"));
+					Itemwidget->OnDragDetect.AddUFunction(this, FName("PendingRemoveItem"));
 
-				UPanelSlot* PanelSlot = GridCanvasPanel->AddChild(Itemwidget);
+					Itemwidget->Tilesize = TileSize; //제대로 넘겨줌. 40.f
+					Itemwidget->ItemObj = ele.Key;
+					Itemwidget->Refresh();// TileSize);
+
+					Itemwidget->MotherContainer = this;
+
+					UNewItemObject* tempObj = Cast<UNewItemObject>(ele.Key);
+					if (tempObj)
+					{
+						tempObj->MotherContainer = this;
+					}
+
+					UPanelSlot* PanelSlot = GridCanvasPanel->AddChild(Itemwidget);
 
 
-				/*추가시킨 ItemWidget의 size와 Position을 맞춰 주기 위한 작업을 진행한다.
-				* Setsize를 사용하기 위해 CanvasPanelSlot으로 Cast를 해준다.
-				* SetPosition도 사용한다.
-				*/
-				UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(PanelSlot);
-				if (CanvasSlot)
-				{
-					CanvasSlot->SetAutoSize(true);
-					FVector2D ItemTopLeft = FVector2D(ele.Value.X * TileSize, ele.Value.Y * TileSize);
-					CanvasSlot->SetPosition(ItemTopLeft);
+					/*추가시킨 ItemWidget의 size와 Position을 맞춰 주기 위한 작업을 진행한다.
+					* Setsize를 사용하기 위해 CanvasPanelSlot으로 Cast를 해준다.
+					* SetPosition도 사용한다.
+					*/
+					UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(PanelSlot);
+					if (CanvasSlot)
+					{
+						CanvasSlot->SetAutoSize(true);
+						FVector2D ItemTopLeft = FVector2D(ele.Value.X * TileSize, ele.Value.Y * TileSize);
+						CanvasSlot->SetPosition(ItemTopLeft);
+					}
 				}
 			}
 		}

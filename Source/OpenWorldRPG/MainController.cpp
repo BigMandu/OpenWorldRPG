@@ -3,7 +3,7 @@
 
 #include "MainController.h"
 #include "MainCharacter.h"
-#include "Item/LootBox.h"
+#include "Item/Container.h"
 #include "GameFramework/PlayerController.h"
 #include "Blueprint/UserWidget.h"
 #include "OpenWorldRPG/NewInventory/NewInventory.h"

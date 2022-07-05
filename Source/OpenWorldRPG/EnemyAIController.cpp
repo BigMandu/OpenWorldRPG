@@ -17,7 +17,7 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Item/Equipment.h"
-#include "Item/LootBox.h"
+#include "Item/Container.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "NewInventory/NewInventoryComponent.h"
 #include "NewInventory/NewItemObject.h"
@@ -363,11 +363,11 @@ void AEnemyAIController::ItemFarming(AActor* InteractActor)
 	//AInteractable* Interact = Cast<AInteractable>(InteractActor);
 	if(InteractActor)//if (Interact)
 	{
-		ALootBox* Box = Cast<ALootBox>(InteractActor);
+		AContainer* Box = Cast<AContainer>(InteractActor);
 		ABaseCharacter* Char = Cast<ABaseCharacter>(InteractActor);
 		if (Box)
 		{
-			ItemChoice(Box->BoxInventoryComp);
+			ItemChoice(Box->ContainerInventoryComp);
 		}
 
 		if (Char)

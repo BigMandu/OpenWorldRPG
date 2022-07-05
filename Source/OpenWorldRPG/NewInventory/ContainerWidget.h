@@ -4,14 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "LootBoxWidget.generated.h"
+#include "ContainerWidget.generated.h"
 
 /**
  * 
  */
 
 class AMainCharacter;
-class ALootBox;
+class AContainer;
 class UInventoryComponent;
 class UNewInventoryGrid;
 class UUserWidget;
@@ -19,7 +19,7 @@ class UUserWidget;
 
 
 UCLASS()
-class OPENWORLDRPG_API ULootBoxWidget : public UUserWidget
+class OPENWORLDRPG_API UContainerWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
@@ -27,11 +27,11 @@ public:
 	virtual bool Initialize() override;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UNewInventoryGrid* LootBoxGridwidget;
+	UNewInventoryGrid* ContainerGridwidget;
 
-	void InitLootBoxWidget(AActor* actor);
+	void InitContainerWidget(AActor* actor);
 
-	ALootBox* LootBox;
+	AContainer* Container;
 //	class ALootBox* InteractBox;
 //
 //	AMainCharacter* Main;

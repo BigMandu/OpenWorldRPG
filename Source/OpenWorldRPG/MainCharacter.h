@@ -9,7 +9,7 @@
 class AActor;
 class AMainController;
 class AWeapon;
-class ALootBox;
+class AContainer;
 
 class UAISense_Sight;
 class UAISense_Hearing;
@@ -169,7 +169,7 @@ public:
 	UEquipmentComponent* Equipment;*/
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interactive")
-	ALootBox* InteractLootBox;
+	AContainer* InteractLootBox;
 
 
 	/**********  Sounds ************/

@@ -5,7 +5,7 @@
 #include "OpenWorldRPG/NewInventory/CharacterLootWidget.h"
 #include "OpenWorldRPG/NewInventory/EquipWidget.h"
 #include "OpenWorldRPG/MainController.h"
-#include "LootBoxWidget.h"
+#include "ContainerWidget.h"
 #include "NewInventory.h"
 #include "OpenWorldRPG/BaseCharacter.h"
 
@@ -30,10 +30,10 @@ void ULootWidgetComponent::CreateInteractionWidget(AMainController* MainCon, AAc
 			{
 			case EWidgetType::EWT_LootBox:
 				{
-					ULootBoxWidget* Widget = CreateWidget<ULootBoxWidget>(MainCon, WBPWidget);
+					UContainerWidget* Widget = CreateWidget<UContainerWidget>(MainCon, WBPWidget);
 					if (Widget)
 					{
-						Widget->InitLootBoxWidget(actor);
+						Widget->InitContainerWidget(actor);
 						MainInventory->SetRightWidget(Widget);
 						//NewInventory의 오른쪽 위젯에 LootBoxWidget을 넣어준다.
 

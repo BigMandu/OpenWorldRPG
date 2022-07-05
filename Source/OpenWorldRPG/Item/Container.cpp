@@ -1,14 +1,14 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "LootBox.h"
+#include "Container.h"
 #include "Item.h"
 #include "Kismet/GameplayStatics.h"
 #include "Blueprint/UserWidget.h"
 #include "OpenWorldRPG/EnemyAIController.h"
 #include "OpenWorldRPG/MainCharacter.h"
 #include "OpenWorldRPG/MainController.h"
-#include "OpenWorldRPG/NewInventory/LootBoxWidget.h"
+#include "OpenWorldRPG/NewInventory/ContainerWidget.h"
 #include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
 #include "OpenWorldRPG/NewInventory/NewInventory.h"
 #include "OpenWorldRPG/NewInventory/LootWidgetComponent.h"
@@ -16,9 +16,9 @@
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "Perception/AISense_Sight.h"
 
-ALootBox::ALootBox()
+AContainer::AContainer()
 {
-	BoxInventoryComp = CreateDefaultSubobject<UNewInventoryComponent>(TEXT("BoxInventoryComp"));
+	ContainerInventoryComp = CreateDefaultSubobject<UNewInventoryComponent>(TEXT("BoxInventoryComp"));
 	LootWidgetComp = CreateDefaultSubobject<ULootWidgetComponent>(TEXT("LootWidgetComp"));
 	StimuliComp = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("StimuliComp"));
 	StimuliComp->bAutoRegister = true;
@@ -67,7 +67,7 @@ ALootBox::ALootBox()
 	//LootItemCount = 1;
 }
 
-void ALootBox::PostInitializeComponents()
+void AContainer::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
@@ -75,7 +75,7 @@ void ALootBox::PostInitializeComponents()
 	StimuliComp->RegisterWithPerceptionSystem();	
 }
 
-void ALootBox::BeginPlay()
+void AContainer::BeginPlay()
 {
 	Super::BeginPlay();
 	//MainCon = Cast<AMainController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
@@ -87,7 +87,7 @@ void ALootBox::BeginPlay()
 	}
 }
 
-void ALootBox::SpawnItem()
+void AContainer::SpawnItem()
 {
 	for (auto AddItem : SpawnItemList)
 	{
@@ -96,7 +96,7 @@ void ALootBox::SpawnItem()
 		{
 			//Item->Pickup(this);
 
-			if (BoxInventoryComp->TryAddItem(Item->GetDefaultItemObj()))
+			if (ContainerInventoryComp->TryAddItem(Item->GetDefaultItemObj()))
 			{
 				Item->GetDefaultItemObj()->bIsDestoryed = true;
 				Item->Destroy();
@@ -105,7 +105,7 @@ void ALootBox::SpawnItem()
 	}
 }
 
-void ALootBox::OpenBox(AActor* Actor)
+void AContainer::OpenContainer(AActor* Actor)
 {
 	UE_LOG(LogTemp, Warning, TEXT("LootBox::OpenBox, BoxName : %s"), *this->GetFName().ToString());
 
@@ -127,7 +127,7 @@ void ALootBox::OpenBox(AActor* Actor)
 	시작하자마자 LootBox Interaction시 LootBox위젯이 나오지 않음.
 	인벤토리를 한번 보고나면 보임... ->> 해결해야됨.
 */
-void ALootBox::ShowWidget(AMainController* MainCon)
+void AContainer::ShowWidget(AMainController* MainCon)
 {
 	UNewInventory* MainInventory = Cast<UNewInventory>(MainCon->NewInventory);
 	if (MainInventory)

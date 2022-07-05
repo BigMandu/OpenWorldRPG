@@ -4,7 +4,7 @@
 #include "Interactable.h"
 #include "Item.h"
 #include "Equipment.h"
-#include "LootBox.h"
+#include "Container.h"
 #include "Perception/AISense_Sight.h"
 #include "Components/StaticMeshComponent.h"
 
@@ -73,11 +73,11 @@ void AInteractable::Interaction(class AActor* Actor)
 	}
 	case EInteractType::EIT_LootBox:
 	{
-		ALootBox* Box = Cast<ALootBox>(this);
+		AContainer* Box = Cast<AContainer>(this);
 		if (Box)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Call Open Box"));
-			Box->OpenBox(Actor);
+			Box->OpenContainer(Actor);
 		}
 	}
 	default:
