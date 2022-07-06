@@ -3,12 +3,15 @@
 
 #include "OpenWorldRPG/NewInventory/EquipmentSlot.h"
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
+#include "OpenWorldRPG/NewInventory/NewItemwidget.h"
+
 #include "OpenWorldRPG/BaseCharacter.h"
 #include "OpenWorldRPG/Item/Equipment.h"
 #include "OpenWorldRPG/Item/Weapon.h"
 #include "Components/Border.h"
 #include "Components/Image.h"
 #include "Blueprint/DragDropOperation.h"
+#include "Blueprint/WidgetBlueprintLibrary.h"
 
 bool UEquipmentSlot::IsSupportedEquip(UNewItemObject* Obj)
 {
@@ -69,21 +72,81 @@ void UEquipmentSlot::PaintBGBorder(UNewItemObject* Obj)
 
 	//UE_LOG(LogTemp, Warning, TEXT("UEquipmentSlot bCanDrop = %d"), bCanDrop ? 1 : 0); //한자로 나옴 왜이럼?
 }
+bool UEquipmentSlot::TrySlotEquip(UNewItemObject* Var_ItemObj)
+{
+	if (Var_ItemObj)
+	{
+		if (IsSupportedEquip(Var_ItemObj))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Correct Slot"));
+
+			check(Var_ItemObj->item);
+
+			ABaseCharacter* BChar;
+			if (LootedChar_Owner != nullptr)
+			{
+				BChar = LootedChar_Owner;
+			}
+			else
+			{
+				BChar = Cast<ABaseCharacter>(GetOwningPlayerPawn());
+			}
+
+			//BChar가 정상이면 장착을 시도한다.
+			if (BChar != nullptr)
+			{
+				AEquipment* Equipment = nullptr;
+				//Item이 Destroy된 상태면 (InventoryGrid에 있었던 Equipment들이 해당됨)
+				//Item을 Spawn하고 기존에 저장된 정보를  새로 Spawn한 item에 이관한다.
+				if (Var_ItemObj->bIsDestoryed)
+				{
+					Equipment = Cast<AEquipment>(GetWorld()->SpawnActor<AActor>(Var_ItemObj->GetItemClass()));
+					if (Equipment)
+					{
+						Var_ItemObj->bIsDestoryed = false;
+						Equipment->ReInitialize(Var_ItemObj);
+						Equipment->SetItemState(EItemState::EIS_Pickup);
+						//Var_ItemObj->SetMotherContainer(nullptr);
+
+					}
+				}
+				else
+				{
+					Equipment = Cast<AEquipment>(Var_ItemObj->item);
+				}
+
+
+				if (Equipment != nullptr)
+				{
+					Equipment->StepEquip(BChar);
+					//Var_ItemObj->SetMotherEquipSlot(this);
+					return true;
+				}
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Incorrect Slot"));
+		}
+	}
+	return false;
+}
 
 bool UEquipmentSlot::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
 {
-	Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);
+	bool bReturn = Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);
 	
 	UNewItemObject* ItemObj = Cast< UNewItemObject>(InOperation->Payload);
 	if (ItemObj)
 	{
+		TrySlotEquip(ItemObj);
+		/*
 		if (IsSupportedEquip(ItemObj))
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Correct Slot"));
 
 			check(ItemObj->item);
 			
-			//GetOwningPlayerPawn으로 가져오면, Player가 된다. Widget의 소유권을 확실히 해야됨
 			ABaseCharacter* BChar;
 			if (LootedChar_Owner != nullptr)
 			{
@@ -105,7 +168,7 @@ bool UEquipmentSlot::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEv
 						ItemObj->bIsDestoryed = false;
 						Equipment->ReInitialize(ItemObj);
 						Equipment->SetItemState(EItemState::EIS_Pickup);
-						ItemObj->MotherContainer = nullptr;
+						ItemObj->SetMotherContainer(nullptr);
 						
 					}
 				}
@@ -120,9 +183,9 @@ bool UEquipmentSlot::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEv
 					Equipment->StepEquip(BChar);
 				}
 			}
+		*/
 
 			//old version
-
 			/*
 			AMainCharacter* Main = Cast<AMainCharacter>(GetOwningPlayerPawn());
 			AEquipment* Equipment = Cast<AEquipment>(ItemObj->item);
@@ -192,13 +255,39 @@ bool UEquipmentSlot::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEv
 					 //Weapon으로 cast, equip함수 호출
 				//}
 			//}			
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Incorrect Slot"));
-		}
+		//}
+		
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Item obj is null"));
 	}
 	
 
-	return true;
+	return bReturn;
+}
+
+FReply UEquipmentSlot::NativeOnPreviewKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
+{
+	//UE_LOG(LogTemp, Warning, TEXT("NewInventoryGrid::OnPreviewKeyDown"));
+	FReply Reply = Super::NativeOnPreviewKeyDown(InGeometry, InKeyEvent);
+
+	bool bDragging = UWidgetBlueprintLibrary::IsDragDropping();
+	if (bDragging)
+	{
+		UNewItemObject* Obj = Cast<UNewItemObject>(UWidgetBlueprintLibrary::GetDragDroppingContent()->Payload);
+		if (Obj && Obj->bCanRotated)
+		{
+			if (InKeyEvent.GetKey() == EKeys::R)
+			{
+				Obj->ItemRotate();
+				UNewItemwidget* Itemwidget = Cast<UNewItemwidget>(UWidgetBlueprintLibrary::GetDragDroppingContent()->DefaultDragVisual);
+				if (Itemwidget)
+				{
+					Itemwidget->Refresh();
+				}
+			}
+		}
+	}
+	return Reply;
 }

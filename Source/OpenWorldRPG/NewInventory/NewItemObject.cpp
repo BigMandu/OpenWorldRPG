@@ -62,6 +62,23 @@ UMaterialInterface* UNewItemObject::GetItemIcon()
 	return ReturnIcon;
 }
 
+UNewInventoryComponent* UNewItemObject::GetItemInvComp()
+{
+	if (InvComp)
+	{
+		return InvComp;
+	}
+	return nullptr;
+}
+
+void UNewItemObject::SetItemInvComp(UNewInventoryComponent* Var_InvCmp)
+{
+	if (Var_InvCmp != nullptr)
+	{
+		InvComp = Var_InvCmp;
+	}
+}
+
 UNewInventoryGrid* UNewItemObject::GetMotherContainer()
 {
 	if (MotherContainer != nullptr)
@@ -70,3 +87,26 @@ UNewInventoryGrid* UNewItemObject::GetMotherContainer()
 	}
 	return nullptr;
 }
+void UNewItemObject::SetMotherContainer(UNewInventoryGrid* Var_InvGrid)
+{
+	//Mothercontainer를 nullptr로 지정할 때가 있으므로 검증은 하지 않는다.
+	//if (Var_InvGrid != nullptr) 
+	{
+		MotherContainer = Var_InvGrid;
+	}
+}
+
+UEquipmentSlot* UNewItemObject::GetMotherEquipSlot()
+{
+	if (MotherEquipSlot != nullptr)
+	{
+		return MotherEquipSlot;
+	}
+	return nullptr;
+}
+void UNewItemObject::SetMotherEquipSlot(UEquipmentSlot* Var_EquipSlot)
+{
+	//얘도 검증 필요 없음.
+	MotherEquipSlot = Var_EquipSlot;
+}
+

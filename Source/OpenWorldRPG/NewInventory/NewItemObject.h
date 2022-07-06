@@ -16,7 +16,7 @@ class UTexture2D;
 class UTextBlock;
 class UNewInventoryGrid;
 class UNewInventoryComponent;
-
+class UEquipmentSlot;
 
 //UENUM(BlueprintType)
 //enum class EEquipType : uint8
@@ -36,26 +36,34 @@ class OPENWORLDRPG_API UNewItemObject : public UObject, public IItemInterface
 {
 	GENERATED_BODY()
 
+private:
+	
+	UNewInventoryGrid* MotherContainer;
+	UNewInventoryComponent* InvComp;
+	UEquipmentSlot* MotherEquipSlot;
+
 public:
 	UNewItemObject();
+	FIntPoint itemsize;
+	EEquipmentType EquipmentType;
+	EInteractType InteractType;
+
 	AItem* item;
+	UMaterialInterface* icon;
+	UMaterialInterface* iconRotated;
+
 	bool bCanRotated;
 	bool bRotated;
-
-	FIntPoint itemsize;
+	bool bCanEquip;
+	bool bIsDestoryed;
+	
+	int32 TopLeftIndex;
 
 	FText itemName;
 	FText itemDesc;
 
-	UMaterialInterface* icon;
-	UMaterialInterface* iconRotated;
 
-	UNewInventoryGrid* MotherContainer;
-	UNewInventoryComponent* InvComp;
-
-	int32 TopLeftIndex;
-
-	UFUNCTION(BlueprintCallable)
+	//UFUNCTION(BlueprintCallable)
 	FIntPoint GetItemSize();
 
 	UClass* GetItemClass();
@@ -63,12 +71,19 @@ public:
 
 	UMaterialInterface* GetItemIcon();
 
-	UNewInventoryGrid* GetMotherContainer();
+	UNewInventoryComponent* GetItemInvComp();
+	void SetItemInvComp(UNewInventoryComponent* Var_InvCmp);
 
-	EEquipmentType EquipmentType;
-	EInteractType InteractType;
-	bool bCanEquip;
-	bool bIsDestoryed;
+	UNewInventoryGrid* GetMotherContainer();
+	void SetMotherContainer(UNewInventoryGrid* Var_InvGrid);
+
+	UEquipmentSlot* GetMotherEquipSlot();
+	void SetMotherEquipSlot(UEquipmentSlot* Var_EquipSlot);
+
+	
+
+
+	
 
 	
 };

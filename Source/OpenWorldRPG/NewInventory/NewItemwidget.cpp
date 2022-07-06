@@ -164,7 +164,7 @@ void UNewItemwidget::NativeOnDragDetected(const FGeometry& InGeometry, const FPo
 
 
 		
-
+		//EquipWidget || NewInventoryGrid에서 Bind함 (Add할때)
 		OnRemoved.Broadcast(ItemObj);
 		RemoveFromParent();
 
@@ -241,3 +241,4 @@ bool UNewItemwidget::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEv
 	*/
 	return bReturn;
 }
+

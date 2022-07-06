@@ -96,9 +96,16 @@ void AContainer::SpawnItem()
 		{
 			//Item->Pickup(this);
 
-			if (ContainerInventoryComp->TryAddItem(Item->GetDefaultItemObj()))
+			if (Item->ItemObj == nullptr)
 			{
-				Item->GetDefaultItemObj()->bIsDestoryed = true;
+				UNewItemObject* Obj = Item->GetDefaultItemObj();
+				Item->ItemObj = Obj;
+			}
+
+			if (ContainerInventoryComp->TryAddItem(Item->ItemObj))
+			{
+				
+				Item->ItemObj->bIsDestoryed = true;
 				Item->Destroy();
 			}
 		}

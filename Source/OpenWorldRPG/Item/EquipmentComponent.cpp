@@ -61,9 +61,9 @@ bool UEquipmentComponent::AddEquipment(AEquipment* Equip)
 			bReturn = true;
 		}
 		//EquipWidget::RefreshEquipWidget°ú bind½ÃÅ´.
-			OnEquipmentUpdated.Broadcast();
+		OnEquipmentUpdated.Broadcast();
 
-			UE_LOG(LogTemp, Warning, TEXT("EquipComp : AddSuccess"));
+		UE_LOG(LogTemp, Warning, TEXT("EquipComp : AddSuccess"));
 
 	}
 	return bReturn;

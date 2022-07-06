@@ -117,9 +117,6 @@ public:
 
 	UFUNCTION()
 	void RefreshInventory();
-	
-	UFUNCTION()
-	void PendingRemoveItem(UObject* PendingObject);
 
 	UFUNCTION()
 	void OnItemRemove(UObject* T_ItemObj);

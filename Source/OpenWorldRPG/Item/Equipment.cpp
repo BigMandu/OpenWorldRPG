@@ -79,7 +79,7 @@ UNewItemObject* AEquipment::GetDefaultItemObj()
 
 	if(Obj && bHasStorage && EquipInventoryComp)
 	{
-		Obj->InvComp = EquipInventoryComp;
+		Obj->SetItemInvComp(EquipInventoryComp);
 	}
 	return Obj;
 }

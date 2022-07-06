@@ -6,6 +6,7 @@
 #include "OpenWorldRPG/NewInventory/NewItemwidget.h"
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
 #include "OpenWorldRPG/NewInventory/DropWidget.h"
+#include "OpenWorldRPG/NewInventory/EquipmentSlot.h"
 #include "OpenWorldRPG/MainCharacter.h"
 #include "OpenWorldRPG/MainController.h"
 #include "GameFramework/HUD.h"
@@ -172,7 +173,7 @@ void UNewInventoryGrid::RefreshInventory()
 				if (Itemwidget)
 				{
 					Itemwidget->OnRemoved.AddUFunction(this, FName("OnItemRemove"));
-					Itemwidget->OnDragDetect.AddUFunction(this, FName("PendingRemoveItem"));
+					//Itemwidget->OnDragDetect.AddUFunction(this, FName("PendingRemoveItem"));
 
 					Itemwidget->Tilesize = TileSize; //제대로 넘겨줌. 40.f
 					Itemwidget->ItemObj = ele.Key;
@@ -183,7 +184,7 @@ void UNewInventoryGrid::RefreshInventory()
 					UNewItemObject* tempObj = Cast<UNewItemObject>(ele.Key);
 					if (tempObj)
 					{
-						tempObj->MotherContainer = this;
+						tempObj->SetMotherContainer(this);
 					}
 
 					UPanelSlot* PanelSlot = GridCanvasPanel->AddChild(Itemwidget);
@@ -209,16 +210,6 @@ void UNewInventoryGrid::RefreshInventory()
 void UNewInventoryGrid::BindDropWidget(UDropWidget* T_Dropwidget)
 {
 	Dropwidget = T_Dropwidget;
-}
-
-void UNewInventoryGrid::PendingRemoveItem(UObject* PendingObject)
-{
-	UNewItemObject* ItemObj = Cast<UNewItemObject>(PendingObject);
-	if (ItemObj)
-	{
-		PendingObj = ItemObj;
-		InventoryComp->RemoveItem(ItemObj);
-	}
 }
 
 
@@ -314,17 +305,47 @@ bool UNewInventoryGrid::NativeOnDrop(const FGeometry& InGeometry, const FDragDro
 			InventoryComp->AddItemAtIndex(ItemObj, index);
 			return true;
 		}
+		//공간이 되지 않는다면
 		else
 		{
-			// 공간이 없으면 기존 저장된 Top-Left Index에 넣는다.
-			if (InventoryComp->IsAvailableSpace(ItemObj, ItemObj->TopLeftIndex))
+			//ItemObj가 원래 있던 MotherContainer를 가져와
+			if (ItemObj->GetMotherContainer() != nullptr)
 			{
-				InventoryComp->AddItemAtIndex(ItemObj, ItemObj->TopLeftIndex);
+				//MotherContainer가 지금 이 Gridwidget과 다른거라면 
+				if (ItemObj->GetMotherContainer() != this)
+				{
+					//원래 있던 Mothercontainer에 넣는다.
+					if (ItemObj->GetMotherContainer()->InventoryComp->IsAvailableSpace(ItemObj, ItemObj->TopLeftIndex))
+					{
+						ItemObj->GetMotherContainer()->InventoryComp->AddItemAtIndex(ItemObj, ItemObj->TopLeftIndex);
+					}
+					else
+					{
+						ItemObj->GetMotherContainer()->InventoryComp->TryAddItem(ItemObj);
+					}
+				}
+				else
+				{
+					//MotherContainer가 지금 이 Gridwidget이라면
+					if (InventoryComp->IsAvailableSpace(ItemObj, ItemObj->TopLeftIndex))
+					{
+						InventoryComp->AddItemAtIndex(ItemObj, ItemObj->TopLeftIndex);
+					}
+					else
+					{
+						InventoryComp->TryAddItem(ItemObj);
+					}
+					
+				}
+			}
+			//Mothercontainer에 있지 않고, 장착중이었던 장비라면
+			else if (ItemObj->GetMotherEquipSlot() != nullptr)
+			{
+				ItemObj->GetMotherEquipSlot()->TrySlotEquip(ItemObj);
 			}
 			else
 			{
-				// 뭔가 꼬였다면 그냥 Item을 넣는다.
-				InventoryComp->TryAddItem(ItemObj);
+				UE_LOG(LogTemp, Warning, TEXT("UNewInvGrid::OnDrop , Error!"));
 			}
 		}
 	}
