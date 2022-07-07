@@ -127,6 +127,7 @@ public:
 
 	bool MoveItemInSameContainer(UNewItemObject* Item);
 
+	UNewInventoryComponent* GetInventoryComp();
 	
 	//bool RemoveItemAtBeforeIndex(UNewItemObject* Item);
 

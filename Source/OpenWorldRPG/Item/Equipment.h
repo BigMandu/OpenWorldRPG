@@ -86,7 +86,7 @@ private:
 
 protected:
 	virtual void BeginPlay() override;
-
+	virtual bool StepEquip(AActor* Actor);
 public:
 	virtual UNewItemObject* GetDefaultItemObj() override;
 
@@ -94,8 +94,8 @@ public:
 
 	void SettingStorage();
 
-	void StepEquip(AActor* Actor);
-	virtual void Equip(AActor* Actor);
+	bool Equip(AActor* Actor);
+	
 	
 	virtual void Drop() override;
 

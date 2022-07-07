@@ -149,6 +149,7 @@ UCLASS(Abstract)
 class OPENWORLDRPG_API AWeapon : public AEquipment
 {
 	GENERATED_BODY()
+protected:
 	
 public:
 	AWeapon();
@@ -268,7 +269,9 @@ protected:
 private:
 	void UpdateAim();
 	void WeaponClipping();
-	
+
+protected:
+	virtual bool StepEquip(AActor* Char) override;
 public:
 
 	//void SetOwningPlayer(AActor * Actor);
@@ -276,7 +279,7 @@ public:
 
 	virtual void PostInitializeComponents() override;
 
-	virtual void Equip(AActor* Char) override;
+	
 	
 	void GunAttachToMesh(AActor* Actor);
 

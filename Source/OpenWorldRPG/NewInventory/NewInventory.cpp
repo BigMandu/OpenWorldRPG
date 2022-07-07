@@ -2,16 +2,17 @@
 
 
 #include "OpenWorldRPG/NewInventory/NewInventory.h"
+#include "OpenWorldRPG/NewInventory/CustomInventoryLibrary.h"
 #include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
 #include "OpenWorldRPG/NewInventory/NewInventoryGrid.h"
 #include "OpenWorldRPG/NewInventory/DropWidget.h"
 //#include "OpenWorldRPG/NewInventory/ContainerWidget.h"
 #include "OpenWorldRPG/NewInventory/EquipWidget.h"
 #include "OpenWorldRPG/NewInventory/CharacterInventoryWidget.h"
-
 #include "OpenWorldRPG/MainCharacter.h"
 #include "OpenWorldRPG/MainController.h"
 
+#include "Blueprint/DragDropOperation.h"
 #include "Components/ScrollBox.h"
 #include "Components/WidgetSwitcher.h"
 #include "Components/Border.h"
@@ -104,4 +105,16 @@ void UNewInventory::ChangeRightSwitcher()
 			}
 		}
 	}
+}
+
+bool UNewInventory::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
+{
+	bool bReturn = Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);
+
+	UNewItemObject* ItemObj = Cast< UNewItemObject>(InOperation->Payload);
+	if (ItemObj)
+	{
+		UCustomInventoryLibrary::BackToItem(ItemObj);
+	}
+	return bReturn;
 }

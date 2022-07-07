@@ -6,7 +6,8 @@
 #include "OpenWorldRPG/NewInventory/NewItemwidget.h"
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
 #include "OpenWorldRPG/NewInventory/DropWidget.h"
-#include "OpenWorldRPG/NewInventory/EquipmentSlot.h"
+#include "OpenWorldRPG/NewInventory/CustomInventoryLibrary.h"
+//#include "OpenWorldRPG/NewInventory/EquipmentSlot.h"
 #include "OpenWorldRPG/MainCharacter.h"
 #include "OpenWorldRPG/MainController.h"
 #include "GameFramework/HUD.h"
@@ -314,15 +315,16 @@ bool UNewInventoryGrid::NativeOnDrop(const FGeometry& InGeometry, const FDragDro
 				//MotherContainer가 지금 이 Gridwidget과 다른거라면 
 				if (ItemObj->GetMotherContainer() != this)
 				{
+					UCustomInventoryLibrary::BackToItem(ItemObj);
 					//원래 있던 Mothercontainer에 넣는다.
-					if (ItemObj->GetMotherContainer()->InventoryComp->IsAvailableSpace(ItemObj, ItemObj->TopLeftIndex))
+					/*if (ItemObj->GetMotherContainer()->InventoryComp->IsAvailableSpace(ItemObj, ItemObj->TopLeftIndex))
 					{
 						ItemObj->GetMotherContainer()->InventoryComp->AddItemAtIndex(ItemObj, ItemObj->TopLeftIndex);
 					}
 					else
 					{
 						ItemObj->GetMotherContainer()->InventoryComp->TryAddItem(ItemObj);
-					}
+					}*/
 				}
 				else
 				{
@@ -341,7 +343,8 @@ bool UNewInventoryGrid::NativeOnDrop(const FGeometry& InGeometry, const FDragDro
 			//Mothercontainer에 있지 않고, 장착중이었던 장비라면
 			else if (ItemObj->GetMotherEquipSlot() != nullptr)
 			{
-				ItemObj->GetMotherEquipSlot()->TrySlotEquip(ItemObj);
+				UCustomInventoryLibrary::BackToItem(ItemObj);
+				//ItemObj->GetMotherEquipSlot()->TrySlotEquip(ItemObj);
 			}
 			else
 			{
@@ -509,4 +512,13 @@ FReply UNewInventoryGrid::NativeOnPreviewKeyDown(const FGeometry& InGeometry, co
 		}
 	}
 	return Reply;
+}
+
+UNewInventoryComponent* UNewInventoryGrid::GetInventoryComp()
+{
+	if (InventoryComp)
+	{
+		return InventoryComp;
+	}
+	return nullptr;
 }

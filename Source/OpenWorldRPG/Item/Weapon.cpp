@@ -74,9 +74,9 @@ void AWeapon::PostInitializeComponents()
 	//CapsuleComp->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic, ECollisionResponse::ECR_Ignore);
 }
 
-void AWeapon::Equip(AActor* Char)
+bool AWeapon::StepEquip(AActor* Char)
 {
-	Super::Equip(Char);
+	Super::StepEquip(Char);
 	ABaseCharacter* BChar = Cast<ABaseCharacter>(Char);
 	check(BChar);
 
@@ -139,8 +139,7 @@ void AWeapon::Equip(AActor* Char)
 	BChar->Equipment->AddEquipment(this);
 	
 	GunAttachToMesh(BChar);
-
-	
+	return true;
 }
 
 void AWeapon::GunAttachToMesh(AActor* Actor)

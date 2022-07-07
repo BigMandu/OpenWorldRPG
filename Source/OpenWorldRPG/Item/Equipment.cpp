@@ -108,11 +108,12 @@ void AEquipment::SetOwningPlayer(AActor* Actor)
 	}
 }
 
-void AEquipment::StepEquip(AActor* Actor)
+bool AEquipment::Equip(AActor* Actor)
 {
+	bool bReturn = false;
 	UE_LOG(LogTemp, Warning, TEXT("AEquipment::StepEquip func called"));
 	ABaseCharacter* BChar = Cast<ABaseCharacter>(Actor);
-
+	
 	if (BChar)
 	{
 		/*이 무기의 타입과 일치하는 무기가 이미 있다면
@@ -126,7 +127,7 @@ void AEquipment::StepEquip(AActor* Actor)
 			{
 				//인벤토리로 이 item을 보내고 함수를 종료한다.
 				SendToInventory(BChar);
-				return;
+				return true;
 			}
 			else if (GetItemState() == EItemState::EIS_Pickup)
 			{
@@ -145,133 +146,63 @@ void AEquipment::StepEquip(AActor* Actor)
 				}
 			}
 		}
-		Equip(Actor);
+		bReturn = StepEquip(Actor);
 	}
+	return bReturn;
 }
 
-void AEquipment::Equip(AActor* Actor)
+bool AEquipment::StepEquip(AActor* Actor)
 {
+	bool bReturn = false;
 	ABaseCharacter* BChar = Cast<ABaseCharacter>(Actor);
+	const USkeletalMeshSocket* Socket = nullptr;
 	switch (EquipmentType)
 	{
-	//case EEquipmentType::EET_Pistol:
-	//case EEquipmentType::EET_Rifle:
-	/*
-	 * {
-	
-		AWeapon* Weapon = Cast<AWeapon>(this);
-		check(Weapon);
-
-		// Weapon이 Primary, Sub로 지정되어있지 않을때만 주/부무기로 지정한다.
-
-		if (Weapon->RifleAssign == ERifleAssign::ERA_MAX)
-		{
-			// 1,2,3을 눌렀을때 Quick Swap하기 위해 
-			if (EquipmentType == EEquipmentType::EET_Rifle) //라이플이고
-			{
-				if (Main->PrimaryWeapon) //이미 주무기가 있으면
-				{
-					Weapon->RifleAssign = ERifleAssign::ERA_Sub;
-					Main->SubWeapon = Weapon;// (AWeapon*)this; //부무기로 지정
-				}
-				else //주무기가 없으면
-				{
-					Weapon->RifleAssign = ERifleAssign::ERA_Primary;
-					Main->PrimaryWeapon = Weapon;// (AWeapon*)this; //주무기로
-				}
-			}
-			else //피스톨
-			{
-				Main->PistolWeapon = Weapon; // (AWeapon*)this;
-			}
-		}
-
-
-		//들고 있는 무기가 없을 경우 지금 Weapon을 들도록 한다.
-		if (Main->EquippedWeapon == nullptr)
-		{
-			if (EquipmentType == EEquipmentType::EET_Rifle)
-			{
-				if (Main->PrimaryWeapon)
-				{
-					Main->ChangeWeapon(1);
-				}
-				else if (Main->SubWeapon)
-				{
-					Main->ChangeWeapon(2);
-				}
-
-			}
-			else
-			{
-				Main->ChangeWeapon(3);
-			}
-
-			//GunAttachToMesh(Main);
-		}
-	}
-	*/
-	
-		//break;
+		
 	case EEquipmentType::EET_Helmet:
-	{
-		const USkeletalMeshSocket* Socket = BChar->GetMesh()->GetSocketByName("headsocket");
-		if (Socket)
-		{
-			if (Socket->AttachActor(this, BChar->GetMesh()))
-			{
-				SetActorRelativeTransform(MeshAttachTransform);
-			}
-		}
-	}
-	break;
+		Socket = BChar->GetMesh()->GetSocketByName("headsocket");
+		break;
 	case EEquipmentType::EET_Vest:
-	{
-		//장착
-		const USkeletalMeshSocket* Socket = BChar->GetMesh()->GetSocketByName("VestSocket");
-		if(Socket)
-		{
-			if(Socket->AttachActor(this, BChar->GetMesh()))
-			{
-				SetActorRelativeTransform(MeshAttachTransform);
-			}			
-		}
-	}
-	break;
+		Socket = BChar->GetMesh()->GetSocketByName("VestSocket");
+		break;
 	case EEquipmentType::EET_Backpack:
+		Socket = BChar->GetMesh()->GetSocketByName("BackpackSocket");
+		break;
+	}
+
+	if (Socket != nullptr || (EquipmentType == EEquipmentType::EET_Rifle || EquipmentType == EEquipmentType::EET_Pistol))
 	{
-		const USkeletalMeshSocket* Socket = BChar->GetMesh()->GetSocketByName("BackpackSocket");
-		if (Socket)
+		if (Socket != nullptr)
 		{
-			if (Socket->AttachActor(this, BChar->GetMesh()))
-			{
-				SetActorRelativeTransform(MeshAttachTransform);
-			}
+			Socket->AttachActor(this, BChar->GetMesh());
+			SetActorRelativeTransform(MeshAttachTransform);
 		}
+		//if (Socket->AttachActor(this, BChar->GetMesh()))
+		
+		//Main에 있는 Equipment에 Add해준다.
+		BChar->Equipment->AddEquipment(this);
+
+		SetOwningPlayer(BChar);
+
+		SKMesh->SetHiddenInGame(false);
+		Mesh->SetHiddenInGame(true); //Static Mesh를 안보이게 하고, Collision을 끈다.
+		Mesh->SetSimulatePhysics(false);
+		Mesh->SetEnableGravity(false);
+		Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+		bReturn = true;
 	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Equipment::StepEquip, Socket is null "));
 	}
-
-	
-
-	//Main에 있는 Equipment에 Add해준다.
-	BChar->Equipment->AddEquipment(this);
-	SetOwningPlayer(BChar);
-
-	
-	SKMesh->SetHiddenInGame(false);
-
-	Mesh->SetSimulatePhysics(false);
-	Mesh->SetEnableGravity(false);
-	Mesh->SetHiddenInGame(true); //Static Mesh를 안보이게 하고, Collision을 끈다.
-	Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
 
 	/*if (EquippedSound)
 	{
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), EquippedSound, Main->GetActorLocation());
 	}*/
 
-
+	return bReturn;
 }
 
 

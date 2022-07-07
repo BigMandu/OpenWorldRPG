@@ -4,10 +4,13 @@
 #include "OpenWorldRPG/NewInventory/EquipmentSlot.h"
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
 #include "OpenWorldRPG/NewInventory/NewItemwidget.h"
+#include "OpenWorldRPG/NewInventory/CustomInventoryLibrary.h"
+//#include "OpenWorldRPG/NewInventory/NewInventoryGrid.h"
+//#include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
 
-#include "OpenWorldRPG/BaseCharacter.h"
 #include "OpenWorldRPG/Item/Equipment.h"
 #include "OpenWorldRPG/Item/Weapon.h"
+#include "OpenWorldRPG/BaseCharacter.h"
 #include "Components/Border.h"
 #include "Components/Image.h"
 #include "Blueprint/DragDropOperation.h"
@@ -118,15 +121,43 @@ bool UEquipmentSlot::TrySlotEquip(UNewItemObject* Var_ItemObj)
 
 				if (Equipment != nullptr)
 				{
-					Equipment->StepEquip(BChar);
-					//Var_ItemObj->SetMotherEquipSlot(this);
+					//장비 장착에 성공 했다면
+					if (Equipment->Equip(BChar) == true)
+					{
+						//Equip에서 EquipComp로 호출되면서 MotherContainer는 알아서 될듯
+						//Var_ItemObj->SetMotherEquipSlot(this);
+					}
+					//장비 장착에 실패했다면 
+					else
+					{
+						UCustomInventoryLibrary::BackToItem(Var_ItemObj);
+						/*if (Var_ItemObj->GetMotherContainer() != nullptr )
+						{
+							UNewInventoryGrid* InvGrid = Var_ItemObj->GetMotherContainer();
+							if (InvGrid && InvGrid->GetInventoryComp() != nullptr)
+							{
+								InvGrid->GetInventoryComp()->TryAddItem(Var_ItemObj);
+							}
+							
+						}*/
+					}
+					
 					return true;
 				}
 			}
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Incorrect Slot"));
+			UCustomInventoryLibrary::BackToItem(Var_ItemObj);
+			/*if (Var_ItemObj->GetMotherContainer() != nullptr)
+			{
+				Var_ItemObj->GetMotherContainer()->->TryAddItem(Var_ItemObj);
+			}
+			else if (Var_ItemObj->GetMotherEquipSlot() != nullptr)
+			{
+				Var_ItemObj->GetMotherEquipSlot()->TrySlotEquip(Var_ItemObj);
+			}
+			UE_LOG(LogTemp, Warning, TEXT("Incorrect Slot"));*/
 		}
 	}
 	return false;

@@ -79,5 +79,5 @@ public:
 
 	void SetRightWidget(UUserWidget* Widget);
 	void ChangeRightSwitcher();
-	
+	virtual bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
 };
