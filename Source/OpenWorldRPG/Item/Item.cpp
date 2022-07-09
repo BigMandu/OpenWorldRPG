@@ -165,6 +165,7 @@ bool AItem::AddAtEquip(AEquipment* Equipped)
 		if (Equipped->EquipInventoryComp->TryAddItem(ItemObj))
 		{
 			SetItemState(EItemState::EIS_Pickup);
+			ItemObj->bIsDestoryed = true;
 			Destroy();
 			return true;
 		}
@@ -179,6 +180,7 @@ bool AItem::AddAtCharInv(UNewInventoryComponent* InvComp)
 		if (InvComp->TryAddItem(ItemObj))
 		{
 			SetItemState(EItemState::EIS_Pickup);
+			ItemObj->bIsDestoryed = true;
 			Destroy();
 			return true;
 		}

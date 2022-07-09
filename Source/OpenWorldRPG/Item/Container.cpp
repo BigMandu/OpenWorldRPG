@@ -104,7 +104,7 @@ void AContainer::SpawnItem()
 
 			if (ContainerInventoryComp->TryAddItem(Item->ItemObj))
 			{
-				
+				Item->SetItemState(EItemState::EIS_Pickup);
 				Item->ItemObj->bIsDestoryed = true;
 				Item->Destroy();
 			}

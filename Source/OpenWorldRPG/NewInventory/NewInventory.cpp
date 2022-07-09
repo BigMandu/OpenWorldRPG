@@ -114,7 +114,11 @@ bool UNewInventory::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEve
 	UNewItemObject* ItemObj = Cast< UNewItemObject>(InOperation->Payload);
 	if (ItemObj)
 	{
-		UCustomInventoryLibrary::BackToItem(ItemObj);
+		if (ItemObj->bIsDragging)
+		{
+			ItemObj->bIsDragging = false;
+			UCustomInventoryLibrary::BackToItem(ItemObj);
+		}
 	}
 	return bReturn;
 }

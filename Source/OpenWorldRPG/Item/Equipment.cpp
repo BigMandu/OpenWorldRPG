@@ -134,11 +134,11 @@ bool AEquipment::Equip(AActor* Actor)
 				/* 장착 하려는 장비가 Pickup상태(Inventory에 있는 상태)면
 				 * 장비 Swap을 진행한다.
 				 */
-				AEquipment* Beforeweapon = BChar->Equipment->GetEquippedWeaponSameType(EEquipmentType::EET_MAX, this);
-				if (Beforeweapon)
+				AEquipment* BeforeEquipment = BChar->Equipment->GetEquippedWeaponSameType(EEquipmentType::EET_MAX, this);
+				if (BeforeEquipment)
 				{
-					BChar->Equipment->SwapEquipment(Beforeweapon, this);
-					Beforeweapon->SendToInventory(BChar);
+					BChar->Equipment->SwapEquipment(BeforeEquipment, this);
+					BeforeEquipment->SendToInventory(BChar);
 					/*this를 SpawnActor해서 Data를 이관하는 작업을 하는 함수를 호출해야한다.
 					 * UEqupmentSlot::NativeDrop에서 하는 루틴을 함수화 해야함.
 					 *

@@ -75,6 +75,8 @@ void UEquipmentSlot::PaintBGBorder(UNewItemObject* Obj)
 
 	//UE_LOG(LogTemp, Warning, TEXT("UEquipmentSlot bCanDrop = %d"), bCanDrop ? 1 : 0); //한자로 나옴 왜이럼?
 }
+
+//다른곳에서 사용하기 위해 함수로 뺌 (CustomInventoryLibrary)
 bool UEquipmentSlot::TrySlotEquip(UNewItemObject* Var_ItemObj)
 {
 	if (Var_ItemObj)
@@ -121,7 +123,9 @@ bool UEquipmentSlot::TrySlotEquip(UNewItemObject* Var_ItemObj)
 
 				if (Equipment != nullptr)
 				{
-					//장비 장착에 성공 했다면
+					
+					Equipment->Equip(BChar);
+					/*
 					if (Equipment->Equip(BChar) == true)
 					{
 						//Equip에서 EquipComp로 호출되면서 MotherContainer는 알아서 될듯
@@ -131,17 +135,8 @@ bool UEquipmentSlot::TrySlotEquip(UNewItemObject* Var_ItemObj)
 					else
 					{
 						UCustomInventoryLibrary::BackToItem(Var_ItemObj);
-						/*if (Var_ItemObj->GetMotherContainer() != nullptr )
-						{
-							UNewInventoryGrid* InvGrid = Var_ItemObj->GetMotherContainer();
-							if (InvGrid && InvGrid->GetInventoryComp() != nullptr)
-							{
-								InvGrid->GetInventoryComp()->TryAddItem(Var_ItemObj);
-							}
-							
-						}*/
 					}
-					
+					*/
 					return true;
 				}
 			}
@@ -170,7 +165,13 @@ bool UEquipmentSlot::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEv
 	UNewItemObject* ItemObj = Cast< UNewItemObject>(InOperation->Payload);
 	if (ItemObj)
 	{
-		TrySlotEquip(ItemObj);
+		if (ItemObj->bIsDragging)
+		{
+
+			ItemObj->bIsDragging = false;
+
+			TrySlotEquip(ItemObj);
+		}
 		/*
 		if (IsSupportedEquip(ItemObj))
 		{

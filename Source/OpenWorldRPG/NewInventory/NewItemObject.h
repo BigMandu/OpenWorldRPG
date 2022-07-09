@@ -56,7 +56,12 @@ public:
 	bool bRotated;
 	bool bCanEquip;
 	bool bIsDestoryed;
-	
+
+	//when you Dragging NewItemWidget this Var turn True.
+	//And Dropping NewItemWidget, This var turn False.
+	//Use at NewInventoryGrid, EquipmentSlot, NewInventory
+	bool bIsDragging;
+
 	int32 TopLeftIndex;
 
 	FText itemName;

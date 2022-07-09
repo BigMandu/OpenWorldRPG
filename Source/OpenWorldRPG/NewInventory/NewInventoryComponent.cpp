@@ -117,6 +117,7 @@ bool UNewInventoryComponent::TryAddItemStep(UNewItemObject* ItemObj)
 			if (bResult)
 			{
 				AddItemAtIndex(ItemObj, iter);
+				//SetItemState(EItemState::EIS_Pickup);
 				return bResult;
 			}
 			UE_LOG(LogTemp, Warning, TEXT("UNEWINVCOMP : there is no space"));

@@ -283,9 +283,11 @@ bool UNewInventoryGrid::NativeOnDrop(const FGeometry& InGeometry, const FDragDro
 	//UE_LOG(LogTemp, Warning, TEXT("NewInventoryGrid::OnDrop func called"));
 
 	UNewItemObject* ItemObj = Cast<UNewItemObject>(InOperation->Payload);
-	if (ItemObj)
+	if (ItemObj && ItemObj->bIsDragging)
 	{
-		
+
+		ItemObj->bIsDragging = false;
+
 		FTile DraggedTile;
 		DraggedTile.X = DraggedTopLeftTile.X;
 		DraggedTile.Y = DraggedTopLeftTile.Y;

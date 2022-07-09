@@ -162,7 +162,7 @@ void UNewItemwidget::NativeOnDragDetected(const FGeometry& InGeometry, const FPo
 		OutOperation = DDOper;
 		
 
-
+		ItemObj->bIsDragging = true;
 		
 		//EquipWidget || NewInventoryGrid에서 Bind함 (Add할때)
 		OnRemoved.Broadcast(ItemObj);
