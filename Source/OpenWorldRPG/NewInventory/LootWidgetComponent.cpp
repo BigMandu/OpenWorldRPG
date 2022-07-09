@@ -35,6 +35,7 @@ void ULootWidgetComponent::CreateInteractionWidget(AMainController* MainCon, AAc
 					{
 						Widget->InitContainerWidget(actor);
 						MainInventory->SetRightWidget(Widget);
+
 						//NewInventory의 오른쪽 위젯에 LootBoxWidget을 넣어준다.
 
 					}

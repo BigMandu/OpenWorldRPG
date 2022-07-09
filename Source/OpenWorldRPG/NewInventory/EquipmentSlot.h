@@ -18,14 +18,7 @@ class UNewItemObject;
 
 class ABaseCharacter;
 
-UENUM(BlueprintType)
-enum class ERifleSlot :uint8
-{
-	ERS_Primary		UMETA(DisplayName = "Primary"),
-	ERS_Sub			UMETA(DisplayName = "Sub"),
 
-	ERS_MAX			UMETA(DisplayName = "defaultsMAX")
-};
 
 UCLASS()
 class OPENWORLDRPG_API UEquipmentSlot : public UUserWidget, public IItemInterface
@@ -35,6 +28,7 @@ class OPENWORLDRPG_API UEquipmentSlot : public UUserWidget, public IItemInterfac
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WidgetVariable")
 	EEquipmentType SlotType;
+	
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WidgetVariable")
 	ERifleSlot RifleSlotType;

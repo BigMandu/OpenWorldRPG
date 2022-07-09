@@ -6,6 +6,9 @@
 #include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
 #include "OpenWorldRPG/NewInventory/NewInventoryGrid.h"
 #include "OpenWorldRPG/NewInventory/EquipmentSlot.h"
+#include "OpenWorldRPG/Item/Container.h"
+#include "OpenWorldRPG/BaseCharacter.h"
+
 
 void UCustomInventoryLibrary::BackToItem(UNewItemObject* ItemObj)
 {
@@ -36,6 +39,40 @@ void UCustomInventoryLibrary::BackToItem(UNewItemObject* ItemObj)
 		else
 		{
 			UE_LOG(LogTemp, Warning, TEXT("UNewInvGrid::OnDrop , Error!"));
+		}
+	}
+}
+
+void UCustomInventoryLibrary::DirectInToInventory(UNewItemObject* ItemObj, ABaseCharacter* BChar)
+{
+	if (ItemObj)
+	{
+		if (ItemObj->GetMotherContainer() != nullptr)
+		{
+			UNewInventoryGrid* GridInv = ItemObj->GetMotherContainer();
+			if (GridInv->GetInventoryComp() != nullptr)
+			{
+				if (GridInv->GetInventoryComp()->IsAvailableSpace(ItemObj, ItemObj->TopLeftIndex))
+				{
+					GridInv->GetInventoryComp()->AddItemAtIndex(ItemObj, ItemObj->TopLeftIndex);
+				}
+				else
+				{
+					GridInv->GetInventoryComp()->TryAddItem(ItemObj);
+				}
+			}
+		}
+		//Mothercontainer에 있지 않고, 장착중이었던 장비라면
+		else if (ItemObj->GetMotherEquipSlot() != nullptr)
+		{
+			if (BChar)
+			{
+				if (BChar->InteractLootBox)
+				{
+					BChar->InteractLootBox->ContainerInventoryComp->TryAddItem(ItemObj);
+				}
+			}
+
 		}
 	}
 }

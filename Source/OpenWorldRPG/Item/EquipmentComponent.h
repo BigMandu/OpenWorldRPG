@@ -45,10 +45,10 @@ public:
 	bool RemoveEquipment(AEquipment* Equip);
 
 	//Weapon파라미터와 같은 타입의 장비가 이미 있는지 확인
-	bool IsSameTypeExist(AEquipment* Equip);
+	bool IsSameTypeExist(AEquipment* Equip, ERifleSlot RifleSlot = ERifleSlot::ERS_MAX);
 	
 	//Weapon파라미터와 같은 타입의 장비를 리턴
-	AEquipment* GetEquippedWeaponSameType(EEquipmentType EquipType, AEquipment* Equip = nullptr);
+	AEquipment* GetEquippedWeaponSameType(EEquipmentType EquipType, AEquipment* Equip = nullptr, ERifleSlot RifleSlot = ERifleSlot::ERS_MAX);
 
 	bool SwapEquipment(AEquipment* Before, AEquipment* Next);
 };

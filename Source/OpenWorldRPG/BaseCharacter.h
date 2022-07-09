@@ -17,7 +17,7 @@ class USoundCue;
 
 
 class AItem;
-class ALootBox;
+class AContainer;
 class AWeapon;
 
 UENUM()
@@ -90,6 +90,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Sounds)
 	USoundCue* StepSoundCue;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interactive")
+	AContainer* InteractLootBox;
 	
 
 	/* Weapon */

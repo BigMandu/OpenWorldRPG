@@ -3,6 +3,7 @@
 
 #include "OpenWorldRPG/Item/EquipmentComponent.h"
 #include "OpenWorldRPG/Item/Equipment.h"
+#include "OpenWorldRPG/Item/Weapon.h"
 
 // Sets default values for this component's properties
 UEquipmentComponent::UEquipmentComponent()
@@ -110,7 +111,7 @@ bool UEquipmentComponent::RemoveEquipment(AEquipment* Equip)
 	return false;
 }
 
-bool UEquipmentComponent::IsSameTypeExist(AEquipment* Equip)
+bool UEquipmentComponent::IsSameTypeExist(AEquipment* Equip, ERifleSlot RifleSlot)
 {
 	int32 RifleCnt = 0;
 
@@ -122,7 +123,21 @@ bool UEquipmentComponent::IsSameTypeExist(AEquipment* Equip)
 			//Rifle Type은 주무기, 부무기 두개를 장착할 수 있다.
 			if (Equipped->EquipmentType == EEquipmentType::EET_Rifle && Equip->EquipmentType == EEquipmentType::EET_Rifle)
 			{
-				RifleCnt++;
+				if (RifleSlot == ERifleSlot::ERS_MAX)
+				{
+					RifleCnt++;
+				}
+				else
+				{
+					AWeapon* EquippedWeapon = Cast<AWeapon>(Equipped);
+					if (EquippedWeapon)
+					{
+						if (EquippedWeapon->RifleAssign == RifleSlot)
+						{
+							return true;
+						}
+					}
+				}
 			}
 			else if(Equipped->EquipmentType == Equip->EquipmentType) //파라미터 Weapon의 Type이 이미 있으면 true
 			{
@@ -140,25 +155,40 @@ bool UEquipmentComponent::IsSameTypeExist(AEquipment* Equip)
 	return false;
 }
 
-AEquipment* UEquipmentComponent::GetEquippedWeaponSameType(EEquipmentType EquipType, AEquipment* Equip)
+AEquipment* UEquipmentComponent::GetEquippedWeaponSameType(EEquipmentType EquipType, AEquipment* Equip, ERifleSlot RifleSlot)
 {
 	for (auto& EquipItem : EquipmentItems)
 	{
 		AEquipment* Equipped = Cast<AEquipment>(EquipItem);
 		if (Equipped)
 		{
-			if (Equip != nullptr && EquipType == EEquipmentType::EET_MAX)
+			if ((EquipType == EEquipmentType::EET_Rifle || Equip->EquipmentType == EEquipmentType::EET_Rifle)
+				&& RifleSlot != ERifleSlot::ERS_MAX)
 			{
-				if (Equipped->EquipmentType == Equip->EquipmentType)
+				AWeapon* EquippedWeapon = Cast<AWeapon>(Equipped);
+				if (EquippedWeapon)
 				{
-					return Equipped;
+					if (EquippedWeapon->RifleAssign == RifleSlot)
+					{
+						return EquippedWeapon;
+					}
 				}
 			}
 			else
 			{
-				if(Equipped->EquipmentType == EquipType)
+				if (Equip != nullptr && EquipType == EEquipmentType::EET_MAX)
 				{
-					return Equipped;
+					if (Equipped->EquipmentType == Equip->EquipmentType)
+					{
+						return Equipped;
+					}
+				}
+				else //Equip없이 EquipType으로만 넘겨줬을때
+				{
+					if (Equipped->EquipmentType == EquipType)
+					{
+						return Equipped;
+					}
 				}
 			}
 		}

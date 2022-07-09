@@ -31,7 +31,7 @@ AWeapon::AWeapon() : Super()
 
 	WeaponFiringMode = EWeaponFiringMode::EWFM_SemiAuto;
 	CurrentWeaponState = EWeaponState::EWS_Idle;
-	RifleAssign = ERifleAssign::ERA_MAX;
+	RifleAssign = ERifleSlot::ERS_MAX;
 
 	bIsFiring = false;
 	bLMBDown = false;
@@ -73,8 +73,23 @@ void AWeapon::PostInitializeComponents()
 	//CapsuleComp->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel2, ECollisionResponse::ECR_Ignore);
 	//CapsuleComp->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic, ECollisionResponse::ECR_Ignore);
 }
+void AWeapon::SettingRifleAssign(ABaseCharacter* BChar, ERifleSlot RifleSlot)
+{
+	switch (RifleSlot)
+	{
+	case ERifleSlot::ERS_Primary:
+		BChar->PrimaryWeapon = this;
+		UE_LOG(LogTemp, Warning, TEXT("AWeapon::SettingRifleAssign , this is Primary"));
+		break;
+	case ERifleSlot::ERS_Sub:
+		BChar->SubWeapon = this;
+		UE_LOG(LogTemp, Warning, TEXT("AWeapon::SettingRifleAssign , this is Sub"));
+		break;
+	}
+	RifleAssign = RifleSlot;
+}
 
-bool AWeapon::StepEquip(AActor* Char)
+bool AWeapon::StepEquip(AActor* Char, ERifleSlot RifleSlot)
 {
 	Super::StepEquip(Char);
 	ABaseCharacter* BChar = Cast<ABaseCharacter>(Char);
@@ -84,27 +99,42 @@ bool AWeapon::StepEquip(AActor* Char)
 
 	UE_LOG(LogTemp, Warning, TEXT("Weapon Transform : %s"), *OriginalWeaponTransform.ToString());
 
-	if (RifleAssign == ERifleAssign::ERA_MAX)
+	if (RifleAssign == ERifleSlot::ERS_MAX)
 	{
-		/* 1,2,3을 눌렀을때 Quick Swap하기 위해 */
-		if (EquipmentType == EEquipmentType::EET_Rifle) //라이플이고
+		if (EquipmentType == EEquipmentType::EET_Rifle)
 		{
-			if (BChar->PrimaryWeapon) //이미 주무기가 있으면
+			/* 1,2,3을 눌렀을때 Quick Swap하기 위해 */
+			if (RifleSlot == ERifleSlot::ERS_MAX) //지정된 Slot이 없을때
 			{
-				RifleAssign = ERifleAssign::ERA_Sub;
-				BChar->SubWeapon = this; //부무기로 지정
+				if (BChar->PrimaryWeapon) //이미 주무기가 있으면
+				{
+					//RifleAssign = ERifleSlot::ERS_Sub;
+					//BChar->SubWeapon = this; //부무기로 지정
+					SettingRifleAssign(BChar, ERifleSlot::ERS_Sub);
+				}
+				else //주무기가 없으면
+				{
+					//RifleAssign = ERifleSlot::ERS_Sub;
+					//BChar->PrimaryWeapon = this; //주무기로
+					SettingRifleAssign(BChar, ERifleSlot::ERS_Primary);
+				}
 			}
-			else //주무기가 없으면
+			//Rifle Type을 Drag&Drop으로 Equip을 진행했을땐, 아래로 됨.
+			else
 			{
-				RifleAssign = ERifleAssign::ERA_Primary;
-				BChar->PrimaryWeapon = this; //주무기로
+				//RifleAssign = RifleSlot;
+				SettingRifleAssign(BChar, RifleSlot);
+
 			}
 		}
-		else //피스톨
+		
+		else if (EquipmentType == EEquipmentType::EET_Pistol)
 		{
 			BChar->PistolWeapon = this;
 		}
 	}
+
+	
 
 
 	//들고 있는 무기가 없을 경우 지금 Weapon을 들도록 한다.
@@ -157,7 +187,7 @@ void AWeapon::GunAttachToMesh(AActor* Actor)
 			const USkeletalMeshSocket* AttachSocket;
 			FTransform AttachTransform;
 
-			if(BChar->EquippedWeapon->RifleAssign == ERifleAssign::ERA_Primary)
+			if(BChar->EquippedWeapon->RifleAssign == ERifleSlot::ERS_Primary)
 			{
 				AttachSocket = BChar->GetMesh()->GetSocketByName("PrimaryWeaponAttachSocket");
 				AttachTransform = PrimaryWeaponAttachTransform;
@@ -805,15 +835,18 @@ void AWeapon::Remove()
 				BChar->ChangeWeapon(0);
 				BChar->EquippedWeapon = nullptr;
 				//Main->SetEquippedWeapon(nullptr);
-				RifleAssign = ERifleAssign::ERA_MAX;
+				RifleAssign = ERifleSlot::ERS_MAX;
+				UE_LOG(LogTemp, Warning, TEXT("AWeapon::Remove , Remove RifleAssign"));
 			}
 
 			if (BChar->PrimaryWeapon == this)
 			{
+				UE_LOG(LogTemp, Warning, TEXT("AWeapon::Remove, was Primary..."));
 				BChar->PrimaryWeapon = nullptr;
 			}
 			else if(BChar->SubWeapon == this)
 			{
+				UE_LOG(LogTemp, Warning, TEXT("AWeapon::Remove, was Sub..."));
 				BChar->SubWeapon = nullptr;
 			}
 			else if(BChar->PistolWeapon == this)

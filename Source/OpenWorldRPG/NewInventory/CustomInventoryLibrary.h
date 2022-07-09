@@ -10,6 +10,7 @@
  * 
  */
 class UNewItemObject;
+class ABaseCharacter;
 
 UCLASS()
 class OPENWORLDRPG_API UCustomInventoryLibrary : public UObject
@@ -19,4 +20,5 @@ class OPENWORLDRPG_API UCustomInventoryLibrary : public UObject
 public:
 
 	static void BackToItem(UNewItemObject* ItemObj);
+	static void DirectInToInventory(UNewItemObject* ItemObj, ABaseCharacter* BChar);
 };

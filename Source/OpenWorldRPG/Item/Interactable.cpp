@@ -78,6 +78,7 @@ void AInteractable::Interaction(class AActor* Actor)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Call Open Box"));
 			Box->OpenContainer(Actor);
+
 		}
 	}
 	default:

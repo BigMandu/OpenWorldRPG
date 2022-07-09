@@ -33,6 +33,15 @@ enum class EInteractType : uint8
 	EIT_MAX			UMETA(DisplayName = "DefaultMAX")
 };
 
+UENUM(BlueprintType)
+enum class ERifleSlot :uint8
+{
+	ERS_Primary		UMETA(DisplayName = "Primary"),
+	ERS_Sub			UMETA(DisplayName = "Sub"),
+
+	ERS_MAX			UMETA(DisplayName = "defaultsMAX")
+};
+
 UINTERFACE(MinimalAPI)
 class UItemInterface : public UInterface
 {

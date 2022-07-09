@@ -6,9 +6,11 @@
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
 #include "OpenWorldRPG/NewInventory/NewItemwidget.h"
 #include "OpenWorldRPG/NewInventory/NewInventoryGrid.h"
+#include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
 #include "OpenWorldRPG/Item/Equipment.h"
 #include "OpenWorldRPG/Item/Weapon.h"
 #include "OpenWorldRPG/Item/EquipmentComponent.h"
+
 
 #include "Components/Image.h"
 #include "Components/Border.h"
@@ -74,10 +76,10 @@ void UEquipWidget::RefreshEquipWidget()
 					{
 						switch (Weapon->RifleAssign)
 						{
-						case ERifleAssign::ERA_Primary:
+						case ERifleSlot::ERS_Primary:
 							SetSlot(ele, PrimarySlot);
 							break;
-						case ERifleAssign::ERA_Sub:
+						case ERifleSlot::ERS_Sub:
 							SetSlot(ele, SubSlot);
 							break;
 						}
@@ -129,7 +131,7 @@ void UEquipWidget::SetSlot(AEquipment* Equip, UEquipmentSlot* EquipSlot)
 			//VestOverlay->ClearChildren();
 
 			
-			ItemWidget->Tilesize = Equip->EquipInventoryComp->TileSize; //임시로 이렇게 사이즈를 박아뒀다., GetDesiredSize는 widget이 화면에 출력되야 구할수 있는건데 ..  //EquipSlot->GetDesiredSize().X;
+			ItemWidget->Tilesize = 60.f;//Equip->EquipInventoryComp->TileSize; //임시로 이렇게 사이즈를 박아뒀다., GetDesiredSize는 widget이 화면에 출력되야 구할수 있는건데 ..  //EquipSlot->GetDesiredSize().X;
 			ItemWidget->ItemObj = Equip->ItemObj; // ele.Key;
 			ItemWidget->Refresh();
 			
@@ -161,7 +163,9 @@ void UEquipWidget::RemoveEquipment(UObject* T_ItemObj)
 		if(Equipment)
 		{
 			
-			//Equipment->Remove();
+			//Weapon일때 Weapon의 Remove가 호출되기 때문에 꼭 호출 해야됨.
+			Equipment->Remove();
+
 			EquipComp->RemoveEquipment(Equipment);
 			
 			ItemObj->bIsDestoryed = true;

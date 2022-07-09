@@ -4,8 +4,9 @@
 #include "Item.h"
 #include "OpenWorldRPG/BaseCharacter.h"
 #include "OpenWorldRPG/Item/EquipmentComponent.h"
-#include "OpenWorldRPG/NewInventory/NewItemObject.h"
+#include "OpenWorldRPG/NewInventory/CustomInventoryLibrary.h"
 #include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
+#include "OpenWorldRPG/NewInventory/NewItemObject.h"
 
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "Perception/AISense_Sight.h"
@@ -113,13 +114,13 @@ bool AItem::Pickup(class AActor* Actor)
 				bFlag = AddAtEquip(Equipped);
 			}
 			//if have vest not backpack || fail add at backpack && have vest
-			else if(BChar->Equipment->bHasVest || (bFlag == false && BChar->Equipment->bHasVest))
+			if(bFlag == false && BChar->Equipment->bHasVest)
 			{
 				AEquipment* Equipped = BChar->Equipment->GetEquippedWeaponSameType(EEquipmentType::EET_Vest);
 				bFlag = AddAtEquip(Equipped);
 			}
 			//pocket, secure box
-			else if(bFlag == false)
+			if(bFlag == false)
 			{
 				
 				bFlag = AddAtCharInv(BChar->PocketInventoryComp);
@@ -128,6 +129,15 @@ bool AItem::Pickup(class AActor* Actor)
 					bFlag = AddAtCharInv(BChar->SecureBoxInventoryComp);
 					if(bFlag == false)
 					{
+						//PickUP상태의 Item Add에 실패했다면 CustomInventoryLibrary의 BackToItem을 실행한다.
+						if (ItemState == EItemState::EIS_Pickup)
+						{
+							ItemObj->bIsDestoryed = true;
+							Destroy();
+							
+							UCustomInventoryLibrary::DirectInToInventory(ItemObj, BChar);
+							
+						}
 						UE_LOG(LogTemp, Warning, TEXT("Item Add fail."));
 					}
 				}

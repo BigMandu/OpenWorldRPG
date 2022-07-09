@@ -118,6 +118,15 @@ void AContainer::OpenContainer(AActor* Actor)
 
 	AMainController* MainCon = Cast<AMainController>(Actor->GetInstigatorController());
 	AEnemyAIController* AICon = Cast<AEnemyAIController>(Actor->GetInstigatorController());
+
+	AMainCharacter* MainChar = Cast<AMainCharacter>(Actor);
+	if (MainChar)
+	{
+		//해제는 MainController::HideInventory에서 함.
+		MainChar->InteractLootBox = this;
+	}
+
+	
 	if (MainCon)
 	{
 		MainCon->bIsInteractLootBox = true;

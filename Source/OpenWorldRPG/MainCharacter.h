@@ -168,8 +168,8 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Item)
 	UEquipmentComponent* Equipment;*/
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interactive")
-	AContainer* InteractLootBox;
+	/*UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interactive")
+	AContainer* InteractLootBox;*/
 
 
 	/**********  Sounds ************/

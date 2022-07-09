@@ -103,14 +103,18 @@ bool UEquipmentSlot::TrySlotEquip(UNewItemObject* Var_ItemObj)
 				AEquipment* Equipment = nullptr;
 				//Item이 Destroy된 상태면 (InventoryGrid에 있었던 Equipment들이 해당됨)
 				//Item을 Spawn하고 기존에 저장된 정보를  새로 Spawn한 item에 이관한다.
+				//대부분 bIsDestroyed에 분기됨. else문은 거의 사용되지 않음
 				if (Var_ItemObj->bIsDestoryed)
 				{
 					Equipment = Cast<AEquipment>(GetWorld()->SpawnActor<AActor>(Var_ItemObj->GetItemClass()));
 					if (Equipment)
 					{
 						Var_ItemObj->bIsDestoryed = false;
+						
 						Equipment->ReInitialize(Var_ItemObj);
 						Equipment->SetItemState(EItemState::EIS_Pickup);
+						Equipment->EquipInventoryComp = Var_ItemObj->GetItemInvComp();
+						
 						//Var_ItemObj->SetMotherContainer(nullptr);
 
 					}
@@ -123,20 +127,14 @@ bool UEquipmentSlot::TrySlotEquip(UNewItemObject* Var_ItemObj)
 
 				if (Equipment != nullptr)
 				{
-					
-					Equipment->Equip(BChar);
-					/*
-					if (Equipment->Equip(BChar) == true)
+					if (Equipment->EquipmentType == EEquipmentType::EET_Rifle)
 					{
-						//Equip에서 EquipComp로 호출되면서 MotherContainer는 알아서 될듯
-						//Var_ItemObj->SetMotherEquipSlot(this);
+						Equipment->Equip(BChar, RifleSlotType);
 					}
-					//장비 장착에 실패했다면 
 					else
 					{
-						UCustomInventoryLibrary::BackToItem(Var_ItemObj);
+						Equipment->Equip(BChar);
 					}
-					*/
 					return true;
 				}
 			}

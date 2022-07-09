@@ -75,8 +75,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")
 	UNewInventoryComponent* EquipInventoryComp;
-
-	
 	
 private:
 
@@ -86,7 +84,7 @@ private:
 
 protected:
 	virtual void BeginPlay() override;
-	virtual bool StepEquip(AActor* Actor);
+	virtual bool StepEquip(AActor* Actor, ERifleSlot RifleSlot = ERifleSlot::ERS_MAX);
 public:
 	virtual UNewItemObject* GetDefaultItemObj() override;
 
@@ -94,7 +92,7 @@ public:
 
 	void SettingStorage();
 
-	bool Equip(AActor* Actor);
+	bool Equip(AActor* Actor, ERifleSlot RifleSlot = ERifleSlot::ERS_MAX);
 	
 	
 	virtual void Drop() override;

@@ -1,8 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Equipment.h"
-#include "Equipment.h"
+
 #include "OpenWorldRPG/Item/Equipment.h"
 #include "OpenWorldRPG/Item/EquipmentComponent.h"
 #include "OpenWorldRPG/Item/Weapon.h"
@@ -61,6 +60,8 @@ void AEquipment::ReInitialize(UNewItemObject* Obj)
 				{
 					EquipGridWidget = CreateWidget<UNewInventoryGrid>(MainCon, WEquipGridWidget);
 					EquipGridWidget->GridInitialize(EquipInventoryComp, EquipInventoryComp->TileSize);
+
+
 				}
 				/*else if(AICon)
 				{
@@ -108,7 +109,7 @@ void AEquipment::SetOwningPlayer(AActor* Actor)
 	}
 }
 
-bool AEquipment::Equip(AActor* Actor)
+bool AEquipment::Equip(AActor* Actor, ERifleSlot RifleSlot)
 {
 	bool bReturn = false;
 	UE_LOG(LogTemp, Warning, TEXT("AEquipment::StepEquip func called"));
@@ -121,7 +122,7 @@ bool AEquipment::Equip(AActor* Actor)
 		 * 2. 이 무기가 Inventory에 있는 상태라면 원래 장착된 장비와 바꿔 장착 한다.
 		 * 일치하는 무기가 없다면 Equip함수를 호출한다.
 		 */
-		if (BChar->Equipment->IsSameTypeExist(this))
+		if (BChar->Equipment->IsSameTypeExist(this,RifleSlot))
 		{
 			if (GetItemState() == EItemState::EIS_Spawn)
 			{
@@ -133,8 +134,10 @@ bool AEquipment::Equip(AActor* Actor)
 			{
 				/* 장착 하려는 장비가 Pickup상태(Inventory에 있는 상태)면
 				 * 장비 Swap을 진행한다.
+				 * 
+				 * Weapon의 경우, RifleAssign에 
 				 */
-				AEquipment* BeforeEquipment = BChar->Equipment->GetEquippedWeaponSameType(EEquipmentType::EET_MAX, this);
+				AEquipment* BeforeEquipment = BChar->Equipment->GetEquippedWeaponSameType(EEquipmentType::EET_MAX, this, RifleSlot);
 				if (BeforeEquipment)
 				{
 					BChar->Equipment->SwapEquipment(BeforeEquipment, this);
@@ -146,12 +149,12 @@ bool AEquipment::Equip(AActor* Actor)
 				}
 			}
 		}
-		bReturn = StepEquip(Actor);
+		bReturn = StepEquip(Actor, RifleSlot);
 	}
 	return bReturn;
 }
 
-bool AEquipment::StepEquip(AActor* Actor)
+bool AEquipment::StepEquip(AActor* Actor, ERifleSlot RifleSlot)
 {
 	bool bReturn = false;
 	ABaseCharacter* BChar = Cast<ABaseCharacter>(Actor);
@@ -270,7 +273,7 @@ void AEquipment::Drop()
 void AEquipment::Remove()
 {
 	/* 아무것도 안함. .. 음..*/
-
+	//Weapon의 Remove가 있음. 꼭 호출해야됨.
 
 }
 

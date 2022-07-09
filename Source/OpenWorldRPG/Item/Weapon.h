@@ -40,13 +40,13 @@ class UCurveFloat;
 //	EWT_MAX		UMETA(DisplayName = "DefaltMAX")
 //};
 
-UENUM()
-enum class ERifleAssign : uint8
-{
-	ERA_Primary		UMETA(Displayname = "Primary"),
-	ERA_Sub			UMETA(Displayname = "Sub"),
-	ERA_MAX			UMETA(Displayname = "DefaultsMAX")
-};
+//UENUM()
+//enum class ERifleAssign : uint8
+//{
+//	ERA_Primary		UMETA(Displayname = "Primary"),
+//	ERA_Sub			UMETA(Displayname = "Sub"),
+//	ERA_MAX			UMETA(Displayname = "DefaultsMAX")
+//};
 
 
 //단발, 점사, 연사를 구분
@@ -186,8 +186,11 @@ public:
 
 	/* Enums */
 
+	/*UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
+	ERifleAssign RifleAssign;*/
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
-	ERifleAssign RifleAssign;
+	ERifleSlot RifleAssign;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	EWeaponFiringMode WeaponFiringMode;
@@ -271,7 +274,7 @@ private:
 	void WeaponClipping();
 
 protected:
-	virtual bool StepEquip(AActor* Char) override;
+	virtual bool StepEquip(AActor* Char, ERifleSlot RifleSlot = ERifleSlot::ERS_MAX) override;
 public:
 
 	//void SetOwningPlayer(AActor * Actor);
@@ -328,6 +331,8 @@ public:
 	
 	/* Compare Preview State, And Setting State , And Call Firing func */
 	void SetWeaponState(EWeaponState NewState);
+
+	void SettingRifleAssign(ABaseCharacter* BChar, ERifleSlot RifleSlot);
 
 	void WeaponFX();
 	void PlayWeaponAnimAndCamShake(FWeaponAnim& Anim);
