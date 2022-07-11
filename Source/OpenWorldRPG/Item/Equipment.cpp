@@ -44,32 +44,30 @@ void AEquipment::BeginPlay()
 
 void AEquipment::ReInitialize(UNewItemObject* Obj)
 {
-	if(ItemObj && EquipGridWidget == nullptr)
+	if(ItemObj)// && EquipGridWidget == nullptr)
 	{
 		ItemObj = Obj;
-		if(bHasStorage)
+		//if(bHasStorage) 여기는 그냥 바로 SettingStorage로 빼버린다.
 		{
 			/*if (MainCon == nullptr) 
 			{
 				MainCon = Cast<AMainController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 			}*/
 			//AMainController* MainCon = Cast<AMainController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-			if (WEquipGridWidget)
-			{
-				if(MainCon)
-				{
-					EquipGridWidget = CreateWidget<UNewInventoryGrid>(MainCon, WEquipGridWidget);
-					EquipGridWidget->GridInitialize(EquipInventoryComp, EquipInventoryComp->TileSize);
+			//if (WEquipGridWidget)
+			//{
+			//	if(MainCon)
+			//	{
+			//		EquipGridWidget = CreateWidget<UNewInventoryGrid>(MainCon, WEquipGridWidget);
+			//		EquipGridWidget->GridInitialize(EquipInventoryComp, EquipInventoryComp->TileSize);
 
 
-				}
-				/*else if(AICon)
-				{
-					EquipGridWidget = CreateWidget<UNewInventoryGrid>(AICon, WEquipGridWidget);
-				}*/
-				
-				
-			}
+			//	}
+			//	//else if(AICon)
+			//	//{
+			//		EquipGridWidget = CreateWidget<UNewInventoryGrid>(AICon, WEquipGridWidget);
+			//	//}
+			//}
 		}
 	}
 }
@@ -260,10 +258,10 @@ void AEquipment::SettingStorage()
 			UE_LOG(LogTemp, Warning, TEXT("SettingStorage::MainCon is nullptr try Get Controller"));
 			if (OwningPlayer)
 			{
+				//MainCon = Cast<AMainController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 				MainCon = Cast<AMainController>(OwningPlayer->GetController());
 			}
 		}
-		//AMainController* MainCon = Cast<AMainController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 
 		if (WEquipGridWidget && MainCon)
 		{
@@ -271,7 +269,9 @@ void AEquipment::SettingStorage()
 			if (EquipGridWidget && EquipInventoryComp)
 			{
 				UE_LOG(LogTemp, Warning, TEXT("SettingStorage::Try Initialize EquipGridWidget "));
+				EquipInventoryComp = ItemObj->GetItemInvComp(); //Item Swap시에 문제 발생 (ItemObj의 InvComp가 null만 가지고 있음)
 				EquipGridWidget->GridInitialize(EquipInventoryComp, EquipInventoryComp->TileSize);
+				
 			}
 		}
 	}

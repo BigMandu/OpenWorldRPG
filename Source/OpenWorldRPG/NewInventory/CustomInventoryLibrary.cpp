@@ -92,10 +92,10 @@ AEquipment* UCustomInventoryLibrary::SpawnEquipment(UWorld* World, UNewItemObjec
 
 			Equipment->ReInitialize(ItemObj);
 			Equipment->SetItemState(EItemState::EIS_Pickup);
-			if (Equipment->bHasStorage)
-			{
-				Equipment->EquipInventoryComp = ItemObj->GetItemInvComp();
-			}
+			//if (Equipment->bHasStorage)
+			//{
+			//	Equipment->EquipInventoryComp = ItemObj->GetItemInvComp();
+			//}
 
 			return Equipment;
 		}

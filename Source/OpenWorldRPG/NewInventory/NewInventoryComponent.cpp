@@ -285,7 +285,7 @@ const TMap<UNewItemObject*, FTile> UNewInventoryComponent::GetAllItems()
 	*/
 	TMap<UNewItemObject*, FTile> InventoryStoredInfo;
 	
-
+	//여기 InventoryItems에 Garbage값 들어옴 
 	for (int32 index = 0; index < InventoryItems.Num(); ++index)
 	{
 		UNewItemObject* CurItemObj = InventoryItems[index];

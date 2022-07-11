@@ -180,6 +180,7 @@ void UEquipWidget::RemoveSlot()
 	if (VestOverlay && BackpackOverlay && PrimarySlot && SubSlot)
 	{
 		VestOverlay->ClearChildren();
+		//VestOverlay->RemoveChild(VestOverlay);
 		BackpackOverlay->ClearChildren();
 		PrimarySlot->BGBorder->ClearChildren();
 		SubSlot->BGBorder->ClearChildren();

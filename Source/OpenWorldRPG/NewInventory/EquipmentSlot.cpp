@@ -107,7 +107,7 @@ bool UEquipmentSlot::TrySlotEquip(UNewItemObject* Var_ItemObj)
 				if (Var_ItemObj->bIsDestoryed)
 				{
 					//여기 함수로 바꿔서 Equip에서도 사용할 수 있도록 하자.
-					Equipment = UCustomInventoryLibrary::SpawnEquipment(GetWorld(), Var_ItemObj);
+					Equipment = UCustomInventoryLibrary::SpawnEquipment(GetWorld(), Var_ItemObj); //함수화 함.
 					/*
 					Equipment = Cast<AEquipment>(GetWorld()->SpawnActor<AActor>(Var_ItemObj->GetItemClass()));
 					if (Equipment)

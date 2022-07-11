@@ -72,6 +72,7 @@ void UNewInventoryGrid::GridInitialize(UNewInventoryComponent* p_InvComp, float 
 		//InventoryComp의 AddItem함수가 성공할때마다 broadcast,해당 함수를 실행시키기 위해 bind
 		if (InventoryComp)
 		{
+			InventoryComp->OnInventoryUpdated.Clear();
 			InventoryComp->OnInventoryUpdated.AddUFunction(this, FName("RefreshInventory"));
 		}
 
