@@ -162,8 +162,10 @@ AEquipment* UEquipmentComponent::GetEquippedWeaponSameType(EEquipmentType EquipT
 		AEquipment* Equipped = Cast<AEquipment>(EquipItem);
 		if (Equipped)
 		{
-			if ((EquipType == EEquipmentType::EET_Rifle || Equip->EquipmentType == EEquipmentType::EET_Rifle)
-				&& RifleSlot != ERifleSlot::ERS_MAX)
+			//Rifle인 경우에 RiffleAssign을 보고 가져온다.
+			//Rifle 타입인 경우 Primary Rifle, Sub Rifle 이렇게 지정되어 있을 수 있기 때문임.
+			if ((EquipType == EEquipmentType::EET_Rifle || (Equip != nullptr && Equip->EquipmentType == EEquipmentType::EET_Rifle)
+				&& RifleSlot != ERifleSlot::ERS_MAX))
 			{
 				AWeapon* EquippedWeapon = Cast<AWeapon>(Equipped);
 				if (EquippedWeapon)
@@ -176,6 +178,7 @@ AEquipment* UEquipmentComponent::GetEquippedWeaponSameType(EEquipmentType EquipT
 			}
 			else
 			{
+				//World에 스폰된 Equipment인 경우 여길 사용한다.
 				if (Equip != nullptr && EquipType == EEquipmentType::EET_MAX)
 				{
 					if (Equipped->EquipmentType == Equip->EquipmentType)

@@ -44,7 +44,7 @@ void AEquipment::BeginPlay()
 
 void AEquipment::ReInitialize(UNewItemObject* Obj)
 {
-	if(ItemObj)
+	if(ItemObj && EquipGridWidget == nullptr)
 	{
 		ItemObj = Obj;
 		if(bHasStorage)
@@ -107,6 +107,15 @@ void AEquipment::SetOwningPlayer(AActor* Actor)
 			SetInstigator(BChar); //Instigator 설정.
 		}
 	}
+}
+
+AActor* AEquipment::GetOwningPlayer()
+{
+	if (OwningPlayer)
+	{
+		return OwningPlayer;
+	}
+	return nullptr;
 }
 
 bool AEquipment::Equip(AActor* Actor, ERifleSlot RifleSlot)
@@ -181,17 +190,16 @@ bool AEquipment::StepEquip(AActor* Actor, ERifleSlot RifleSlot)
 			SetActorRelativeTransform(MeshAttachTransform);
 		}
 		//if (Socket->AttachActor(this, BChar->GetMesh()))
-		
-		//Main에 있는 Equipment에 Add해준다.
-		BChar->Equipment->AddEquipment(this);
-
-		SetOwningPlayer(BChar);
 
 		SKMesh->SetHiddenInGame(false);
 		Mesh->SetHiddenInGame(true); //Static Mesh를 안보이게 하고, Collision을 끈다.
 		Mesh->SetSimulatePhysics(false);
 		Mesh->SetEnableGravity(false);
 		Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+		SetOwningPlayer(BChar);
+		//Main에 있는 Equipment에 Add해준다.
+		BChar->Equipment->AddEquipment(this);
 
 		bReturn = true;
 	}
@@ -244,18 +252,28 @@ void AEquipment::SendToInventory(AActor* Actor)
 
 void AEquipment::SettingStorage()
 {
-	if (MainCon == nullptr)
+	//EquipGridWidget이 없을때만 생성한다.
+	if (EquipGridWidget == nullptr)
 	{
-		MainCon = Cast<AMainController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-	}
-	//AMainController* MainCon = Cast<AMainController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+		if (MainCon == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("SettingStorage::MainCon is nullptr try Get Controller"));
+			if (OwningPlayer)
+			{
+				MainCon = Cast<AMainController>(OwningPlayer->GetController());
+			}
+		}
+		//AMainController* MainCon = Cast<AMainController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 
-	if (WEquipGridWidget && MainCon)
-	{
-		EquipGridWidget = CreateWidget<UNewInventoryGrid>(MainCon, WEquipGridWidget);
-		//EquipGridWidget = CreateWidget<UNewInventoryGrid>(this, WEquipGridWidget);
-
-		EquipGridWidget->GridInitialize(EquipInventoryComp, EquipInventoryComp->TileSize);
+		if (WEquipGridWidget && MainCon)
+		{
+			EquipGridWidget = CreateWidget<UNewInventoryGrid>(MainCon, WEquipGridWidget);
+			if (EquipGridWidget && EquipInventoryComp)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("SettingStorage::Try Initialize EquipGridWidget "));
+				EquipGridWidget->GridInitialize(EquipInventoryComp, EquipInventoryComp->TileSize);
+			}
+		}
 	}
 }
 

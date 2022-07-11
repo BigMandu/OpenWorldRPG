@@ -6,12 +6,14 @@
 #include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
 #include "OpenWorldRPG/NewInventory/NewInventoryGrid.h"
 #include "OpenWorldRPG/NewInventory/EquipmentSlot.h"
+#include "OpenWorldRPG/Item/Equipment.h"
 #include "OpenWorldRPG/Item/Container.h"
 #include "OpenWorldRPG/BaseCharacter.h"
 
 
 void UCustomInventoryLibrary::BackToItem(UNewItemObject* ItemObj)
 {
+	UE_LOG(LogTemp, Warning, TEXT("UCustomInventoryLibrary::BackToItem"));
 	if (ItemObj)
 	{
 		//ItemObj가 원래 있던 MotherContainer를 가져와
@@ -45,6 +47,7 @@ void UCustomInventoryLibrary::BackToItem(UNewItemObject* ItemObj)
 
 void UCustomInventoryLibrary::DirectInToInventory(UNewItemObject* ItemObj, ABaseCharacter* BChar)
 {
+	UE_LOG(LogTemp, Warning, TEXT("UCustomInventoryLibrary::DirectInToInv"));
 	if (ItemObj)
 	{
 		if (ItemObj->GetMotherContainer() != nullptr)
@@ -75,4 +78,27 @@ void UCustomInventoryLibrary::DirectInToInventory(UNewItemObject* ItemObj, ABase
 
 		}
 	}
+}
+
+AEquipment* UCustomInventoryLibrary::SpawnEquipment(UWorld* World, UNewItemObject* ItemObj)
+{
+	UE_LOG(LogTemp, Warning, TEXT("UCustomInventoryLibrary::SpawnEquipment"));
+	if (World && ItemObj)
+	{
+		AEquipment* Equipment = Cast<AEquipment>(World->SpawnActor<AActor>(ItemObj->GetItemClass()));
+		if (Equipment)
+		{
+			ItemObj->bIsDestoryed = false;
+
+			Equipment->ReInitialize(ItemObj);
+			Equipment->SetItemState(EItemState::EIS_Pickup);
+			if (Equipment->bHasStorage)
+			{
+				Equipment->EquipInventoryComp = ItemObj->GetItemInvComp();
+			}
+
+			return Equipment;
+		}
+	}
+	return nullptr;
 }

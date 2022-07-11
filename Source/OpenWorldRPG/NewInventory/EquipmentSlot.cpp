@@ -106,6 +106,9 @@ bool UEquipmentSlot::TrySlotEquip(UNewItemObject* Var_ItemObj)
 				//대부분 bIsDestroyed에 분기됨. else문은 거의 사용되지 않음
 				if (Var_ItemObj->bIsDestoryed)
 				{
+					//여기 함수로 바꿔서 Equip에서도 사용할 수 있도록 하자.
+					Equipment = UCustomInventoryLibrary::SpawnEquipment(GetWorld(), Var_ItemObj);
+					/*
 					Equipment = Cast<AEquipment>(GetWorld()->SpawnActor<AActor>(Var_ItemObj->GetItemClass()));
 					if (Equipment)
 					{
@@ -113,11 +116,15 @@ bool UEquipmentSlot::TrySlotEquip(UNewItemObject* Var_ItemObj)
 						
 						Equipment->ReInitialize(Var_ItemObj);
 						Equipment->SetItemState(EItemState::EIS_Pickup);
-						Equipment->EquipInventoryComp = Var_ItemObj->GetItemInvComp();
+						if (Equipment->bHasStorage)
+						{
+							Equipment->EquipInventoryComp = Var_ItemObj->GetItemInvComp();
+						}
 						
 						//Var_ItemObj->SetMotherContainer(nullptr);
 
 					}
+					*/
 				}
 				else
 				{

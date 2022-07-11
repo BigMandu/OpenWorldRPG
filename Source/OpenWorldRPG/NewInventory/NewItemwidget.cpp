@@ -44,36 +44,38 @@ void UNewItemwidget::Refresh()// float var_tilesize)
 	if (ItemObj && BGSizeBox && ItemIcon && BGBorder)
 	{
 		//Tilesize = var_tilesize;
-		FIntPoint Itemsize = ItemObj->GetItemSize();
-		
-		//Item의 사이즈를 가져와서 TileSize만큼 곱해 Widget의 사이즈를 결정한다.
-		widgetsize = FVector2D(Itemsize.X * Tilesize, Itemsize.Y * Tilesize);
-		UE_LOG(LogTemp, Warning, TEXT("TileSize : %f"), Tilesize);
-		UE_LOG(LogTemp, Warning, TEXT("itemsize.x : %f, itemsize.y :f"), Itemsize.X, Itemsize.Y);
-
-		//BGSizeBox->SetWidthOverride(200.f);
-		//BGSizeBox->SetHeightOverride(200.f);
-		BGSizeBox->SetWidthOverride(widgetsize.X);
-		BGSizeBox->SetHeightOverride(widgetsize.Y);
-		
-		BGBorder->SetBrushColor(NormalColor);
-		//ItemIcon->SetBrush(GetIconImage());
-
-		UE_LOG(LogTemp, Warning, TEXT("Widget size : %s"), *widgetsize.ToString());
-		/*UE_LOG(LogTemp, Warning, TEXT("Widget size : %s"), *widgetsize.ToString());
-		UE_LOG(LogTemp, Warning, TEXT("sizebox size : %s"), *BGSizeBox->GetDesiredSize().ToString());
-		UE_LOG(LogTemp, Warning, TEXT("Border size : %s"), *BGBorder->GetDesiredSize().ToString());
-		UE_LOG(LogTemp, Warning, TEXT("Item icon size : %s"), *ItemIcon->Brush.GetImageSize().ToString());*/
-
-		//그림넣기
-		UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(ItemIcon->Slot);
-		if (CanvasSlot)
+		if (ItemObj->GetItemSize() != FIntPoint(0))
 		{
-			//CanvasSlot->SetSize(FVector2D(200.f));
-			CanvasSlot->SetSize(widgetsize);
-			ItemIcon->SetBrush(GetIconImage());
-		}
+			FIntPoint Itemsize = ItemObj->GetItemSize();
 
+			//Item의 사이즈를 가져와서 TileSize만큼 곱해 Widget의 사이즈를 결정한다.
+			widgetsize = FVector2D(Itemsize.X * Tilesize, Itemsize.Y * Tilesize);
+			UE_LOG(LogTemp, Warning, TEXT("TileSize : %f"), Tilesize);
+			UE_LOG(LogTemp, Warning, TEXT("itemsize.x : %f, itemsize.y :f"), Itemsize.X, Itemsize.Y);
+
+			//BGSizeBox->SetWidthOverride(200.f);
+			//BGSizeBox->SetHeightOverride(200.f);
+			BGSizeBox->SetWidthOverride(widgetsize.X);
+			BGSizeBox->SetHeightOverride(widgetsize.Y);
+
+			BGBorder->SetBrushColor(NormalColor);
+			//ItemIcon->SetBrush(GetIconImage());
+
+			UE_LOG(LogTemp, Warning, TEXT("Widget size : %s"), *widgetsize.ToString());
+			/*UE_LOG(LogTemp, Warning, TEXT("Widget size : %s"), *widgetsize.ToString());
+			UE_LOG(LogTemp, Warning, TEXT("sizebox size : %s"), *BGSizeBox->GetDesiredSize().ToString());
+			UE_LOG(LogTemp, Warning, TEXT("Border size : %s"), *BGBorder->GetDesiredSize().ToString());
+			UE_LOG(LogTemp, Warning, TEXT("Item icon size : %s"), *ItemIcon->Brush.GetImageSize().ToString());*/
+
+			//그림넣기
+			UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(ItemIcon->Slot);
+			if (CanvasSlot)
+			{
+				//CanvasSlot->SetSize(FVector2D(200.f));
+				CanvasSlot->SetSize(widgetsize);
+				ItemIcon->SetBrush(GetIconImage());
+			}
+		}
 	}
 	else
 	{
@@ -87,7 +89,7 @@ FSlateBrush UNewItemwidget::GetIconImage()
 	FSlateBrush icon;
 	if (ItemObj)
 	{
-		if (ItemObj->GetItemIcon())
+		if (ItemObj->GetItemIcon() != nullptr)
 		{
 			icon = UWidgetBlueprintLibrary::MakeBrushFromMaterial(ItemObj->GetItemIcon(), widgetsize.X, widgetsize.Y);
 		}

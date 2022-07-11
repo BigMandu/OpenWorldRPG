@@ -77,8 +77,6 @@ public:
 	UNewInventoryComponent* EquipInventoryComp;
 	
 private:
-
-	void SetOwningPlayer(AActor* Actor);
 	void SendToInventory(AActor* Actor);
 	
 
@@ -87,16 +85,14 @@ protected:
 	virtual bool StepEquip(AActor* Actor, ERifleSlot RifleSlot = ERifleSlot::ERS_MAX);
 public:
 	virtual UNewItemObject* GetDefaultItemObj() override;
-
+	
 	void ReInitialize(UNewItemObject* Obj);
+	bool Equip(AActor* Actor, ERifleSlot RifleSlot = ERifleSlot::ERS_MAX);
+	void SetOwningPlayer(AActor* Actor);
+	AActor* GetOwningPlayer();
 
 	void SettingStorage();
-
-	bool Equip(AActor* Actor, ERifleSlot RifleSlot = ERifleSlot::ERS_MAX);
-	
-	
 	virtual void Drop() override;
-
 	virtual void Remove();
 
 	/* Destory된 BeforeEquip과 동일한 장비를 SpawnActor로 spawn한뒤 해당 장비를 리턴한다.*/

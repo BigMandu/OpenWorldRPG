@@ -11,6 +11,7 @@
  */
 class UNewItemObject;
 class ABaseCharacter;
+class AEquipment;
 
 UCLASS()
 class OPENWORLDRPG_API UCustomInventoryLibrary : public UObject
@@ -21,4 +22,5 @@ public:
 
 	static void BackToItem(UNewItemObject* ItemObj);
 	static void DirectInToInventory(UNewItemObject* ItemObj, ABaseCharacter* BChar);
+	static AEquipment* SpawnEquipment(UWorld* World, UNewItemObject* ItemObj);
 };

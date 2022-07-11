@@ -289,14 +289,15 @@ const TMap<UNewItemObject*, FTile> UNewInventoryComponent::GetAllItems()
 	for (int32 index = 0; index < InventoryItems.Num(); ++index)
 	{
 		UNewItemObject* CurItemObj = InventoryItems[index];
-
-		bool bAlreadyHaveit = InventoryStoredInfo.Contains(CurItemObj);
-		if (bAlreadyHaveit == false)
+		if (CurItemObj != nullptr)
 		{
-			FTile CurItemSize = IndexToTile(index);
-			InventoryStoredInfo.Add(CurItemObj, CurItemSize);
+			bool bAlreadyHaveit = InventoryStoredInfo.Contains(CurItemObj);
+			if (bAlreadyHaveit == false)
+			{
+				FTile CurItemSize = IndexToTile(index);
+				InventoryStoredInfo.Add(CurItemObj, CurItemSize);
+			}
 		}
-
 	}
 	return InventoryStoredInfo;
 }

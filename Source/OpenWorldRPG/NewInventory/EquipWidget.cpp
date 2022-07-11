@@ -89,8 +89,9 @@ void UEquipWidget::RefreshEquipWidget()
 				break;
 				case EEquipmentType::EET_Vest:
 					SetSlot(ele, VestSlot);
-					if (VestOverlay && ele->bHasStorage )
+					if (VestOverlay && ele->bHasStorage)
 					{
+						
 						ele->SettingStorage();
 						//VestOverlay->ClearChildren();	
 						if (ele->EquipGridWidget)

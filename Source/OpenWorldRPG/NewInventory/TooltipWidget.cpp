@@ -31,8 +31,13 @@ void UTooltipWidget::SetData(UNewItemObject* Obj, float tilesize)
 		
 
 		ItemIcon->SetBrushSize(FVector2D(size.X * tilesize, size.Y * tilesize));
-		ItemIcon->SetBrushFromMaterial(Obj->icon);
-		ItemName->SetText(Obj->itemName);
-		ItemDesc->SetText(Obj->itemDesc);
+		if (Obj->icon)
+		{
+			ItemIcon->SetBrushFromMaterial(Obj->icon);
+			ItemName->SetText(Obj->itemName);
+			ItemDesc->SetText(Obj->itemDesc);
+		}
+		
+		
 	}
 }
