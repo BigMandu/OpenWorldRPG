@@ -22,5 +22,7 @@ public:
 
 	static void BackToItem(UNewItemObject* ItemObj);
 	static void DirectInToInventory(UNewItemObject* ItemObj, ABaseCharacter* BChar);
-	static AEquipment* SpawnEquipment(UWorld* World, UNewItemObject* ItemObj);
+
+	//if Actor var is valid, Call StepEquip func. else return AEquipment
+	static AEquipment* SpawnEquipment(UWorld* World, UNewItemObject* ItemObj, AActor* Actor = nullptr);
 };

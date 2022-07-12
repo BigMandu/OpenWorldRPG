@@ -62,18 +62,20 @@ public:
 	/*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")
 	EEquipmentType EquipmentType;*/
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")
+
+	/********* Storage ********/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment | Storage")
 	bool bHasStorage;
 
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")
-	//float GridTileSize;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment | Storage")
+	float GridTileSize;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment | Storage")
 	TSubclassOf<UUserWidget> WEquipGridWidget;
 
 	UNewInventoryGrid* EquipGridWidget;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment | Storage")
 	UNewInventoryComponent* EquipInventoryComp;
 	
 private:
@@ -82,19 +84,20 @@ private:
 
 protected:
 	virtual void BeginPlay() override;
-	virtual bool StepEquip(AActor* Actor, ERifleSlot RifleSlot = ERifleSlot::ERS_MAX);
+	
 public:
 	virtual UNewItemObject* GetDefaultItemObj() override;
 	
 	void ReInitialize(UNewItemObject* Obj);
 	bool Equip(AActor* Actor, ERifleSlot RifleSlot = ERifleSlot::ERS_MAX);
+	virtual bool StepEquip(AActor* Actor, ERifleSlot RifleSlot = ERifleSlot::ERS_MAX);
+
 	void SetOwningPlayer(AActor* Actor);
 	AActor* GetOwningPlayer();
 
-	void SettingStorage();
+	
 	virtual void Drop() override;
 	virtual void Remove();
 
-	/* Destory된 BeforeEquip과 동일한 장비를 SpawnActor로 spawn한뒤 해당 장비를 리턴한다.*/
-	//AEquipment* SpawnEquip(UNewItemObject* Obj, AActor* Actor);
+	void SettingStorage();
 };

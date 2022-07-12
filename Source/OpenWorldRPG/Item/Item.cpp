@@ -6,6 +6,7 @@
 #include "OpenWorldRPG/Item/EquipmentComponent.h"
 #include "OpenWorldRPG/NewInventory/CustomInventoryLibrary.h"
 #include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
+#include "OpenWorldRPG/NewInventory/NewInventoryGrid.h"
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
 
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
@@ -34,7 +35,7 @@ AItem::AItem()
 	//Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
 	
 	//Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel2, ECollisionResponse::ECR_Overlap);
-	
+
 	ItemSize = FIntPoint(1, 1);
 	bCanRotate = true;
 
@@ -79,7 +80,6 @@ UNewItemObject* AItem::GetDefaultItemObj()
 		Obj->bCanEquip = bCanEquip;
 		Obj->EquipmentType = EquipmentType;
 		Obj->InteractType = InteractType;
-		
 		//UE_LOG(LogTemp, Warning, TEXT("AItem::Create object"));
 	}
 	else
@@ -172,7 +172,7 @@ bool AItem::AddAtEquip(AEquipment* Equipped)
 	//AEquipment* Equipped = BChar->Equipment->GetEquippedWeaponSameType(EEquipmentType::EET_Backpack);
 	if (Equipped)
 	{
-		if (Equipped->EquipInventoryComp->TryAddItem(ItemObj))
+		if (Equipped->ItemObj->GetItemInvComp()->TryAddItem(ItemObj))
 		{
 			SetItemState(EItemState::EIS_Pickup);
 			ItemObj->bIsDestoryed = true;
@@ -247,3 +247,33 @@ void AItem::Use(AActor* Actor)
 	
 
 }
+
+//void AItem::SettingStorage()
+//{
+//	//EquipGridWidget이 없을때만 생성한다.
+//	if (ItemInvComponent == nullptr)
+//	{
+//		if (MainCon == nullptr)
+//		{
+//			UE_LOG(LogTemp, Warning, TEXT("SettingStorage::MainCon is nullptr try Get Controller"));
+//			if (OwningPlayer)
+//			{
+//				//MainCon = Cast<AMainController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+//				MainCon = Cast<AMainController>(OwningPlayer->GetController());
+//			}
+//		}
+//
+//		if (WEquipGridWidget && MainCon)
+//		{
+//			ItemInvComponent = CreateWidget<UNewInventoryGrid>(MainCon, WEquipGridWidget);
+//			if (ItemInvComponent && ItemObj->GetItemInvComp() != nullptr)// && EquipInventoryComp)
+//			{
+//				UE_LOG(LogTemp, Warning, TEXT("SettingStorage::Try Initialize EquipGridWidget "));
+//				//ItemObj->SetItemInvComp(EquipInventoryComp);
+//				//EquipInventoryComp = ItemObj->GetItemInvComp(); //Item Swap시에 문제 발생 (ItemObj의 InvComp가 null만 가지고 있음)
+//				ItemInvComponent->GridInitialize(ItemObj->GetItemInvComp(), ItemObj->GetItemInvComp()->TileSize);
+//
+//			}
+//		}
+//	}
+//}

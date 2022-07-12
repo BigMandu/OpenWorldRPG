@@ -7,6 +7,8 @@
 #include "OpenWorldRPG/Item/Weapon.h"
 #include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
 #include "OpenWorldRPG/NewInventory/NewInventoryGrid.h"
+#include "OpenWorldRPG/NewInventory/CustomInventoryLibrary.h"
+
 #include "OpenWorldRPG/MainCharacter.h"
 #include "OpenWorldRPG/MainController.h"
 #include "OpenWorldRPG/EnemyAIController.h"
@@ -72,6 +74,7 @@ void AEquipment::ReInitialize(UNewItemObject* Obj)
 	}
 }
 
+//부모 클래스에서 Beginplay시 한번만 사용됨.
 UNewItemObject* AEquipment::GetDefaultItemObj()
 {
 	UNewItemObject* Obj = Super::GetDefaultItemObj();
@@ -144,19 +147,38 @@ bool AEquipment::Equip(AActor* Actor, ERifleSlot RifleSlot)
 				 * 
 				 * Weapon의 경우, RifleAssign에 
 				 */
+				
 				AEquipment* BeforeEquipment = BChar->Equipment->GetEquippedWeaponSameType(EEquipmentType::EET_MAX, this, RifleSlot);
 				if (BeforeEquipment)
 				{
-					BChar->Equipment->SwapEquipment(BeforeEquipment, this);
+					BChar->Equipment->RemoveEquipment(BeforeEquipment); //SwapEquipment(BeforeEquipment, this);
 					BeforeEquipment->SendToInventory(BChar);
 					/*this를 SpawnActor해서 Data를 이관하는 작업을 하는 함수를 호출해야한다.
-					 * UEqupmentSlot::NativeDrop에서 하는 루틴을 함수화 해야함.
-					 *
+					 * UEqupmentSlot::NativeDrop에서 하는 루틴을 함수화 해야함
 					 */
 				}
 			}
 		}
-		bReturn = StepEquip(Actor, RifleSlot);
+
+		//여기서 2개분기로 나뉜다. 
+		//if문으로 빠지는 경우는 INV에 있는 Equipment를 Drag&Drop으로 장착하지 않고. 
+		//Equip버튼을 눌러 장착하는경우
+		if (ItemObj->bIsDestoryed)
+		{
+			//UCustomInventoryLibrary::SpawnEquipment(GetWorld(), ItemObj); //함수화 함.
+			//위 SpawnEquipment에서 BChar를 넘겨주는 매개변수를 추가해야됨.
+			//해당 함수에서 바로 StepEquip을 때리고 여기선 그냥 return하면됨.
+
+			//새로 생성한 Equipment의 invComp는 ItemObj->InvComp에서 이관해줌.
+			UCustomInventoryLibrary::SpawnEquipment(GetWorld(), ItemObj, Actor);
+			return true;
+		}
+		//이 경우는 INV에 있는 Equipment를 Drag&Drop으로 장착 했을경우. (EquipSlot::TrySlotEquip에서 호출함)
+		else
+		{
+			//Destoryed가 아니면 그냥 뭐 안하고 바로 step equip으로
+			bReturn = StepEquip(Actor, RifleSlot); //여기까진 EquipInventory가 정상임
+		}
 	}
 	return bReturn;
 }
@@ -221,33 +243,21 @@ void AEquipment::SendToInventory(AActor* Actor)
 	ABaseCharacter* BChar = Cast<ABaseCharacter>(Actor);
 	check(BChar);
 
-	//이 무기와 같은 타입의 무기가 이미 장착되어있고 (Rifle인 경우 2개 장착가능)
-	//if (Main->Equipment->IsWeaponExist(this))
+	OwningEquipment = nullptr;
+	ItemObj->bIsDestoryed = true;
+
+	//새로 추가함 InventoryComponent를 갱신함.
+	/*if (bHasStorage && EquipInventoryComp)
 	{
-		//if (GetItemState() == EItemState::EIS_Spawn) //월드에 있는 무기면
-		{
-			//OwningEquipment를 null로 설정해준다.
-			OwningEquipment = nullptr;
-			ItemObj->bIsDestoryed = true;
-			//Inventory로 이동해야함.
-			Pickup(BChar);
-	//		return true;
-		}
-		//else //Pickup상태면 (Inventory에 있는 무기임) -> 스왑해준다 //얘는 따로 빼서 함수를 구현해야할듯하다.
-		//{
-		//	AEquipment* Beforeweapon = Main->Equipment->GetBeforeWeapon(this);
-		//	if (Beforeweapon != nullptr)
-		//	{
-		//		Beforeweapon->OwningEquipment = nullptr;
-		//		Beforeweapon->Pickup(Main); //기존 무기를 Inventory로 보낸다. 
-		//	}
-		//	UE_LOG(LogTemp, Warning, TEXT("Weapon::CheckSendToInventory. something wrong."));
-		//	return false;
-		//}
-	}
-	//return false;
+		ItemObj->SetItemInvComp(EquipInventoryComp);
+	}*/
+
+	//부모 class에 있는 Pickup함수 호출해서 item을 담는다.
+	Pickup(BChar);
 }
 
+//이 함수는 나중에 CustomInventoryLibrary에 빼야할듯.
+//ItemObj도 사용해야됨.
 void AEquipment::SettingStorage()
 {
 	//EquipGridWidget이 없을때만 생성한다.
@@ -266,10 +276,12 @@ void AEquipment::SettingStorage()
 		if (WEquipGridWidget && MainCon)
 		{
 			EquipGridWidget = CreateWidget<UNewInventoryGrid>(MainCon, WEquipGridWidget);
-			if (EquipGridWidget && EquipInventoryComp)
+			if (EquipGridWidget && EquipInventoryComp)//ItemObj->GetItemInvComp() != nullptr)
 			{
 				UE_LOG(LogTemp, Warning, TEXT("SettingStorage::Try Initialize EquipGridWidget "));
-				EquipInventoryComp = ItemObj->GetItemInvComp(); //Item Swap시에 문제 발생 (ItemObj의 InvComp가 null만 가지고 있음)
+				
+				//EquipInventoryComp = ItemObj->GetItemInvComp(); //Item Swap시에 문제 발생 (ItemObj의 InvComp가 null만 가지고 있음)
+				//EquipGridWidget->GridInitialize(ItemObj->GetItemInvComp(), ItemObj->GetItemInvComp()->TileSize);
 				EquipGridWidget->GridInitialize(EquipInventoryComp, EquipInventoryComp->TileSize);
 				
 			}
@@ -293,31 +305,9 @@ void AEquipment::Remove()
 	/* 아무것도 안함. .. 음..*/
 	//Weapon의 Remove가 있음. 꼭 호출해야됨.
 
-}
-
-/*
-AEquipment* AEquipment::SpawnEquip(UNewItemObject* Obj, AActor* Actor)
-{
-	if (Obj && Actor)
+	if (bHasStorage && EquipInventoryComp)
 	{
-		AEquipment* T_Equipment = Cast<AEquipment>(GetWorld()->SpawnActor<AActor>(Obj->GetItemClass()));
-		//AMainCharacter* Main = Cast<AMainCharacter>(Actor);
-		if (T_Equipment)
-		{
-			Obj->bIsDestoryed = false;
-			T_Equipment = this;
-			T_Equipment->EquipInventoryComp = this->EquipInventoryComp;
-			T_Equipment->ReInitialize(Obj);
-
-			Obj->item = T_Equipment;
-			//if(Main)
-			//{
-			//	T_Equipment->StepEquip(Main);
-			//}
-		}
-
-		return T_Equipment;
+		ItemObj->SetItemInvComp(EquipInventoryComp);
 	}
-	return nullptr;
+
 }
-*/

@@ -57,8 +57,6 @@ bool UEquipmentComponent::AddEquipment(AEquipment* Equip)
 			{
 				bHasVest = true;
 			}
-			
-			
 			bReturn = true;
 		}
 		//EquipWidget::RefreshEquipWidget°ú bind½ÃÅ´.

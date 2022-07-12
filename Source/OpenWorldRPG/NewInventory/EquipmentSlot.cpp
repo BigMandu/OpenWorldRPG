@@ -146,18 +146,10 @@ bool UEquipmentSlot::TrySlotEquip(UNewItemObject* Var_ItemObj)
 				}
 			}
 		}
+		//Slot의 Type과 Equipment의 Type이 일치하지 않는 경우 다시 원래 있던곳으로 옮긴다.
 		else
 		{
 			UCustomInventoryLibrary::BackToItem(Var_ItemObj);
-			/*if (Var_ItemObj->GetMotherContainer() != nullptr)
-			{
-				Var_ItemObj->GetMotherContainer()->->TryAddItem(Var_ItemObj);
-			}
-			else if (Var_ItemObj->GetMotherEquipSlot() != nullptr)
-			{
-				Var_ItemObj->GetMotherEquipSlot()->TrySlotEquip(Var_ItemObj);
-			}
-			UE_LOG(LogTemp, Warning, TEXT("Incorrect Slot"));*/
 		}
 	}
 	return false;

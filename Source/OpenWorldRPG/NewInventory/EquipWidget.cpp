@@ -164,7 +164,6 @@ void UEquipWidget::RemoveEquipment(UObject* T_ItemObj)
 		if(Equipment)
 		{
 			
-			//Weapon일때 Weapon의 Remove가 호출되기 때문에 꼭 호출 해야됨.
 			Equipment->Remove();
 
 			EquipComp->RemoveEquipment(Equipment);

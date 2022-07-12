@@ -7,7 +7,7 @@
 
 UNewItemObject::UNewItemObject()
 {
-
+	
 }
 
 FIntPoint UNewItemObject::GetItemSize()

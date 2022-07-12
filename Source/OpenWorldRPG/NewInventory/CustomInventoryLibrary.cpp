@@ -80,7 +80,8 @@ void UCustomInventoryLibrary::DirectInToInventory(UNewItemObject* ItemObj, ABase
 	}
 }
 
-AEquipment* UCustomInventoryLibrary::SpawnEquipment(UWorld* World, UNewItemObject* ItemObj)
+//if Actor var is valid, Call StepEquip func. else return AEquipment
+AEquipment* UCustomInventoryLibrary::SpawnEquipment(UWorld* World, UNewItemObject* ItemObj, AActor* Actor)
 {
 	UE_LOG(LogTemp, Warning, TEXT("UCustomInventoryLibrary::SpawnEquipment"));
 	if (World && ItemObj)
@@ -92,12 +93,21 @@ AEquipment* UCustomInventoryLibrary::SpawnEquipment(UWorld* World, UNewItemObjec
 
 			Equipment->ReInitialize(ItemObj);
 			Equipment->SetItemState(EItemState::EIS_Pickup);
-			//if (Equipment->bHasStorage)
-			//{
-			//	Equipment->EquipInventoryComp = ItemObj->GetItemInvComp();
-			//}
+			
+			if (Equipment->bHasStorage)
+			{
+				Equipment->EquipInventoryComp = ItemObj->GetItemInvComp();
+			}
 
-			return Equipment;
+			if (Actor != nullptr)
+			{
+				Equipment->StepEquip(Actor);
+				return nullptr;
+			}
+			else
+			{
+				return Equipment;
+			}
 		}
 	}
 	return nullptr;

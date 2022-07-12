@@ -39,11 +39,14 @@ class OPENWORLDRPG_API UNewItemObject : public UObject, public IItemInterface
 private:
 	
 	UNewInventoryGrid* MotherContainer;
-	UNewInventoryComponent* InvComp;
 	UEquipmentSlot* MotherEquipSlot;
 
 public:
 	UNewItemObject();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")
+	UNewInventoryComponent* InvComp;
+
 	FIntPoint itemsize;
 	EEquipmentType EquipmentType;
 	EInteractType InteractType;

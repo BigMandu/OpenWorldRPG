@@ -87,11 +87,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Item)
 	bool bCanEquip;
 
-
 	UPROPERTY(EditDefaultsOnly, Category = AI)
-	UAIPerceptionStimuliSourceComponent* StimuliComp;
-
-
+	UAIPerceptionStimuliSourceComponent* StimuliComp;	
 
 
 protected:
@@ -121,4 +118,5 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void Use(AActor* Actor);
+
 };
