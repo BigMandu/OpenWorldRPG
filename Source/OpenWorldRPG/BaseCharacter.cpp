@@ -4,26 +4,31 @@
 #include "BaseCharacter.h"
 
 #include "MainController.h"
-#include "EnemyAIController.h"
+#include "AI/EnemyAIController.h"
 #include "MainAnimInstance.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 
 
 #include "OpenWorldRPG/NewInventory/LootWidgetComponent.h"
-#include "OpenWorldRPG/NewInventory/CharacterLootWidget.h"
 #include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
+#include "OpenWorldRPG/NewInventory/EquipmentComponent.h"
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
+#include "OpenWorldRPG/NewInventory/ItemStorageObject.h"
+
+#include "OpenWorldRPG/NewInventory/Widget/CharacterLootWidget.h"
+#include "NewInventory/Widget/NewInventory.h"
+
 
 #include "OpenWorldRPG/Item/Item.h"
 #include "OpenWorldRPG/Item/Equipment.h"
 #include "OpenWorldRPG/Item/Weapon.h"
-#include "OpenWorldRPG/Item/EquipmentComponent.h"
+
 
 
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "NewInventory/NewInventory.h"
+
 #include "Perception/AISense_Hearing.h"
 #include "Sound/SoundCue.h"
 
@@ -49,8 +54,12 @@ ABaseCharacter::ABaseCharacter()
 
 	Health = 100.f;
 	
-	PocketInventoryComp = CreateDefaultSubobject<UNewInventoryComponent>(TEXT("PocketInventoryComp"));
-	SecureBoxInventoryComp= CreateDefaultSubobject<UNewInventoryComponent>(TEXT("SecureBoxInventoryComp"));
+	BaseInventoryComp = CreateDefaultSubobject<UNewInventoryComponent>(TEXT("BaseInventoryComp"));
+
+
+	//PocketInventoryComp = CreateDefaultSubobject<UNewInventoryComponent>(TEXT("PocketInventoryComp"));
+	//SecureBoxInventoryComp= CreateDefaultSubobject<UNewInventoryComponent>(TEXT("SecureBoxInventoryComp"));
+	
 
 	Equipment = CreateDefaultSubobject<UEquipmentComponent>(TEXT("Equipment"));
 	LootWidgetComp = CreateDefaultSubobject<ULootWidgetComponent>(TEXT("LootWidgetComp"));
@@ -95,7 +104,7 @@ void ABaseCharacter::PostInitializeComponents()
 	}
 
 	SetTeamType(TeamType);
-
+	SettingStorage();
 	if (bHasSpawnItems)
 	{
 		SpawnItems();
@@ -105,6 +114,22 @@ void ABaseCharacter::PostInitializeComponents()
 void ABaseCharacter::SetTeamType(ETeamType Team)
 {
 	TeamType = Team;
+}
+
+void ABaseCharacter::SettingStorage()
+{
+	PocketStorage = NewObject<UItemStorageObject>();
+	SecureBoxStorage = NewObject<UItemStorageObject>();
+
+	
+
+	if (PocketStorage && SecureBoxStorage)
+	{
+		PocketStorage->InitializeStorage(PocketSizeX, PocketSizeY, PocketTileSize);
+		SecureBoxStorage->InitializeStorage(SecureSizeX, SecureSizeY, SecureTileSize);
+	}
+	
+
 }
 
 void ABaseCharacter::SetCharacterStatus(ECharacterStatus Type)
@@ -134,9 +159,13 @@ void ABaseCharacter::SpawnItems()
 		AItem* Item = GetWorld()->SpawnActor<AItem>(AddItem);
 		if (Item)
 		{
-			if (PocketInventoryComp->TryAddItem(Item->GetDefaultItemObj()))
+			//if (PocketInventoryComp->TryAddItem(Item->GetDefaultItemObj()))
+			//if(PocketStorage->TryAddItem()
+			
+			if(BaseInventoryComp->TryAddItem(PocketStorage,Item->ItemSetting))
 			{
-				Item->GetDefaultItemObj()->bIsDestoryed = true;
+				Item->SetItemState(EItemState::EIS_Pickup);
+				//Item->ItemObj->bIsDestoryed = true;
 				Item->Destroy();
 			}
 		}
@@ -166,27 +195,34 @@ UNewInventoryComponent* ABaseCharacter::GetAllInvComp(int32 index)
 	switch (index)
 	{
 	case 0:
-	{
+
+		/*
 		AEquipment* Backpack = Equipment->GetEquippedWeaponSameType(EEquipmentType::EET_Backpack);
 		if (Backpack && Backpack->bHasStorage)
 		{
-			return Backpack->EquipInventoryComp;
+			//return Backpack->EquipInventoryComp;
 		}
-	}
-	break;
+		*/
+
+		break;
 	case 1:
-	{
+
+		/*
 		AEquipment* Vest = Equipment->GetEquippedWeaponSameType(EEquipmentType::EET_Vest);
 		if (Vest && Vest->bHasStorage)
 		{
-			return Vest->EquipInventoryComp;
+			//return Vest->EquipInventoryComp;
 		}
+		*/
 		break;
-	}
+
+
 	case 2:
-		return this->PocketInventoryComp;
+		//return this->PocketInventoryComp;
+		break;
 	case 3:
-		return this->SecureBoxInventoryComp;
+		//return this->SecureBoxInventoryComp;
+		break;
 	}
 
 	return nullptr;

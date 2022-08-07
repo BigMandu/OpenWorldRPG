@@ -4,10 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "OpenWorldRPG/NewInventory/InventoryStruct.h"
+#include "OpenWorldRPG/NewInventory/Library/InventoryStruct.h"
 #include "NewInventoryComponent.generated.h"
 
 class UNewItemObject;
+class UItemStorageObject;
 
 //DECLARE_MULTICAST_DELEGATE_OneParam(FOnRemoved, UObject*);
 DECLARE_MULTICAST_DELEGATE(FOnInventoryUpdated);
@@ -31,7 +32,7 @@ public:
 	int32 Rows = 10;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InventoryComp")
-	float TileSize = 50.f;
+	float TileSize = 60.f;
 
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InventoryComp")
@@ -56,10 +57,18 @@ public:
 
 	bool IsAvailableSpace(UNewItemObject* ItemObj, int32 TopLeftIndex);
 
+	/* New version */
+	bool IsAvailableSpace(UItemStorageObject* StorageObj, UNewItemObject* ItemObj, int32 TopLeftIndex);
+	void AddItemAtIndex(UItemStorageObject* StorageObj, UNewItemObject* ItemObj, int32 Index);
+	bool TryAddItem(UItemStorageObject* StorageObj, FItemSetting ItemSetting);
+	bool RemoveItem(UItemStorageObject* StorageObj, UNewItemObject* ItemObj);
+	UNewItemObject* CreateObject(FItemSetting ItemStruct, bool& bIsCreated);
+
+
 	
 	/* FTile -> Inventory Struct */
-	FTile IndexToTile(int32 index);
-	int32 TileToIndex(FTile tile);
+	//FTile IndexToTile(int32 index);
+	//int32 TileToIndex(FTile tile);
 
 	FTile ForEachIndex(UNewItemObject* Obj, int32 TopLeftIndex);
 

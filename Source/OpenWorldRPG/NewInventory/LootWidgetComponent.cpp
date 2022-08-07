@@ -2,11 +2,11 @@
 
 
 #include "OpenWorldRPG/NewInventory/LootWidgetComponent.h"
-#include "OpenWorldRPG/NewInventory/CharacterLootWidget.h"
-#include "OpenWorldRPG/NewInventory/EquipWidget.h"
+#include "OpenWorldRPG/NewInventory/Widget/CharacterLootWidget.h"
+#include "OpenWorldRPG/NewInventory/Widget/EquipWidget.h"
+#include "OpenWorldRPG/NewInventory/Widget/ContainerWidget.h"
+#include "OpenWorldRPG/NewInventory/Widget/NewInventory.h"
 #include "OpenWorldRPG/MainController.h"
-#include "ContainerWidget.h"
-#include "NewInventory.h"
 #include "OpenWorldRPG/BaseCharacter.h"
 
 // Sets default values for this component's properties

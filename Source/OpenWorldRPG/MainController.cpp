@@ -6,7 +6,7 @@
 #include "Item/Container.h"
 #include "GameFramework/PlayerController.h"
 #include "Blueprint/UserWidget.h"
-#include "OpenWorldRPG/NewInventory/NewInventory.h"
+#include "OpenWorldRPG/NewInventory/Widget/NewInventory.h"
 
 
 

@@ -27,6 +27,7 @@ class USkeletalMeshComponent;
 class UAnimMontage;
 class AMainCharacter;
 class UCurveFloat;
+class UWeaponPDA;
 
 
 //UENUM(BlueprintType)
@@ -72,6 +73,7 @@ enum class EWeaponState : uint8
 	EWS_MAX			UMETA(DisplayName = "DefaultsMAX")
 };
 
+/*
 USTRUCT()
 struct FWeaponAnim
 {
@@ -92,7 +94,7 @@ struct FWeaponStat
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
 	float WeaponRange;
 
-	/* 탄이 흩어지는 정도.*/
+	// 탄이 흩어지는 정도.
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
 	float HipBulletSpread;
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
@@ -114,14 +116,14 @@ struct FWeaponStat
 	UPROPERTY(VisibleAnywhere, Category = "Weapon | Stat")
 	float SecondPerBullet;
 
-	/* Recoil */
+	// Recoil 
 	UPROPERTY(EditDefaultsOnly, Category = "Recoil")
 	UCurveFloat* Recoil_X;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Recoil")
 	UCurveFloat* Recoil_Y;
 
-	/* FWeaponStat Defaults */
+	// FWeaponStat Defaults
 	FWeaponStat()
 	{
 		WeaponRange = 5000.f;
@@ -137,13 +139,14 @@ struct FWeaponStat
 		//m4a1은 분당 700~950발.분당 950으로 잡고 초당 15.8발을 쏘면됨. 0.06초당 한발씩.
 		FireRatePerMin = 950;
 
-		/*FireRatePerSec이나 SecondPerBullet은
-		 * FireRatePerMin이 Weapon마다 변할 수 있으니.
-		 * Equip함수에서 계산하여 저장한다.
-		 */
+		//FireRatePerSec이나 SecondPerBullet은
+		//FireRatePerMin이 Weapon마다 변할 수 있으니.
+		//Equip함수에서 계산하여 저장한다.
+		 
 		
 	}
 };
+*/
 
 UCLASS(Abstract)
 class OPENWORLDRPG_API AWeapon : public AEquipment
@@ -160,6 +163,11 @@ public:
 	//FOnBeginHighReady OnBeginHighReady;
 	//FOnEndHighReady OnEndHighReady;
 
+
+	//StepEquip때 대입한다.
+	//지정한 값을 쉽게 사용하기 위해 Cast해둔다.
+	UWeaponPDA* WeaponDataAsset;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UCapsuleComponent* CapsuleComp;
 
@@ -171,12 +179,13 @@ public:
 	//Clipping을 하고있을때 Aim을 막고, BulletOut의 Trace를 수정하기 위한 boolean
 	bool bIsHighReady;
 
-	UPROPERTY(EditAnywhere, Category = "WeaponStat")
-	FWeaponStat WeaponStat;
-
 	FName MuzzleFlashSocketName;
 
-	/* FPS Aim모드 일때 위치값 저장*/
+	//PDA에 저장함.
+	/*UPROPERTY(EditAnywhere, Category = "WeaponStat")
+	FWeaponStat WeaponStat;*/
+
+	/* FPS Aim모드 일때 위치값 저장 -> PDA에 저장함.*/
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon | Transform")
 	FTransform CharFPMeshTransform;
 	
@@ -189,6 +198,7 @@ public:
 	/*UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	ERifleAssign RifleAssign;*/
 
+	//Primary, Sub을 지정한다.
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	ERifleSlot RifleAssign;
 
@@ -198,7 +208,7 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	EWeaponState CurrentWeaponState;
 
-	/* FX */
+	/* FX  -> 아래 Sound,Effect, Shake, Animation까지 PDA로 옮김. */
 	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Sound")
 	//USoundCue* EquippedSound;
 
@@ -212,9 +222,10 @@ public:
 	TSubclassOf<UCameraShakeBase> CamShake;
 
 	/* Animation */
-	UPROPERTY(EditDefaultsOnly, Category = "Animation")
-	FWeaponAnim FireAnimaton;
+	/*UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	FWeaponAnim FireAnimaton;*/
 
+	//////////////////////////////////
 	float AlphaTime;
 	float RecoilAlphaTime;
 	FTimerHandle AimInitHandle;
@@ -242,6 +253,8 @@ protected:
 	FVector WorldAimPosition;
 	//FVector WeaponMuzzleLocation;
 
+
+	//아래 3개의 FTransform은 PDA로 옮김.
 	//FPMesh의 WeaponGrip 소켓에 붙일 Weapon의 Transform값.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")
 	FTransform FPMeshAttachTransform;
@@ -335,7 +348,7 @@ public:
 	void SettingRifleAssign(ABaseCharacter* BChar, ERifleSlot RifleSlot);
 
 	void WeaponFX();
-	void PlayWeaponAnimAndCamShake(FWeaponAnim& Anim);
+	//void PlayWeaponAnimAndCamShake(FWeaponAnim& Anim);
 
 	
 

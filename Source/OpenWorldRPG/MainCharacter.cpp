@@ -5,6 +5,9 @@
 #include "MainController.h"
 #include "MainAnimInstance.h"
 
+#include "OpenWorldRPG/NewInventory/Widget/CharacterInventoryWidget.h"
+#include "OpenWorldRPG/NewInventory/Widget/NewInventory.h"
+
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -16,6 +19,7 @@
 #include "OpenWorldRPG/Item/Equipment.h"
 #include "OpenWorldRPG/Item/Weapon.h"
 #include "Components/CapsuleComponent.h"
+
 #include "DrawDebugHelpers.h" //µð¹ö±ë¿ë
 
 
@@ -138,6 +142,11 @@ void AMainCharacter::PostInitializeComponents()
 	//GetCapsuleComponent()->SetCollisionProfileName(FName("MainChar"));
 	GetCapsuleComponent()->SetCollisionObjectType(ECollisionChannel::ECC_GameTraceChannel2);
 	//GetCapsuleComponent()->SetCollisionProfileName("MainChar");
+
+
+	
+	
+	
 }
 
 // Called when the game starts or when spawned
@@ -145,6 +154,16 @@ void AMainCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	MainController = Cast<AMainController>(GetController());
+
+	UNewInventory* InvWidget = Cast<UNewInventory>(MainController->NewInventory);
+	if (InvWidget)
+	{
+		UCharacterInventoryWidget* CharWidget = InvWidget->CharInvWidget;
+		if (CharWidget)
+		{
+			CharWidget->InitializeInventory(this);
+		}
+	}
 }
 
 

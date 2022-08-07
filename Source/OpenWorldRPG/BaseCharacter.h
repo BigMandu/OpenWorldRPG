@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "OpenWorldRPG/Item/Interactive_Interface.h"
+#include "OpenWorldRPG/NewInventory/Library/Interactive_Interface.h"
 #include "Perception/AISightTargetInterface.h"
 #include "BaseCharacter.generated.h"
 
@@ -13,8 +13,8 @@ class UNewInventoryComponent;
 class UEquipmentComponent;
 class ULootWidgetComponent;
 class UCharacterLootWidget;
+class UItemStorageObject;
 class USoundCue;
-
 
 class AItem;
 class AContainer;
@@ -122,13 +122,41 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "SpawnItems")
 	TArray<TSubclassOf<AItem>> SpawnItemList;
 
+	/* Storage */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Storage")
+	int32 PocketSizeX = 3;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Storage")
+	int32 PocketSizeY = 3;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Storage")
+	float PocketTileSize = 60.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Storage")
+	int32 SecureSizeX = 3;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Storage")
+	int32 SecureSizeY = 3;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Storage")
+	float SecureTileSize = 60.f;
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Storage")
+	UItemStorageObject* PocketStorage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Storage")
+	UItemStorageObject* SecureBoxStorage;
 
 	/*  Components */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
-	UNewInventoryComponent* PocketInventoryComp;
+	UNewInventoryComponent* BaseInventoryComp;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
-	UNewInventoryComponent* SecureBoxInventoryComp;
+	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
+	//UNewInventoryComponent* PocketInventoryComp;
+
+	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
+	//UNewInventoryComponent* SecureBoxInventoryComp;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item")
 	UEquipmentComponent* Equipment;
@@ -159,6 +187,8 @@ public:
 	/**** Spawn items *******/
 	void SpawnItems();
 
+	/* Set Storage */
+	void SettingStorage();
 
 	void SetEquippedWeapon(AWeapon* Weapon);
 

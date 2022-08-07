@@ -4,10 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "Interactable.h"
-#include "InventoryComponent.h"
-#include "OpenWorldRPG/Item/ItemInterface.h"
+//#include "OpenWorldRPG/NewInventory/InventoryComponent.h"
+#include "OpenWorldRPG/NewInventory/Library/ItemInterface.h"
 #include "Item.generated.h"
 
+ENUM_RANGE_BY_COUNT(EEquipmentType, EEquipmentType::EET_MAX)
 /**
  * 
  */
@@ -50,42 +51,36 @@ class OPENWORLDRPG_API AItem : public AInteractable //, public IItemInterface
 public:
 
 	AItem();
-
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Item)
 	UNewItemObject* ItemObj;
 
-	/*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Item)
-	class UTexture2D* Thumbnail;*/
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Item)
+	EItemState ItemState;
 
+	/*
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Item)
 	UMaterialInterface* Icon;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Item)
 	UMaterialInterface* IconRotated;
 
-	/*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Item)
-	FText ItemName;*/
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Item)
 	FText ItemDescription;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Item)
-	EItemState ItemState;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Item)
 	FIntPoint ItemSize;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Item)
-	bool bCanRotate;
+	bool bCanRotate;*/
 
-	UInventoryComponent* OwningInventory;
+	UNewInventoryComponent* OwningInventory; // Obj·Î »©±â
 
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")
+	/*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")
 	EEquipmentType EquipmentType;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Item)
-	bool bCanEquip;
+	bool bCanEquip;*/
 
 	UPROPERTY(EditDefaultsOnly, Category = AI)
 	UAIPerceptionStimuliSourceComponent* StimuliComp;	
@@ -99,6 +94,8 @@ protected:
 public:
 
 	virtual void PostInitializeComponents() override;
+	
+	virtual void OnConstruction(const FTransform& Transform) override;
 
 	FORCEINLINE EItemState GetItemState() { return ItemState; }
 
@@ -110,7 +107,7 @@ public:
 	bool Pickup(AActor* Actor);
 
 	bool AddAtEquip(AEquipment* Equipped);
-	bool AddAtCharInv(UNewInventoryComponent* InvComp);
+	bool AddAtCharInv(ABaseCharacter* Character, UItemStorageObject* InvComp);
 
 	
 	UFUNCTION(BlueprintCallable)

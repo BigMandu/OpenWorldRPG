@@ -6,6 +6,7 @@
 #include <string>
 
 #include "OpenWorldRPG/MainCharacter.h"
+#include "OpenWorldRPG/Item/WeaponPDA.h"
 #include "Particles/ParticleSystem.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -54,18 +55,19 @@ void AWeapon_Instant::New_BulletOut()
  */
 void AWeapon_Instant::ApplyRecoil()
 {
-	if (WeaponStat.Recoil_X && WeaponStat.Recoil_Y)
+
+	if (WeaponDataAsset->WeaponStat.Recoil_X && WeaponDataAsset->WeaponStat.Recoil_Y)
 	{
 		/* Recoil Time은 AWeapon::EndFiring에서 0으로 초기화 된다.
 		 * Recoil Time을 기준으로 Curve Float값을 가져와 지난번과, 다음에 쏠 값을 가져와
 		 * 상승값을 구해 적용한다.
 		 */
-		float LastRecoilTime = RecoilTime - WeaponStat.SecondPerBullet;
-		float LastRecoilValue_X = WeaponStat.Recoil_X->GetFloatValue(LastRecoilTime);
-		float NextRecoilValue_X = WeaponStat.Recoil_X->GetFloatValue(RecoilTime);
+		float LastRecoilTime = RecoilTime - WeaponDataAsset->WeaponStat.SecondPerBullet;
+		float LastRecoilValue_X = WeaponDataAsset->WeaponStat.Recoil_X->GetFloatValue(LastRecoilTime);
+		float NextRecoilValue_X = WeaponDataAsset->WeaponStat.Recoil_X->GetFloatValue(RecoilTime);
 
-		float LastRecoilValue_Y = WeaponStat.Recoil_Y->GetFloatValue(LastRecoilTime);
-		float NextRecoilValue_Y = WeaponStat.Recoil_Y->GetFloatValue(RecoilTime);
+		float LastRecoilValue_Y = WeaponDataAsset->WeaponStat.Recoil_Y->GetFloatValue(LastRecoilTime);
+		float NextRecoilValue_Y = WeaponDataAsset->WeaponStat.Recoil_Y->GetFloatValue(RecoilTime);
 
 		PitchValue = (NextRecoilValue_X - LastRecoilValue_X);
 		YawValue = (NextRecoilValue_Y - LastRecoilValue_Y);
@@ -73,13 +75,13 @@ void AWeapon_Instant::ApplyRecoil()
 		/* 조준 유무에 따라 반동을 준다. */
 		if (bIsAiming)
 		{
-			PitchValue *= WeaponStat.AimBulletSpread;
-			YawValue *= WeaponStat.AimBulletSpread;
+			PitchValue *= WeaponDataAsset->WeaponStat.AimBulletSpread;
+			YawValue *= WeaponDataAsset->WeaponStat.AimBulletSpread;
 		}
 		else
 		{
-			PitchValue *= WeaponStat.HipBulletSpread;
-			YawValue *= WeaponStat.HipBulletSpread;
+			PitchValue *= WeaponDataAsset->WeaponStat.HipBulletSpread;
+			YawValue *= WeaponDataAsset->WeaponStat.HipBulletSpread;
 		}
 
 		//초반 반동을 약하게 줬기때문에 (Semiauto, Fullauto시 한발씩 끊어쏠때 보정을 위함)
@@ -96,7 +98,7 @@ void AWeapon_Instant::ApplyRecoil()
 
 		GetWorldTimerManager().SetTimer(RecoilHandle, [=] {
 			WorldTime += GetWorld()->GetDeltaSeconds();
-			RecoilAlphaTime = WorldTime / (WeaponStat.SecondPerBullet * 1.5);
+			RecoilAlphaTime = WorldTime / (WeaponDataAsset->WeaponStat.SecondPerBullet * 1.5);
 
 			float LerpRecoilX = UKismetMathLibrary::Lerp(0, PitchValue, RecoilAlphaTime);
 			float LerpRecoilY = UKismetMathLibrary::Lerp(0, YawValue, RecoilAlphaTime);
@@ -111,12 +113,12 @@ void AWeapon_Instant::ApplyRecoil()
 		GetInstigator()->AddControllerYawInput(YawValue);*/
 
 		//리코일 타임은 1발을 쏠때의 타임만큼씩 증가해야한다.
-		RecoilTime = RecoilTime + WeaponStat.SecondPerBullet;
+		RecoilTime = RecoilTime + WeaponDataAsset->WeaponStat.SecondPerBullet;
 		
 
 
 		//UE_LOG(LogTemp, Warning, TEXT("RecoilTime : %f"), RecoilTime);
-		if (RecoilTime > WeaponStat.SecondPerBullet * 30) //30을 나중에 탄창 최대개수로 바꾸면됨.
+		if (RecoilTime > WeaponDataAsset->WeaponStat.SecondPerBullet * 30) //30을 나중에 탄창 최대개수로 바꾸면됨.
 		{
 			//UE_LOG(LogTemp, Warning, TEXT("RecoilTime max, set 0.5"));
 			RecoilTime = 0.3f;
@@ -141,14 +143,15 @@ void AWeapon_Instant::CheckHit(const FHitResult& Hit, const FVector Dir)
 			ApplyDamage(Hit, Dir);
 		}
 
-		if (BulletHitEffect)
+		if (WeaponDataAsset->BulletHitEffect)
 		{
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BulletHitEffect, Hit.Location, Hit.ImpactNormal.Rotation());
+			
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponDataAsset->BulletHitEffect, Hit.Location, Hit.ImpactNormal.Rotation());
 		}
 
-		if (BulletHitSound)
+		if (WeaponDataAsset->BulletHitSound)
 		{
-			UGameplayStatics::PlaySoundAtLocation(GetWorld(), BulletHitSound, Hit.Location);
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), WeaponDataAsset->BulletHitSound, Hit.Location);
 		}
 	}
 
@@ -159,7 +162,7 @@ void AWeapon_Instant::ApplyDamage(const FHitResult& Hit, const FVector Dir)
 	FPointDamageEvent PointDmgEvt;
 	PointDmgEvt.HitInfo = Hit;
 	PointDmgEvt.ShotDirection = Dir.GetSafeNormal();
-	PointDmgEvt.Damage = 90.f; //임시
+	PointDmgEvt.Damage = 90.f; //임시 원래는 WeaponDataAsset-> 이거 써야됨
 		
 	Hit.GetActor()->TakeDamage(PointDmgEvt.Damage, PointDmgEvt, OwningPlayer->GetController(), this);
 	//TakeDamage(10.f, PointDmgEvent, OwningPlayer->GetInstigatorController(), this);

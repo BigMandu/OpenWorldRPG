@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
-#include "OpenWorldRPG/Item/ItemInterface.h"
+#include "OpenWorldRPG/NewInventory/Library/ItemInterface.h"
 #include "NewItemObject.generated.h"
 
 /**
@@ -12,11 +12,14 @@
  */
 class AItem;
 class AEquipment;
+
 class UTexture2D;
 class UTextBlock;
 class UNewInventoryGrid;
 class UNewInventoryComponent;
+class UItemStorageObject;
 class UEquipmentSlot;
+class UCustomPDA;
 
 //UENUM(BlueprintType)
 //enum class EEquipType : uint8
@@ -35,19 +38,13 @@ UCLASS()
 class OPENWORLDRPG_API UNewItemObject : public UObject, public IItemInterface
 {
 	GENERATED_BODY()
-
-private:
-	
-	UNewInventoryGrid* MotherContainer;
-	UEquipmentSlot* MotherEquipSlot;
-
 public:
 	UNewItemObject();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")
-	UNewInventoryComponent* InvComp;
 
-	FIntPoint itemsize;
+	FItemSetting ItemInfo;
+
+	//FIntPoint itemsize;
 	EEquipmentType EquipmentType;
 	EInteractType InteractType;
 
@@ -70,6 +67,18 @@ public:
 	FText itemName;
 	FText itemDesc;
 
+	//UNewInventoryGrid* MotherContainer;
+	UItemStorageObject* MotherStorage;
+	UEquipmentSlot* MotherEquipSlot;
+
+	/*********** Storage *************/
+	//bool bHasStorage;
+	
+	/*TSubclassOf<UUserWidget> WEquipGridWidget;
+	UNewInventoryGrid* EquipGridWidget;
+	UNewInventoryComponent* ObjInvComp;*/
+
+
 
 	//UFUNCTION(BlueprintCallable)
 	FIntPoint GetItemSize();
@@ -79,11 +88,10 @@ public:
 
 	UMaterialInterface* GetItemIcon();
 
-	UNewInventoryComponent* GetItemInvComp();
-	void SetItemInvComp(UNewInventoryComponent* Var_InvCmp);
+	
 
-	UNewInventoryGrid* GetMotherContainer();
-	void SetMotherContainer(UNewInventoryGrid* Var_InvGrid);
+	UItemStorageObject* GetMotherStorage();
+	void SetMotherStorage(UItemStorageObject* Var_MotherStorage);
 
 	UEquipmentSlot* GetMotherEquipSlot();
 	void SetMotherEquipSlot(UEquipmentSlot* Var_EquipSlot);

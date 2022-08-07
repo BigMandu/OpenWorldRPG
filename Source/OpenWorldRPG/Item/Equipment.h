@@ -56,27 +56,45 @@ public:
 	UEquipmentComponent* OwningEquipment;
 	ABaseCharacter* OwningPlayer;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Equipment")
-	USkeletalMeshComponent* SKMesh;
+	
 
 	/*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")
 	EEquipmentType EquipmentType;*/
 
 
 	/********* Storage ********/
+	/*
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment | Storage")
 	bool bHasStorage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment | Storage")
 	float GridTileSize;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Equipment | Storage")
+	int32 Columns = 10;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Equipment | Storage")
+	int32 Rows = 10;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment | Storage")
 	TSubclassOf<UUserWidget> WEquipGridWidget;
 
+
 	UNewInventoryGrid* EquipGridWidget;
 
+	
+	*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment | Storage")
-	UNewInventoryComponent* EquipInventoryComp;
+	UNewInventoryComponent* EquipBaseComponent;
+	/* Storage */
+	UPROPERTY()
+	UItemStorageObject* StorageObj;
+
+	/* Spawn Items */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Equipment | Storage")
+	bool bHasSpawnItem;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Equipment | Storage")
+	TArray<TSubclassOf<AItem>> SpawnItemList;
 	
 private:
 	void SendToInventory(AActor* Actor);
@@ -89,6 +107,10 @@ public:
 	virtual UNewItemObject* GetDefaultItemObj() override;
 	
 	void ReInitialize(UNewItemObject* Obj);
+
+	void SettingStorage();
+	void SpawnItem();
+
 	bool Equip(AActor* Actor, ERifleSlot RifleSlot = ERifleSlot::ERS_MAX);
 	virtual bool StepEquip(AActor* Actor, ERifleSlot RifleSlot = ERifleSlot::ERS_MAX);
 
@@ -99,5 +121,5 @@ public:
 	virtual void Drop() override;
 	virtual void Remove();
 
-	void SettingStorage();
+	
 };

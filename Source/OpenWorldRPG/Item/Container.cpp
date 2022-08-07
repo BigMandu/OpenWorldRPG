@@ -5,31 +5,38 @@
 #include "Item.h"
 #include "Kismet/GameplayStatics.h"
 #include "Blueprint/UserWidget.h"
-#include "OpenWorldRPG/EnemyAIController.h"
+#include "OpenWorldRPG/AI/EnemyAIController.h"
 #include "OpenWorldRPG/MainCharacter.h"
 #include "OpenWorldRPG/MainController.h"
-#include "OpenWorldRPG/NewInventory/ContainerWidget.h"
+
+#include "OpenWorldRPG/NewInventory/Widget/ContainerWidget.h"
+#include "OpenWorldRPG/NewInventory/Widget/NewInventory.h"
+
 #include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
-#include "OpenWorldRPG/NewInventory/NewInventory.h"
 #include "OpenWorldRPG/NewInventory/LootWidgetComponent.h"
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
+#include "OpenWorldRPG/NewInventory/ItemStorageObject.h"
+
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "Perception/AISense_Sight.h"
 
 AContainer::AContainer()
 {
+	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Interactable Mesh"));
+	RootComponent = Mesh;
+
 	ContainerInventoryComp = CreateDefaultSubobject<UNewInventoryComponent>(TEXT("BoxInventoryComp"));
 	LootWidgetComp = CreateDefaultSubobject<ULootWidgetComponent>(TEXT("LootWidgetComp"));
 	StimuliComp = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("StimuliComp"));
 	StimuliComp->bAutoRegister = true;
+	
 
-
-	Mesh->SetSimulatePhysics(false);
+	/*Mesh->SetSimulatePhysics(false);
 	Mesh->SetEnableGravity(true);
 	Mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 
 	Mesh->SetCollisionObjectType(ECollisionChannel::ECC_WorldStatic);
-	Mesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
+	Mesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);*/
 
 	bHasSpawnItem = false;
 	/*Mesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
@@ -81,10 +88,19 @@ void AContainer::BeginPlay()
 	//MainCon = Cast<AMainController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 
 	//InventoryComponent의 초기화가 BeginPlay에서 되기때문에 여기다 했다.
+	LootWidgetComp->WidgetType = EWidgetType::EWT_LootBox;
+
+	SettingStorage();
 	if (bHasSpawnItem)
 	{
 		SpawnItem();
 	}
+}
+
+void AContainer::SettingStorage()
+{
+	ContainerStorage = NewObject<UItemStorageObject>();
+	ContainerStorage->InitializeStorage(StorageX, StorageY, StorageTileSize);
 }
 
 void AContainer::SpawnItem()
@@ -95,21 +111,26 @@ void AContainer::SpawnItem()
 		if (Item)
 		{
 			//Item->Pickup(this);
-
-			if (Item->ItemObj == nullptr)
+		
+			/*if (Item->ItemObj == nullptr)
 			{
 				UNewItemObject* Obj = Item->GetDefaultItemObj();
 				Item->ItemObj = Obj;
-			}
+			}*/
 
-			if (ContainerInventoryComp->TryAddItem(Item->ItemObj))
+			
+			if (ContainerInventoryComp->TryAddItem(ContainerStorage,Item->ItemSetting))
 			{
 				Item->SetItemState(EItemState::EIS_Pickup);
-				Item->ItemObj->bIsDestoryed = true;
+				//Item->ItemObj->bIsDestoryed = true;
 				Item->Destroy();
 			}
 		}
 	}
+}
+void AContainer::Interaction(AActor* Actor)
+{
+	OpenContainer(Actor);
 }
 
 void AContainer::OpenContainer(AActor* Actor)
@@ -120,15 +141,12 @@ void AContainer::OpenContainer(AActor* Actor)
 	AEnemyAIController* AICon = Cast<AEnemyAIController>(Actor->GetInstigatorController());
 
 	AMainCharacter* MainChar = Cast<AMainCharacter>(Actor);
-	if (MainChar)
+
+	if (MainCon && MainChar)
 	{
 		//해제는 MainController::HideInventory에서 함.
 		MainChar->InteractLootBox = this;
-	}
 
-	
-	if (MainCon)
-	{
 		MainCon->bIsInteractLootBox = true;
 		ShowWidget(MainCon);
 	}
@@ -163,6 +181,15 @@ void AContainer::ShowWidget(AMainController* MainCon)
 	}
 }
 
+void AContainer::SetOutline()
+{
+	Mesh->SetRenderCustomDepth(true);
+}
+
+void AContainer::UnsetOutline()
+{
+	Mesh->SetRenderCustomDepth(false);
+}
 
 
 /*

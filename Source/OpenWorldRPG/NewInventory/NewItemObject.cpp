@@ -2,12 +2,12 @@
 
 
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
-#include "OpenWorldRPG/NewInventory/NewInventoryGrid.h"
+#include "OpenWorldRPG/NewInventory/Widget/NewInventoryGrid.h"
 #include "OpenWorldRPG/Item/Item.h"
 
 UNewItemObject::UNewItemObject()
 {
-	
+	//ObjInvComp = CreateDefaultSubobject<UNewInventoryComponent>(TEXT("EquipInventoryComp"));
 }
 
 FIntPoint UNewItemObject::GetItemSize()
@@ -18,7 +18,13 @@ FIntPoint UNewItemObject::GetItemSize()
 	//	itemsize.X = itemsize.Y;
 	//	itemsize.Y = temp;
 	//}
-	return itemsize;
+	FIntPoint ItemSize;
+	if (ItemInfo.DataAsset != nullptr)
+	{
+		ItemSize = FIntPoint(ItemInfo.DataAsset->ItemSize.X, ItemInfo.DataAsset->ItemSize.Y);
+		return ItemSize;
+	}
+	return ItemSize;
 }
 
 UClass* UNewItemObject::GetItemClass()
@@ -31,10 +37,11 @@ void UNewItemObject::ItemRotate()
 	//UE_LOG(LogTemp, Warning, TEXT("NewItemObj::ItemRotate func called"));
 	if (bCanRotated)
 	{	
+		FIntPoint ItemSize = FIntPoint(ItemInfo.DataAsset->ItemSize.X, ItemInfo.DataAsset->ItemSize.Y);
 		//회전을 했다면 item size를 swap해줌.
-		int32 temp = itemsize.X;
-		itemsize.X = itemsize.Y;
-		itemsize.Y = temp;
+		int32 temp = ItemSize.X;
+		ItemSize.X = ItemSize.Y;
+		ItemSize.Y = temp;
 		
 
 		/* flip flop*/
@@ -44,55 +51,40 @@ void UNewItemObject::ItemRotate()
 
 UMaterialInterface* UNewItemObject::GetItemIcon()
 {
+	if (ItemInfo.DataAsset == nullptr) return nullptr;
+
 	UMaterialInterface* ReturnIcon = nullptr;
 	if (bRotated)
 	{
-		if (iconRotated)
+		if (ItemInfo.DataAsset->IconRotated)
 		{
-			ReturnIcon = iconRotated;
+			ReturnIcon = ItemInfo.DataAsset->IconRotated;
 		}
 	}
 	else
 	{
-		if (icon)
+		if (ItemInfo.DataAsset->Icon)
 		{
-			ReturnIcon = icon;
+			ReturnIcon = ItemInfo.DataAsset->Icon;
 		}
 	}
 	return ReturnIcon;
 }
 
-UNewInventoryComponent* UNewItemObject::GetItemInvComp()
+UItemStorageObject* UNewItemObject::GetMotherStorage()
 {
-	if (InvComp)
+	if (MotherStorage != nullptr)
 	{
-		return InvComp;
+		return MotherStorage;
 	}
 	return nullptr;
 }
-
-void UNewItemObject::SetItemInvComp(UNewInventoryComponent* Var_InvCmp)
-{
-	if (Var_InvCmp != nullptr)
-	{
-		InvComp = Var_InvCmp;
-	}
-}
-
-UNewInventoryGrid* UNewItemObject::GetMotherContainer()
-{
-	if (MotherContainer != nullptr)
-	{
-		return MotherContainer;
-	}
-	return nullptr;
-}
-void UNewItemObject::SetMotherContainer(UNewInventoryGrid* Var_InvGrid)
+void UNewItemObject::SetMotherStorage(UItemStorageObject* Var_MotherStorage)
 {
 	//Mothercontainer를 nullptr로 지정할 때가 있으므로 검증은 하지 않는다.
 	//if (Var_InvGrid != nullptr) 
 	{
-		MotherContainer = Var_InvGrid;
+		MotherStorage = Var_MotherStorage;
 	}
 }
 

@@ -3,7 +3,13 @@
 
 #include "NewInventoryComponent.h"
 #include "OpenWorldRPG/Item/Item.h"
+#include "OpenWorldRPG/Item/CustomPDA.h"
+
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
+#include "OpenWorldRPG/NewInventory/ItemStorageObject.h"
+
+#include "OpenWorldRPG/NewInventory/Library/InventoryStruct.h"
+
 #include "Containers/Array.h"
 
 #define DEBUG 0
@@ -45,7 +51,7 @@ bool UNewInventoryComponent::RemoveItem(UNewItemObject* ItemObj)
 	//}
 
 	FIntPoint Size = ItemObj->GetItemSize();
-	FTile ItemIndex = IndexToTile(ItemObj->TopLeftIndex);
+	FTile ItemIndex = FTile(0, 0); //IndexToTile(ItemObj->TopLeftIndex);
 	int32 loopX = ItemIndex.X + Size.X - 1;
 	int32 loopY = ItemIndex.Y + Size.Y - 1;
 
@@ -58,7 +64,7 @@ bool UNewInventoryComponent::RemoveItem(UNewItemObject* ItemObj)
 
 			removeTile.X = i;
 			removeTile.Y = j;
-			int32 removeIndex = TileToIndex(removeTile);
+			int32 removeIndex = 0;// = TileToIndex(removeTile);
 
 			InventoryItems[removeIndex] = nullptr;
 		}
@@ -133,7 +139,7 @@ bool UNewInventoryComponent::TryAddItemStep(UNewItemObject* ItemObj)
 void UNewInventoryComponent::AddItemAtIndex(UNewItemObject* ItemObj, int32 Index)
 {
 	ItemObj->TopLeftIndex = Index;
-	FTile tile = IndexToTile(Index);
+	FTile tile = FTile(0, 0);// IndexToTile(Index);
 	FIntPoint Itemsize = ItemObj->GetItemSize();
 
 	FTile Itemtile;
@@ -151,7 +157,7 @@ void UNewInventoryComponent::AddItemAtIndex(UNewItemObject* ItemObj, int32 Index
 			Itemtile.Y = j;
 			if ((Itemtile.X >= 0 && Itemtile.Y >= 0) && (Itemtile.X < Columns && Itemtile.Y < Rows))
 			{
-				int32 Addindex = TileToIndex(Itemtile);
+				int32 Addindex = 0;// TileToIndex(Itemtile);
 				InventoryItems[Addindex] = ItemObj;
 			}
 		}
@@ -174,7 +180,7 @@ bool UNewInventoryComponent::IsAvailableSpace(UNewItemObject* ItemObj, int32 Top
 	*/
 	bool bReturn = true;
 	//FTile tile = ForEachIndex(ItemObj, TopLeftIndex);
-	FTile tile = IndexToTile(TopLeftIndex);
+	FTile tile = FTile(0, 0);// IndexToTile(TopLeftIndex);
 	FIntPoint Itemsize = ItemObj->GetItemSize();
 
 	FTile checktile;
@@ -191,7 +197,7 @@ bool UNewInventoryComponent::IsAvailableSpace(UNewItemObject* ItemObj, int32 Top
 			checktile.Y = j;
 			if ((checktile.X >= 0 && checktile.Y >= 0) && (checktile.X < Columns && checktile.Y < Rows))
 			{
-				int32 index = TileToIndex(checktile);
+				int32 index = 0;// TileToIndex(checktile);
 				UNewItemObject* GettingItemObj = GetItemAtIndex(index);
 				/* 해당 index에 이미 item obj가 있으면 false를 return한다 */
 				if (GettingItemObj != nullptr)
@@ -243,19 +249,19 @@ FTile UNewInventoryComponent::ForEachIndex(UNewItemObject* Obj, int32 TopLeftInd
 */
 
 /* Index를 grid의 x, y좌표로 바꿔준다.*/
-FTile UNewInventoryComponent::IndexToTile(int32 index)
-{
-	FTile tile;
-	tile.X = index % Columns;
-	tile.Y = index / Columns;
-	return tile;
-}
+//FTile UNewInventoryComponent::IndexToTile(int32 index)
+//{
+//	FTile tile;
+//	tile.X = index % Columns;
+//	tile.Y = index / Columns;
+//	return tile;
+//}
 
 /* grid의 x,y좌표를 index로 바꾼다. */
-int32 UNewInventoryComponent::TileToIndex(FTile tile)
-{
-	return tile.X + tile.Y * Columns;	
-}
+//int32 UNewInventoryComponent::TileToIndex(FTile tile)
+//{
+//	return tile.X + tile.Y * Columns;	
+//}
 
 /* index에 item이 있는지 확인한다.*/
 UNewItemObject* UNewInventoryComponent::GetItemAtIndex(int32 index)
@@ -294,7 +300,7 @@ const TMap<UNewItemObject*, FTile> UNewInventoryComponent::GetAllItems()
 			bool bAlreadyHaveit = InventoryStoredInfo.Contains(CurItemObj);
 			if (bAlreadyHaveit == false)
 			{
-				FTile CurItemSize = IndexToTile(index);
+				FTile CurItemSize = FTile(0, 0);// IndexToTile(index);
 				InventoryStoredInfo.Add(CurItemObj, CurItemSize);
 			}
 		}
@@ -314,4 +320,60 @@ bool UNewInventoryComponent::SpawnItem(UNewItemObject* ItemObj, AActor* Actor)
 	/*SpawnActor<AItem>()
 	UWorld::SpawnActor(ItemObj->GetItemClass(), DropLocation);*/
 	return false;
+}
+
+
+/*************************************************************/
+/*************************  New version **********************/
+/*************************************************************/
+
+bool UNewInventoryComponent::IsAvailableSpace(UItemStorageObject* StorageObj, UNewItemObject* ItemObj, int32 TopLeftIndex)
+{
+	return StorageObj->IsAvailableSpace(ItemObj, TopLeftIndex);
+}
+
+void UNewInventoryComponent::AddItemAtIndex(UItemStorageObject* StorageObj, UNewItemObject* ItemObj, int32 Index)
+{
+	StorageObj->AddItemAtIndex(ItemObj, Index);
+}
+
+bool UNewInventoryComponent::TryAddItem(UItemStorageObject* StorageObj, FItemSetting ItemSetting)
+{
+	bool bCreated = false;
+	UNewItemObject* ItemObj = CreateObject(ItemSetting, bCreated);
+	if (bCreated)
+	{
+		return StorageObj->TryAddItem(ItemObj);
+	}
+	return false;
+}
+
+bool UNewInventoryComponent::RemoveItem(UItemStorageObject* StorageObj, UNewItemObject* ItemObj)
+{
+	return StorageObj->RemoveItem(ItemObj);
+}
+
+
+UNewItemObject* UNewInventoryComponent::CreateObject(FItemSetting ItemStruct, bool& bIsCreated)
+{
+	if (ItemStruct.DataAsset)
+	{
+		UNewItemObject* ReturnObj = nullptr;
+		if (ItemStruct.DataAsset->bHasStorage)
+		{
+			ReturnObj = NewObject<UItemStorageObject>();
+		}
+		else
+		{
+			ReturnObj = NewObject<UNewItemObject>();
+		}
+		ReturnObj->ItemInfo = FItemSetting(ItemStruct.DataAsset, 1, 0);
+		bIsCreated = true;
+		return ReturnObj;
+	}
+	else
+	{
+		bIsCreated = false;
+		return nullptr;
+	}	
 }
