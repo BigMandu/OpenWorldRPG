@@ -67,9 +67,15 @@ public:
 	FText itemName;
 	FText itemDesc;
 
+	AEquipment* Equipment;
+
 	//UNewInventoryGrid* MotherContainer;
 	UItemStorageObject* MotherStorage;
-	UEquipmentSlot* MotherEquipSlot;
+	UEquipmentComponent* MotherEquipComp;
+	UEquipmentSlot* SettedSlot;
+
+	ERifleSlot RifleAssign;
+	//UEquipmentSlot* MotherEquipSlot;
 
 	/*********** Storage *************/
 	//bool bHasStorage;
@@ -88,13 +94,14 @@ public:
 
 	UMaterialInterface* GetItemIcon();
 
-	
+	FORCEINLINE void SetLinkSlot(UEquipmentSlot* WantToLinkSlot) { SettedSlot = WantToLinkSlot; }
+	void RemoveLinkSlot();
 
-	UItemStorageObject* GetMotherStorage();
+	const UItemStorageObject* GetMotherStorage();
 	void SetMotherStorage(UItemStorageObject* Var_MotherStorage);
 
-	UEquipmentSlot* GetMotherEquipSlot();
-	void SetMotherEquipSlot(UEquipmentSlot* Var_EquipSlot);
+	const UEquipmentComponent* GetMotherEquipComp();
+	void SetMotherEquipComp(UEquipmentComponent* Var_MotherEquipComp);
 
 	
 

@@ -19,6 +19,9 @@
 /**
  * 
  */
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOpenAdditionalWidget, UNewItemObject*, ItemObj);
+
 class UBorder;
 class UCanvasPanel;
 class USlateBrushAsset;
@@ -46,6 +49,9 @@ class OPENWORLDRPG_API UNewInventoryGrid : public UUserWidget, public IItemInter
 {
 	GENERATED_BODY()
 public:
+	
+	FOpenAdditionalWidget OpenAdditionalWidget;
+
 	UNewInventoryGrid(const FObjectInitializer& ObjectInitializer);
 private:
 	UNewInventoryComponent* InventoryComp;

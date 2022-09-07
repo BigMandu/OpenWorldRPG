@@ -20,9 +20,13 @@ class OPENWORLDRPG_API UCustomInventoryLibrary : public UObject
 
 public:
 
+	static UNewItemObject* CreateObject(FItemSetting ItemStruct, bool& bIsCreated);
+
 	static void BackToItem(UNewItemObject* ItemObj);
 	static void DirectInToInventory(UNewItemObject* ItemObj, ABaseCharacter* BChar);
 
+
+
 	//if Actor var is valid, Call StepEquip func. else return AEquipment
-	static AEquipment* SpawnEquipment(UWorld* World, UNewItemObject* ItemObj, AActor* Actor = nullptr);
+	static AEquipment* SpawnEquipment(UWorld* World, UNewItemObject* ItemObj);// , AActor* Actor = nullptr);
 };

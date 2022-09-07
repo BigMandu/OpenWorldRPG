@@ -13,8 +13,13 @@
 */
 class ABaseCharacter;
 class AEquipment;
+
+class UNewInventory;
 class UEquipmentSlot;
 class UEquipmentComponent;
+class UNewItemObject;
+class UItemStorageObject;
+
 class UOverlay;
 class UBorder;
 
@@ -27,6 +32,10 @@ public:
 	/*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WidgetVariable")
 	EEquipmentType SlotType;*/
 
+	UPROPERTY()
+	UNewInventory* MainWidget;
+
+	UPROPERTY()
 	ABaseCharacter* LootedChar_Owner;
 	
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
@@ -51,22 +60,30 @@ public:
 	/*UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
 	UBorder* VestBorder;*/
 
+	UPROPERTY()
 	UEquipmentComponent* EquipComp;
 
 	UPROPERTY(EditDefaultsOnly, Category = "WidgetVariable")
 	TSubclassOf<UUserWidget> WNewItemWidget = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, Category = "WidgetVariable")
+	TSubclassOf<UUserWidget> WGridInvWidget = nullptr;
 
 	void EquipInitialize(UEquipmentComponent* p_EquipComp);
 
 	UFUNCTION()
 	void RefreshEquipWidget();
 
-	UFUNCTION()
-	void RemoveEquipment(UObject* T_ItemObj);
+	//UFUNCTION()
+	//void RemoveEquipment(UObject* T_ItemObj);
 
+	//Old Version
 	void SetSlot(AEquipment* Equip, UEquipmentSlot* EquipSlot);
 	
+	//New Version
 	void SetSlot(UNewItemObject* EquipObj, UEquipmentSlot* EquipSlot);
+
+	void SettingStorageWidget(UOverlay* EquipOverlay, UItemStorageObject* Var_StorageObj);
 
 	void RemoveSlot();
 

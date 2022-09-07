@@ -5,10 +5,12 @@
 #include "OpenWorldRPG/NewInventory/Widget/EquipmentSlot.h"
 #include "OpenWorldRPG/NewInventory/Widget/NewItemwidget.h"
 #include "OpenWorldRPG/NewInventory/Widget/NewInventoryGrid.h"
+#include "OpenWorldRPG/NewInventory/Widget/NewInventory.h"
 
 #include "OpenWorldRPG/NewInventory/Library/InventoryStruct.h"
 
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
+#include "OpenWorldRPG/NewInventory/ItemStorageObject.h"
 #include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
 #include "OpenWorldRPG/NewInventory/EquipmentComponent.h"
 
@@ -75,19 +77,20 @@ void UEquipWidget::RefreshEquipWidget()
 					break;
 				case EEquipmentType::EET_Rifle:
 				{
-					AWeapon* Weapon = Cast<AWeapon>(ele);
-					if (Weapon)
+					//아래 코드 수정해야됨.
+					switch (ele->RifleAssign)
 					{
-						switch (Weapon->RifleAssign)
-						{
-						case ERifleSlot::ERS_Primary:
-							SetSlot(ele, PrimarySlot);
-							break;
-						case ERifleSlot::ERS_Sub:
-							SetSlot(ele, SubSlot);
-							break;
-						}
-					}
+					case ERifleSlot::ERS_Primary:
+						SetSlot(ele, PrimarySlot);
+						ele->SetLinkSlot(PrimarySlot);
+						PrimarySlot->SettedObj = ele;
+						break;
+					case ERifleSlot::ERS_Sub:
+						SetSlot(ele, SubSlot);
+						ele->SetLinkSlot(SubSlot);
+						SubSlot->SettedObj = ele;
+						break;
+					}					
 				}
 
 				break;
@@ -95,25 +98,16 @@ void UEquipWidget::RefreshEquipWidget()
 					SetSlot(ele, VestSlot);
 					if (VestOverlay && ele->ItemInfo.DataAsset->bHasStorage)
 					{
-						
-						//ele->SettingStorage();
-						//VestOverlay->ClearChildren();	
-						//if (ele->EquipGridWidget)
-						{
-							//VestOverlay->AddChild(ele->EquipGridWidget);//가끔 error
-						}
+						UItemStorageObject* StorageObj = Cast<UItemStorageObject>(ele);
+						SettingStorageWidget(VestOverlay, StorageObj);
 					}
 					break;
 				case EEquipmentType::EET_Backpack:
 					SetSlot(ele, BackpackSlot);
-					//if (BackpackOverlay && ele->CusPDA->bHasStorage)// && ele->EquipGridWidget)
+					if (BackpackOverlay && ele->ItemInfo.DataAsset->bHasStorage)// && ele->EquipGridWidget)
 					{
-						//ele->SettingStorage();
-						//BackpackOverlay->ClearChildren();
-						//if (ele->EquipGridWidget)
-						{
-							//BackpackOverlay->AddChild(ele->EquipGridWidget); //가끔 error
-						}
+						UItemStorageObject* StorageObj = Cast<UItemStorageObject>(ele);
+						SettingStorageWidget(BackpackOverlay, StorageObj);
 					}
 					break;
 				}
@@ -122,6 +116,7 @@ void UEquipWidget::RefreshEquipWidget()
 	}
 }
 
+//OldVersion
 void UEquipWidget::SetSlot(AEquipment* Equip, UEquipmentSlot* EquipSlot)
 {
 	if (WNewItemWidget)
@@ -131,7 +126,7 @@ void UEquipWidget::SetSlot(AEquipment* Equip, UEquipmentSlot* EquipSlot)
 		if (ItemWidget)
 		{
 			EquipSlot->Initialize();
-			ItemWidget->OnRemoved.AddUFunction(this, FName("RemoveEquipment"));
+			//ItemWidget->OnRemoved.AddUFunction(this, FName("RemoveEquipment"));
 			EquipSlot->BGBorder->ClearChildren();
 			//VestOverlay->ClearChildren();
 
@@ -145,7 +140,7 @@ void UEquipWidget::SetSlot(AEquipment* Equip, UEquipmentSlot* EquipSlot)
 				EquipSlot->LootedChar_Owner = LootedChar_Owner;
 			}
 			
-			Equip->ItemObj->SetMotherEquipSlot(EquipSlot);
+			//Equip->ItemObj->SetMotherEquipSlot(EquipSlot);
 			//Equip->ItemObj->SetMotherContainer(nullptr);
 
 			EquipSlot->BGBorder->AddChild(ItemWidget);
@@ -159,24 +154,42 @@ void UEquipWidget::SetSlot(AEquipment* Equip, UEquipmentSlot* EquipSlot)
 	}
 }
 
-void UEquipWidget::RemoveEquipment(UObject* T_ItemObj)
+void UEquipWidget::SettingStorageWidget(UOverlay* EquipOverlay, UItemStorageObject* Var_StorageObj)
 {
-	UNewItemObject* ItemObj = Cast<UNewItemObject>(T_ItemObj);
-	if (ItemObj && EquipComp)
+	if (WGridInvWidget)
 	{
-		AEquipment* Equipment = Cast<AEquipment>(ItemObj->item);
-		if(Equipment)
+		if (Var_StorageObj->Inventory.Num() == 0)
 		{
-			
-			Equipment->Remove();
-
-			EquipComp->RemoveEquipment(Equipment);
-			
-			ItemObj->bIsDestoryed = true;
-			//Equipment->Destroy();
+			Var_StorageObj->InitializeStorage(Var_StorageObj->ItemInfo.DataAsset->StorageX, Var_StorageObj->ItemInfo.DataAsset->StorageY, Var_StorageObj->ItemInfo.DataAsset->TileSize);
 		}
+		EquipOverlay->ClearChildren();
+
+		UNewInventoryGrid* GridInv = CreateWidget<UNewInventoryGrid>(this, WGridInvWidget);
+		GridInv->StorageObj = Var_StorageObj;
+		GridInv->GridInit();
+
+		GridInv->OpenAdditionalWidget.AddDynamic(MainWidget,&UNewInventory::BindingOpenWidgetFunc);
+		EquipOverlay->AddChild(GridInv);
+		
 	}
 }
+
+//void UEquipWidget::RemoveEquipment(UObject* T_ItemObj)
+//{
+//	UNewItemObject* ItemObj = Cast<UNewItemObject>(T_ItemObj);
+//	if (ItemObj && EquipComp)
+//	{
+//		AEquipment* Equipment = Cast<AEquipment>(ItemObj->item);
+//		if(Equipment)
+//		{
+//			Equipment->Remove();
+//			EquipComp->RemoveEquipment(Equipment);
+//			
+//			ItemObj->bIsDestoryed = true;
+//			//Equipment->Destroy();
+//		}
+//	}
+//}
 
 void UEquipWidget::RemoveSlot()
 {
@@ -188,6 +201,13 @@ void UEquipWidget::RemoveSlot()
 		PrimarySlot->BGBorder->ClearChildren();
 		SubSlot->BGBorder->ClearChildren();
 	}
+	HelmetSlot->BGBorder->ClearChildren();
+	PlateSlot->BGBorder->ClearChildren();
+	PistolSlot->BGBorder->ClearChildren();
+	PrimarySlot->BGBorder->ClearChildren();
+	SubSlot->BGBorder->ClearChildren();
+	VestSlot->BGBorder->ClearChildren();
+	BackpackSlot->BGBorder->ClearChildren();
 }
 
 //NewVersion
@@ -200,22 +220,18 @@ void UEquipWidget::SetSlot(UNewItemObject* EquipObj, UEquipmentSlot* EquipSlot)
 		if (ItemWidget)
 		{
 			EquipSlot->Initialize();
-			ItemWidget->OnRemoved.AddUFunction(this, FName("RemoveEquipment"));
+			//ItemWidget->OnRemoved.AddUFunction(this, FName("RemoveEquipment"));
 			EquipSlot->BGBorder->ClearChildren();
-			//VestOverlay->ClearChildren();
 
 
 			ItemWidget->Tilesize = 60.f;//Equip->EquipInventoryComp->TileSize; //임시로 이렇게 사이즈를 박아뒀다., GetDesiredSize는 widget이 화면에 출력되야 구할수 있는건데 ..  //EquipSlot->GetDesiredSize().X;
-			ItemWidget->ItemObj = EquipObj; // ele.Key;
-			ItemWidget->Refresh();// Equip->ItemObj, 60.f);
+			ItemWidget->ItemObj = EquipObj; 
+			ItemWidget->Refresh();
 
 			if (LootedChar_Owner != nullptr)
 			{
 				EquipSlot->LootedChar_Owner = LootedChar_Owner;
 			}
-
-			//Equip->ItemObj->SetMotherEquipSlot(EquipSlot);
-			//Equip->ItemObj->SetMotherContainer(nullptr);
 
 			EquipSlot->BGBorder->AddChild(ItemWidget);
 			EquipSlot->PaintBGBorder();

@@ -89,7 +89,7 @@ void UNewInventoryGrid::GridInit()
 
 }
 
-
+//GridInit으로 변경함. Old version.
 void UNewInventoryGrid::GridInitialize(UNewInventoryComponent* p_InvComp, float p_TileSize)
 {
 	//UE_LOG(LogTemp, Warning, TEXT("InvGrid:: called GridInit func"));
@@ -322,7 +322,7 @@ bool UNewInventoryGrid::NativeOnDrop(const FGeometry& InGeometry, const FDragDro
 {
 	bool bReturn = Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);
 
-	//UE_LOG(LogTemp, Warning, TEXT("NewInventoryGrid::OnDrop func called"));
+	UE_LOG(LogTemp, Warning, TEXT("NewInventoryGrid::OnDrop func called"));
 
 	UCustomDDOperation* DDOper = Cast<UCustomDDOperation>(InOperation);
 	UNewInventoryComponent* BaseInvComp = Cast<UNewInventoryComponent>(GetOwningPlayerPawn()->GetComponentByClass(UNewInventoryComponent::StaticClass()));

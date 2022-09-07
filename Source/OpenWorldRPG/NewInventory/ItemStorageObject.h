@@ -45,6 +45,7 @@ public:
 
 	UNewItemObject* GetItemAtIndex(int32 index);
 
+	bool CheckValid(UNewItemObject* VarObj, int32 Varind);
 
 	bool IsAvailableSpace(UNewItemObject* ItemObj, int32 TLind);
 	bool TryAddItem(UNewItemObject* ItemObj);

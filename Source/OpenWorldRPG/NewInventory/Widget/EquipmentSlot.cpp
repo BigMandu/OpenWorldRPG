@@ -6,6 +6,8 @@
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
 #include "OpenWorldRPG/NewInventory/Library/CustomInventoryLibrary.h"
 #include "OpenWorldRPG/NewInventory/Library/InventoryStruct.h"
+#include "OpenWorldRPG/NewInventory/CustomDDOperation.h"
+
 #include "OpenWorldRPG/Item/CustomPDA.h"
 //#include "OpenWorldRPG/NewInventory/NewInventoryGrid.h"
 //#include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
@@ -18,26 +20,22 @@
 #include "Blueprint/DragDropOperation.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
 
-bool UEquipmentSlot::IsSupportedEquip(UNewItemObject* Obj)
-{
-	bool bReturn = false;
-
-	if (Obj->InteractType == EInteractType::EIT_Equipment && Obj->EquipmentType == SlotType)
-	{
-		bReturn = true;	
-	}
-	return bReturn;
-}
 
 void UEquipmentSlot::NativeOnDragEnter(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
 {
 	Super::NativeOnDragEnter(InGeometry, InDragDropEvent, InOperation);
-	UNewItemObject* ItemObj = Cast< UNewItemObject>(InOperation->Payload);
+
+	UCustomDDOperation* DDOper = Cast<UCustomDDOperation>(InOperation);
+	if (DDOper)
+	{
+		PaintBGBorder(DDOper->ItemObj);
+	}
+
+	/*UNewItemObject* ItemObj = Cast< UNewItemObject>(InOperation->Payload);
 	if (ItemObj)
 	{
 		PaintBGBorder(ItemObj);
-		
-	}
+	}*/
 
 }
 void UEquipmentSlot::NativeOnDragLeave(const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
@@ -48,16 +46,17 @@ void UEquipmentSlot::NativeOnDragLeave(const FDragDropEvent& InDragDropEvent, UD
 }
 
 
-void UEquipmentSlot::PaintBGBorder(UNewItemObject* Obj)
+
+void UEquipmentSlot::PaintBGBorder(UNewItemObject* ItemObj)
 {
 	FLinearColor Red = FLinearColor(1.f, 0.f, 0.f, 0.25f);
 	FLinearColor Green = FLinearColor(0.f, 1.f, 0.f, 0.25f);
 	FLinearColor Black = FLinearColor(0.f, 0.f, 0.f, 0.25f);
-	if (Obj != nullptr)
+	if (ItemObj != nullptr)
 	{
 		if (BGBorder)
 		{
-			if (IsSupportedEquip(Obj))
+			if (IsSupportedEquip(ItemObj))
 			{
 				BGBorder->SetBrushColor(Green);
 				bCanDrop = true;
@@ -78,6 +77,19 @@ void UEquipmentSlot::PaintBGBorder(UNewItemObject* Obj)
 	//UE_LOG(LogTemp, Warning, TEXT("UEquipmentSlot bCanDrop = %d"), bCanDrop ? 1 : 0); //한자로 나옴 왜이럼?
 }
 
+bool UEquipmentSlot::IsSupportedEquip(UNewItemObject* ItemObj)
+{
+	bool bReturn = false;
+
+	//장착템이면서  장착템의 Type과 이 Slot의 Type이 같다면 true를 리턴한다.
+	if (ItemObj->ItemInfo.DataAsset->InteractType == EInteractType::EIT_Equipment &&
+		ItemObj->ItemInfo.DataAsset->EquipmentType == SlotType)
+	{
+		bReturn = true;
+	}
+	return bReturn;
+}
+
 //다른곳에서 사용하기 위해 함수로 뺌 (CustomInventoryLibrary)
 bool UEquipmentSlot::TrySlotEquip(UNewItemObject* Var_ItemObj)
 {
@@ -87,8 +99,8 @@ bool UEquipmentSlot::TrySlotEquip(UNewItemObject* Var_ItemObj)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Correct Slot"));
 
-			check(Var_ItemObj->item);
-
+			
+			//AI와 플레이어를 나눈다.
 			ABaseCharacter* BChar;
 			if (LootedChar_Owner != nullptr)
 			{
@@ -130,12 +142,14 @@ bool UEquipmentSlot::TrySlotEquip(UNewItemObject* Var_ItemObj)
 				}
 				else
 				{
-					Equipment = Cast<AEquipment>(Var_ItemObj->item);
+					Equipment = Var_ItemObj->Equipment;
 				}
 
 
 				if (Equipment != nullptr)
 				{
+					Var_ItemObj->bIsDestoryed = false;
+					Equipment->ItemObj = Var_ItemObj;
 					if (Equipment->ItemSetting.DataAsset->EquipmentType == EEquipmentType::EET_Rifle)
 					{
 						Equipment->Equip(BChar, RifleSlotType);
@@ -149,10 +163,10 @@ bool UEquipmentSlot::TrySlotEquip(UNewItemObject* Var_ItemObj)
 			}
 		}
 		//Slot의 Type과 Equipment의 Type이 일치하지 않는 경우 다시 원래 있던곳으로 옮긴다.
-		else
+		/*else
 		{
 			UCustomInventoryLibrary::BackToItem(Var_ItemObj);
-		}
+		}*/
 	}
 	return false;
 }
@@ -161,7 +175,31 @@ bool UEquipmentSlot::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEv
 {
 	bool bReturn = Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);
 	
-	UNewItemObject* ItemObj = Cast< UNewItemObject>(InOperation->Payload);
+
+	PaintBGBorder();
+	UCustomDDOperation* DDOper = Cast<UCustomDDOperation>(InOperation);
+	if (DDOper)
+	{
+		if (DDOper->ItemObj == false) return false;
+
+		if (DDOper->ItemObj->bIsDragging && SettedObj != DDOper->ItemObj)
+		{
+			DDOper->ItemObj->bIsDragging = false;
+			
+			//동일한 Equipment를 드래그 했다가 놓을때 재장착을 방지하기위함.
+			//EquipComp의 RemoveEquip에서 Slot의 SettedObj를 null로 바꿔준다.
+			//DDOper->ItemObj->SettedSlot = this;			
+
+			TrySlotEquip(DDOper->ItemObj);
+
+			DDOper->ItemObj->RemoveLinkSlot();
+			DDOper->ItemObj->SetLinkSlot(this);
+			SettedObj = DDOper->ItemObj;
+			
+		}
+	}
+
+	/*UNewItemObject* ItemObj = Cast< UNewItemObject>(InOperation->Payload);
 	if (ItemObj)
 	{
 		if (ItemObj->bIsDragging)
@@ -170,7 +208,7 @@ bool UEquipmentSlot::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEv
 			ItemObj->bIsDragging = false;
 
 			TrySlotEquip(ItemObj);
-		}
+		}*/
 		/*
 		if (IsSupportedEquip(ItemObj))
 		{
@@ -288,12 +326,12 @@ bool UEquipmentSlot::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEv
 			//}			
 		//}
 		
-	}
+	/*}
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Item obj is null"));
 	}
-	
+	*/
 
 	return bReturn;
 }

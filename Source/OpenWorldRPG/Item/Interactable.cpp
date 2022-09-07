@@ -37,7 +37,7 @@ void AInteractable::OnConstruction(const FTransform& Transform)
 {
 	if (ItemSetting.DataAsset)
 	{
-		SetMesh(ItemSetting.DataAsset);// , MeshComponent);
+		SetMesh();// ItemSetting.DataAsset);// , MeshComponent);
 	}
 	Super::OnConstruction(Transform);
 }
@@ -56,35 +56,37 @@ void AInteractable::PostInitializeComponents()
 
 }
 
-void AInteractable::SetMesh(UCustomPDA* PDA)//, UMeshComponent*& MeshComp)
+void AInteractable::SetMesh()// UCustomPDA* PDA)//, UMeshComponent*& MeshComp)
 {
-	if (PDA->SKMesh)
+	if (ItemSetting.DataAsset == nullptr) return;
+
+	if (ItemSetting.DataAsset->SKMesh)
 	{
 		//auto SKMeshComp = NewObject<USkeletalMeshComponent>(this, TEXT("SkeletalMeshComp"));
 		//if (SKMeshComp)
 		{
-			SKMesh->SetSkeletalMesh(PDA->SKMesh);
+			SKMesh->SetSkeletalMesh(ItemSetting.DataAsset->SKMesh);
 
 			SKMesh->SetHiddenInGame(true);
 			SKMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_EngineTraceChannel2, ECollisionResponse::ECR_Overlap);
 
-			if (!PDA->ReSizeScale.IsZero())
+			if (!ItemSetting.DataAsset->ReSizeScale.IsZero())
 			{
-				SKMesh->SetWorldScale3D(PDA->ReSizeScale);
+				//SKMesh->SetWorldScale3D(ItemSetting.DataAsset->ReSizeScale);
 			}
 			//MeshComp = SKMeshComp;
 		}
 	}
 	
-	if (PDA->Mesh)
+	if (ItemSetting.DataAsset->Mesh)
 	{
 		//auto SMeshComp = NewObject<UStaticMeshComponent>(this, TEXT("StaticMeshComp"));
 		//if (SMeshComp)
 		{
-			Mesh->SetStaticMesh(PDA->Mesh);
-			if (!PDA->ReSizeScale.IsZero())
+			Mesh->SetStaticMesh(ItemSetting.DataAsset->Mesh);
+			if (!ItemSetting.DataAsset->ReSizeScale.IsZero())
 			{
-				Mesh->SetWorldScale3D(PDA->ReSizeScale);
+				Mesh->SetWorldScale3D(ItemSetting.DataAsset->ReSizeScale);
 			}
 		}
 	}
@@ -103,7 +105,8 @@ void AInteractable::Interaction(class AActor* Actor)
 	*  그 외에 다른 class, 게임내 문 상호작용인 경우 위치를 수정해주거나 ㅇㅇ 이런식으로 분할.
 	* 
 	*/
-	check(ItemSetting.DataAsset);
+	if (ItemSetting.DataAsset == nullptr) return;
+	//check(ItemSetting.DataAsset);
 	UE_LOG(LogTemp, Warning, TEXT("Actor is : %s"), *GetName());
 	//switch (InteractType)
 

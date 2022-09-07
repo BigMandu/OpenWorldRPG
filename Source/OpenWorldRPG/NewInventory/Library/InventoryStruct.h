@@ -45,7 +45,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class UCustomPDA* DataAsset;
 
-	//아래 3개는 아직 쓰이지 않음.
+
+	// Create Obj할때 Data를 넘겨주기 위함.
+	TArray<class UNewItemObject*> Inventory;
+	UItemStorageObject* MotherStorage;
+
+	//아래는 아직 쓰이지 않음.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 Count;
 

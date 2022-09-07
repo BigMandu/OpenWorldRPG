@@ -84,7 +84,7 @@ public:
 	virtual void OnConstruction(const FTransform& Transform) override;
 
 	virtual void PostInitializeComponents() override;
-	void SetMesh(UCustomPDA* PDA);// , UMeshComponent*& MeshComp);
+	void SetMesh();// UCustomPDA* PDA);// , UMeshComponent*& MeshComp);
 
 	virtual void Interaction(AActor* Actor) override;
 

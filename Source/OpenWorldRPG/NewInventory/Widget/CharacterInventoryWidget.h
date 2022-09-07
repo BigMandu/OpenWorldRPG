@@ -11,7 +11,7 @@
  */
 class ABaseCharacter;
 class UNewInventoryGrid;
-class UNewInventoryComponent;
+//class UNewInventoryComponent;
 
 UCLASS()
 class OPENWORLDRPG_API UCharacterInventoryWidget : public UUserWidget
@@ -25,9 +25,13 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UNewInventoryGrid* SecureBoxWidget;
 
+	//UPROPERTY(meta = (BindWidget))
+	//class UAdditionalWidget* AdditionalWidget;
+
 	//UNewInventoryComponent* PocketInvComp;
 	//UNewInventoryComponent* SecureBoxInvComp;
 
 	virtual bool Initialize() override;
-	void InitializeInventory(ABaseCharacter* BChar);
+	void InitializeInventory(ABaseCharacter* BChar);//, class UNewInventory* MainWidget);
+	void BindingAdditional(class UNewInventory* MainWidget);
 };

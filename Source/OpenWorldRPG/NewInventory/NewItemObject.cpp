@@ -2,6 +2,7 @@
 
 
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
+#include "OpenWorldRPG/NewInventory/Widget/EquipmentSlot.h"
 #include "OpenWorldRPG/NewInventory/Widget/NewInventoryGrid.h"
 #include "OpenWorldRPG/Item/Item.h"
 
@@ -71,7 +72,16 @@ UMaterialInterface* UNewItemObject::GetItemIcon()
 	return ReturnIcon;
 }
 
-UItemStorageObject* UNewItemObject::GetMotherStorage()
+void UNewItemObject::RemoveLinkSlot()
+{ 
+	if (SettedSlot)
+	{
+		SettedSlot->SettedObj = nullptr;
+		SettedSlot = nullptr;
+	}	
+}
+
+const UItemStorageObject* UNewItemObject::GetMotherStorage()
 {
 	if (MotherStorage != nullptr)
 	{
@@ -88,17 +98,17 @@ void UNewItemObject::SetMotherStorage(UItemStorageObject* Var_MotherStorage)
 	}
 }
 
-UEquipmentSlot* UNewItemObject::GetMotherEquipSlot()
+const UEquipmentComponent* UNewItemObject::GetMotherEquipComp()
 {
-	if (MotherEquipSlot != nullptr)
+	if (MotherEquipComp != nullptr)
 	{
-		return MotherEquipSlot;
+		return MotherEquipComp;
 	}
 	return nullptr;
 }
-void UNewItemObject::SetMotherEquipSlot(UEquipmentSlot* Var_EquipSlot)
+void UNewItemObject::SetMotherEquipComp(UEquipmentComponent* Var_EquipSlot)
 {
 	//얘도 검증 필요 없음.
-	MotherEquipSlot = Var_EquipSlot;
+	MotherEquipComp = Var_EquipSlot;
 }
 

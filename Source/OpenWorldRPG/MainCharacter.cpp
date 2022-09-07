@@ -155,13 +155,14 @@ void AMainCharacter::BeginPlay()
 	Super::BeginPlay();
 	MainController = Cast<AMainController>(GetController());
 
-	UNewInventory* InvWidget = Cast<UNewInventory>(MainController->NewInventory);
-	if (InvWidget)
+	UNewInventory* MainWidget = Cast<UNewInventory>(MainController->NewInventory);
+	if (MainWidget)
 	{
-		UCharacterInventoryWidget* CharWidget = InvWidget->CharInvWidget;
+		UCharacterInventoryWidget* CharWidget = MainWidget->CharInvWidget;
 		if (CharWidget)
 		{
 			CharWidget->InitializeInventory(this);
+			CharWidget->BindingAdditional(MainWidget);
 		}
 	}
 }

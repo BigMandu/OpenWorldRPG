@@ -39,6 +39,20 @@ UNewItemObject* UItemStorageObject::GetItemAtIndex(int32 index)
 	return ReturnObj;
 }
 
+bool UItemStorageObject::CheckValid(UNewItemObject* VarObj, int32 Varind)
+{
+	//Index가 0 미만,
+	//Try Add하는 Obj가 자기 자신,
+	//Try Add하는 Obj가 자신을 담고있는 Storage,
+	
+	//위에서 하나라도 해당하면 Add할 수 없다.
+	if(Varind < 0 || this == VarObj || VarObj == MotherStorage)
+	{
+		return false;
+	}
+	return true;
+}
+
 // @TLind = TopLeftindex.
 bool UItemStorageObject::IsAvailableSpace(UNewItemObject* ItemObj, int32 TLind)
 {
@@ -47,6 +61,12 @@ bool UItemStorageObject::IsAvailableSpace(UNewItemObject* ItemObj, int32 TLind)
 	이 Item이 차지할 타일만큼	(해당 index의 Top-left부터) 모든 Inventory tile을
 	loop 돌면서 유효한 공간이 있는지 확인한다. 이미 차지하고 있다면 false, 없다면 true를 리턴.
 	*/
+
+	if (CheckValid(ItemObj, TLind) == false)
+	{
+		return false;
+	}
+
 	FTile tile = IndexToTile(TLind);
 	FIntPoint Itemsize = ItemObj->GetItemSize();
 
@@ -56,17 +76,23 @@ bool UItemStorageObject::IsAvailableSpace(UNewItemObject* ItemObj, int32 TLind)
 	int32 HorizontalMAX = tile.X + Itemsize.X - 1;
 	int32 VerticalMAX = tile.Y + Itemsize.Y - 1;
 
+	//아이템의 절대크기가 Inventory의 허용범위를 벗어나는지 확인.
+	if (HorizontalMAX >= Columns || VerticalMAX >= Rows || HorizontalMAX < 0 || VerticalMAX < 0) return false;
+
 	for (int32 i = tile.X; i <= HorizontalMAX; ++i)
 	{
 		for (int32 j = tile.Y; j <= VerticalMAX; ++j)
 		{
 			checktile.X = i;
 			checktile.Y = j;
+
+			//여기 체크하는 부분은  한번이라도 실패하면 걍 false리턴하게 하는거 생각해봐야함.
 			if ((checktile.X >= 0 && checktile.Y >= 0) && (checktile.X < Columns && checktile.Y < Rows))
 			{
 				int32 index = TileToIndex(checktile);
-				//UNewItemObject* GettingItemObj = GetItemAtIndex(index);
-				if (GetItemAtIndex(index) != nullptr)
+				
+				UNewItemObject* ExistItemObj = GetItemAtIndex(index);
+				if (ExistItemObj != nullptr && ExistItemObj != ItemObj)
 				{
 					return false;
 				}
@@ -128,6 +154,11 @@ void UItemStorageObject::AddItemAtIndex(UNewItemObject* ItemObj, int32 Index)
 	{
 		ItemObj->MotherStorage->RemoveItem(ItemObj);
 	}
+	else if (ItemObj->MotherEquipComp)
+	{
+		ItemObj->MotherEquipComp->RemoveEquipment(ItemObj);
+	}
+
 	ItemObj->TopLeftIndex = Index;
 	ItemObj->MotherStorage = this;
 	ItemObj->bIsDestoryed = true;

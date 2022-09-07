@@ -35,8 +35,9 @@ public:
 
 	//Pickup일때 해당 bool변수가 체크 되어있으면
 	//해당 장비의 Inventory부터 채워나가기 위함.
-	bool bHasBackpack;
-	bool bHasVest;
+	//TEnumRange로 대체해서 더이상 쓰이지 않음.
+	/*bool bHasBackpack;
+	bool bHasVest;*/
 
 	UNewItemObject* BackpackObj = nullptr;
 	UNewItemObject* VestObj = nullptr;
@@ -62,8 +63,8 @@ public:
 
 	/* New version */
 	UNewItemObject* GetEquipStorage(EEquipmentType Type);
-	bool AddEquipment(UNewItemObject* EquipObj);
+	bool AddEquipment(FItemSetting ItemSetting, AEquipment* WantToEquip);
 	bool RemoveEquipment(UNewItemObject* EquipObj);
 
-	UNewItemObject* GetEquippedWeaponSameType(EEquipmentType EquipType, FItemSetting ItemSetting, ERifleSlot RifleSlot = ERifleSlot::ERS_MAX);
+	UNewItemObject* GetEquippedWeaponSameType(EEquipmentType EquipType, UNewItemObject* Object, ERifleSlot RifleSlot = ERifleSlot::ERS_MAX);
 };

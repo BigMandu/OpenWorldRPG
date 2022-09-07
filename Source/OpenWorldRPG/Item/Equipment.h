@@ -111,6 +111,9 @@ public:
 	void SettingStorage();
 	void SpawnItem();
 
+	void SwapBetweenInvAndEquipped(ABaseCharacter* BChar, UNewItemObject* ToInventory);
+	void SwapBetweenEquipped(ABaseCharacter* BChar, UNewItemObject* BeforeEquipped);
+
 	bool Equip(AActor* Actor, ERifleSlot RifleSlot = ERifleSlot::ERS_MAX);
 	virtual bool StepEquip(AActor* Actor, ERifleSlot RifleSlot = ERifleSlot::ERS_MAX);
 

@@ -56,8 +56,8 @@ void AItem::OnConstruction(const FTransform& Transform)
 	//Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel2, ECollisionResponse::ECR_Overlap);
 	if (ItemSetting.DataAsset)
 	{
-		ItemSetting.DataAsset->ItemSize = FIntPoint(1, 1);
-		ItemSetting.DataAsset->bCanRotate = true;
+		//ItemSetting.DataAsset->ItemSize = FIntPoint(1, 1);
+		//ItemSetting.DataAsset->bCanRotate = true;
 	}
 	
 }
@@ -126,8 +126,9 @@ bool AItem::Pickup(class AActor* Actor)
 				if(TempObj == nullptr || TempObj->ItemInfo.DataAsset == nullptr || TempObj->ItemInfo.DataAsset->bHasStorage == false) continue;
 
 				UItemStorageObject* ItemStorage = Cast<UItemStorageObject>(TempObj);
+				if(ItemStorage == nullptr) continue;
 				bFlag = BChar->BaseInventoryComp->TryAddItem(ItemStorage,ItemSetting);
-				if (bFlag == false) continue;
+				if (bFlag) break;
 			}
 
 			//OldVersion

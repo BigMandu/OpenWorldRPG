@@ -10,7 +10,9 @@
 #include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
 #include "OpenWorldRPG/NewInventory/EquipmentComponent.h"
 
+#include "OpenWorldRPG/NewInventory/Widget/EquipmentSlot.h"
 #include "OpenWorldRPG/NewInventory/Widget/NewInventoryGrid.h"
+
 #include "OpenWorldRPG/NewInventory/Library/InventoryStruct.h"
 #include "OpenWorldRPG/NewInventory/Library/CustomInventoryLibrary.h"
 
@@ -150,7 +152,7 @@ UNewItemObject* AEquipment::GetDefaultItemObj()
 	if (ItemSetting.DataAsset && ItemSetting.DataAsset->bHasStorage)
 	{
 		//Obj->bHasStorage = ItemSetting.DataAsset->bHasStorage;
-		ItemSetting.DataAsset->bHasStorage;
+		//ItemSetting.DataAsset->bHasStorage;
 		/*Obj->GridTileSize = GridTileSize;
 		Obj->WEquipGridWidget = WEquipGridWidget;
 		Obj->ObjInvComp->Rows = Rows;
@@ -192,15 +194,51 @@ AActor* AEquipment::GetOwningPlayer()
 	return nullptr;
 }
 
+//Inventory와 Equipped간의 장비 Swap
+void AEquipment::SwapBetweenInvAndEquipped(ABaseCharacter* BChar, UNewItemObject* ToInventory)
+{
+	if (ToInventory && ToInventory->Equipment)
+	{
+		BChar->Equipment->RemoveEquipment(ToInventory);
+		ToInventory->Equipment->SendToInventory(BChar);
+	}
+}
+
+//Equipped Weapon간의 Slot swap
+void AEquipment::SwapBetweenEquipped(ABaseCharacter* BChar, UNewItemObject* BeforeEquipped)
+{
+	if (ItemObj && BeforeEquipped)
+	{
+		ERifleSlot TempRifleSlot = BeforeEquipped->RifleAssign;
+
+		BeforeEquipped->SetLinkSlot(ItemObj->SettedSlot);
+		BeforeEquipped->SettedSlot->SettedObj = ItemObj;
+		BeforeEquipped->RifleAssign = ItemObj->RifleAssign;
+
+		AWeapon* Weapon = nullptr;
+		Weapon = Cast<AWeapon>(ItemObj->Equipment);
+		Weapon->SettingRifleAssign(BChar, TempRifleSlot);
+		Weapon->GunAttachToMesh(BChar);
+
+		Weapon = Cast<AWeapon>(BeforeEquipped->Equipment);		
+		Weapon->SettingRifleAssign(BChar, ItemObj->SettedSlot->RifleSlotType);
+		Weapon->GunAttachToMesh(BChar);
+		
+	}
+}
+
 bool AEquipment::Equip(AActor* Actor, ERifleSlot RifleSlot)
 {
-	bool bReturn = false;
+	
 	UE_LOG(LogTemp, Warning, TEXT("AEquipment::StepEquip func called"));
 	ABaseCharacter* BChar = Cast<ABaseCharacter>(Actor);
-	
+	bool bReturn = false;
+	UNewItemObject* BeforeEquippedObj = nullptr;
+
 	if (BChar)
 	{
-		/*이 무기의 타입과 일치하는 무기가 이미 있다면
+		bool bIsInvEquipSwapState = false;
+		/*이 무기의 타입과 일치하는 무기가 이미 있다면 아래 2가지 조건에 따라 분기한다.
 		 * 1. 이 무기가 월드에 스폰된 상태라면, Inventory에 추가를 시도한다.
 		 * 2. 이 무기가 Inventory에 있는 상태라면 원래 장착된 장비와 바꿔 장착 한다.
 		 * 일치하는 무기가 없다면 Equip함수를 호출한다.
@@ -209,9 +247,19 @@ bool AEquipment::Equip(AActor* Actor, ERifleSlot RifleSlot)
 		{
 			if (GetItemState() == EItemState::EIS_Spawn)
 			{
-				//인벤토리로 이 item을 보내고 함수를 종료한다.
-				SendToInventory(BChar);
-				return true;
+				//이미 장착중인 Weapon을 장착된 슬롯에 Equip을 시도한다면 slot을 서로 swap한다.
+				AWeapon* Weapon = Cast<AWeapon>(this);
+				if (Weapon)
+				{
+					BeforeEquippedObj = BChar->Equipment->GetEquippedWeaponSameType(EEquipmentType::EET_Rifle, nullptr, RifleSlot);
+					SwapBetweenEquipped(BChar, BeforeEquippedObj);
+				}
+				else
+				{
+					//일반 장비면 인벤토리로 이 item을 보내고 함수를 종료한다.
+					SendToInventory(BChar);
+					return true;
+				}
 			}
 			else if (GetItemState() == EItemState::EIS_Pickup)
 			{
@@ -219,51 +267,31 @@ bool AEquipment::Equip(AActor* Actor, ERifleSlot RifleSlot)
 				 * 장비 Swap을 진행한다.
 				 */
 				//Try To Swap Equipment
-				UNewItemObject* EquippedObj = nullptr;
-				//AEquipment* BeforeEquipped = BChar->Equipment->GetEquippedWeaponSameType(EEquipmentType::EET_MAX, ItemSetting, EquippedObj, RifleSlot);
-				UNewItemObject* BeforeEquippedObj = BChar->Equipment->GetEquippedWeaponSameType(EEquipmentType::EET_MAX, ItemSetting, RifleSlot);
-				if (BeforeEquippedObj)
+				BeforeEquippedObj = BChar->Equipment->GetEquippedWeaponSameType(EEquipmentType::EET_MAX, ItemObj, RifleSlot);
+				if (BeforeEquippedObj != nullptr)
 				{
-					BChar->Equipment->RemoveEquipment(EquippedObj);
+					bIsInvEquipSwapState = true;
+				}
+				/*if (BeforeEquippedObj)
+				{
+					BChar->Equipment->RemoveEquipment(BeforeEquippedObj);
 					Cast<AEquipment>(BeforeEquippedObj->item)->SendToInventory(BChar);
-				}
-
-				//임시로 주석처리함. GetEquippedWeaponSameType 함수 버전 변경중.
-				//AEquipment* BeforeEquipment = BChar->Equipment->GetEquippedWeaponSameType(EEquipmentType::EET_MAX, this, RifleSlot);
-				//if (BeforeEquipment)
-				{
-					//BChar->Equipment->RemoveEquipment(BeforeEquipment); //SwapEquipment(BeforeEquipment, this);
-					//BeforeEquipment->SendToInventory(BChar);
-					/*this를 SpawnActor해서 Data를 이관하는 작업을 하는 함수를 호출해야한다.
-					 * UEqupmentSlot::NativeDrop에서 하는 루틴을 함수화 해야함
-					 */
-				}
+				}*/
 			}
 		}
 
-		//장착 시작.
-		//여기서 2개분기로 나뉜다. 
-		//if문으로 빠지는 경우는 INV에 있는 Equipment를 Drag&Drop으로 장착하지 않고. 
-		//Equip버튼을 눌러 장착하는경우
-		
 
-		if (ItemObj && ItemObj->bIsDestoryed)
-		{
-			//UCustomInventoryLibrary::SpawnEquipment(GetWorld(), ItemObj); //함수화 함.
-			//위 SpawnEquipment에서 BChar를 넘겨주는 매개변수를 추가해야됨.
-			//해당 함수에서 바로 StepEquip을 때리고 여기선 그냥 return하면됨.
 
-			//새로 생성한 Equipment의 invComp는 ItemObj->InvComp에서 이관해줌.
-			UCustomInventoryLibrary::SpawnEquipment(GetWorld(), ItemObj, Actor);
-			return true;
-		}
-		//이 경우는 INV에 있는 Equipment를 Drag&Drop으로 장착 했을경우. (EquipSlot::TrySlotEquip에서 호출함)
-		else
+		bReturn = StepEquip(Actor, RifleSlot);
+		//Equip을 하고나서 기존에 장착했던걸 옮긴다.. 새로 장착할 이 weapon이 attach socket에 부착되는 단점이 있지만
+		//Inventory 정리가 더 깔끔하기 때문에 이렇게 했다.
+		if (bIsInvEquipSwapState)
 		{
-			//Destoryed가 아니면 그냥 뭐 안하고 바로 step equip으로
-			bReturn = StepEquip(Actor, RifleSlot); 
+			SwapBetweenInvAndEquipped(BChar, BeforeEquippedObj);
 		}
+
 	}
+
 	return bReturn;
 }
 
@@ -287,7 +315,7 @@ bool AEquipment::StepEquip(AActor* Actor, ERifleSlot RifleSlot)
 	}
 
 	//Socket이 있거나, WeaponType이면 해당 (Weapon은 WeaponClass에서 진행하기 때문에 Socket이 없음)
-	if (Socket != nullptr || (ItemSetting.DataAsset->EquipmentType == EEquipmentType::EET_Rifle || ItemSetting.DataAsset->EquipmentType == EEquipmentType::EET_Pistol))
+	//if (Socket != nullptr || (ItemSetting.DataAsset->EquipmentType == EEquipmentType::EET_Rifle || ItemSetting.DataAsset->EquipmentType == EEquipmentType::EET_Pistol))
 	{
 		if (Socket != nullptr)
 		{
@@ -306,13 +334,9 @@ bool AEquipment::StepEquip(AActor* Actor, ERifleSlot RifleSlot)
 		
 		//Main에 있는 Equipment에 Add해준다.
 		//BChar->Equipment->AddEquipment(this);
-		BChar->Equipment->AddEquipment(ItemObj);
+		BChar->Equipment->AddEquipment(ItemSetting, this);
 
 		bReturn = true;
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Equipment::StepEquip, Socket is null "));
 	}
 
 	/*if (EquippedSound)
@@ -331,7 +355,7 @@ void AEquipment::SendToInventory(AActor* Actor)
 	check(BChar);
 
 	OwningEquipment = nullptr;
-	ItemObj->bIsDestoryed = true;
+	//ItemObj->bIsDestoryed = true;
 
 	//새로 추가함 InventoryComponent를 갱신함.
 	/*if (bHasStorage && EquipInventoryComp)

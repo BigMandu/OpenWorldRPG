@@ -39,13 +39,14 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
 	UBorder* BGBorder;
 
+	UNewItemObject* SettedObj;
 
 	ABaseCharacter* LootedChar_Owner;
 
-	void PaintBGBorder(UNewItemObject* Obj = nullptr);
+	void PaintBGBorder(UNewItemObject* ItemObj = nullptr);
 
 
-	bool IsSupportedEquip(UNewItemObject* Obj);
+	bool IsSupportedEquip(UNewItemObject* ItemObj);
 	bool TrySlotEquip(UNewItemObject* Var_ItemObj);
 
 	virtual bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;

@@ -5,7 +5,9 @@
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
 #include "OpenWorldRPG/NewInventory/ItemStorageObject.h"
 
+#include "OpenWorldRPG/NewInventory/Widget/EquipmentSlot.h"
 #include "OpenWorldRPG/NewInventory/Library/InventoryStruct.h"
+#include "OpenWorldRPG/NewInventory/Library/CustomInventoryLibrary.h"
 
 #include "OpenWorldRPG/Item/CustomPDA.h"
 #include "OpenWorldRPG/Item/Equipment.h"
@@ -90,11 +92,11 @@ bool UEquipmentComponent::RemoveEquipment(AEquipment* Equip)
 		*/
 		//if (Equip->EquipmentType == EEquipmentType::EET_Backpack)
 		{
-			bHasBackpack = false;
+			//bHasBackpack = false;
 		}
 		//else if (Equip->EquipmentType == EEquipmentType::EET_Vest)
 		{
-			bHasVest = false;
+			//bHasVest = false;
 		}
 
 		/*
@@ -208,9 +210,22 @@ UNewItemObject* UEquipmentComponent::GetEquipStorage(EEquipmentType Type)
 	}
 }
 
-bool UEquipmentComponent::AddEquipment(UNewItemObject* EquipObj)
+bool UEquipmentComponent::AddEquipment(FItemSetting ItemSetting, AEquipment* WantToEquip)
 {
 	UE_LOG(LogTemp, Warning, TEXT("EquipComp : AddEquip"));
+	bool bCreated = false;
+	UNewItemObject* EquipObj = nullptr;
+
+	if (WantToEquip->ItemObj == nullptr)
+	{
+		EquipObj = UCustomInventoryLibrary::CreateObject(ItemSetting, bCreated); //CreateObject(ItemSetting, bCreated);
+		if (bCreated == false) return false;
+	}
+	else
+	{
+		EquipObj = WantToEquip->ItemObj;
+	}
+
 	bool bAlreadyHave = false;
 	bool bReturn = false;
 
@@ -230,24 +245,45 @@ bool UEquipmentComponent::AddEquipment(UNewItemObject* EquipObj)
 		if (bAlreadyHave == false)
 		{
 			//Equip->OwningEquipment = this;
+			if (EquipObj->MotherStorage)
+			{
+				EquipObj->MotherStorage->RemoveItem(EquipObj);
+				EquipObj->MotherStorage = nullptr;
+			}
+			else if (EquipObj->MotherEquipComp)
+			{
+				EquipObj->MotherEquipComp->RemoveEquipment(EquipObj);
+				EquipObj->MotherEquipComp = nullptr;
+			}
+
+			//EquipObj->item = WantToEquip;
+			EquipObj->Equipment = WantToEquip;
+			EquipObj->MotherEquipComp = this;
+
+			if (EquipObj->ItemInfo.DataAsset->EquipmentType == EEquipmentType::EET_Rifle)
+			{
+				
+				EquipObj->RifleAssign = Cast<AWeapon>(WantToEquip)->RifleAssign;
+			}
 
 			EquipmentItems.Add(EquipObj);
 
 			//Equip->SKMesh->SetHiddenInGame(false); //임시로 해둔것임.
 
-			//Backpack, Vest의 장착 여부를 확인한다.
-			
+			//Backpack, Vest의 장착 여부를 확인한다., Enum Range iter를 위해 Obj를 저장해둔다.
 			if(EquipObj->ItemInfo.DataAsset->EquipmentType == EEquipmentType::EET_Backpack)
 			{
-				bHasBackpack = true;
+				BackpackObj = EquipObj;
+				//bHasBackpack = true;
 			}
 			else if(EquipObj->ItemInfo.DataAsset->EquipmentType == EEquipmentType::EET_Vest)
 			{
-				bHasVest = true;
+				VestObj = EquipObj;
+				//bHasVest = true;
 			}
 			bReturn = true;
 		}
-		//EquipWidget::RefreshEquipWidget과 bind시킴.
+		//EquipWidget::RefreshEquipWidget과 bind시켰음. 함수호출
 		OnEquipmentUpdated.Broadcast();
 
 		UE_LOG(LogTemp, Warning, TEXT("EquipComp : AddSuccess"));
@@ -260,29 +296,42 @@ bool UEquipmentComponent::RemoveEquipment(UNewItemObject* EquipObj)
 {
 	if (EquipObj)
 	{
-		/*
-		* EquipSlot::Ondrop에서 기존 SpawnActor의 루틴이 변경됨에 따라
-		* RemoveSingle시에 같지 않게 됨.
-		* 따라서 remove를 변경해야됨.
-		*/
-		if (EquipObj->ItemInfo.DataAsset->EquipmentType == EEquipmentType::EET_Backpack)
+		/* EquipSlot::Ondrop에서 기존 SpawnActor의 루틴이 변경됨에 따라
+		 * RemoveSingle시에 같지 않게 됨.
+		 * 따라서 remove를 변경해야됨.
+		 */
+
+		//Backpack, Vest 체크하는 부분은 TenumRange로 변경하면서 사용하지 않는다.
+		/*if (EquipObj->ItemInfo.DataAsset->EquipmentType == EEquipmentType::EET_Backpack)
 		{
 			bHasBackpack = false;
 		}
 		else if (EquipObj->ItemInfo.DataAsset->EquipmentType == EEquipmentType::EET_Vest)
 		{
 			bHasVest = false;
-		}
+		}*/
 
 		
-		UNewItemObject* InnerEquipment = GetEquippedWeaponSameType(EquipObj->ItemInfo.DataAsset->EquipmentType, EquipObj->ItemInfo);
+		UNewItemObject* InnerEquipment = GetEquippedWeaponSameType(EquipObj->ItemInfo.DataAsset->EquipmentType, EquipObj);// ->ItemInfo);
 		if (InnerEquipment)
 		{
 			//이름을 비교해서 같은 이름을 갖고있는 객체를 EquipmentItems Array에서 삭제하고
 			// Equip Object를 Destory해준다.
-			//if (InnerEquipment->ItemName.EqualTo(Equip->ItemName))
+			if (InnerEquipment->ItemInfo.DataAsset->ItemName.EqualTo(EquipObj->ItemInfo.DataAsset->ItemName))
 			{
 				EquipmentItems.RemoveSingle(InnerEquipment);
+
+				if (EquipObj->SettedSlot)
+				{
+					EquipObj->RemoveLinkSlot();
+					//EquipObj->SettedSlot->SettedObj = nullptr;
+				}
+
+				//Weapon::Remove에서 OwningPlayer를 사용하기 때문에 순서는 이렇게 한다.
+				EquipObj->Equipment->Remove();
+				EquipObj->Equipment->OwningPlayer = nullptr;
+
+				EquipObj->Equipment->Destroy();
 
 				//Equip->OwningPlayer = nullptr;
 				//InnerEquipment->OwningPlayer = nullptr;
@@ -300,27 +349,32 @@ bool UEquipmentComponent::RemoveEquipment(UNewItemObject* EquipObj)
 
 /* EqiupType 또는 ItemSetting과 같은 Type의 EquipObj를 리턴한다.
 */
-UNewItemObject* UEquipmentComponent::GetEquippedWeaponSameType(EEquipmentType EquipType, FItemSetting ItemSetting, ERifleSlot RifleSlot)
+UNewItemObject* UEquipmentComponent::GetEquippedWeaponSameType(EEquipmentType EquipType, UNewItemObject* Object, ERifleSlot RifleSlot)
 {
-	for (auto& Equipped: EquipmentItems)
+	for (auto& Equipped : EquipmentItems)
 	{
 		if (Equipped)
 		{
 			//Rifle인 경우에 RiffleAssign을 보고 가져온다. 또는 ItemSetting의 Type이 Rifle이면서 Rifle Slot이 지정된 경우.
 			//Rifle 타입인 경우 Primary Rifle, Sub Rifle 이렇게 지정되어 있을 수 있기 때문임.
-			if ((EquipType == EEquipmentType::EET_Rifle || (ItemSetting.DataAsset->EquipmentType == EEquipmentType::EET_Rifle)
-				&& RifleSlot != ERifleSlot::ERS_MAX))
+			if (EquipType == EEquipmentType::EET_Rifle)
 			{
-				AWeapon* EquippedWeapon = Cast<AWeapon>(Equipped->item);
-				if (EquippedWeapon)
+				if (Equipped->ItemInfo.DataAsset->EquipmentType != EEquipmentType::EET_Rifle) continue;
+
+				if (Object != nullptr && Object->ItemInfo.DataAsset->EquipmentType == EEquipmentType::EET_Rifle)
 				{
-					if (EquippedWeapon->RifleAssign == RifleSlot)
+					if (Equipped->RifleAssign == Object->RifleAssign)
 					{
 						return Equipped;
-						/*ReturnEquipObj = Equipped;
-						return EquippedWeapon;*/
 					}
 				}
+				else if(RifleSlot != ERifleSlot::ERS_MAX)
+				{
+					if (Equipped->RifleAssign == RifleSlot)
+					{
+						return Equipped;
+					}
+				}				
 			}
 			//Rifle이 아닌 나머지 Equipment
 			else
@@ -328,16 +382,14 @@ UNewItemObject* UEquipmentComponent::GetEquippedWeaponSameType(EEquipmentType Eq
 				//World에 스폰된 Equipment인 경우 여길 사용한다.
 				if (EquipType == EEquipmentType::EET_MAX)
 				{
-					if (Equipped->EquipmentType == ItemSetting.DataAsset->EquipmentType)
+					if (Object != nullptr && Equipped->ItemInfo.DataAsset->EquipmentType == Object->ItemInfo.DataAsset->EquipmentType)
 					{
 						return Equipped;
-						/*ReturnEquipObj = Equipped;
-						return Cast<AEquipment>(Equipped->item);*/
 					}
 				}
 				else //Equip없이 EquipType으로만 넘겨줬을때
 				{
-					if (Equipped->EquipmentType == EquipType)
+					if (Equipped->ItemInfo.DataAsset->EquipmentType == EquipType)
 					{
 						return Equipped;
 						/*ReturnEquipObj = Equipped;
@@ -361,7 +413,7 @@ bool UEquipmentComponent::IsSameTypeExist(AEquipment* Equip, ERifleSlot RifleSlo
 		if (Equipped)
 		{
 			//장착하려는 EquipType이 Weapon이고 장착된 Type이 Weapon인 경우 서로 비교한다.
-			if (Equipped->EquipmentType == EEquipmentType::EET_Rifle && Equip->ItemSetting.DataAsset->EquipmentType == EEquipmentType::EET_Rifle)
+			if (Equipped->ItemInfo.DataAsset->EquipmentType == EEquipmentType::EET_Rifle && Equip->ItemSetting.DataAsset->EquipmentType == EEquipmentType::EET_Rifle)
 			{
 				//Rifle Slot이 지정되지 않은 경우 (WorldSpawn 상태) 카운트 한다.
 				//Rifle Type은 2개까지 허용된다.
@@ -372,17 +424,13 @@ bool UEquipmentComponent::IsSameTypeExist(AEquipment* Equip, ERifleSlot RifleSlo
 				//Rifle Slot이 지정된 경우 Rifle이 지정된 슬롯에 해당하는게 있는지 확인한다.
 				else
 				{
-					AWeapon* EquippedWeapon = Cast<AWeapon>(Equipped);
-					if (EquippedWeapon)
+					if (Equipped->RifleAssign == RifleSlot)
 					{
-						if (EquippedWeapon->RifleAssign == RifleSlot)
-						{
-							return true;
-						}
+						return true;
 					}
 				}
 			}
-			else if(Equipped->EquipmentType == Equip->ItemSetting.DataAsset->EquipmentType) //파라미터 Weapon의 Type이 이미 있으면 true
+			else if(Equipped->ItemInfo.DataAsset->EquipmentType == Equip->ItemSetting.DataAsset->EquipmentType) //파라미터 Weapon의 Type이 이미 있으면 true
 			{
 				return true;
 			}

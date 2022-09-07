@@ -40,7 +40,7 @@ void UNewItemwidget::CreateTooltip()
 	}
 }
 
-void UNewItemwidget::Refresh()//UNewItemObject* V_Obj, float V_Tilesize)
+void UNewItemwidget::Refresh() //UNewItemObject* V_Obj, float V_Tilesize)
 {
 	
 	if (ItemObj && BGSizeBox && ItemIcon && BGBorder)
@@ -55,15 +55,13 @@ void UNewItemwidget::Refresh()//UNewItemObject* V_Obj, float V_Tilesize)
 			UE_LOG(LogTemp, Warning, TEXT("TileSize : %f"), Tilesize);
 			UE_LOG(LogTemp, Warning, TEXT("itemsize.x : %f, itemsize.y :f"), Itemsize.X, Itemsize.Y);
 
-			//BGSizeBox->SetWidthOverride(200.f);
-			//BGSizeBox->SetHeightOverride(200.f);
 			BGSizeBox->SetWidthOverride(widgetsize.X);
 			BGSizeBox->SetHeightOverride(widgetsize.Y);
 
 			BGBorder->SetBrushColor(NormalColor);
 			//ItemIcon->SetBrush(GetIconImage());
 
-			UE_LOG(LogTemp, Warning, TEXT("Widget size : %s"), *widgetsize.ToString());
+			//Debug
 			/*UE_LOG(LogTemp, Warning, TEXT("Widget size : %s"), *widgetsize.ToString());
 			UE_LOG(LogTemp, Warning, TEXT("sizebox size : %s"), *BGSizeBox->GetDesiredSize().ToString());
 			UE_LOG(LogTemp, Warning, TEXT("Border size : %s"), *BGBorder->GetDesiredSize().ToString());
@@ -141,6 +139,25 @@ FReply UNewItemwidget::NativeOnMouseButtonDown(const FGeometry& InGeometry, cons
 	return Reply.NativeReply;
 }
 
+FReply UNewItemwidget::NativeOnMouseButtonDoubleClick(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+	//FReply ReturnReply;// = Super::NativeOnMouseButtonDoubleClick(InGeometry, InMouseEvent);
+	//FEventReply Reply = UWidgetBlueprintLibrary::DetectDragIfPressed(InMouseEvent, this, EKeys::LeftMouseButton);
+
+	if (InMouseEvent.IsMouseButtonDown(EKeys::LeftMouseButton))
+	{
+		//InventoryGrid에 Bind된 event broadcast하기.
+		if (MotherContainer)
+		{
+			MotherContainer->OpenAdditionalWidget.Broadcast(ItemObj);
+		}
+
+
+	}
+
+	return Super::NativeOnMouseButtonDoubleClick(InGeometry, InMouseEvent);
+}
+
 void UNewItemwidget::NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation)
 {
 	Super::NativeOnDragDetected(InGeometry, InMouseEvent, OutOperation);
@@ -151,9 +168,11 @@ void UNewItemwidget::NativeOnDragDetected(const FGeometry& InGeometry, const FPo
 	
 	//Dragwidget을 복제해서 새로 생성해준다.
 	UNewItemwidget* DragWidget = Cast<UNewItemwidget>(CreateWidget<UUserWidget>(GetWorld(), this->GetClass()));
+	check(DragWidget)
 
 	DragWidget->ItemObj = ItemObj;
 	DragWidget->Tilesize = Tilesize;
+
 	//New Version
 	/* DragWidget은 현 위젯을 복제한것으로 대체한다. 
 	*  즉, OnDrop이 정확히 수행되어야 해당 위젯이 삭제된다.
@@ -163,13 +182,13 @@ void UNewItemwidget::NativeOnDragDetected(const FGeometry& InGeometry, const FPo
 		ItemObj->bIsDragging = true;
 		
 		DDOper->DefaultDragVisual = DragWidget;
-		DDOper->Payload = this;
+		//DDOper->Payload = this;
 		DDOper->ItemObj = ItemObj;
-		DDOper->ParentGridWidget = MotherContainer;
+		//DDOper->ParentGridWidget = MotherContainer;
 		DDOper->DragWidget = DragWidget;
 
 		OutOperation = DDOper;
-		OnDragDetect.Broadcast(ItemObj);
+		//OnDragDetect.Broadcast(ItemObj);
 	}
 
 	//Old Version
@@ -204,53 +223,6 @@ bool UNewItemwidget::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEv
 	/* 같은 Item이고 Stackable이 가능하다면, stack한다.
 	 *
 	 */
-
-
-	/*
-		여기서, Operation의 Payload내에 있는 MotherContainer와  지금 이놈의 MotherContainer를 비교.
-
-		같으면 , 컨테이너가 바뀌지 않음. index(위치)만 변경하면됨.
-		얘의 Top-Left index를 이용, 이놈의 Mothercontainer내에 함수를 호출, index를 변경한다.
-
-
-		다르면, 컨테이너가 변경됨.
-		이놈의 MotherContainer와  payload내의 MotherContainer를 파라미터로 받는 함수를 호출,
-		이놈의 MotherContainer에서 item삭제, payload내의 MotherContainer에 item add한다.
-
-	*/
-
-	/*
-	UNewItemObject* InOperItemObj = Cast<UNewItemObject>(InOperation->Payload);
-	if (InOperItemObj && InOperItemObj == ItemObj)
-	{
-		InOperItemObj = nullptr;
-		//ItemWidget과 ItemObj에 저장된 MotherContainer가 일치한다면 같은 컨테이너에서 이동.
-		if (MotherContainer == ItemObj->GetMotherContainer())
-		{
-			UE_LOG(LogTemp, Warning, TEXT("NewItemWidget::OnDrop(), Call MoveItemInSameContainer"));
-			MotherContainer->MoveItemInSameContainer(ItemObj);
-		}
-		//일치 하지 않는다면 다른 컨테이너로 이동함. (ItemWidget의 MotherContainer로)
-		else if (MotherContainer != ItemObj->GetMotherContainer() && MotherContainer->bCanDrop)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("NewItemWidget::OnDrop(), Move other container"));
-			OnRemoved.Broadcast(ItemObj);
-			//RemoveFromParent(); //여기서 가끔 에러뜸
-			return true;
-		}
-		//아무것도 아니면 실패로 Rollback한다.
-		else if(MotherContainer->bCanDrop == false)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("NewItemWidget::OnDrop(), Wrong area"));
-			//MotherContainer
-		}
-
-
-		//
-		//
-		//}
-	}
-	*/
 	return bReturn;
 }
 

@@ -34,8 +34,11 @@ public:
 	AMainCharacter* Main;
 
 	//UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UNewInventoryComponent* PocketInventoryComp;
-	UNewInventoryComponent* SecureBoxInventoryComp;
+	//UNewInventoryComponent* PocketInventoryComp;
+	//UNewInventoryComponent* SecureBoxInventoryComp;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	class UCanvasPanel* MainCanvas;
 
 	UEquipmentComponent* EquipComp;
 	
@@ -47,6 +50,9 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBorder* ContentBorder;
+
+	UPROPERTY(meta = (BindWidget))
+	class UAdditionalWidget* AdditionalWidget;
 
 	/*UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UScrollBox* RightWidgetScrollBox;*/
@@ -67,6 +73,13 @@ public:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UDropWidget* DropWidget;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"))
+	TSubclassOf<class UDraggInventoryWindow> WStorageWindow;
+	
+	UPROPERTY()
+	TArray<UDraggInventoryWindow*> InventoryWindowArray;
+	//UDraggInventoryWindow* StorageWindow;
+
 	//float TileSize;
 
 
@@ -80,4 +93,13 @@ public:
 	void SetRightWidget(UUserWidget* Widget);
 	void ChangeRightSwitcher();
 	virtual bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
+
+	UFUNCTION()
+	void BindingOpenWidgetFunc(class UNewItemObject* ItemObj);
+	void OpenAdditionalWidget(class UItemStorageObject* StorageObj);
+	
+	UFUNCTION()
+	void CloseAddiionalWidget(UDraggInventoryWindow* WindowWidget);
+
+	
 };

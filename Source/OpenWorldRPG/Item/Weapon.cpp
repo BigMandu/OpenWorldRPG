@@ -91,6 +91,10 @@ void AWeapon::SettingRifleAssign(ABaseCharacter* BChar, ERifleSlot RifleSlot)
 		break;
 	}
 	RifleAssign = RifleSlot;
+	if (ItemObj)
+	{
+		ItemObj->RifleAssign = RifleSlot;
+	}
 }
 
 bool AWeapon::StepEquip(AActor* Char, ERifleSlot RifleSlot)
@@ -106,6 +110,7 @@ bool AWeapon::StepEquip(AActor* Char, ERifleSlot RifleSlot)
 
 	UE_LOG(LogTemp, Warning, TEXT("Weapon Transform : %s"), *OriginalWeaponTransform.ToString());
 
+	//장착하고 있지 않은 Weapon을 장착했을때.
 	if (RifleAssign == ERifleSlot::ERS_MAX)
 	{
 		if (WeaponDataAsset->EquipmentType == EEquipmentType::EET_Rifle)
@@ -134,6 +139,26 @@ bool AWeapon::StepEquip(AActor* Char, ERifleSlot RifleSlot)
 		{
 			BChar->PistolWeapon = this;
 		}
+	}
+	else
+	{
+		//Pistol인 경우에는 부모 클래스인 Equipment의 SwapEquip으로 들어가기 때문에 이 부분에서 해당없음.
+		//이미 RifleAssign이 지정된 상태에서 다른 슬롯이 비어있을때가 해당 되기 때문에
+		//Rifle Assign만 스왑 시켜주면된다.
+		//우선, 1. 기존의 RifleAssign에 따라서 BChar의 Primary, Sub에 해당하는 부분을 null로 바꿔줘야하고.
+		//2. SettingRifleAssign 함수를 호출하면 끝난다.
+
+		switch (RifleAssign)
+		{
+		case ERifleSlot::ERS_Primary:
+			BChar->PrimaryWeapon = nullptr;
+			break;
+		case ERifleSlot::ERS_Sub:
+			BChar->SubWeapon = nullptr;
+			break;
+		}
+		SettingRifleAssign(BChar, RifleSlot);
+
 	}
 
 	
@@ -185,14 +210,16 @@ void AWeapon::GunAttachToMesh(AActor* Actor)
 	if (BChar)
 	{
 		/* 들고 있었던 무기가 있고, 들고있었던 무기와 이 무기가 다른경우
-		* 들고 있었던 무기를 'SubWeapon Attach' 소켓에 부착시킨다. (등에 매는거임)
+		* 들고 있었던 무기를 'SubWeapon Attach' 소켓에 부착시킨다. (등에 매는거임) 
+		
+		-> 들고있던 무기는 냅두고, 새로 장착할 현재 이 무기를 등에 매도록 변경.
 		*/
 		if (BChar->EquippedWeapon && (BChar->EquippedWeapon != this))// && ItemState == EItemState::EIS_Spawn)
 		{
 			const USkeletalMeshSocket* AttachSocket;
 			FTransform AttachTransform;
 
-			if(BChar->EquippedWeapon->RifleAssign == ERifleSlot::ERS_Primary)
+			if(RifleAssign == ERifleSlot::ERS_Primary)
 			{
 				AttachSocket = BChar->GetMesh()->GetSocketByName("PrimaryWeaponAttachSocket");
 				AttachTransform = WeaponDataAsset->PrimaryWeaponAttachTransform;
@@ -205,8 +232,8 @@ void AWeapon::GunAttachToMesh(AActor* Actor)
 
 			if (AttachSocket)
 			{
-				AttachSocket->AttachActor(BChar->EquippedWeapon, BChar->GetMesh());
-				BChar->EquippedWeapon->SetActorRelativeTransform(AttachTransform);
+				AttachSocket->AttachActor(this, BChar->GetMesh());
+				SetActorRelativeTransform(AttachTransform);
 			}
 			/*SubSocket->AttachActor(this, Main->GetMesh());
 			SetActorRelativeTransform(MeshAttachTransform);*/
@@ -278,6 +305,48 @@ FTransform AWeapon::GetSightSocketTransform()
 	ReturnTransform = SKMesh->GetSocketTransform("AimPos", ERelativeTransformSpace::RTS_World);
 
 	return ReturnTransform;
+}
+
+void AWeapon::Remove()
+{
+	UE_LOG(LogTemp, Warning, TEXT("AWeapon::Remove func called"));
+	Super::Remove();
+	if (OwningPlayer)
+	{
+		//ABaseCharacter* BChar = Cast<ABaseCharacter>(OwningPlayer);
+		//if (BChar)
+		{
+			RifleAssign = ERifleSlot::ERS_MAX;
+			if (ItemObj)
+			{
+				ItemObj->RifleAssign = ERifleSlot::ERS_MAX;
+			}
+
+			if (OwningPlayer->EquippedWeapon == this)
+			{
+				OwningPlayer->ChangeWeapon(0);
+				OwningPlayer->EquippedWeapon = nullptr;
+				//Main->SetEquippedWeapon(nullptr);
+				UE_LOG(LogTemp, Warning, TEXT("AWeapon::Remove , Remove RifleAssign"));
+			}
+
+			if (OwningPlayer->PrimaryWeapon == this)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("AWeapon::Remove, was Primary..."));
+				OwningPlayer->PrimaryWeapon = nullptr;
+			}
+			else if (OwningPlayer->SubWeapon == this)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("AWeapon::Remove, was Sub..."));
+				OwningPlayer->SubWeapon = nullptr;
+			}
+			else if (OwningPlayer->PistolWeapon == this)
+			{
+				OwningPlayer->PistolWeapon = nullptr;
+			}
+
+		}
+	}
 }
 
 /*
@@ -826,42 +895,6 @@ void AWeapon::AimInitialize()
 
 		//UE_LOG(LogTemp, Warning, TEXT("LerpRotation : %s"), *LerpAimRotation.ToString());
 		},GetWorld()->GetDeltaSeconds(),true);
-}
-
-void AWeapon::Remove()
-{
-	UE_LOG(LogTemp, Warning, TEXT("AWeapon::Remove func called"));
-	Super::Remove();	
-	if (OwningPlayer)
-	{
-		ABaseCharacter* BChar = Cast<ABaseCharacter>(OwningPlayer);
-		if (BChar)
-		{
-			if (BChar->EquippedWeapon == this)
-			{
-				BChar->ChangeWeapon(0);
-				BChar->EquippedWeapon = nullptr;
-				//Main->SetEquippedWeapon(nullptr);
-				RifleAssign = ERifleSlot::ERS_MAX;
-				UE_LOG(LogTemp, Warning, TEXT("AWeapon::Remove , Remove RifleAssign"));
-			}
-
-			if (BChar->PrimaryWeapon == this)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("AWeapon::Remove, was Primary..."));
-				BChar->PrimaryWeapon = nullptr;
-			}
-			else if(BChar->SubWeapon == this)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("AWeapon::Remove, was Sub..."));
-				BChar->SubWeapon = nullptr;
-			}
-			else if(BChar->PistolWeapon == this)
-			{
-				BChar->PistolWeapon = nullptr;
-			}
-		}
-	}
 }
 
 void AWeapon::UpdateAim()

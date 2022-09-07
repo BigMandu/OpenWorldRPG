@@ -3,7 +3,11 @@
 
 #include "OpenWorldRPG/NewInventory/Widget/CharacterInventoryWidget.h"
 #include "OpenWorldRPG/NewInventory/Widget/NewInventoryGrid.h"
+#include "OpenWorldRPG/NewInventory/Widget/NewInventory.h"
+#include "OpenWorldRPG/NewInventory/Widget/AdditionalWidget.h"
+
 #include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
+
 #include "OpenWorldRPG/BaseCharacter.h"
 
 bool UCharacterInventoryWidget::Initialize()
@@ -12,13 +16,22 @@ bool UCharacterInventoryWidget::Initialize()
 	return bReturn;
 }
 
-void UCharacterInventoryWidget::InitializeInventory(ABaseCharacter* BChar)
+void UCharacterInventoryWidget::InitializeInventory(ABaseCharacter* BChar)//, UNewInventory* MainWidget)
 {
 	PocketWidget->StorageObj = BChar->PocketStorage;
 	SecureBoxWidget->StorageObj = BChar->SecureBoxStorage;
 
 	PocketWidget->GridInit();
 	SecureBoxWidget->GridInit();
+
+
+	
+	
+	//PocketWidget->OpenAdditionalWidget.AddDynamic(AdditionalWidget, &UAdditionalWidget::BindingOpenWidgetFunction);
+	//SecureBoxWidget->OpenAdditionalWidget.AddDynamic(AdditionalWidget, &UAdditionalWidget::BindingOpenWidgetFunction);
+	
+	
+	//PocketWidget->OpenAdditionalWidget.AddDynamic(this,&UAddi)
 	/*if (BChar->PocketInventoryComp)
 	{
 		PocketInvComp = BChar->PocketInventoryComp;
@@ -31,4 +44,10 @@ void UCharacterInventoryWidget::InitializeInventory(ABaseCharacter* BChar)
 		SecureBoxWidget->GridInitialize(SecureBoxInvComp, SecureBoxInvComp->TileSize);
 	}*/
 
+}
+
+void UCharacterInventoryWidget::BindingAdditional(class UNewInventory* MainWidget)
+{
+	PocketWidget->OpenAdditionalWidget.AddDynamic(MainWidget, &UNewInventory::BindingOpenWidgetFunc);
+	SecureBoxWidget->OpenAdditionalWidget.AddDynamic(MainWidget, &UNewInventory::BindingOpenWidgetFunc);
 }

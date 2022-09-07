@@ -8,6 +8,7 @@
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
 #include "OpenWorldRPG/NewInventory/ItemStorageObject.h"
 
+#include "OpenWorldRPG/NewInventory/Library/CustomInventoryLibrary.h"
 #include "OpenWorldRPG/NewInventory/Library/InventoryStruct.h"
 
 #include "Containers/Array.h"
@@ -123,6 +124,9 @@ bool UNewInventoryComponent::TryAddItemStep(UNewItemObject* ItemObj)
 			if (bResult)
 			{
 				AddItemAtIndex(ItemObj, iter);
+				//해제는 InventoryLibrary::SpawnEquip 또는 DropWidget의 OnDrop에서 한다.
+				ItemObj->bIsDestoryed = true;
+
 				//SetItemState(EItemState::EIS_Pickup);
 				return bResult;
 			}
@@ -340,7 +344,7 @@ void UNewInventoryComponent::AddItemAtIndex(UItemStorageObject* StorageObj, UNew
 bool UNewInventoryComponent::TryAddItem(UItemStorageObject* StorageObj, FItemSetting ItemSetting)
 {
 	bool bCreated = false;
-	UNewItemObject* ItemObj = CreateObject(ItemSetting, bCreated);
+	UNewItemObject* ItemObj = UCustomInventoryLibrary::CreateObject(ItemSetting, bCreated); //CreateObject(ItemSetting, bCreated);
 	if (bCreated)
 	{
 		return StorageObj->TryAddItem(ItemObj);
@@ -354,6 +358,7 @@ bool UNewInventoryComponent::RemoveItem(UItemStorageObject* StorageObj, UNewItem
 }
 
 
+//CustomInventoryLibrary로 옮김.
 UNewItemObject* UNewInventoryComponent::CreateObject(FItemSetting ItemStruct, bool& bIsCreated)
 {
 	if (ItemStruct.DataAsset)
