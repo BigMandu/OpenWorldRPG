@@ -4,8 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "OpenWorldRPG/Item/Equipment.h"
-//#include "Components/SkeletalMeshComponent.h"
-//#include "EquipmentComponent.h"
 #include "Weapon.generated.h"
 
 /**
@@ -28,26 +26,7 @@ class UAnimMontage;
 class AMainCharacter;
 class UCurveFloat;
 class UWeaponPDA;
-
-
-//UENUM(BlueprintType)
-//enum class EWeaponType : uint8
-//{
-//	EWT_Rifle	UMETA(DisplayName = "Rifle"),
-//	EWT_Pistol	UMETA(DisplayName = "Pistol"),
-//	EWT_Helmet	UMETA(DisplayName = "Helmet"),
-//	EWT_Vest	UMETA(DisplayName = "Vest"),
-//
-//	EWT_MAX		UMETA(DisplayName = "DefaltMAX")
-//};
-
-//UENUM()
-//enum class ERifleAssign : uint8
-//{
-//	ERA_Primary		UMETA(Displayname = "Primary"),
-//	ERA_Sub			UMETA(Displayname = "Sub"),
-//	ERA_MAX			UMETA(Displayname = "DefaultsMAX")
-//};
+class UItemStorageObject;
 
 
 //단발, 점사, 연사를 구분
@@ -73,87 +52,11 @@ enum class EWeaponState : uint8
 	EWS_MAX			UMETA(DisplayName = "DefaultsMAX")
 };
 
-/*
-USTRUCT()
-struct FWeaponAnim
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditDefaultsOnly, Category = "Animation")
-	UAnimMontage* FPSAnim;
-	UPROPERTY(EditDefaultsOnly, Category = "Animation")
-	UAnimMontage* TPSAnim;
-};
-
-USTRUCT()
-struct FWeaponStat
-{
-	GENERATED_BODY()
-
-	//Weapon의 사거리
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
-	float WeaponRange;
-
-	// 탄이 흩어지는 정도.
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
-	float HipBulletSpread;
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
-	float AimBulletSpread;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
-	int32 AmmoPerMag;
-
-
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
-	bool bHasBurstMode;
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
-	int32 BurstRound;
-	
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
-	float FireRatePerMin;
-	UPROPERTY(VisibleAnywhere, Category = "Weapon | Stat")
-	float FireRatePerSec;
-	UPROPERTY(VisibleAnywhere, Category = "Weapon | Stat")
-	float SecondPerBullet;
-
-	// Recoil 
-	UPROPERTY(EditDefaultsOnly, Category = "Recoil")
-	UCurveFloat* Recoil_X;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Recoil")
-	UCurveFloat* Recoil_Y;
-
-	// FWeaponStat Defaults
-	FWeaponStat()
-	{
-		WeaponRange = 5000.f;
-		HipBulletSpread = 1.5f;
-		AimBulletSpread = 1.f;
-
-		AmmoPerMag = 30;
-
-		bHasBurstMode = true;
-		BurstRound = 3;	
-		
-
-		//m4a1은 분당 700~950발.분당 950으로 잡고 초당 15.8발을 쏘면됨. 0.06초당 한발씩.
-		FireRatePerMin = 950;
-
-		//FireRatePerSec이나 SecondPerBullet은
-		//FireRatePerMin이 Weapon마다 변할 수 있으니.
-		//Equip함수에서 계산하여 저장한다.
-		 
-		
-	}
-};
-*/
 
 UCLASS(Abstract)
 class OPENWORLDRPG_API AWeapon : public AEquipment
 {
 	GENERATED_BODY()
-protected:
-	
 public:
 	AWeapon();
 	
@@ -173,17 +76,18 @@ public:
 
 	FTransform OriginalWeaponTransform;
 
+	FName MuzzleFlashSocketName;
+
 	bool bIsFiring;
 	bool bIsAiming; //Main에서 값을 단순히 넣어주기만 한다.
 
 	//Clipping을 하고있을때 Aim을 막고, BulletOut의 Trace를 수정하기 위한 boolean
 	bool bIsHighReady;
 
-	FName MuzzleFlashSocketName;
+	float AlphaTime;
+	float RecoilAlphaTime;
 
-	//PDA에 저장함.
-	/*UPROPERTY(EditAnywhere, Category = "WeaponStat")
-	FWeaponStat WeaponStat;*/
+
 
 	/* FPS Aim모드 일때 위치값 저장 -> PDA에 저장함.*/
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon | Transform")
@@ -195,9 +99,6 @@ public:
 
 	/* Enums */
 
-	/*UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
-	ERifleAssign RifleAssign;*/
-
 	//Primary, Sub을 지정한다.
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	ERifleSlot RifleAssign;
@@ -208,48 +109,38 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	EWeaponState CurrentWeaponState;
 
-	/* FX  -> 아래 Sound,Effect, Shake, Animation까지 PDA로 옮김. */
-	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Sound")
-	//USoundCue* EquippedSound;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Sound")
-	USoundCue* FireSound;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "FX")
-	UParticleSystem* FireMuzzleEffect;
-	
-	UPROPERTY(EditDefaultsOnly, Category = "FX")
-	TSubclassOf<UCameraShakeBase> CamShake;
-
-	/* Animation */
-	/*UPROPERTY(EditDefaultsOnly, Category = "Animation")
-	FWeaponAnim FireAnimaton;*/
-
-	//////////////////////////////////
-	float AlphaTime;
-	float RecoilAlphaTime;
 	FTimerHandle AimInitHandle;
 	FTimerHandle RecoilHandle;
+
+
+	/********* Ammo *********/
+	//소모한 탄 개수
+	int32 ConsumeAmmoCnt = 0;
+
+	//탄창에 남은 탄약의 개수
+	int32 AmmoLeftInMag = 0;
+
+	//Inv에 남은 같은 타입 탄약의 총 개수 forWeaponStatusWidget.
+	int32 CntAmmoSameType = 0;
+
+	//////////////////////////////////
+
 	
 protected:
 	//for gun spread
 	int32 FireCount;
 
 	bool bDetectLookInput;
-
 	bool bLMBDown;	
-
 	float LastFireTime;
 
-	
 	float WeaponClippingLength;
 
 	FTimerHandle FiringTimer;
-
 	//WeaponClipping을 위해 Hand와 Muzzle의 Relative값.
 	FTransform MuzzleRelative;
 	
-
 	FVector WorldAimPosition;
 	//FVector WeaponMuzzleLocation;
 
@@ -274,7 +165,6 @@ protected:
 	FRotator EndFiringRotation;
 
 	float RecoilTime; //Curve float에서 사용.
-
 	float Time;
 
 	FVector PreviousSpread;
@@ -285,26 +175,26 @@ protected:
 private:
 	void UpdateAim();
 	void WeaponClipping();
+	bool CheckAmmo();
+
+	void UseAmmo();
 
 protected:
 	virtual bool StepEquip(AActor* Char, ERifleSlot RifleSlot = ERifleSlot::ERS_MAX) override;
 public:
-
-	//void SetOwningPlayer(AActor * Actor);
 	virtual void Tick(float DeltaTime) override;
-
 	virtual void PostInitializeComponents() override;
-
-	
-	
+		
 	void GunAttachToMesh(AActor* Actor);
-
-	//void FPS_AimAttachToMesh(AActor* Actor);
+	void GunAttachToSubSocket(AActor* Actor);
 
 	FTransform GetSightSocketTransform();
 
-	//virtual void Drop() override;
+	//for WeaponStatusWidget
+	void GetTotalAmmo();
 	
+	int32 GetCurrentAmmoInMag();
+
 	void ChangeSafetyLever();
 	
 	/* Attack */
@@ -320,6 +210,10 @@ public:
 	bool CanFire();
 
 	bool CanEndFire();
+
+
+	void Reload();
+	void ReloadEnd();
 
 	virtual void Old_BulletOut() PURE_VIRTUAL(AWeapon::BulletOut);
 	virtual void New_BulletOut() PURE_VIRTUAL(AWeapon::New_BulletOut);
@@ -345,12 +239,9 @@ public:
 	/* Compare Preview State, And Setting State , And Call Firing func */
 	void SetWeaponState(EWeaponState NewState);
 
-	void SettingRifleAssign(ABaseCharacter* BChar, ERifleSlot RifleSlot);
 
 	void WeaponFX();
-	//void PlayWeaponAnimAndCamShake(FWeaponAnim& Anim);
 
-	
 
 	virtual void Remove() override;
 };

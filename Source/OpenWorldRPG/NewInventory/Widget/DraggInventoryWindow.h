@@ -21,6 +21,9 @@ public:
 	FOnCloseWindow OnCloseWindow;
 
 	UPROPERTY(meta = (BindWidget))
+	class UBorder* HeaderBorder;
+
+	UPROPERTY(meta = (BindWidget))
 	class UNewInventoryGrid* GridInventory;
 
 	UPROPERTY(meta = (BindWidget))

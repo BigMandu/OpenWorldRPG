@@ -39,8 +39,8 @@ void AWeapon_Instant::New_BulletOut()
 	FHitResult Hit = BulletTrace(StartTrace, EndTrace);
 
 	DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor::Green, false, 2.f, (uint8)nullptr, 2.f);
-
 	DrawDebugPoint(GetWorld(), Hit.Location, 10.f, FColor::Blue, false, 5.f);
+
 	CheckHit(Hit, AimPos.Rotator().Vector());
 
 	GetWorldTimerManager().ClearTimer(RecoilHandle);

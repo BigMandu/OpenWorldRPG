@@ -2,14 +2,17 @@
 
 
 #include "Weapon.h"
-#include "OpenWorldRPG/Item/CustomPDA.h"
+//#include "OpenWorldRPG/Item/CustomPDA.h"
 #include "OpenWorldRPG/Item/WeaponPDA.h"
 #include "OpenWorldRPG/MainCharacter.h"
 #include "OpenWorldRPG/MainController.h"
 #include "OpenWorldRPG/MainAnimInstance.h"
+#include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
+#include "OpenWorldRPG/NewInventory/ItemStorageObject.h"
 #include "OpenWorldRPG/NewInventory/EquipmentComponent.h"
 #include "OpenWorldRPG/NewInventory/Library/InventoryStruct.h"
+
 
 #include "Engine/SkeletalMeshSocket.h"
 #include "Camera/CameraComponent.h"
@@ -41,8 +44,7 @@ AWeapon::AWeapon() : Super()
 	bLMBDown = false;
 	bDetectLookInput = false;
 
-	//MuzzleEffectComp = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("MuzzleEffectComp"));
-	//MuzzleEffectComp->SetupAttachment(GetRootComponent());
+
 	MuzzleFlashSocketName = FName("muzzleflash");
 }
 
@@ -68,33 +70,6 @@ void AWeapon::PostInitializeComponents()
 	Super::PostInitializeComponents();
 
 	CapsuleComp->SetHiddenInGame(false); //for debug
-
-	//CapsuleComp->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnCollisionBegin);
-	//CapsuleComp->OnComponentEndOverlap.AddDynamic(this, &AWeapon::OnCollisionEnd);
-
-	//CapsuleComp->SetCollisionObjectType(ECollisionChannel::ECC_GameTraceChannel3); //Weapon콜리전 Object로 지정.
-	//CapsuleComp->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
-	//CapsuleComp->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel2, ECollisionResponse::ECR_Ignore);
-	//CapsuleComp->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic, ECollisionResponse::ECR_Ignore);
-}
-void AWeapon::SettingRifleAssign(ABaseCharacter* BChar, ERifleSlot RifleSlot)
-{
-	switch (RifleSlot)
-	{
-	case ERifleSlot::ERS_Primary:
-		BChar->PrimaryWeapon = this;
-		UE_LOG(LogTemp, Warning, TEXT("AWeapon::SettingRifleAssign , this is Primary"));
-		break;
-	case ERifleSlot::ERS_Sub:
-		BChar->SubWeapon = this;
-		UE_LOG(LogTemp, Warning, TEXT("AWeapon::SettingRifleAssign , this is Sub"));
-		break;
-	}
-	RifleAssign = RifleSlot;
-	if (ItemObj)
-	{
-		ItemObj->RifleAssign = RifleSlot;
-	}
 }
 
 bool AWeapon::StepEquip(AActor* Char, ERifleSlot RifleSlot)
@@ -108,61 +83,40 @@ bool AWeapon::StepEquip(AActor* Char, ERifleSlot RifleSlot)
 
 	CapsuleComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 
-	UE_LOG(LogTemp, Warning, TEXT("Weapon Transform : %s"), *OriginalWeaponTransform.ToString());
-
-	//장착하고 있지 않은 Weapon을 장착했을때.
+	
+	
 	if (RifleAssign == ERifleSlot::ERS_MAX)
 	{
 		if (WeaponDataAsset->EquipmentType == EEquipmentType::EET_Rifle)
 		{
-			/* 1,2,3을 눌렀을때 Quick Swap하기 위해 */
+			/* 1,2,3을 눌렀을때 Quick Swap하기 위해 Rifle을 지정한다 */
 			if (RifleSlot == ERifleSlot::ERS_MAX) //지정된 Slot이 없을때
 			{
 				if (BChar->PrimaryWeapon) //이미 주무기가 있으면
 				{
-					SettingRifleAssign(BChar, ERifleSlot::ERS_Sub);
+					BChar->SetWeaponAssign(this,ERifleSlot::ERS_Sub);
+					//SettingRifleAssign(BChar, ERifleSlot::ERS_Sub);
 				}
 				else //주무기가 없으면
 				{
-					SettingRifleAssign(BChar, ERifleSlot::ERS_Primary);
+					BChar->SetWeaponAssign(this, ERifleSlot::ERS_Primary);
+					//SettingRifleAssign(BChar, ERifleSlot::ERS_Primary);
 				}
 			}
-			//Rifle Type을 Drag&Drop으로 Equip을 진행했을땐, 아래로 됨.
+			//Drag&Drop으로 Equip을 진행했을땐, 아래 분기로 빠진다.
 			else
 			{
 				//RifleAssign = RifleSlot;
-				SettingRifleAssign(BChar, RifleSlot);
+				//SettingRifleAssign(BChar, RifleSlot);
+				BChar->SetWeaponAssign(this, RifleSlot);
 
 			}
 		}
 		else if (WeaponDataAsset->EquipmentType == EEquipmentType::EET_Pistol)
 		{
-			BChar->PistolWeapon = this;
+			BChar->SetWeaponAssign(this,ERifleSlot::ERS_MAX);
 		}
 	}
-	else
-	{
-		//Pistol인 경우에는 부모 클래스인 Equipment의 SwapEquip으로 들어가기 때문에 이 부분에서 해당없음.
-		//이미 RifleAssign이 지정된 상태에서 다른 슬롯이 비어있을때가 해당 되기 때문에
-		//Rifle Assign만 스왑 시켜주면된다.
-		//우선, 1. 기존의 RifleAssign에 따라서 BChar의 Primary, Sub에 해당하는 부분을 null로 바꿔줘야하고.
-		//2. SettingRifleAssign 함수를 호출하면 끝난다.
-
-		switch (RifleAssign)
-		{
-		case ERifleSlot::ERS_Primary:
-			BChar->PrimaryWeapon = nullptr;
-			break;
-		case ERifleSlot::ERS_Sub:
-			BChar->SubWeapon = nullptr;
-			break;
-		}
-		SettingRifleAssign(BChar, RifleSlot);
-
-	}
-
-	
-
 
 	//들고 있는 무기가 없을 경우 지금 Weapon을 들도록 한다.
 	if (BChar->EquippedWeapon == nullptr)
@@ -177,123 +131,133 @@ bool AWeapon::StepEquip(AActor* Char, ERifleSlot RifleSlot)
 			{
 				BChar->ChangeWeapon(2);
 			}
-
 		}
 		else
 		{
 			BChar->ChangeWeapon(3);
 		}
-
-		//GunAttachToMesh(Main);
 	}
-
-
-
+	//들고있는 무기가 있는 경우, 지금 Weapon을 SubSocket으로 옮긴다.
+	else
+	{
+		GunAttachToSubSocket(BChar);
+	}
+	
+	//Fire시 계산을 편히 하기 위해 값을 미리 세팅 한다.
 	WeaponDataAsset->WeaponStat.FireRatePerSec = WeaponDataAsset->WeaponStat.FireRatePerMin / 60;
 	WeaponDataAsset->WeaponStat.SecondPerBullet = 1 / WeaponDataAsset->WeaponStat.FireRatePerSec; //0.06
 
-	//Super::StepEquip을 나중에 홓출하기 때문에 여기서 AddEquipment룰 호출할 필요 필요없다.
-	//broadcast를 위해 AddEquipment 함수를 호출한다. 이미 추가되어있기 때문에, broadcast말고는 하는게 없다.
-	//BChar->Equipment->AddEquipment(this);
 	
-	GunAttachToMesh(BChar);
 
+	//모든 세팅이 끝나고 AddEquipment를 호출하기 위해 나중에 호출했다.
 	Super::StepEquip(Char);
 	return true;
 }
 
+
+/*
+*  Weapon을 WeaponGrip Socket에 장착한다.
+*/
 void AWeapon::GunAttachToMesh(AActor* Actor)
 {
 	ABaseCharacter* BChar = Cast<ABaseCharacter>(Actor);
 	AMainCharacter* Main = Cast<AMainCharacter>(BChar);
 
-	if (BChar)
-	{
-		/* 들고 있었던 무기가 있고, 들고있었던 무기와 이 무기가 다른경우
-		* 들고 있었던 무기를 'SubWeapon Attach' 소켓에 부착시킨다. (등에 매는거임) 
-		
-		-> 들고있던 무기는 냅두고, 새로 장착할 현재 이 무기를 등에 매도록 변경.
-		*/
-		if (BChar->EquippedWeapon && (BChar->EquippedWeapon != this))// && ItemState == EItemState::EIS_Spawn)
-		{
-			const USkeletalMeshSocket* AttachSocket;
-			FTransform AttachTransform;
-
-			if(RifleAssign == ERifleSlot::ERS_Primary)
-			{
-				AttachSocket = BChar->GetMesh()->GetSocketByName("PrimaryWeaponAttachSocket");
-				AttachTransform = WeaponDataAsset->PrimaryWeaponAttachTransform;
-			}
-			else
-			{
-				AttachSocket = BChar->GetMesh()->GetSocketByName("SubWeaponAttachSocket");
-				AttachTransform = WeaponDataAsset->SubWeaponAttachTransform;
-			}
-
-			if (AttachSocket)
-			{
-				AttachSocket->AttachActor(this, BChar->GetMesh());
-				SetActorRelativeTransform(AttachTransform);
-			}
-			/*SubSocket->AttachActor(this, Main->GetMesh());
-			SetActorRelativeTransform(MeshAttachTransform);*/
-			return;
-		}
-		
+	const USkeletalMeshSocket* AttachSocket = nullptr;
+	FTransform AttachTransform;
 	
 
-		// 1, 3인칭 변경시 weapon attach를 변경한다. (Main에만 적용)
-		if (Main)
-		{
-			const USkeletalMeshSocket* TPSocket = Main->GetMesh()->GetSocketByName("WeaponGrip");
-			const USkeletalMeshSocket* FPSocket = Main->FPMesh->GetSocketByName("WeaponGrip");
+	// 1, 3인칭 변경시 weapon attach를 변경한다. (Main에만 적용)
+	if (Main)
+	{
+		const USkeletalMeshSocket* TPSocket = Main->GetMesh()->GetSocketByName("WeaponGrip");
+		const USkeletalMeshSocket* FPSocket = Main->FPMesh->GetSocketByName("WeaponGrip");
 
-			if (TPSocket && FPSocket)
+		if (TPSocket && FPSocket)
+		{
+			switch (Main->CameraMode)
 			{
-				switch (Main->CameraMode)
+			case ECameraMode::ECM_FPS:
+				if (FPSocket->AttachActor(this, Main->FPMesh))
 				{
-				case ECameraMode::ECM_FPS:
-					if (FPSocket->AttachActor(this, Main->FPMesh))
-					{
-						SetActorRelativeTransform(WeaponDataAsset->FPMeshAttachTransform);
-
-						//Main->BaseWeapTransform = SKMesh->GetRelativeTransform();
-					}
-					break;
-				case ECameraMode::ECM_TPS:
-					if (TPSocket->AttachActor(this, Main->GetMesh()))
-					{
-						SetActorRelativeTransform(WeaponDataAsset->MeshAttachTransform);
-					}
-					break;
+					SetActorRelativeTransform(WeaponDataAsset->FPMeshAttachTransform);
 				}
-				SKMesh->SetHiddenInGame(false);
-				Main->SetEquippedWeapon(this);
-			}
-		}
-
-		//BChar만 null이 아닌경우 -> AI에만 해당
-		if (BChar && Main == nullptr)
-		{
-			const USkeletalMeshSocket* WeaponSocket = BChar->GetMesh()->GetSocketByName("WeaponGrip");
-			if (WeaponSocket)
-			{
-				if (WeaponSocket->AttachActor(this, BChar->GetMesh()))
+				break;
+			case ECameraMode::ECM_TPS:
+				if (TPSocket->AttachActor(this, Main->GetMesh()))
 				{
 					SetActorRelativeTransform(WeaponDataAsset->MeshAttachTransform);
-					//SKMesh->SetHiddenInGame(false);
-					BChar->SetEquippedWeapon(this);
 				}
+				break;
 			}
 
+			SKMesh->SetHiddenInGame(false);
+			//Main->SetEquippedWeapon(this);
 		}
+	}
+
+	//BChar만 null이 아닌경우 -> AI에만 해당
+	if (BChar && Main == nullptr)
+	{
+		const USkeletalMeshSocket* WeaponSocket = BChar->GetMesh()->GetSocketByName("WeaponGrip");
+		if (WeaponSocket)
+		{
+			if (WeaponSocket->AttachActor(this, BChar->GetMesh()))
+			{
+				SetActorRelativeTransform(WeaponDataAsset->MeshAttachTransform);
+				//SKMesh->SetHiddenInGame(false);
+				BChar->SetEquippedWeapon(this);
+			}
+		}
+
+	}
+}
+
+
+/*
+* WeaponGrip이 아닌 AttachSocket에 해당 Weapon을 부착 시킨다.
+*/
+void AWeapon::GunAttachToSubSocket(AActor* Actor)
+{
+	ABaseCharacter* BChar = Cast<ABaseCharacter>(Actor);
+	if(BChar == nullptr) return;
+
+	const USkeletalMeshSocket* AttachSocket = nullptr;
+	FTransform AttachTransform;
+
+	if(WeaponDataAsset->EquipmentType == EEquipmentType::EET_Rifle)
+	{
+		switch (RifleAssign)
+		{
+		case ERifleSlot::ERS_Primary :
+			AttachSocket = BChar->GetMesh()->GetSocketByName("PrimaryWeaponAttachSocket");
+			AttachTransform = WeaponDataAsset->PrimaryWeaponAttachTransform;
+		break;
+		case ERifleSlot::ERS_Sub:
+			AttachSocket = BChar->GetMesh()->GetSocketByName("SubWeaponAttachSocket");
+			AttachTransform = WeaponDataAsset->SubWeaponAttachTransform;
+		break;
+		}
+	}
+	else if (WeaponDataAsset->EquipmentType == EEquipmentType::EET_Pistol)
+	{
+		AttachSocket = BChar->GetMesh()->GetSocketByName("PistolAttachSocket");
+		AttachTransform = WeaponDataAsset->PistolAttachTransform;
+	}
+
+
+	if (AttachSocket)
+	{
+		AttachSocket->AttachActor(this, BChar->GetMesh());
+		SetActorRelativeTransform(AttachTransform);
 
 		if (WeaponDataAsset->EquippedSound)
 		{
 			UGameplayStatics::SpawnSoundAttached(WeaponDataAsset->EquippedSound, OwningPlayer->GetRootComponent());
 		}
-
 	}
+
+	
 }
 
 FTransform AWeapon::GetSightSocketTransform()
@@ -303,6 +267,7 @@ FTransform AWeapon::GetSightSocketTransform()
 	FTransform ReturnTransform;
 
 	ReturnTransform = SKMesh->GetSocketTransform("AimPos", ERelativeTransformSpace::RTS_World);
+
 
 	return ReturnTransform;
 }
@@ -389,7 +354,8 @@ void AWeapon::FPS_AimAttachToMesh(AActor* Actor)
 
 void AWeapon::ChangeSafetyLever()
 {
-	if (ItemSetting.DataAsset->EquipmentType == EEquipmentType::EET_Rifle)
+	//UCustomPDA* CPDA = Cast<UCustomPDA>(ItemSetting.DataAsset);
+	if (WeaponDataAsset && WeaponDataAsset->EquipmentType == EEquipmentType::EET_Rifle)
 	{
 		switch (WeaponFiringMode)
 		{
@@ -495,16 +461,80 @@ bool AWeapon::CanFire()
 	
 	//if (ItemObj->bIsDestoryed == false)
 	{
-		if (WeaponFiringMode != EWeaponFiringMode::EWFM_Safe && CurrentWeaponState != EWeaponState::EWS_Reloading)
+		if (WeaponFiringMode != EWeaponFiringMode::EWFM_Safe && CurrentWeaponState != EWeaponState::EWS_Reloading
+		&& OwningPlayer->bIsSprinting == false)
 		{
 			if (!(WeaponFiringMode == EWeaponFiringMode::EWFM_SemiAuto && FireCount > 0))
 			{
-				bCanFire = true;
+				if(CheckAmmo())
+				{	
+					bCanFire = true;					
+				}
 			}
 		}
 	}
 	return bCanFire;
 }
+
+int32 AWeapon::GetCurrentAmmoInMag()
+{
+	return AmmoLeftInMag;
+}
+
+bool AWeapon::CheckAmmo()
+{
+	if (AmmoLeftInMag <= 0)
+	{
+		return false;
+	}
+	return true;
+	/*bool bHasAmmo = false;
+	SearchAmmo(bHasAmmo);
+	return bHasAmmo;*/
+}
+
+void AWeapon::UseAmmo()
+{
+	//bool bflag = false;
+	//int32 AmmoConsumed = 1; //탄 소모 개수.
+	//SearchAmmo(bflag, true, AmmoConsumed);
+
+	//++ConsumeAmmoCnt;
+	--AmmoLeftInMag;
+	//GetTotalAmmo();
+	OwningPlayer->OnGetAmmo.Broadcast(this);
+}
+
+
+void AWeapon::Reload()
+{
+	SetWeaponState(EWeaponState::EWS_Reloading);
+	bool bHasAmmo = OwningPlayer->CheckAmmo();
+	CntAmmoSameType = 0;
+	if(bHasAmmo)
+	{
+		//AmmoPerMag을 초과해버림
+		AmmoLeftInMag += OwningPlayer->GetNumberofCanReload();
+		CntAmmoSameType = OwningPlayer->GetTotalNumberofSameTypeAmmo();
+	}
+	else
+	{
+		//Ammo가 없다면 reload 실패.
+
+	}
+
+	OwningPlayer->OnGetAmmo.Broadcast(this);
+}
+
+void AWeapon::ReloadEnd()
+{
+	SetWeaponState(EWeaponState::EWS_Idle);
+
+
+	//AmmoLeftInMag = WeaponDataAsset->WeaponStat.AmmoPerMag;
+	//ConsumeAmmoCnt = 0;
+}
+
 
 bool AWeapon::CanEndFire()
 {
@@ -642,10 +672,10 @@ void AWeapon::Firing()
 	WeaponFX();
 	//BulletOut(); //Weapon Instant에 구현함.
 	New_BulletOut(); //Weapon Instant
-
+	UseAmmo();
 	FireCount++;
 	
-	UE_LOG(LogTemp, Warning, TEXT("Fire cnt : %d"), FireCount);
+	//UE_LOG(LogTemp, Warning, TEXT("AWeapon::Firing/  Fire cnt : %d"), FireCount);
 	//UE_LOG(LogTemp, Warning, TEXT("LastFiretime : %f"), LastFireTime);
 	
 	GetWorldTimerManager().SetTimer(FiringTimer, this, &AWeapon::ReFiring, WeaponDataAsset->WeaponStat.SecondPerBullet, false);
@@ -771,6 +801,13 @@ FVector AWeapon::GetTraceStartLocation(FVector Dir)
 
 	//ClippingWall 함수가 실행되면, 탄 시작 위치를 Muzzle의 위치로 바꾼다.
 	//함수가 실행되지 않으면,  탄시작 위치는 Actor와(Actor-CamLo = Actor의 옆위치가 된다) Dir의 사이각이 된다.
+	
+	//For debug
+	if (SKMesh->GetSocketByName(MuzzleFlashSocketName) == nullptr)
+	{
+		UE_LOG(LogTemp,Warning,TEXT("AWeapon::GetTraceStartLocation / Can not find MuzzleFlashSocket"));
+	}
+
 	if(bIsHighReady)
 	{
 		FVector WeaponMuzzleLocation = SKMesh->GetSocketLocation(MuzzleFlashSocketName);
@@ -962,10 +999,12 @@ void AWeapon::WeaponClipping()
 
 	ETraceTypeQuery TTQ = UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_GameTraceChannel2);
 
+	//오른쪽 손에서 Aim이 향하는 방향으로 Weapon의 Capsule길이만큼 LineTrace를 쏜다.
 	UKismetSystemLibrary::SphereTraceSingle(GetWorld(), CurrentMeshRightHand, EndLo, 5.f, TTQ, false,
 		IgnoreActorList, EDrawDebugTrace::None, Hit, true);
 	
-	
+	//이 Line Trace가 Hit되면 앞에 무언가 장애물이 있다는 뜻이고,
+	//Weapon의 Roll을 수정해 위쪽으로 회전시킨다. 'HighReady형태로'
 	if(Hit.bBlockingHit)
 	{
 		FVector CurVec = CurrentMeshAttachTransform.GetTranslation();
@@ -994,6 +1033,8 @@ void AWeapon::WeaponClipping()
 		SetActorRelativeTransform(CurrentMeshAttachTransform);
 		bIsHighReady = false;
 	}
+
+	//UE_LOG(LogTemp,Warning,TEXT("high Ready is %s"),bIsHighReady ? "true" : "false");
 }
 
 

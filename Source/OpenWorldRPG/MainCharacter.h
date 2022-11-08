@@ -6,6 +6,9 @@
 #include "OpenWorldRPG/BaseCharacter.h"
 #include "MainCharacter.generated.h"
 
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnQuickSlotUse, EQuickSlotNumber, SlotNum);
+
 class AActor;
 class AMainController;
 class AWeapon;
@@ -15,27 +18,19 @@ class UAISense_Sight;
 class UAISense_Hearing;
 //class UAIPerceptionStimuliSourceComponent;
 class UCameraComponent;
-class UInputComponent;
-class UInventoryComponent;
-class UEquipmentComponent;
-class UMainAnimInstance;
 class USpringArmComponent;
-class USkeletalMeshComponent;
 class USoundCue;
-class UNewInventoryComponent;
+class UInputComponent;
+class UMainAnimInstance;
+class USkeletalMeshComponent;
 class UPoseableMeshComponent;
 
-//UENUM(BlueprintType)
-//enum class EPlayerStatus : uint8
-//{
-//	EPS_Dead		UMETA(DisplayName = "Dead"),
-//	EPS_Crouch		UMETA(DisplayName = "Crouch"),
-//	EPS_Normal		UMETA(DisplayName = "Normal"),
-//	EPS_Walk		UMETA(DisplayName = "Walk"),
-//	EPS_Sprint		UMETA(DisplayName = "Sprint"),
-//
-//	EPS_MAX		UMETA(DisplayName = "DefaultMAX")
-//};
+/* Custom Actor Component */
+class UInventoryComponent; //안씀
+class UNewInventoryComponent;
+class UEquipmentComponent;
+class UStatManagementComponent;
+
 
 UENUM(BlueprintType)
 enum class ECameraMode : uint8
@@ -63,9 +58,7 @@ class OPENWORLDRPG_API AMainCharacter : public ABaseCharacter
 public:
 	AMainCharacter();
 
-	//To Base
-	//UMainAnimInstance* TPAnimInstance;
-	//UMainAnimInstance* FPAnimInstance;
+	FOnQuickSlotUse OnQuickSlotUse;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Character)
 	AMainController* MainController;
@@ -73,10 +66,10 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Character)
 	USkeletalMeshComponent* FPMesh;
 
-	/************ Socket Name ************/ //To Base
-	/*FName HeadSocketName;
-	FName GripSocketName;
-	FName WeaponLeftHandSocketName;*/
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Character)
+	USkeletalMeshComponent* FPLowerLegMesh;
+
+
 
 	/**********   카메라 *************/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
@@ -86,10 +79,8 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	USpringArmComponent* CameraBoom;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	UCameraComponent* CameraTPS; //3인칭 카메라
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	UCameraComponent* CameraFPS; //1인칭 카메라
 
@@ -113,69 +104,35 @@ public:
 	FTransform BaseWeapTransform;
 
 	/********** enum **********/
-	//UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Enums")
-	//EPlayerStatus MainChracterStatus; //To base
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Enums")
 	ECameraMode CameraMode;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Enums")
 	EAimMode AimMode;
 
-	/********** Movement *************/
-	//const float MaxWalkSpeed = 600.f; //뛰는 속도
-	//const float MinWalkSpeed = 300.f; //걷는 속도
-	
-	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement)
-	//bool bIsAccelerating; //To base
+	/********* Input *********/
+	bool bMoveForward = false;
+	bool bMoveRight = false;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement)
+	bool bSprintKeyDown;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement)
+	bool bIsJumpKeyDown;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement)
+	bool bIsLookInput;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Input)
+	bool bTabKeyDown;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement)
 	bool bCrouchToggle;
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement)
 	bool bWalkToggle;
-
-	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement)
-	//bool bIsWalking;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement)
-	bool bIsLookInput;
-
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	bool bAimToggle;
 
 	/********* 입력 막아주기 *********/
 	bool bDisableInput; //Widget을 보고 있을때 true로 만들어 특정키 입력을 막는다.
 
-	/********* Input *********/
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
-	bool bAimToggle;
-
-	/*UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Input)
-	bool bIsAim;*/
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Input)
-	bool bTabKeyDown;
-
-	/********* Inventory ********/
-	/*UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Item)
-	UInventoryComponent* Inventory;*/
-
-
-	//To Base
-	/*UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Item)
-	UNewInventoryComponent* InventoryComp; 
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Item)
-	UEquipmentComponent* Equipment;*/
-
-	/*UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interactive")
-	AContainer* InteractLootBox;*/
-
-
-	/**********  Sounds ************/
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Sounds)
-	//USoundCue* StepSoundCue; //To Base
-
+	
 	/**********  Interactive 관련 ************/
 	//Minimum value of Active Interaction Distance.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interactive")
@@ -187,26 +144,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interactive")
 	AActor* InteractActor;
 
-	/************* Weapon 관련 ***************/
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Weapon")
-	//FTransform RifleRelativeLoRo;
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Weapon")
-	//FTransform PistolRelativeLoRo;
-
-	//To Base
-	/*UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item | Weapon")
-	AWeapon* EquippedWeapon;*/
-
-	/* Weapon Quick Swap */
-	/*UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item | Weapon")
-	AWeapon* PrimaryWeapon;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item | Weapon")
-	AWeapon* SubWeapon;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item | Weapon")
-	AWeapon* PistolWeapon;*/
-
+	/************** Timer **************/
+	FTimerHandle T_SprintKeyDown;
+	FTimerHandle T_SprintKeyUp;
 
 	
 protected:
@@ -229,10 +169,15 @@ public:
 	void SetCameraMode(ECameraMode Type);
 	void SetAimMode(EAimMode Mode);
 
+	/***** Timer 관련 ******/
+	void ClearSprintUpTimer();
+
 	/********   Movement 함수 *******/
 	void MoveForward(float Value);
 	void MoveRight(float Value);
 
+	void Sprint();
+	void UnSprint();
 
 	//Tobase
 	void MyJump();
@@ -264,24 +209,9 @@ public:
 	
 	void FPSAimLocationAdjust();
 
-	//void SetEquippedWeapon(AWeapon* Weapon);
-	/*void ChangePrimaryWeapon();
-	void ChangeSubWeapon();
-	void ChangePistolWeapon();*/
-
-	/* Change Weapon Firing Mode*/
-	//void ChangeSafetyLever();
-
 
 	//FPMesh때문에 override해서 FPAnim을 따로 갱신해준다.
 	virtual void ChangeWeapon(int32 index) override;
-
-	//UFUNCTION(BlueprintCallable)
-	//void UseItem(AActor* Item);
-
-	/********  Hand ik ******/
-	/*UFUNCTION(BlueprintCallable)
-	FTransform LeftHandik();*/
 
 
 	/********  Interaction 관련 ******/
@@ -295,13 +225,12 @@ public:
 	void Interactive();
 
 
-	//To base
 
-	/********** Sounds ********/
-	//void StepSound();
-
-	/********** Perception ********/
-	//virtual bool CanBeSeenFrom(const FVector& ObserverLocation, FVector& OutSeenLocation, int32& NumberOfLoSChecksPerformed, float& OutSightStrength, const AActor* IgnoreActor, const bool* bWasVisible, int32* UserData) const;
-	
-
+	/* Quick Slot */
+	void QuickSlotNum4();
+	void QuickSlotNum5();
+	void QuickSlotNum6();
+	void QuickSlotNum7();
+	void QuickSlotNum8();
+	void QuickSlotNum9();
 };

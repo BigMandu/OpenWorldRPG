@@ -2,7 +2,7 @@
 
 
 #include "Interactable.h"
-#include "OpenWorldRPG/Item/CustomPDA.h"
+#include "OpenWorldRPG/Item/BasePDA.h"
 #include "OpenWorldRPG/NewInventory/Library/InventoryStruct.h"
 #include "OpenWorldRPG/MainCharacter.h"
 
@@ -20,9 +20,9 @@ AInteractable::AInteractable()
 
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Static Mesh"));
 	SKMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMesh"));
+
 	RootComponent = Mesh;
 	SKMesh->SetupAttachment(GetRootComponent());
-
 
 	//InteractType = EInteractType::EIT_Item;
 }
@@ -69,7 +69,7 @@ void AInteractable::SetMesh()// UCustomPDA* PDA)//, UMeshComponent*& MeshComp)
 
 			SKMesh->SetHiddenInGame(true);
 			SKMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_EngineTraceChannel2, ECollisionResponse::ECR_Overlap);
-
+		
 			if (!ItemSetting.DataAsset->ReSizeScale.IsZero())
 			{
 				//SKMesh->SetWorldScale3D(ItemSetting.DataAsset->ReSizeScale);
@@ -134,7 +134,7 @@ void AInteractable::Interaction(class AActor* Actor)
 		AEquipment* Equipment = Cast<AEquipment>(this);
 		if (Equipment)
 		{
-			Equipment->Equip(Actor); //Weapon으로 cast, equip함수 호출
+			Equipment->Equip(Actor, ERifleSlot::ERS_MAX); //Weapon으로 cast, equip함수 호출
 		}
 		break;
 	}

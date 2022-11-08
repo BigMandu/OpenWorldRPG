@@ -26,6 +26,7 @@ class UTooltipWidget;
 class USizeBox;
 class UBorder;
 class UImage;
+class UTextBlock;
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnRemoved, UObject*);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnDragDetect, UObject*);
@@ -64,7 +65,7 @@ public:
 	FOnDragDetect OnDragDetect;
 	
 	//UDragDropOperation* DDOper;
-	UCustomDDOperation* DDOper;
+	//UCustomDDOperation* DDOper;
 
 	
 
@@ -77,6 +78,9 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
 	UImage* ItemIcon;
 
+	UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
+	UTextBlock* ItemCount;
+
 	/* GridWidget에서 data를 넣어줌*/
 	UNewInventoryGrid* MotherContainer;
 	UNewItemObject* ItemObj;
@@ -87,29 +91,32 @@ public:
 
 
 private:
-	
 	FSlateBrush GetIconImage();
-
 	void CreateTooltip();
+
+protected:
+	virtual void NativeConstruct() override;
+
+	virtual void NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
+	virtual void NativeOnMouseLeave(const FPointerEvent& InMouseEvent) override;
+	virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
+	virtual FReply NativeOnMouseButtonDoubleClick(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
+	virtual void NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation) override;
+	virtual bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
+
+	virtual FReply NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent) override;
 
 public:
 	virtual bool Initialize() override;
-	virtual void NativeConstruct() override;
+	
 	//virtual void SynchronizeProperties() override;
 	
 	
 	void Refresh();// UNewItemObject* V_Obj, float V_Tilesize);// float var_tilesize);
 
-	virtual void NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
-	virtual void NativeOnMouseLeave(const FPointerEvent& InMouseEvent) override;
-
-	virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
-	virtual FReply NativeOnMouseButtonDoubleClick(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
-	virtual void NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation) override;
-	virtual bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
+	
 	
 
-	//virtual FReply NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent) override;
 	/*FORCEINLINE_DEBUGGABLE WidgetT* ConstructWidget(TSubclassOf<UWidget>WidgetClass = WidgetT::StaticClass(), FName WidgetName = NAME_None)
 	{
 		static_assert(TIsDerivedFrom<WidgetT, UWidget>::IsDerived, "WidgetTree::ConstructWidget can only create UWidget objects.");

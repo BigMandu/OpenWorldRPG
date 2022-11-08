@@ -34,9 +34,10 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Storage")
 	TArray<UNewItemObject*> Inventory;
 
+protected:
+	bool TryAddItemStep(UNewItemObject* ItemObj);
 
-
-	/***** Function *****/
+public:
 
 	FTile IndexToTile(int32 index);
 	int32 TileToIndex(FTile tile);
@@ -48,8 +49,7 @@ public:
 	bool CheckValid(UNewItemObject* VarObj, int32 Varind);
 
 	bool IsAvailableSpace(UNewItemObject* ItemObj, int32 TLind);
-	bool TryAddItem(UNewItemObject* ItemObj);
-	bool TryAddItemStep(UNewItemObject* ItemObj);
+	bool TryAddItem(UNewItemObject* ItemObj, bool bWantToGenerateRandomCount = false);
 	void AddItemAtIndex(UNewItemObject* ItemObj, int32 Index);
 	bool RemoveItem(UNewItemObject* ItemObj);
 	

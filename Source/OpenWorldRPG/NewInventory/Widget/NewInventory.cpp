@@ -9,19 +9,19 @@
 #include "OpenWorldRPG/NewInventory/Widget/AdditionalWidget.h"
 #include "OpenWorldRPG/NewInventory/Widget/AdditionalDaDWidget.h"
 #include "OpenWorldRPG/NewInventory/Widget/DraggInventoryWindow.h"
-
-
 #include "OpenWorldRPG/NewInventory/Library/CustomInventoryLibrary.h"
-
-#include "OpenWorldRPG/Item/CustomPDA.h"
 
 #include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
 #include "OpenWorldRPG/NewInventory/ItemStorageObject.h"
+//#include "OpenWorldRPG/NewInventory/ContainerWidget.h"
+
+#include "OpenWorldRPG/Item/BasePDA.h"
+#include "OpenWorldRPG/Item/CustomPDA.h"
 
 #include "OpenWorldRPG/MainCharacter.h"
 #include "OpenWorldRPG/MainController.h"
-//#include "OpenWorldRPG/NewInventory/ContainerWidget.h"
+
 
 #include "Blueprint/DragDropOperation.h"
 #include "Components/ScrollBox.h"
@@ -29,6 +29,7 @@
 #include "Components/Border.h"
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
+#include "Components/Button.h"
 
 
 UNewInventory::UNewInventory(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
@@ -39,20 +40,8 @@ UNewInventory::UNewInventory(const FObjectInitializer& ObjectInitializer) : Supe
 void UNewInventory::NativeConstruct()
 {
 	Super::NativeConstruct();
-	//if (PocketInventoryComp)
-	//{
-	//	PocketWidget->GridInitialize(PocketInventoryComp, PocketInventoryComp->TileSize);
-	//	
-	//}
-	//if(SecureBoxInventoryComp)
-	//{
-	//	SecureBoxWidget->GridInitialize(SecureBoxInventoryComp, SecureBoxInventoryComp->TileSize);
-	//	//GridWidget->BindDropWidget(DropWidget);
-	//	
-	//}
-
 	
-
+	SetVisibility(ESlateVisibility::Collapsed);
 	if (EquipComp)
 	{
 		EquipmentWidget->EquipInitialize(EquipComp);
@@ -60,11 +49,13 @@ void UNewInventory::NativeConstruct()
 		
 	}
 
-	
+	StatusButton->OnClicked.AddDynamic(this, &UNewInventory::ChangeMainSwitchToStatus);
+	InventoryButton->OnClicked.AddDynamic(this, &UNewInventory::ChangeMainSwitchToInventory);
+
+	//MainCharacter의 Beginplay에서 호출하는것으로 변경함.
 	//if (CharInvWidget)
 	//{
-	//	//MainCharacter의 PostInit에서 호출하는것으로 변경함.
-	//	//CharInvWidget->InitializeInventory(Main);
+	//	CharInvWidget->InitializeInventory(Main);
 	//}
 }
 
@@ -77,17 +68,7 @@ bool UNewInventory::Initialize()
 	Main = (TMain == nullptr) ? nullptr : TMain;
 	if (Main)
 	{
-		/*if (Main->PocketInventoryComp)
-		{
-			PocketInventoryComp = Main->PocketInventoryComp;
-		}
-		if(Main->SecureBoxInventoryComp)
-		{
-			SecureBoxInventoryComp = Main->SecureBoxInventoryComp;
-		}*/
-
 		EquipComp = Main->Equipment;
-		//GridWidget->GridInitialize(InventoryComp, InventoryComp->TileSize);
 	}
 	return bResult;
 }
@@ -97,13 +78,9 @@ void UNewInventory::SetRightWidget(UUserWidget* Widget)
 	ContentBorder->ClearChildren();
 	if (Widget)
 	{
-		//RightWidgetScrollBox->ClearChildren();
-		//RightWidgetScrollBox->AddChild(Widget);
 		ContentBorder->AddChild(Widget);
 		Widget->SetVisibility(ESlateVisibility::Visible);
 		UE_LOG(LogTemp, Warning, TEXT("Inventory::SetRightWidget, Widget name : %s"), *Widget->GetFName().ToString());
-		//LootWidget->SetVisibility(ESlateVisibility::Visible);
-		//RightWidgetSwitcher->SetActiveWidget(Widget);
 	}
 }
 
@@ -157,10 +134,16 @@ bool UNewInventory::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEve
 
 void UNewInventory::BindingOpenWidgetFunc(UNewItemObject* ItemObj)
 {
-	if (ItemObj == nullptr || ItemObj->ItemInfo.DataAsset->bHasStorage == false)
+	
+	if (ItemObj == nullptr)
 	{
-		return;
+		UCustomPDA* CPDA = Cast<UCustomPDA>(ItemObj->ItemInfo.DataAsset);
+		if (!CPDA || (CPDA && CPDA->bHasStorage == false))
+		{
+			return;
+		}
 	}
+
 	UItemStorageObject* StorageObj = Cast<UItemStorageObject>(ItemObj);
 	if (StorageObj)
 	{
@@ -187,12 +170,18 @@ void UNewInventory::OpenAdditionalWidget(UItemStorageObject* StorageObj)
 			//초기화가 된적 없는 Storage면 초기화를 해준다.
 			if (StorageObj->Inventory.IsValidIndex(0) == false)
 			{
-				StorageObj->InitializeStorage(StorageObj->ItemInfo.DataAsset->StorageX, StorageObj->ItemInfo.DataAsset->StorageY, StorageObj->ItemInfo.DataAsset->TileSize);
+				UCustomPDA* CPDA = Cast<UCustomPDA>(StorageObj->ItemInfo.DataAsset);
+				StorageObj->InitializeStorage(CPDA->StorageX, CPDA->StorageY, CPDA->TileSize);
 			}
+
+
 			StorageWindow->GridInventory->StorageObj = StorageObj;
 			StorageWindow->GridInventory->GridInit();
-
 			StorageWindow->AddToViewport();
+			
+			
+
+			UE_LOG(LogTemp,Warning,TEXT("dragging inv window parent : %s"), *GetParent()->GetFName().ToString());
 			
 			//UCanvasPanelSlot* CanvasSlot = MainCanvas->AddChildToCanvas(StorageWindow);// ->AddChildToOverlay(StorageWindow);
 			float MouseX;
@@ -222,4 +211,14 @@ void UNewInventory::CloseAddiionalWidget(UDraggInventoryWindow* WindowWidget)
 	UE_LOG(LogTemp, Warning, TEXT("NewInventory ::CloseAdditional func called"));
 	InventoryWindowArray.Remove(WindowWidget);
 	WindowWidget->RemoveFromParent();
+}
+
+void UNewInventory::ChangeMainSwitchToStatus()
+{
+	MainInventorySwitcher->SetActiveWidgetIndex(0);
+}
+
+void UNewInventory::ChangeMainSwitchToInventory()
+{
+	MainInventorySwitcher->SetActiveWidgetIndex(1);
 }

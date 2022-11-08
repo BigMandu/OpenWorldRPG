@@ -3,12 +3,20 @@
 
 #include "BaseCharacter.h"
 
+#include "Components/CapsuleComponent.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Components/AudioComponent.h"
+
+#include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Perception/AISense_Hearing.h"
+#include "Sound/SoundCue.h"
+
 #include "MainController.h"
 #include "AI/EnemyAIController.h"
 #include "MainAnimInstance.h"
-#include "Components/CapsuleComponent.h"
-#include "Components/SkeletalMeshComponent.h"
 
+#include "OpenWorldRPG/GameData/StatManagementComponent.h"
 
 #include "OpenWorldRPG/NewInventory/LootWidgetComponent.h"
 #include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
@@ -17,20 +25,14 @@
 #include "OpenWorldRPG/NewInventory/ItemStorageObject.h"
 
 #include "OpenWorldRPG/NewInventory/Widget/CharacterLootWidget.h"
-#include "NewInventory/Widget/NewInventory.h"
+#include "OpenWorldRPG/NewInventory/Widget/NewInventory.h"
 
-
+#include "OpenWorldRPG/Item/WeaponPDA.h"
 #include "OpenWorldRPG/Item/Item.h"
 #include "OpenWorldRPG/Item/Equipment.h"
 #include "OpenWorldRPG/Item/Weapon.h"
 
 
-
-#include "GameFramework/CharacterMovementComponent.h"
-#include "Kismet/GameplayStatics.h"
-
-#include "Perception/AISense_Hearing.h"
-#include "Sound/SoundCue.h"
 
 
 
@@ -42,7 +44,7 @@ ABaseCharacter::ABaseCharacter()
 
 	GetCharacterMovement()->bOrientRotationToMovement = true; //움직인 방향 = 진행방향으로 설정
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 540.f, 0.f); //회전속도
-	GetCharacterMovement()->JumpZVelocity = 540.f;
+	GetCharacterMovement()->JumpZVelocity = 440.f;
 	GetCharacterMovement()->AirControl = 0.2f;
 
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true; //웅크리기를 할 수 있도록 true로 해준다.
@@ -50,19 +52,19 @@ ABaseCharacter::ABaseCharacter()
 
 	GetCharacterMovement()->MaxWalkSpeedCrouched = 300.f;
 	GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
-	bIsWalking = false; //걷기 기본설정은 false.
+	bIsWalking = false; //걷기 기본설정은 false
 
-	Health = 100.f;
-	
+	StatManagementComponent = CreateDefaultSubobject<UStatManagementComponent>(TEXT("StatManageComp"));
 	BaseInventoryComp = CreateDefaultSubobject<UNewInventoryComponent>(TEXT("BaseInventoryComp"));
-
-
 	//PocketInventoryComp = CreateDefaultSubobject<UNewInventoryComponent>(TEXT("PocketInventoryComp"));
 	//SecureBoxInventoryComp= CreateDefaultSubobject<UNewInventoryComponent>(TEXT("SecureBoxInventoryComp"));
-	
-
 	Equipment = CreateDefaultSubobject<UEquipmentComponent>(TEXT("Equipment"));
 	LootWidgetComp = CreateDefaultSubobject<ULootWidgetComponent>(TEXT("LootWidgetComp"));
+	//AudioComp = CreateDefaultSubobject<UAudioComponent>(TEXT("AudioComp"));
+	//AudioComp->SetupAttachment(GetRootComponent());
+
+	//decal을 무시한다.
+	GetMesh()->SetReceivesDecals(false);
 
 }
 
@@ -70,6 +72,11 @@ ABaseCharacter::ABaseCharacter()
 void ABaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (StatManagementComponent)
+	{
+		StatManagementComponent->OnHPZero.AddDynamic(this,&ABaseCharacter::Die);
+	}
 	
 }
 
@@ -109,6 +116,9 @@ void ABaseCharacter::PostInitializeComponents()
 	{
 		SpawnItems();
 	}
+
+	
+
 }
 
 void ABaseCharacter::SetTeamType(ETeamType Team)
@@ -138,14 +148,19 @@ void ABaseCharacter::SetCharacterStatus(ECharacterStatus Type)
 	switch (ChracterStatus)
 	{
 	case ECharacterStatus::EPS_Normal:
+		//StatManagementComponent->
 		GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
 		bIsWalking = false;
+		bIsSprinting = false;
 		break;
 	case ECharacterStatus::EPS_Walk:
 		GetCharacterMovement()->MaxWalkSpeed = MinWalkSpeed;
 		bIsWalking = true;
+		bIsSprinting = false;
 		break;
 	case ECharacterStatus::EPS_Sprint:
+		GetCharacterMovement()->MaxWalkSpeed = 1300.f;
+		bIsSprinting = true;
 		break;
 	default:
 		break;
@@ -228,6 +243,156 @@ UNewInventoryComponent* ABaseCharacter::GetAllInvComp(int32 index)
 	return nullptr;
 }
 
+void ABaseCharacter::ReloadWeapon()
+{
+	if (EquippedWeapon)
+	{
+		EquippedWeapon->Reload();
+		EquippedWeapon->ReloadEnd();
+	}
+}
+
+int32 ABaseCharacter::GetNumberofCanReload()
+{
+	UItemStorageObject* Storage = Cast<UItemStorageObject>(Equipment->GetEquipStorage(EEquipmentType::EET_Vest));
+	if(EquippedWeapon)
+	{
+		//매거진 최대 개수 - 매거진에 들어있는 개수 = 장전시 필요한 최대 탄약개수
+		int32 CurAmmoInMag = EquippedWeapon->GetCurrentAmmoInMag();
+		int32 APM = EquippedWeapon->WeaponDataAsset->WeaponStat.AmmoPerMag;
+
+		//Storage 
+		int32 NeedToFillAmmoCount = FMath::Clamp<int32>(APM-CurAmmoInMag,0,APM);
+		int32 TempNTFAC = NeedToFillAmmoCount;
+		if (Storage)
+		{
+			NeedToFillAmmoCount = CollectRemainAmmo(Storage,NeedToFillAmmoCount);
+		}
+
+		NeedToFillAmmoCount = CollectRemainAmmo(PocketStorage, NeedToFillAmmoCount);
+
+		//AmmoPerMag에서 남은 잔탄을 뺀, 장전 가능한 탄약 개수를 리턴한다.
+		return TempNTFAC - NeedToFillAmmoCount;
+	}
+	return 0;
+}
+
+//Storage에서 ammo를 찾아 장전시 필요한 탄약 개수를 구하고, 모든 탄약을 찾지 못한 경우 남은 탄약의 개수를 리턴한다.
+int32 ABaseCharacter::CollectRemainAmmo(UItemStorageObject* Storage, int32 NumberofAmmoReq)
+{
+	int32 NumberofRemainingAmmoReq = NumberofAmmoReq;
+	for (auto item : Storage->Inventory)
+	{
+		if (item && item->ItemInfo.DataAsset->ItemType == EItemType::EIT_Ammo)
+		{
+			if (EquippedWeapon->WeaponDataAsset->WeaponStat.AmmoType == item->ItemInfo.DataAsset->AmmoType)
+			{
+				if (NumberofRemainingAmmoReq <= 0)
+				{
+					return 0;
+				}
+				//item의 개수가 필요개수 이상이면 필요개수만큼 지우고 리턴한다.
+				if (item->ItemInfo.Count >= NumberofRemainingAmmoReq)
+				{
+					BaseInventoryComp->RemoveItemCount(item, NumberofRemainingAmmoReq);
+					return 0;
+				}
+				else
+				{
+					//그게 아니라면, 필요개수에서 item개수를 뺀 값을 저장하고, for문을 돌면서 계속 갱신한다.
+					NumberofRemainingAmmoReq = FMath::Clamp<int32>(NumberofRemainingAmmoReq - item->ItemInfo.Count,0, NumberofRemainingAmmoReq - item->ItemInfo.Count);
+					BaseInventoryComp->RemoveItemCount(item, item->ItemInfo.Count);
+				}
+			}
+		}
+	}
+	return NumberofRemainingAmmoReq;
+}
+
+int32 ABaseCharacter::GetTotalNumberofSameTypeAmmo()
+{
+	int32 Ammocnt = 0;
+	if(EquippedWeapon)
+	{
+		
+		UItemStorageObject* Storage = Cast<UItemStorageObject>(Equipment->GetEquipStorage(EEquipmentType::EET_Vest));
+		if (Storage)
+		{
+			CheckAmmoStep(Storage, Ammocnt);
+		}
+		CheckAmmoStep(PocketStorage, Ammocnt+=Ammocnt);
+		
+	}
+	return Ammocnt;
+}
+
+bool ABaseCharacter::CheckAmmo()
+{
+	bool bHasAmmo = false;
+	int32 Dummyval = 0;
+	if (EquippedWeapon)
+	{
+		UItemStorageObject* Storage = Cast<UItemStorageObject>(Equipment->GetEquipStorage(EEquipmentType::EET_Vest));
+		if (Storage)
+		{
+			bHasAmmo = CheckAmmoStep(Storage, Dummyval,true);
+		}
+
+		if (bHasAmmo == false)
+		{
+			bHasAmmo = CheckAmmoStep(PocketStorage, Dummyval,true);
+		}
+	}
+	return bHasAmmo;
+}
+
+bool ABaseCharacter::CheckAmmoStep(UItemStorageObject* Storage, int32& AmmoCnt, bool bIsCheckAmmo)
+{	
+	for (auto item : Storage->Inventory)
+	{
+		if (item && item->ItemInfo.DataAsset->ItemType == EItemType::EIT_Ammo)
+		{
+			if (EquippedWeapon->WeaponDataAsset->WeaponStat.AmmoType == item->ItemInfo.DataAsset->AmmoType)
+			{	
+				if(bIsCheckAmmo)
+				{ 
+					return true;
+				}
+				AmmoCnt += item->ItemInfo.Count;
+			}
+		}
+	}
+	return false;
+}
+
+//RifleSlot이 MAX인 경우 Pistol로 지정한다.
+void ABaseCharacter::SetWeaponAssign(AWeapon* Weapon, ERifleSlot RifleSlot)
+{
+	if(Weapon == nullptr) return;
+
+	if (Weapon->WeaponDataAsset->EquipmentType == EEquipmentType::EET_Rifle)
+	{
+		switch (RifleSlot)
+		{
+		case ERifleSlot::ERS_Primary:
+			PrimaryWeapon = Weapon;
+		break;
+		case ERifleSlot::ERS_Sub:
+			SubWeapon = Weapon;
+		break;
+		}
+	}
+	else if (Weapon->WeaponDataAsset->EquipmentType == EEquipmentType::EET_Pistol)
+	{
+		PistolWeapon = Weapon;
+	}
+
+	Weapon->RifleAssign = RifleSlot;
+	if (Weapon->ItemObj)
+	{
+		Weapon->ItemObj->RifleAssign = RifleSlot;
+	}
+}
 
 void ABaseCharacter::ChangeSafetyLever()
 {
@@ -239,7 +404,7 @@ void ABaseCharacter::ChangeSafetyLever()
 
 void ABaseCharacter::ChangeWeapon(int32 index)
 {
-	if (TPAnimInstance)
+	if (TPAnimInstance)// && FPAnimInstance)
 	{
 		switch (index)
 		{
@@ -251,40 +416,42 @@ void ABaseCharacter::ChangeWeapon(int32 index)
 			// 현재 장착하고 있는 무기가 Primary와 다를경우에만 변경. 일치하면 똑같은걸 장착할 필요가 없음.
 			if (PrimaryWeapon && (PrimaryWeapon != EquippedWeapon))
 			{
+				if(EquippedWeapon)
+					EquippedWeapon->GunAttachToSubSocket(this);
+
 				PrimaryWeapon->GunAttachToMesh(this);
-				if (TPAnimInstance)// && FPAnimInstance)
-				{
-					TPAnimInstance->WeaponTypeNumber = 1;
-					//FPAnimInstance->WeaponTypeNumber = 1;
-					//EquippedWeapon = PrimaryWeapon;
-				}
+				TPAnimInstance->WeaponTypeNumber = 1;
+				//FPAnimInstance->WeaponTypeNumber = 1;
+				EquippedWeapon = PrimaryWeapon;
+				
 			}
 			break;
 		case 2:
 			if (SubWeapon && (SubWeapon != EquippedWeapon))
 			{
+				if (EquippedWeapon)
+					EquippedWeapon->GunAttachToSubSocket(this);
+
 				SubWeapon->GunAttachToMesh(this);
-				if (TPAnimInstance)// && FPAnimInstance)
-				{
-					TPAnimInstance->WeaponTypeNumber = 1;
-					//FPAnimInstance->WeaponTypeNumber = 1;
-					//EquippedWeapon = SubWeapon;
-				}
+				TPAnimInstance->WeaponTypeNumber = 1;
+				//FPAnimInstance->WeaponTypeNumber = 1;
+				EquippedWeapon = SubWeapon;
 			}
 			break;
 		case 3:
 			if (PistolWeapon && (PistolWeapon != EquippedWeapon))
 			{
+				if (EquippedWeapon) 
+					EquippedWeapon->GunAttachToSubSocket(this);
+
 				PistolWeapon->GunAttachToMesh(this);
-				if (TPAnimInstance)// && FPAnimInstance)
-				{
-					TPAnimInstance->WeaponTypeNumber = 2;
-					//FPAnimInstance->WeaponTypeNumber = 2;
-					//EquippedWeapon = PistolWeapon;
-				}
+				TPAnimInstance->WeaponTypeNumber = 2;
+				//FPAnimInstance->WeaponTypeNumber = 2;
+				EquippedWeapon = PistolWeapon;			
 			}
 			break;
 		}
+		
 	}
 }
 
@@ -316,6 +483,19 @@ FTransform ABaseCharacter::LeftHandik()
 	return Transform;
 }
 
+
+void ABaseCharacter::SpeakSound(USoundCue* Sound)
+{
+	if (Sound)
+	{
+		AudioComp->Stop(); //-> Play함수 내부에서 Stop함수를 호출 하기때문에 무의미.
+		AudioComp->SetSound(Sound);
+		AudioComp->Play();
+		//UGameplayStatics::PlaySoundAtLocation(GetWorld(),Sound,GetMesh()->GetSocketLocation(HeadSocketName));
+		UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), 1.f, this);
+	}
+}
+
 void ABaseCharacter::StepSound()
 {
 	if (StepSoundCue)
@@ -331,11 +511,7 @@ float ABaseCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageE
 
 	if(ApplyDmg > 0.f)
 	{
-		Health -= ApplyDmg;
-		if(Health <= 0.f)
-		{
-			Die();
-		}
+		StatManagementComponent->DamageApply(ApplyDmg);
 	}
 	return ApplyDmg;
 }

@@ -8,6 +8,7 @@
 #include "OpenWorldRPG/NewInventory/Widget/NewInventory.h"
 #include "OpenWorldRPG/MainController.h"
 #include "OpenWorldRPG/BaseCharacter.h"
+#include "OpenWorldRPG/MainHud.h"
 
 // Sets default values for this component's properties
 ULootWidgetComponent::ULootWidgetComponent()
@@ -23,7 +24,7 @@ void ULootWidgetComponent::CreateInteractionWidget(AMainController* MainCon, AAc
 {
 	if (MainCon)
 	{
-		UNewInventory* MainInventory = Cast<UNewInventory>(MainCon->NewInventory);
+		UNewInventory* MainInventory = Cast<UNewInventory>(MainCon->MainHud->NewInventoryWidget);
 		if (MainInventory)
 		{
 			switch (WidgetType)
@@ -59,7 +60,8 @@ void ULootWidgetComponent::CreateInteractionWidget(AMainController* MainCon, AAc
 			}
 
 		}
-		MainCon->ShowInventory_Implementation();// ToggleInventory();
+		//MainCon->ShowInventory_Implementation();// ToggleInventory();
+		MainCon->MainHud->ShowInventoryWindow();
 	}
 }
 

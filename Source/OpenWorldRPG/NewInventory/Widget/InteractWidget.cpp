@@ -4,7 +4,7 @@
 #include "OpenWorldRPG/NewInventory/Widget/InteractWidget.h"
 #include "OpenWorldRPG/MainCharacter.h"
 #include "OpenWorldRPG/Item/Interactable.h"
-#include "OpenWorldRPG/Item/CustomPDA.h"
+#include "OpenWorldRPG/Item/BasePDA.h"
 #include "Components/TextBlock.h"
 
 #define LOCTEXT_NAMESPACE "MyNamespace"
@@ -16,48 +16,38 @@ void UInteractWidget::NativeOnInitialized()
 	{
 		//GetOwningPlayer();
 		//GetOwningLocalPlayer();
+		
 		MainChar = Cast<AMainCharacter>(GetOwningPlayerPawn());
 		check(MainChar);
 		
 	}
 }
 
+//WBP_InteractWidget에서 FText를 해당 함수로 지정한다.
+//Actor에 DataAsset이 없으면 작동하지 않는다.
 FText UInteractWidget::InterSetText()
 {
 	FText ReturnTEXT;
-	if (MainChar)
+	if (MainChar && MainChar->InteractActor)
 	{
-		if (MainChar->InteractActor)
+		AInteractable* InActor = Cast<AInteractable>(MainChar->InteractActor);
+		if (InActor && InActor->ItemSetting.DataAsset)
 		{
-			AInteractable* InActor = Cast<AInteractable>(MainChar->InteractActor);
-			if (InActor && InActor->ItemSetting.DataAsset)
-			{
-				//*@usage FText::FormatNamed(FText::FromString(TEXT("{PlayerName} is really cool")), TEXT("PlayerName"), FText::FromString(TEXT("Awesomegirl")));
-				
-				/*FString Action = InActor->CusPDA->UseActionText.ToString();
-				FString Name = InActor->CusPDA->ItemName.ToString();*/
+			//*@usage FText::FormatNamed(FText::FromString(TEXT("{PlayerName} is really cool")), TEXT("PlayerName"), FText::FromString(TEXT("Awesomegirl")));
+		
+			FText Action = InActor->ItemSetting.DataAsset->UseActionText;
+			FText Name = InActor->ItemSetting.DataAsset->ItemName;
 
-				FText Action = InActor->ItemSetting.DataAsset->UseActionText;
-				FText Name = InActor->ItemSetting.DataAsset->ItemName;
+			FFormatNamedArguments args;
+			args.Add(TEXT("Action"),Action);
+			args.Add(TEXT("Name"),Name);
 
-				FFormatNamedArguments args;
-				args.Add(TEXT("Action"),Action);
-				args.Add(TEXT("Name"),Name);
+			FText text = FText::Format(LOCTEXT("InteractText", "{Action} {Name}"), args);
 
-				//FString Str = FString(TEXT("{Action} {Name}"));
-				FText text = FText::Format(LOCTEXT("InteractText", "{Action} {Name}"), args);
-
-				ReturnTEXT = text;
-				//FTextFormat Tform = FTextFormat(FText::FromString(Str));
-
-
-				//FTextFormat TTForm = FTextFormat(Str, FTextFormatPatternDefinitionConstRef());
-				
-				//ReturnTEXT = FText::Format(, args); //그대로 {Action}{Name}이렇게 나옴. ㅋㅋ  확인 해야죔
-				//ReturnTEXT->FromString(TEXT("{")
-			}
-
+			ReturnTEXT = text;
 		}
+
+		
 	}
 #undef LOCTEXT_NAMESPACE
 

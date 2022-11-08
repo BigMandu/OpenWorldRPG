@@ -12,6 +12,7 @@
 class UNewItemObject;
 class ABaseCharacter;
 class AEquipment;
+class AItem;
 
 UCLASS()
 class OPENWORLDRPG_API UCustomInventoryLibrary : public UObject
@@ -22,11 +23,14 @@ public:
 
 	static UNewItemObject* CreateObject(FItemSetting ItemStruct, bool& bIsCreated);
 
-	static void BackToItem(UNewItemObject* ItemObj);
-	static void DirectInToInventory(UNewItemObject* ItemObj, ABaseCharacter* BChar);
-
-
-
+	static AItem* SpawnItem(UWorld* World, UNewItemObject* ItemObj);
 	//if Actor var is valid, Call StepEquip func. else return AEquipment
 	static AEquipment* SpawnEquipment(UWorld* World, UNewItemObject* ItemObj);// , AActor* Actor = nullptr);
+	
+
+	static void GenerateRandomCount(UNewItemObject* ItemObj);
+
+
+	static void BackToItem(UNewItemObject* ItemObj);
+	static void DirectInToInventory(UNewItemObject* ItemObj, ABaseCharacter* BChar);
 };

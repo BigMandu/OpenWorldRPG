@@ -14,6 +14,7 @@
 #include "Components/CanvasPanel.h"
 #include "Components/TextBlock.h"
 #include "Components/Button.h"
+#include "Components/Border.h"
 
 
 
@@ -46,8 +47,7 @@ FReply UDraggInventoryWindow::NativeOnMouseButtonDown(const FGeometry& InGeometr
 
 FReply UDraggInventoryWindow::DetectDragWidget(const FPointerEvent& InMouseEvent, UWidget* DragWidget)
 {
-	//나중에 TopBorder 의 IsHovered 조건 추가하기.
-	if (InMouseEvent.GetEffectingButton() == EKeys::LeftMouseButton) //&& topBorder->IsHoverd())
+	if (InMouseEvent.GetEffectingButton() == EKeys::LeftMouseButton && HeaderBorder->IsHovered())
 	{
 		FEventReply Reply;
 		Reply.NativeReply = FReply::Handled();
@@ -75,7 +75,7 @@ void UDraggInventoryWindow::NativeOnDragDetected(const FGeometry& InGeometry, co
 	
 	UAdditionalDaDWidget* DaDOper = NewObject<UAdditionalDaDWidget>();
 
-	SetVisibility(ESlateVisibility::HitTestInvisible);
+	//SetVisibility(ESlateVisibility::HitTestInvisible);
 	//UE_LOG(LogTemp, Warning, TEXT("DraggingInvWidget::DragDetected, HitTestInvisible"));
 	DaDOper->AdditionalWidget = this;
 	DaDOper->WidgetDragLocation = InGeometry.AbsoluteToLocal(InMouseEvent.GetScreenSpacePosition());
@@ -94,28 +94,34 @@ void UDraggInventoryWindow::NativeOnDragEnter(const FGeometry& InGeometry, const
 	{
 		//지금 Dragging하고 있는게 Widget이고,
 		//Dragging 중인 Widget과 이 Widget이 다른 위젯이면 이 Widget을 비활성화 한다.
-
-		if (DragWidget->AdditionalWidget->GetName() != GetName())
+		
+		/*if (DragWidget->AdditionalWidget->GetName() != GetName())
 		{
-			//UE_LOG(LogTemp, Warning, TEXT("DraggingInvWidget::HitTestInvisible"));
+			UE_LOG(LogTemp, Warning, TEXT("DraggingInvWidget::HitTestInvisible"));
 			SetVisibility(ESlateVisibility::HitTestInvisible);
-		}
+		}*/
 	}
 	
 	
 }
 
 void UDraggInventoryWindow::NativeOnDragLeave(const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
-{
+{	
 	UAdditionalDaDWidget* DragWidget = Cast<UAdditionalDaDWidget>(InOperation);
-	//UE_LOG(LogTemp, Warning, TEXT("DraggingInvWidget::NativeOnDragLeave"));
+	UE_LOG(LogTemp, Warning, TEXT("DraggingInvWidget::NativeOnDragLeave"));
 	if (DragWidget)
 	{
 		//Dragging중인 Widget이 이 Widget과 같은거라면 이 Widget을 지워준다.
 		//DragLeave함수는 DragDetected이후, Dragging할때 호출된다. 복제본의 원본을 삭제하는거임.
+		//UDraggInventoryWindow* InvWindow = Cast<UDraggInventoryWindow>(DragWidget->AdditionalWidget);
 		if (DragWidget->AdditionalWidget->GetName() == GetName())
 		{
+			UE_LOG(LogTemp, Warning, TEXT("DraggingInvWidget::NativeOnDragLeave / if statement success"));
 			RemoveFromParent();
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("DraggingInvWidget::NativeOnDragLeave / if statement fail"));
 		}
 	}
 	

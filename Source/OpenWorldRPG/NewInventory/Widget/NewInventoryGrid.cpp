@@ -12,7 +12,9 @@
 #include "OpenWorldRPG/NewInventory/CustomDDOperation.h"
 
 //#include "OpenWorldRPG/NewInventory/EquipmentSlot.h"
-#include "OpenWorldRPG/MainCharacter.h"
+//#include "OpenWorldRPG/MainCharacter.h"
+#include "OpenWorldRPG/UI/QuickSlotWidget.h"
+#include "OpenWorldRPG/MainHud.h"
 #include "OpenWorldRPG/MainController.h"
 #include "GameFramework/HUD.h"
 
@@ -35,7 +37,7 @@
 
 UNewInventoryGrid::UNewInventoryGrid(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
-	static ConstructorHelpers::FObjectFinder<USlateBrushAsset> BrushAsset(TEXT("/Game/Inventory/SB_DropLocation.SB_DropLocation"));
+	static ConstructorHelpers::FObjectFinder<USlateBrushAsset> BrushAsset(TEXT("/Game/UI/Inventory/SB_DropLocation.SB_DropLocation"));
 
 	if (BrushAsset.Succeeded())
 	{
@@ -182,8 +184,12 @@ void UNewInventoryGrid::CreateLineSegments(int32 VarRows, int32 VarColumns)
 }
 
 
-/* 이 함수는 Item이 Inventory에서 업데이트 될때 (추가될때, 삭제될때) 호출시켜줘야한다.*/
-void UNewInventoryGrid::RefreshInventory()
+/* 이 함수는 Item이 ItemStorageObject에서 업데이트 될때 (추가될때, 삭제될때) 호출시켜줘야한다.
+* 
+* 파라미터로 넘긴 Obj는 ItemStorageObject에서 Removed할때 빼고는 쓰이지 않고 있다.
+* Remove할 때 QuickSlot에 등록되어있던거면 Quickslot에서 지워주기 위함.
+*/
+void UNewInventoryGrid::RefreshInventory(UNewItemObject* Obj)
 {
 	/* 안쪽에 있는 CanvasPanel을 전부 지워준다.
 	* Line은 Border에 있으니 선을 다시 그을필요는 없음.
@@ -192,20 +198,24 @@ void UNewInventoryGrid::RefreshInventory()
 	* InventoryComponent에 모든 Item을 얻어오는 함수를 새로 추가해준다.
 	*/
 
-	AMainCharacter* TMain = Cast<AMainCharacter>(GetOwningPlayerPawn());
-	Main = (TMain != nullptr) ? TMain : nullptr;
-	if (Main)
-	{
-		MainCon = Main->MainController;
-	}
+	AMainController* TMainCon = Cast<AMainController>(GetOwningPlayer());
+	MainCon = (TMainCon != nullptr) ? TMainCon : nullptr;
 	
 	if (GridCanvasPanel)// && MainCon != nullptr)
 	{
-		//TMap<UNewItemObject*, FTile> ItemsMap;
 		GridCanvasPanel->ClearChildren();
 
-		//const auto ItemsMap = InventoryComp->GetAllItems();
-		//const TMap<UNewItemObject*, FTile> ItemsMap = InventoryComp->GetAllItems();
+		//Obj파라미터를 사용하는 경우는 아래 경우밖에 없다.
+		/*Obj가 ItemStorageObj에서 삭제 되는경우
+		* QuickSlot에 등록되어 있는지 확인하고,
+		* 등록 되어 있는 경우에 삭제 process를 진행한다.
+		*/
+		if (Obj && Obj->bIsPendingDelete && Obj->bIsRegQuickSlot)
+		{
+			MainCon->MainHud->QuickSlot->CheckAlreadyRegistered(Obj);
+		}
+
+
 		const TMap<UNewItemObject*, FTile> ItemsMap = StorageObj->GetAllItems(); //InventoryComp->GetAllItems();
 		 
 		for (auto ele : ItemsMap)
@@ -224,11 +234,6 @@ void UNewInventoryGrid::RefreshInventory()
 					//Itemwidget->Refresh(); //여기다 하니까 DDoper때 DefaultDrag가 안나옴.ItemWidget의 NativeConstruct에서 호출하는것으로 변경함.
 
 					ele.Key->SetMotherStorage(StorageObj);
-					//UNewItemObject* tempObj = Cast<UNewItemObject>(ele.Key);
-					//if (tempObj)
-					//{
-					//	//tempObj->SetMotherContainer(this);
-					//}
 
 					UPanelSlot* PanelSlot = GridCanvasPanel->AddChild(Itemwidget);
 
@@ -243,6 +248,12 @@ void UNewInventoryGrid::RefreshInventory()
 						CanvasSlot->SetAutoSize(true);
 						FVector2D ItemTopLeft = FVector2D(ele.Value.X * StorageObj->TileSize, ele.Value.Y * StorageObj->TileSize);
 						CanvasSlot->SetPosition(ItemTopLeft);
+					}
+
+
+					if (ele.Key->bIsRegQuickSlot)
+					{
+						MainCon->MainHud->QuickSlot->JudgeCanbeInQuickSlotOrUpdate(ele.Key);
 					}
 				}
 			}
@@ -635,4 +646,12 @@ UNewInventoryComponent* UNewInventoryGrid::GetInventoryComp()
 		return InventoryComp;
 	}
 	return nullptr;
+}
+
+void UNewInventoryGrid::MoveItemToItem(UNewItemObject* DroppedItemObj, UNewItemObject* OnItemObj)
+{
+	UNewInventoryComponent* BaseInvComp = Cast<UNewInventoryComponent>(GetOwningPlayerPawn()->GetComponentByClass(UNewInventoryComponent::StaticClass()));
+	if(BaseInvComp == nullptr) return;
+
+	BaseInvComp->AddItemCount(DroppedItemObj,OnItemObj);
 }

@@ -2,6 +2,7 @@
 
 
 #include "Item.h"
+#include "OpenWorldRPG/Item/BasePDA.h"
 #include "OpenWorldRPG/Item/CustomPDA.h"
 #include "OpenWorldRPG/BaseCharacter.h"
 #include "OpenWorldRPG/NewInventory/EquipmentComponent.h"
@@ -86,10 +87,15 @@ UNewItemObject* AItem::GetDefaultItemObj()
 
 		Obj->icon = ItemSetting.DataAsset->Icon;
 		Obj->iconRotated = ItemSetting.DataAsset->IconRotated;
-		
-		Obj->bCanEquip = ItemSetting.DataAsset->bCanEquip;
-		Obj->EquipmentType = ItemSetting.DataAsset->EquipmentType;
 		Obj->InteractType = ItemSetting.DataAsset->InteractType;
+
+		UCustomPDA* CPDA = Cast<UCustomPDA>(ItemSetting.DataAsset);
+		if(CPDA)
+		{
+			Obj->bCanEquip = CPDA->bCanEquip;
+			Obj->EquipmentType = CPDA->EquipmentType;
+			
+		}
 		//UE_LOG(LogTemp, Warning, TEXT("AItem::Create object"));
 	}
 	else
@@ -99,12 +105,8 @@ UNewItemObject* AItem::GetDefaultItemObj()
 	return Obj;
 }
 
-/** Pickup도 손봐야함.
-*  Actor의 InventoryComponent를 우선 봐야할게 아니라, 
-* Actor의 Equipment에서 Storage를 갖고있는 Backpack이나 Vest를 우선 탐색해서
-* 있다면 그곳에 넣어야됨.
-*/
-bool AItem::Pickup(class AActor* Actor)
+
+bool AItem::Pickup(class AActor* Actor, UNewItemObject* obj)
 {
 	bool bReturn = false;
 	//UE_LOG(LogTemp, Warning, TEXT("AItem::Pickup"));
@@ -114,50 +116,33 @@ bool AItem::Pickup(class AActor* Actor)
 	if (BChar)
 	{
 		//UE_LOG(LogTemp, Warning, TEXT("AItem::Add To Inventory"));
-		
-
 		if (BChar->Equipment)
 		{
 			//New Version. EnumRange를 이용해 Backpack, Vest순으로 넣을 수 있다면 넣는다.
+			
 			for (EEquipmentType EquipTp : TEnumRange<EEquipmentType>())
 			{
 				UNewItemObject* TempObj = nullptr;
+				UCustomPDA* Var_CPDA = nullptr;
+
 				TempObj = BChar->Equipment->GetEquipStorage(EquipTp);
-				if(TempObj == nullptr || TempObj->ItemInfo.DataAsset == nullptr || TempObj->ItemInfo.DataAsset->bHasStorage == false) continue;
+				if(TempObj)
+				{
+					Var_CPDA = Cast<UCustomPDA>(TempObj->ItemInfo.DataAsset);
+					if (Var_CPDA == nullptr || (Var_CPDA && Var_CPDA->bHasStorage == false))
+					{
+						continue;
+					}
+				}
+				else continue;
 
 				UItemStorageObject* ItemStorage = Cast<UItemStorageObject>(TempObj);
 				if(ItemStorage == nullptr) continue;
-				bFlag = BChar->BaseInventoryComp->TryAddItem(ItemStorage,ItemSetting);
+				bFlag = BChar->BaseInventoryComp->TryAddItem(ItemStorage,ItemSetting, obj);
 				if (bFlag) break;
 			}
 
-			//OldVersion
-			/*
-			if(BChar->Equipment->bHasBackpack)
-			{
-				//AEquipment* Equipped = BChar->Equipment->GetEquippedWeaponSameType(EEquipmentType::EET_Backpack);
-				//bFlag = AddAtEquip(Equipped);
-
-				UNewItemObject* Obj = BChar->Equipment->GetEquipStorage(EEquipmentType::EET_Backpack);
-				UItemStorageObject* ItemStorage = Cast<UItemStorageObject>(Obj);
-				check(ItemStorage)
-
-				bFlag = AddAtCharInv(ItemStorage);
-			}
-			//if have vest not backpack || fail add at backpack && have vest
-			if(bFlag == false && BChar->Equipment->bHasVest)
-			{
-				UNewItemObject* Obj = BChar->Equipment->GetEquipStorage(EEquipmentType::EET_Vest);
-				UItemStorageObject* ItemStorage = Cast<UItemStorageObject>(Obj);
-				check(ItemStorage)
-
-				bFlag = AddAtCharInv(ItemStorage);
-
-				AEquipment Equipped = BChar->Equipment->GetEquippedWeaponSameType(EEquipmentType::EET_Vest);
-				bFlag = AddAtEquip(Equipped);
-			}
-			*/
-
+			//장착중인 장비에 AddItem이 실패했다면 Pocket, Securebox순으로 AddItem을 시도한다.
 			//pocket, secure box
 			if(bFlag == false)
 			{
@@ -282,19 +267,19 @@ void AItem::Drop()
 	//UE_LOG(LogTemp, Warning, TEXT("AItem::Drop fail"));
 }
 
-void AItem::Use(AActor* Actor)
+void AItem::Use(ABaseCharacter* Char, UNewItemObject* Obj)
 {
-	//UE_LOG(LogTemp, Warning, TEXT("AItem::Use"));
-	ABaseCharacter* BChar = Cast<ABaseCharacter>(Actor);
-	if (BChar)
+	check(Char)
+	UE_LOG(LogTemp, Warning, TEXT("AItem::Use"));
+	if (ItemSetting.DataAsset->ItemType == EItemType::EIT_Food || ItemSetting.DataAsset->ItemType == EItemType::EIT_Medical)
 	{
-		
-		/* debug */
-		//UE_LOG(LogTemp, Warning, TEXT("AItem::Use"));
+		UE_LOG(LogTemp,Warning,TEXT("AItem::Use item. dd"));
+		if (Obj && ItemSetting.DataAsset->bCanStack)
+		{
+			Char->BaseInventoryComp->RemoveItemCount(Obj, 1);
+		}
 	}
-	
-	
-
+	Destroy();
 }
 
 //void AItem::SettingStorage()

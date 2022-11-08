@@ -23,6 +23,11 @@ public:
 
 	AMainCharacter* Main;
 
+	/****** Main Hud *****/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets | MainHUD")
+	TSubclassOf<UUserWidget> WMainHud;
+	class UMainHud* MainHud;
+
 	/***** Widget ******/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets | Interact")
 	TSubclassOf<UUserWidget> WInteractText;
@@ -36,34 +41,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets | Inventory")
 	UUserWidget* Inventory;
 
-	/* New Inventory System*/
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets | Inventory")
-	TSubclassOf<UUserWidget> WNewInventory;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets | Inventory")
-	UUserWidget* NewInventory;
-
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets | Inventory")
-	TSubclassOf<UUserWidget> WInventoryItems;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets | Inventory")
-	TSubclassOf<UUserWidget> WItemwidget;
-
-	/* Loot Box TEST */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets | LootBox")
-	TSubclassOf<UUserWidget> WLootBoxWidget;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets | LootBox")
-	UUserWidget* LootBoxWidget;
-
-	/* Dead Looting Widget */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LootWidget")
-	TSubclassOf<UUserWidget> WCharLootWidget;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "LootWidget")
-	UUserWidget* CharLootWidget;
-
+	
 	bool bIsInteractLootBox;
 	bool bIsInteractCharacterLoot;
 	bool bIsInventoryVisible;
@@ -72,21 +50,15 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WidgetFunction | Interact")
-	void ShowInteractText();
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WidgetFunction | Interact")
-	void HideInteractText();
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WidgetFunction | Inventory")
-	void ShowInventory();
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WidgetFunction | Inventory")
-	void HideInventory();
-
 	void ToggleInventory();
+
+	void ControlInteractText(bool bIsInteract);
 
 	void CreateLootWidget();
 	void ShowLootBoxWidget();
 	void HideLootBoxWidget();
+
+	void SetInputAndFocus(bool bIsShow);
+
+	//void UseQuickSlotItem(EQuickSlotNumber QuickSlotNum);
 };

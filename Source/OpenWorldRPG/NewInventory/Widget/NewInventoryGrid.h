@@ -32,7 +32,7 @@ class UNewItemObject;
 class UNewItemwidget;
 class UDropWidget;
 
-class AMainCharacter;
+//class AMainCharacter;
 class AMainController;
 
 UENUM(BlueprintType)
@@ -56,7 +56,7 @@ public:
 private:
 	UNewInventoryComponent* InventoryComp;
 	AMainController* MainCon;
-	AMainCharacter* Main;
+	//AMainCharacter* Main;
 
 
 	/* InventoryStruct */
@@ -134,7 +134,7 @@ public:
 	void CreateLineSegments(int32 VarRows, int32 VarColumns);
 
 	UFUNCTION()
-	void RefreshInventory();
+	void RefreshInventory(UNewItemObject* Obj = nullptr);
 
 	UFUNCTION()
 	void OnItemRemove(UObject* T_ItemObj);
@@ -147,6 +147,7 @@ public:
 
 	UNewInventoryComponent* GetInventoryComp();
 	
+	void MoveItemToItem(UNewItemObject* DroppedItemObj, UNewItemObject* OnItemObj);
 	//bool RemoveItemAtBeforeIndex(UNewItemObject* Item);
 
 	/*template <typename WidgetT>

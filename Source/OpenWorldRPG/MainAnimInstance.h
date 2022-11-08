@@ -46,8 +46,14 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 	class ABaseCharacter* Player;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = HandIK)
 	int32 WeaponTypeNumber;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = HandIK)
+	float LeftHandAlpha = 0.f;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = HandIK)
+	FVector LeftHandLocation;
 
 
 	/* fix Clipping wall */
@@ -73,7 +79,7 @@ public:
 	UFUNCTION()
 	void AnimNotify_StepSound();
 
-
+	void SetHandIK();
 
 	void SetHighReady();
 

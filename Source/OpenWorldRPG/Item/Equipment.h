@@ -55,49 +55,23 @@ public:
 	AEnemyAIController* AICon;
 	UEquipmentComponent* OwningEquipment;
 	ABaseCharacter* OwningPlayer;
+
+	class UCustomPDA* CPDA;
 	
-	
-
-	/*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")
-	EEquipmentType EquipmentType;*/
-
-
-	/********* Storage ********/
-	/*
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment | Storage")
-	bool bHasStorage;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment | Storage")
-	float GridTileSize;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Equipment | Storage")
-	int32 Columns = 10;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Equipment | Storage")
-	int32 Rows = 10;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment | Storage")
-	TSubclassOf<UUserWidget> WEquipGridWidget;
-
-
-	UNewInventoryGrid* EquipGridWidget;
-
-	
-	*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment | Storage")
 	UNewInventoryComponent* EquipBaseComponent;
 	/* Storage */
 	UPROPERTY()
 	UItemStorageObject* StorageObj;
 
-	/* Spawn Items */
+	/* Spawn Item Settings */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Equipment | Storage")
 	bool bHasSpawnItem;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Equipment | Storage")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Equipment | Storage", meta=(EditCondition="bHasSpawnItem"))
 	TArray<TSubclassOf<AItem>> SpawnItemList;
 	
 private:
-	void SendToInventory(AActor* Actor);
+	void SendToInventory(AActor* Actor, UNewItemObject* obj = nullptr);
 	
 
 protected:
@@ -111,8 +85,8 @@ public:
 	void SettingStorage();
 	void SpawnItem();
 
-	void SwapBetweenInvAndEquipped(ABaseCharacter* BChar, UNewItemObject* ToInventory);
-	void SwapBetweenEquipped(ABaseCharacter* BChar, UNewItemObject* BeforeEquipped);
+	/*void SwapBetweenInvAndEquipped(ABaseCharacter* BChar, UNewItemObject* ToInventory);
+	void SwapBetweenEquipped(ABaseCharacter* BChar, UNewItemObject* BeforeEquipped);*/
 
 	bool Equip(AActor* Actor, ERifleSlot RifleSlot = ERifleSlot::ERS_MAX);
 	virtual bool StepEquip(AActor* Actor, ERifleSlot RifleSlot = ERifleSlot::ERS_MAX);

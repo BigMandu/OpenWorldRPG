@@ -26,33 +26,44 @@ class OPENWORLDRPG_API UEquipmentSlot : public UUserWidget, public IItemInterfac
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WidgetVariable")
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slot | EquipSlot")
 	EEquipmentType SlotType;
 	
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WidgetVariable")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slot | RifleSlot")
+	bool bIsforRifleSlot = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slot | RifleSlot")
 	ERifleSlot RifleSlotType;
 
 	//UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
 	//UImage* ItemIcon;
 
-	UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
+	UPROPERTY(meta = (BindWidget))
 	UBorder* BGBorder;
 
 	UNewItemObject* SettedObj;
 
 	ABaseCharacter* LootedChar_Owner;
 
-	void PaintBGBorder(UNewItemObject* ItemObj = nullptr);
+private:
 
+	bool IsEmpty();
 
-	bool IsSupportedEquip(UNewItemObject* ItemObj);
-	bool TrySlotEquip(UNewItemObject* Var_ItemObj);
+protected:
 
 	virtual bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
-
 	virtual void NativeOnDragEnter(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
 	virtual void NativeOnDragLeave(const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
-
 	virtual FReply NativeOnPreviewKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent) override;
+
+public:
+
+	void PaintBGBorder(UNewItemObject* ItemObj = nullptr);
+	bool IsSupportedEquip(UNewItemObject* ItemObj);
+	
+	bool TrySlotEquip(UNewItemObject* Var_ItemObj);
+
+	void RegisterQuickSlot(UNewItemObject* WantToSlot);
+	
+
 };

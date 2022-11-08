@@ -46,19 +46,25 @@ void AEquipment::BeginPlay()
 	{
 		SettingStorage();
 	}*/
-	if (ItemSetting.DataAsset && ItemSetting.DataAsset->bHasStorage)
+	
+
+	if (ItemSetting.DataAsset)
 	{
-		SettingStorage();
-		if (bHasSpawnItem)
+		CPDA = Cast<UCustomPDA>(ItemSetting.DataAsset);
+		if(CPDA && CPDA->bHasStorage)
 		{
-			SpawnItem();
+			SettingStorage();
+			if (bHasSpawnItem)
+			{
+				SpawnItem();
+			}
 		}
 	}
 }
 void AEquipment::SettingStorage()
 {
 	StorageObj = NewObject<UItemStorageObject>();
-	StorageObj->InitializeStorage(ItemSetting.DataAsset->StorageX, ItemSetting.DataAsset->StorageY, ItemSetting.DataAsset->TileSize);
+	StorageObj->InitializeStorage(CPDA->StorageX, CPDA->StorageY, CPDA->TileSize);
 
 	//OldVersion
 	/*
@@ -149,7 +155,7 @@ UNewItemObject* AEquipment::GetDefaultItemObj()
 	{
 		Obj->SetItemInvComp(EquipInventoryComp);
 	}*/
-	if (ItemSetting.DataAsset && ItemSetting.DataAsset->bHasStorage)
+	if (CPDA && CPDA->bHasStorage)
 	{
 		//Obj->bHasStorage = ItemSetting.DataAsset->bHasStorage;
 		//ItemSetting.DataAsset->bHasStorage;
@@ -194,43 +200,47 @@ AActor* AEquipment::GetOwningPlayer()
 	return nullptr;
 }
 
-//Inventory와 Equipped간의 장비 Swap
-void AEquipment::SwapBetweenInvAndEquipped(ABaseCharacter* BChar, UNewItemObject* ToInventory)
-{
-	if (ToInventory && ToInventory->Equipment)
-	{
-		BChar->Equipment->RemoveEquipment(ToInventory);
-		ToInventory->Equipment->SendToInventory(BChar);
-	}
-}
-
-//Equipped Weapon간의 Slot swap
-void AEquipment::SwapBetweenEquipped(ABaseCharacter* BChar, UNewItemObject* BeforeEquipped)
-{
-	if (ItemObj && BeforeEquipped)
-	{
-		ERifleSlot TempRifleSlot = BeforeEquipped->RifleAssign;
-
-		BeforeEquipped->SetLinkSlot(ItemObj->SettedSlot);
-		BeforeEquipped->SettedSlot->SettedObj = ItemObj;
-		BeforeEquipped->RifleAssign = ItemObj->RifleAssign;
-
-		AWeapon* Weapon = nullptr;
-		Weapon = Cast<AWeapon>(ItemObj->Equipment);
-		Weapon->SettingRifleAssign(BChar, TempRifleSlot);
-		Weapon->GunAttachToMesh(BChar);
-
-		Weapon = Cast<AWeapon>(BeforeEquipped->Equipment);		
-		Weapon->SettingRifleAssign(BChar, ItemObj->SettedSlot->RifleSlotType);
-		Weapon->GunAttachToMesh(BChar);
-		
-	}
-}
+////Inventory와 Equipped간의 장비 Swap
+//void AEquipment::SwapBetweenInvAndEquipped(ABaseCharacter* BChar, UNewItemObject* ToInventory)
+//{
+//	if (ToInventory && ToInventory->Equipment)
+//	{
+//		UE_LOG(LogTemp, Warning, TEXT("Equipment::SwapEquip / need to same below obj"));
+//		UE_LOG(LogTemp,Warning, TEXT("Equipment::SwapEquip / call RemoveEquip func. Remove Equip : %s"), *ToInventory->GetFName().ToString());
+//		BChar->Equipment->RemoveEquipment(ToInventory);
+//		//Obj를 넘겨버리자. 
+//		UE_LOG(LogTemp, Warning, TEXT("Equipment::SwapEquip / call SendToInv func. Send Equip : %s"),*ToInventory->GetFName().ToString());
+//		ToInventory->Equipment->SendToInventory(BChar, ToInventory);
+//	}
+//}
+//
+////Equipped Weapon간의 Slot swap (Rifle type만 해당)
+//void AEquipment::SwapBetweenEquipped(ABaseCharacter* BChar, UNewItemObject* BeforeEquipped)
+//{
+//	if (ItemObj && BeforeEquipped)
+//	{
+//		ERifleSlot TempRifleSlot = BeforeEquipped->RifleAssign;
+//
+//		BeforeEquipped->SetLinkSlot(ItemObj->SettedSlot);
+//		BeforeEquipped->SettedSlot->SettedObj = ItemObj;
+//		BeforeEquipped->RifleAssign = ItemObj->RifleAssign;
+//
+//		AWeapon* Weapon = nullptr;
+//		Weapon = Cast<AWeapon>(ItemObj->Equipment);
+//		Weapon->SettingRifleAssign(BChar, TempRifleSlot);
+//		Weapon->GunAttachToMesh(BChar);
+//
+//		Weapon = Cast<AWeapon>(BeforeEquipped->Equipment);		
+//		Weapon->SettingRifleAssign(BChar, ItemObj->SettedSlot->RifleSlotType);
+//		Weapon->GunAttachToMesh(BChar);
+//		
+//	}
+//}
 
 bool AEquipment::Equip(AActor* Actor, ERifleSlot RifleSlot)
 {
 	
-	UE_LOG(LogTemp, Warning, TEXT("AEquipment::StepEquip func called"));
+	UE_LOG(LogTemp, Warning, TEXT("AEquipment::Equip func called"));
 	ABaseCharacter* BChar = Cast<ABaseCharacter>(Actor);
 	bool bReturn = false;
 	UNewItemObject* BeforeEquippedObj = nullptr;
@@ -247,48 +257,48 @@ bool AEquipment::Equip(AActor* Actor, ERifleSlot RifleSlot)
 		{
 			if (GetItemState() == EItemState::EIS_Spawn)
 			{
-				//이미 장착중인 Weapon을 장착된 슬롯에 Equip을 시도한다면 slot을 서로 swap한다.
-				AWeapon* Weapon = Cast<AWeapon>(this);
-				if (Weapon)
-				{
-					BeforeEquippedObj = BChar->Equipment->GetEquippedWeaponSameType(EEquipmentType::EET_Rifle, nullptr, RifleSlot);
-					SwapBetweenEquipped(BChar, BeforeEquippedObj);
-				}
-				else
+				////이미 장착중인 Weapon을 장착된 슬롯에 Equip을 시도한다면 slot을 서로 swap한다.
+				//AWeapon* Weapon = Cast<AWeapon>(this);
+				//if (Weapon)
+				//{
+				//	BeforeEquippedObj = BChar->Equipment->GetEquippedWeaponSameType(EEquipmentType::EET_Rifle, nullptr, RifleSlot);
+				//	SwapBetweenEquipped(BChar, BeforeEquippedObj);
+				//}
+				//else
 				{
 					//일반 장비면 인벤토리로 이 item을 보내고 함수를 종료한다.
-					SendToInventory(BChar);
+					SendToInventory(BChar,nullptr);
 					return true;
 				}
 			}
-			else if (GetItemState() == EItemState::EIS_Pickup)
-			{
-				/* 장착 하려는 장비가 Pickup상태(Inventory에 있는 상태)면
-				 * 장비 Swap을 진행한다.
-				 */
-				//Try To Swap Equipment
-				BeforeEquippedObj = BChar->Equipment->GetEquippedWeaponSameType(EEquipmentType::EET_MAX, ItemObj, RifleSlot);
-				if (BeforeEquippedObj != nullptr)
-				{
-					bIsInvEquipSwapState = true;
-				}
-				/*if (BeforeEquippedObj)
-				{
-					BChar->Equipment->RemoveEquipment(BeforeEquippedObj);
-					Cast<AEquipment>(BeforeEquippedObj->item)->SendToInventory(BChar);
-				}*/
-			}
+
+			//아래 코드들은 Swap기능 관련 코드들이다. Swap기능은 없애기로 했다.
+
+			//else if (GetItemState() == EItemState::EIS_Pickup)
+			//{
+			////장비간 Swap 기능은 없앰.
+
+			//	/* 장착 하려는 장비가 Pickup상태(Inventory에 있는 상태)면
+			//	 * 장비 Swap을 진행한다.
+			//	 */
+			//	BeforeEquippedObj = BChar->Equipment->GetEquippedWeaponSameType(EEquipmentType::EET_MAX, ItemObj, RifleSlot);
+			//	if (BeforeEquippedObj != nullptr)
+			//	{
+			//		bIsInvEquipSwapState = true;
+			//	}
+			//}
 		}
 
-
+		/*if (bIsInvEquipSwapState)
+		{
+			//Equip을 하고나서 기존에 장착했던걸 옮긴다.. 새로 장착할 이 weapon이 attach socket에 부착되는 단점이 있지만
+			//Inventory 정리가 더 깔끔하기 때문에 이렇게 했다.
+			SwapBetweenInvAndEquipped(BChar, BeforeEquippedObj);
+		}*/
 
 		bReturn = StepEquip(Actor, RifleSlot);
-		//Equip을 하고나서 기존에 장착했던걸 옮긴다.. 새로 장착할 이 weapon이 attach socket에 부착되는 단점이 있지만
-		//Inventory 정리가 더 깔끔하기 때문에 이렇게 했다.
-		if (bIsInvEquipSwapState)
-		{
-			SwapBetweenInvAndEquipped(BChar, BeforeEquippedObj);
-		}
+		
+		
 
 	}
 
@@ -300,9 +310,9 @@ bool AEquipment::StepEquip(AActor* Actor, ERifleSlot RifleSlot)
 	bool bReturn = false;
 	ABaseCharacter* BChar = Cast<ABaseCharacter>(Actor);
 	const USkeletalMeshSocket* Socket = nullptr;
-	switch (ItemSetting.DataAsset->EquipmentType)
+	CPDA = Cast<UCustomPDA>(ItemSetting.DataAsset);
+	switch (CPDA->EquipmentType)
 	{
-		
 	case EEquipmentType::EET_Helmet:
 		Socket = BChar->GetMesh()->GetSocketByName("headsocket");
 		break;
@@ -320,7 +330,7 @@ bool AEquipment::StepEquip(AActor* Actor, ERifleSlot RifleSlot)
 		if (Socket != nullptr)
 		{
 			Socket->AttachActor(this, BChar->GetMesh());
-			SetActorRelativeTransform(ItemSetting.DataAsset->MeshAttachTransform);
+			SetActorRelativeTransform(CPDA->MeshAttachTransform);
 		}
 
 		// Mesh Setting
@@ -339,21 +349,22 @@ bool AEquipment::StepEquip(AActor* Actor, ERifleSlot RifleSlot)
 		bReturn = true;
 	}
 
-	/*if (EquippedSound)
+	if (CPDA->EquippedSound)
 	{
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), EquippedSound, Main->GetActorLocation());
-	}*/
+		UGameplayStatics::SpawnSoundAttached(CPDA->EquippedSound, OwningPlayer->GetRootComponent());
+		//UGameplayStatics::PlaySoundAtLocation(GetWorld(), EquippedSound, OwningPlayer->GetActorLocation()
+	}
 
 	return bReturn;
 }
 
 
 
-void AEquipment::SendToInventory(AActor* Actor)
+void AEquipment::SendToInventory(AActor* Actor, UNewItemObject* obj)
 {
 	ABaseCharacter* BChar = Cast<ABaseCharacter>(Actor);
 	check(BChar);
-
+	
 	OwningEquipment = nullptr;
 	//ItemObj->bIsDestoryed = true;
 
@@ -363,8 +374,9 @@ void AEquipment::SendToInventory(AActor* Actor)
 		ItemObj->SetItemInvComp(EquipInventoryComp);
 	}*/
 
+	UE_LOG(LogTemp,Warning,TEXT("Equipment::SendToInv / call Pickup func"));
 	//부모 class에 있는 Pickup함수 호출해서 item을 담는다.
-	Pickup(BChar);
+	Pickup(BChar,obj);
 }
 
 //이 함수는 나중에 CustomInventoryLibrary에 빼야할듯.
@@ -375,7 +387,7 @@ void AEquipment::Drop()
 {
 	Super::Drop();
 
-	UE_LOG(LogTemp, Warning, TEXT("AWeapon::Drop"));
+	UE_LOG(LogTemp, Warning, TEXT("AEquipment::Drop"));
 	SKMesh->SetHiddenInGame(true);
 	OwningEquipment = false;
 
@@ -387,7 +399,7 @@ void AEquipment::Remove()
 	/* 아무것도 안함. .. 음..*/
 	//Weapon의 Remove가 있음. 꼭 호출해야됨.
 
-	if (ItemSetting.DataAsset->bHasStorage)// && EquipInventoryComp)
+	//if (ItemSetting.DataAsset->bHasStorage)// && EquipInventoryComp)
 	{
 		//ItemObj->SetItemInvComp(EquipInventoryComp);
 	}

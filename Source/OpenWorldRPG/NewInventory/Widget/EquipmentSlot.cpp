@@ -4,10 +4,14 @@
 #include "OpenWorldRPG/NewInventory/Widget/EquipmentSlot.h"
 #include "OpenWorldRPG/NewInventory/Widget/NewItemwidget.h"
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
+#include "OpenWorldRPG/NewInventory/CustomDDOperation.h"
+#include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
+
 #include "OpenWorldRPG/NewInventory/Library/CustomInventoryLibrary.h"
 #include "OpenWorldRPG/NewInventory/Library/InventoryStruct.h"
-#include "OpenWorldRPG/NewInventory/CustomDDOperation.h"
 
+
+#include "OpenWorldRPG/Item/BasePDA.h"
 #include "OpenWorldRPG/Item/CustomPDA.h"
 //#include "OpenWorldRPG/NewInventory/NewInventoryGrid.h"
 //#include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
@@ -82,22 +86,46 @@ bool UEquipmentSlot::IsSupportedEquip(UNewItemObject* ItemObj)
 	bool bReturn = false;
 
 	//장착템이면서  장착템의 Type과 이 Slot의 Type이 같다면 true를 리턴한다.
-	if (ItemObj->ItemInfo.DataAsset->InteractType == EInteractType::EIT_Equipment &&
-		ItemObj->ItemInfo.DataAsset->EquipmentType == SlotType)
+	UCustomPDA* CPDA = Cast<UCustomPDA>(ItemObj->ItemInfo.DataAsset);
+	if(CPDA == nullptr) return bReturn;
+
+	if (CPDA->InteractType == EInteractType::EIT_Equipment &&
+		CPDA->EquipmentType == SlotType)
 	{
-		bReturn = true;
+		//슬롯이 같으면 비어있는지 확인한다.
+		if (IsEmpty())
+		{
+			UE_LOG(LogTemp,Warning,TEXT("EquipSlot::SupportedEquip / Empty"));
+			bReturn = true;
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("EquipSlot::SupportedEquip / Not empty"));
+		}
 	}
 	return bReturn;
 }
 
-//다른곳에서 사용하기 위해 함수로 뺌 (CustomInventoryLibrary)
+bool UEquipmentSlot::IsEmpty()
+{
+	if (SettedObj)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("EquipSlot::SupportedEquip / Not empty"));
+		return false;
+	}
+	else
+	{
+		return true;
+	}
+}
+
 bool UEquipmentSlot::TrySlotEquip(UNewItemObject* Var_ItemObj)
 {
 	if (Var_ItemObj)
 	{
 		if (IsSupportedEquip(Var_ItemObj))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Correct Slot"));
+			UE_LOG(LogTemp, Warning, TEXT("EquipSlot::Correct Slot"));
 
 			
 			//AI와 플레이어를 나눈다.
@@ -120,25 +148,7 @@ bool UEquipmentSlot::TrySlotEquip(UNewItemObject* Var_ItemObj)
 				//대부분 bIsDestroyed에 분기됨. else문은 거의 사용되지 않음
 				if (Var_ItemObj->bIsDestoryed)
 				{
-					//여기 함수로 바꿔서 Equip에서도 사용할 수 있도록 하자.
-					Equipment = UCustomInventoryLibrary::SpawnEquipment(GetWorld(), Var_ItemObj); //함수화 함.
-					/*
-					Equipment = Cast<AEquipment>(GetWorld()->SpawnActor<AActor>(Var_ItemObj->GetItemClass()));
-					if (Equipment)
-					{
-						Var_ItemObj->bIsDestoryed = false;
-						
-						Equipment->ReInitialize(Var_ItemObj);
-						Equipment->SetItemState(EItemState::EIS_Pickup);
-						if (Equipment->bHasStorage)
-						{
-							Equipment->EquipInventoryComp = Var_ItemObj->GetItemInvComp();
-						}
-						
-						//Var_ItemObj->SetMotherContainer(nullptr);
-
-					}
-					*/
+					Equipment = UCustomInventoryLibrary::SpawnEquipment(GetWorld(), Var_ItemObj);
 				}
 				else
 				{
@@ -150,7 +160,8 @@ bool UEquipmentSlot::TrySlotEquip(UNewItemObject* Var_ItemObj)
 				{
 					Var_ItemObj->bIsDestoryed = false;
 					Equipment->ItemObj = Var_ItemObj;
-					if (Equipment->ItemSetting.DataAsset->EquipmentType == EEquipmentType::EET_Rifle)
+					UCustomPDA* CPDA = Cast<UCustomPDA>(Equipment->ItemSetting.DataAsset);
+					if (CPDA->EquipmentType == EEquipmentType::EET_Rifle)
 					{
 						Equipment->Equip(BChar, RifleSlotType);
 					}
@@ -162,11 +173,6 @@ bool UEquipmentSlot::TrySlotEquip(UNewItemObject* Var_ItemObj)
 				}
 			}
 		}
-		//Slot의 Type과 Equipment의 Type이 일치하지 않는 경우 다시 원래 있던곳으로 옮긴다.
-		/*else
-		{
-			UCustomInventoryLibrary::BackToItem(Var_ItemObj);
-		}*/
 	}
 	return false;
 }
@@ -175,7 +181,6 @@ bool UEquipmentSlot::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEv
 {
 	bool bReturn = Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);
 	
-
 	PaintBGBorder();
 	UCustomDDOperation* DDOper = Cast<UCustomDDOperation>(InOperation);
 	if (DDOper)
@@ -185,154 +190,18 @@ bool UEquipmentSlot::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEv
 		if (DDOper->ItemObj->bIsDragging && SettedObj != DDOper->ItemObj)
 		{
 			DDOper->ItemObj->bIsDragging = false;
-			
-			//동일한 Equipment를 드래그 했다가 놓을때 재장착을 방지하기위함.
-			//EquipComp의 RemoveEquip에서 Slot의 SettedObj를 null로 바꿔준다.
-			//DDOper->ItemObj->SettedSlot = this;			
 
-			TrySlotEquip(DDOper->ItemObj);
-
-			DDOper->ItemObj->RemoveLinkSlot();
-			DDOper->ItemObj->SetLinkSlot(this);
-			SettedObj = DDOper->ItemObj;
-			
-		}
-	}
-
-	/*UNewItemObject* ItemObj = Cast< UNewItemObject>(InOperation->Payload);
-	if (ItemObj)
-	{
-		if (ItemObj->bIsDragging)
-		{
-
-			ItemObj->bIsDragging = false;
-
-			TrySlotEquip(ItemObj);
-		}*/
-		/*
-		if (IsSupportedEquip(ItemObj))
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Correct Slot"));
-
-			check(ItemObj->item);
-			
-			ABaseCharacter* BChar;
-			if (LootedChar_Owner != nullptr)
+			if (TrySlotEquip(DDOper->ItemObj))
 			{
-				BChar = LootedChar_Owner;
+				UE_LOG(LogTemp, Warning, TEXT("EquipSlot::OnDrop / TrySlotEquip func result is true. set link obj"));
 			}
 			else
 			{
-				BChar = Cast<ABaseCharacter>(GetOwningPlayerPawn());
+				UE_LOG(LogTemp, Error, TEXT("EquipSlot::OnDrop / TrySlotEquip func result is false."));
 			}
-
-			if (BChar != nullptr)
-			{
-				AEquipment* Equipment = nullptr;
-				if (ItemObj->bIsDestoryed)
-				{
-					Equipment = Cast<AEquipment>(GetWorld()->SpawnActor<AActor>(ItemObj->GetItemClass()));
-					if (Equipment)
-					{
-						ItemObj->bIsDestoryed = false;
-						Equipment->ReInitialize(ItemObj);
-						Equipment->SetItemState(EItemState::EIS_Pickup);
-						ItemObj->SetMotherContainer(nullptr);
-						
-					}
-				}
-				else
-				{
-					Equipment = Cast<AEquipment>(ItemObj->item);
-				}
-
-
-				if (Equipment != nullptr)
-				{
-					Equipment->StepEquip(BChar);
-				}
-			}
-		*/
-
-			//old version
-			/*
-			AMainCharacter* Main = Cast<AMainCharacter>(GetOwningPlayerPawn());
-			AEquipment* Equipment = Cast<AEquipment>(ItemObj->item);
-			
-			if (Equipment)// && ItemObj->GetMotherContainer() != nullptr) //-> 아이템을 뺏다가 바로 끼는 경우가 있을때가 있기 때문에 조건에서 뺌.
-			{
-				if(SlotType == EEquipmentType::EET_Rifle)
-				{
-					AWeapon* Weapon = Cast<AWeapon>(Equipment);
-					if (Weapon)
-					{
-						if (RifleSlotType == ERifleSlot::ERS_Primary)
-						{
-							Weapon->RifleAssign = ERifleAssign::ERA_Primary;
-							Main->PrimaryWeapon = Weapon;	
-						}
-						else if (RifleSlotType == ERifleSlot::ERS_Sub)
-						{
-							Weapon->RifleAssign = ERifleAssign::ERA_Sub;
-							Main->SubWeapon = Weapon;
-						}
-					}
-				}
-
-				if(ItemObj->bIsDestoryed)
-				{
-					AEquipment* T_Equipment = Cast<AEquipment>(GetWorld()->SpawnActor<AActor>(ItemObj->GetItemClass()));
-					if (T_Equipment)
-					{
-						if(T_Equipment->EquipmentType == EEquipmentType::EET_Rifle)
-						{
-							AWeapon* T_Weapon = Cast<AWeapon>(T_Equipment);
-							if(T_Weapon)
-							{
-								T_Weapon->RifleAssign = Weapon->RifleAssign;
-							}
-						}
-
-
-						ItemObj->bIsDestoryed = false;
-						//T_Equipment = Equipment;
-						if (Equipment->bHasStorage)
-						{
-							T_Equipment->EquipInventoryComp = Equipment->EquipInventoryComp;
-						}
-						T_Equipment->ReInitialize(ItemObj);
-
-						Equipment = T_Equipment; //error
-						ItemObj->item = Equipment;
-
-						Equipment->SetItemState(EItemState::EIS_Pickup);						
-					}
-				}
-				
-				ItemObj->MotherContainer = nullptr;
-				*/
-
-				//아래 /**/ 주석은 안쓰는부분.
-				/*AWeapon* T_Weapon = Cast<AWeapon>(Equipment);
-				if (T_Weapon)
-				{
-					T_Weapon->RifleAssign = Weapon->RifleAssign;
-					T_Weapon->StepEquip(Main
-				}*/
-				//else
-				//{
-					 //Weapon으로 cast, equip함수 호출
-				//}
-			//}			
-		//}
+		}
 		
-	/*}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Item obj is null"));
 	}
-	*/
-
 	return bReturn;
 }
 

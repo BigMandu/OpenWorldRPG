@@ -41,12 +41,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ItemSettings")//, meta = (ExposeOnSpawn = "true"))
 	FItemSetting ItemSetting;
 
-	/* Item Static Mesh */
+	/* Item Mesh */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "ItemSettings")
 	UStaticMeshComponent* Mesh;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "ItemSettings")
 	USkeletalMeshComponent* SKMesh;
+
+
 
 	/*UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Item")
 	UMeshComponent* MeshComponent;*/

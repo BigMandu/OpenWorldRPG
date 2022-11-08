@@ -8,6 +8,7 @@
 #include "OpenWorldRPG/NewInventory/Library/ItemInterface.h"
 #include "Item.generated.h"
 
+//for Enum iterator
 ENUM_RANGE_BY_COUNT(EEquipmentType, EEquipmentType::EET_MAX)
 /**
  * 
@@ -104,7 +105,7 @@ public:
 	/* child class에서 override할 예정임*/
 	virtual UNewItemObject* GetDefaultItemObj();
 
-	bool Pickup(AActor* Actor);
+	bool Pickup(AActor* Actor, UNewItemObject* obj = nullptr);
 
 	bool AddAtEquip(AEquipment* Equipped);
 	bool AddAtCharInv(ABaseCharacter* Character, UItemStorageObject* InvComp);
@@ -114,6 +115,6 @@ public:
 	virtual void Drop();
 
 	UFUNCTION(BlueprintCallable)
-	void Use(AActor* Actor);
+	void Use(ABaseCharacter* Actor, UNewItemObject* Obj = nullptr);
 
 };

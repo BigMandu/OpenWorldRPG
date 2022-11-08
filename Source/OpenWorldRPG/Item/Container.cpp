@@ -8,6 +8,7 @@
 #include "OpenWorldRPG/AI/EnemyAIController.h"
 #include "OpenWorldRPG/MainCharacter.h"
 #include "OpenWorldRPG/MainController.h"
+#include "OpenWorldRPG/MainHud.h"
 
 #include "OpenWorldRPG/NewInventory/Widget/ContainerWidget.h"
 #include "OpenWorldRPG/NewInventory/Widget/NewInventory.h"
@@ -110,16 +111,7 @@ void AContainer::SpawnItem()
 		AItem* Item = GetWorld()->SpawnActor<AItem>(AddItem);
 		if (Item)
 		{
-			//Item->Pickup(this);
-		
-			/*if (Item->ItemObj == nullptr)
-			{
-				UNewItemObject* Obj = Item->GetDefaultItemObj();
-				Item->ItemObj = Obj;
-			}*/
-
-			
-			if (ContainerInventoryComp->TryAddItem(ContainerStorage,Item->ItemSetting))
+			if (ContainerInventoryComp->TryAddItem(ContainerStorage,Item->ItemSetting,nullptr,true))
 			{
 				Item->SetItemState(EItemState::EIS_Pickup);
 				//Item->ItemObj->bIsDestoryed = true;
@@ -163,7 +155,7 @@ void AContainer::OpenContainer(AActor* Actor)
 */
 void AContainer::ShowWidget(AMainController* MainCon)
 {
-	UNewInventory* MainInventory = Cast<UNewInventory>(MainCon->NewInventory);
+	UNewInventory* MainInventory = Cast<UNewInventory>(MainCon->MainHud->NewInventoryWidget);
 	if (MainInventory)
 	{
 		LootWidgetComp->CreateInteractionWidget(MainCon, this); //새로추가

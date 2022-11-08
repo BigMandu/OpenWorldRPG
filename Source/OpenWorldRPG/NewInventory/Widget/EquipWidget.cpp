@@ -52,6 +52,13 @@ void UEquipWidget::EquipInitialize(UEquipmentComponent* p_EquipComp)
 	{
 		RefreshEquipWidget();
 	}
+
+	/*for (EEquipSlot EquipSlot : TEnumRange<EEquipSlot>())
+	{
+
+	}*/
+
+	
 	
 }
 
@@ -60,11 +67,15 @@ void UEquipWidget::RefreshEquipWidget()
 	RemoveSlot();
 	if (EquipComp)
 	{
+		UCustomPDA* CPDA = nullptr;
 		for (auto& ele : EquipComp->EquipmentItems)
 		{
 			if (ele != nullptr)
 			{
-				switch (ele->ItemInfo.DataAsset->EquipmentType)
+				CPDA = Cast<UCustomPDA>(ele->ItemInfo.DataAsset);
+				if(CPDA == nullptr) continue;
+
+				switch (CPDA->EquipmentType)
 				{
 				case EEquipmentType::EET_Helmet:
 					SetSlot(ele, HelmetSlot);
@@ -96,7 +107,7 @@ void UEquipWidget::RefreshEquipWidget()
 				break;
 				case EEquipmentType::EET_Vest:
 					SetSlot(ele, VestSlot);
-					if (VestOverlay && ele->ItemInfo.DataAsset->bHasStorage)
+					if (VestOverlay && CPDA->bHasStorage)
 					{
 						UItemStorageObject* StorageObj = Cast<UItemStorageObject>(ele);
 						SettingStorageWidget(VestOverlay, StorageObj);
@@ -104,7 +115,7 @@ void UEquipWidget::RefreshEquipWidget()
 					break;
 				case EEquipmentType::EET_Backpack:
 					SetSlot(ele, BackpackSlot);
-					if (BackpackOverlay && ele->ItemInfo.DataAsset->bHasStorage)// && ele->EquipGridWidget)
+					if (BackpackOverlay && CPDA->bHasStorage)// && ele->EquipGridWidget)
 					{
 						UItemStorageObject* StorageObj = Cast<UItemStorageObject>(ele);
 						SettingStorageWidget(BackpackOverlay, StorageObj);
@@ -113,6 +124,69 @@ void UEquipWidget::RefreshEquipWidget()
 				}
 			}
 		}
+	}
+}
+
+void UEquipWidget::RemoveSlot()
+{
+	if (VestOverlay && BackpackOverlay && PrimarySlot && SubSlot)
+	{
+		VestOverlay->ClearChildren();
+		//VestOverlay->RemoveChild(VestOverlay);
+		BackpackOverlay->ClearChildren();
+		PrimarySlot->BGBorder->ClearChildren();
+		SubSlot->BGBorder->ClearChildren();
+	}
+	HelmetSlot->BGBorder->ClearChildren();
+	PlateSlot->BGBorder->ClearChildren();
+	PistolSlot->BGBorder->ClearChildren();
+	PrimarySlot->BGBorder->ClearChildren();
+	SubSlot->BGBorder->ClearChildren();
+	VestSlot->BGBorder->ClearChildren();
+	BackpackSlot->BGBorder->ClearChildren();
+
+}
+
+//NewVersion
+void UEquipWidget::SetSlot(UNewItemObject* EquipObj, UEquipmentSlot* EquipSlot)
+{
+	if (WNewItemWidget)
+	{
+		UNewItemwidget* ItemWidget = CreateWidget<UNewItemwidget>(this, WNewItemWidget);
+
+		if (ItemWidget)
+		{
+			EquipSlot->Initialize();
+			//ItemWidget->OnRemoved.AddUFunction(this, FName("RemoveEquipment"));
+			EquipSlot->BGBorder->ClearChildren();
+
+
+			ItemWidget->Tilesize = 60.f;//Equip->EquipInventoryComp->TileSize; //임시로 이렇게 사이즈를 박아뒀다., GetDesiredSize는 widget이 화면에 출력되야 구할수 있는건데 ..  //EquipSlot->GetDesiredSize().X;
+			ItemWidget->ItemObj = EquipObj;
+			ItemWidget->Refresh();
+
+			if (LootedChar_Owner != nullptr)
+			{
+				EquipSlot->LootedChar_Owner = LootedChar_Owner;
+			}
+
+			/**
+			* Equip Slot과 EquipObj를 서로 Link한다.
+			*/
+			EquipSlot->SettedObj = EquipObj;
+			EquipObj->RemoveLinkSlot();
+			EquipObj->SetLinkSlot(EquipSlot);
+
+
+			EquipSlot->BGBorder->AddChild(ItemWidget);
+			EquipSlot->PaintBGBorder();
+
+
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Eqiupwidget :: Item widget is null"));
 	}
 }
 
@@ -145,6 +219,7 @@ void UEquipWidget::SetSlot(AEquipment* Equip, UEquipmentSlot* EquipSlot)
 
 			EquipSlot->BGBorder->AddChild(ItemWidget);
 			EquipSlot->PaintBGBorder();
+			
 
 		}
 	}
@@ -160,7 +235,8 @@ void UEquipWidget::SettingStorageWidget(UOverlay* EquipOverlay, UItemStorageObje
 	{
 		if (Var_StorageObj->Inventory.Num() == 0)
 		{
-			Var_StorageObj->InitializeStorage(Var_StorageObj->ItemInfo.DataAsset->StorageX, Var_StorageObj->ItemInfo.DataAsset->StorageY, Var_StorageObj->ItemInfo.DataAsset->TileSize);
+			UCustomPDA* CPDA = Cast<UCustomPDA>(Var_StorageObj->ItemInfo.DataAsset);
+			Var_StorageObj->InitializeStorage(CPDA->StorageX, CPDA->StorageY, CPDA->TileSize);
 		}
 		EquipOverlay->ClearChildren();
 
@@ -190,56 +266,3 @@ void UEquipWidget::SettingStorageWidget(UOverlay* EquipOverlay, UItemStorageObje
 //		}
 //	}
 //}
-
-void UEquipWidget::RemoveSlot()
-{
-	if (VestOverlay && BackpackOverlay && PrimarySlot && SubSlot)
-	{
-		VestOverlay->ClearChildren();
-		//VestOverlay->RemoveChild(VestOverlay);
-		BackpackOverlay->ClearChildren();
-		PrimarySlot->BGBorder->ClearChildren();
-		SubSlot->BGBorder->ClearChildren();
-	}
-	HelmetSlot->BGBorder->ClearChildren();
-	PlateSlot->BGBorder->ClearChildren();
-	PistolSlot->BGBorder->ClearChildren();
-	PrimarySlot->BGBorder->ClearChildren();
-	SubSlot->BGBorder->ClearChildren();
-	VestSlot->BGBorder->ClearChildren();
-	BackpackSlot->BGBorder->ClearChildren();
-}
-
-//NewVersion
-void UEquipWidget::SetSlot(UNewItemObject* EquipObj, UEquipmentSlot* EquipSlot)
-{
-	if (WNewItemWidget)
-	{
-		UNewItemwidget* ItemWidget = CreateWidget<UNewItemwidget>(this, WNewItemWidget);
-
-		if (ItemWidget)
-		{
-			EquipSlot->Initialize();
-			//ItemWidget->OnRemoved.AddUFunction(this, FName("RemoveEquipment"));
-			EquipSlot->BGBorder->ClearChildren();
-
-
-			ItemWidget->Tilesize = 60.f;//Equip->EquipInventoryComp->TileSize; //임시로 이렇게 사이즈를 박아뒀다., GetDesiredSize는 widget이 화면에 출력되야 구할수 있는건데 ..  //EquipSlot->GetDesiredSize().X;
-			ItemWidget->ItemObj = EquipObj; 
-			ItemWidget->Refresh();
-
-			if (LootedChar_Owner != nullptr)
-			{
-				EquipSlot->LootedChar_Owner = LootedChar_Owner;
-			}
-
-			EquipSlot->BGBorder->AddChild(ItemWidget);
-			EquipSlot->PaintBGBorder();
-
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Eqiupwidget :: Item widget is null"));
-	}
-}

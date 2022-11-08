@@ -341,13 +341,56 @@ void UNewInventoryComponent::AddItemAtIndex(UItemStorageObject* StorageObj, UNew
 	StorageObj->AddItemAtIndex(ItemObj, Index);
 }
 
-bool UNewInventoryComponent::TryAddItem(UItemStorageObject* StorageObj, FItemSetting ItemSetting)
+bool UNewInventoryComponent::TryAddItem(UItemStorageObject* StorageObj, FItemSetting ItemSetting, UNewItemObject* Obj, bool bWantToGenerateRandomCount)
 {
 	bool bCreated = false;
-	UNewItemObject* ItemObj = UCustomInventoryLibrary::CreateObject(ItemSetting, bCreated); //CreateObject(ItemSetting, bCreated);
+	bool bAddCount = false;
+	UNewItemObject* ItemObj = nullptr;
+
+	if(Obj == nullptr)
+	{
+		UE_LOG(LogTemp,Warning,TEXT("InvComp::TryAddItem / No Obj, call CreateObj func "));
+		ItemObj = UCustomInventoryLibrary::CreateObject(ItemSetting, bCreated); //CreateObject(ItemSetting, bCreated);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("InvComp::TryAddItem / already has Obj"));
+		ItemObj = Obj;
+		bCreated = true;
+	}
+
+
 	if (bCreated)
 	{
-		return StorageObj->TryAddItem(ItemObj);
+		
+		if (bWantToGenerateRandomCount)
+		{
+			//LootBox(Chest)에 Item을 Spawn시, 또는 World에 뿌려진 Backpack, EnemyAI Character에 Item을 Spawn시 수량을 랜덤하게 준다.
+			UCustomInventoryLibrary::GenerateRandomCount(ItemObj);
+		}
+		else if (ItemObj->ItemInfo.DataAsset->bCanStack)
+		{
+			//Stack이 가능한 Item인 경우, Storage에서 동일한 Item을 구해 AddCount를 시켜준다.
+			const auto ItemInStorage = StorageObj->GetAllItems();
+			for (auto Item : ItemInStorage)
+			{
+				if(Item.Key->ItemInfo.DataAsset->bCanStack == false) continue;
+				if(Item.Key->ItemInfo.DataAsset != ItemObj->ItemInfo.DataAsset) continue;
+
+				AddItemCount(ItemObj, Item.Key);
+				bAddCount = true;
+				//if(ItemObj->ItemInfo.Count > 0) continue;
+			}
+		}
+		UE_LOG(LogTemp, Warning, TEXT("InvComp::TryAddItem / confirm, Call StorageObj::TryAddItem"));
+		if (bAddCount)
+		{
+			return true;
+		}
+		else
+		{
+			return StorageObj->TryAddItem(ItemObj, bWantToGenerateRandomCount);
+		}
 	}
 	return false;
 }
@@ -357,8 +400,67 @@ bool UNewInventoryComponent::RemoveItem(UItemStorageObject* StorageObj, UNewItem
 	return StorageObj->RemoveItem(ItemObj);
 }
 
+void UNewInventoryComponent::AddItemCount(UNewItemObject* DroppedItemObj, UNewItemObject* OnItemObj)
+{
+	int32 OnMAXStack = OnItemObj->ItemInfo.DataAsset->MaxStackSize;
+	
+	//Stack가능한 개수를 구한다.
+	int32 OnCanStackCount = OnMAXStack - OnItemObj->ItemInfo.Count;
+	int32 DroppedStackCount = DroppedItemObj->ItemInfo.Count;
+
+	/*드랍개수가 Stack가능한 개수보다 크다면
+	* OnItem(있던것)에 Stack가능한 개수를 넣어주고
+	* DroppedItem(드랍한것)에서 Stack 가능한 개수를 빼준다.
+	*/
+	if (DroppedStackCount >= OnCanStackCount)
+	{
+		OnItemObj->AddCount(OnCanStackCount);
+		DroppedItemObj->RemoveCount(OnCanStackCount);
+	}
+	else
+	{
+		OnItemObj->AddCount(DroppedStackCount);
+
+		//Item이 Spawn이라 Storage가 없는 경우가 있ㄷㄷㅏ.
+		if(DroppedItemObj->MotherStorage)
+		{
+			DroppedItemObj->MotherStorage->RemoveItem(DroppedItemObj);
+		}
+	}
+
+}
+
+void UNewInventoryComponent::RemoveItemCount(UNewItemObject* RemoveItemObj, int32 RemoveCount)
+{	
+	int32 RemoveStackCount = FMath::Clamp<int32>(RemoveItemObj->ItemInfo.Count - RemoveCount,0, RemoveItemObj->ItemInfo.Count - RemoveCount);
+	UE_LOG(LogTemp,Warning,TEXT("InvComp::RemoveItemCnt / RemoveStackCount is %d"),RemoveStackCount);
+	//있던것 - 뺄갯수가 0이하면 RemoveItem을 진행한다.
+	if (RemoveStackCount <= 0)
+	{
+		if (RemoveItemObj->MotherStorage)
+		{
+			RemoveItemObj->MotherStorage->RemoveItem(RemoveItemObj);
+		}
+	}
+	else
+	{
+		RemoveItemObj->RemoveCount(RemoveCount);
+	}
+
+}
+
+int32 UNewInventoryComponent::GetItemCount(UNewItemObject* ItemObj)
+{
+	if (ItemObj)
+	{
+		return ItemObj->ItemInfo.Count;
+	}
+	return 799;
+}
+
 
 //CustomInventoryLibrary로 옮김.
+/*
 UNewItemObject* UNewInventoryComponent::CreateObject(FItemSetting ItemStruct, bool& bIsCreated)
 {
 	if (ItemStruct.DataAsset)
@@ -382,3 +484,4 @@ UNewItemObject* UNewInventoryComponent::CreateObject(FItemSetting ItemStruct, bo
 		return nullptr;
 	}	
 }
+*/

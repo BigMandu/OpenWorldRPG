@@ -17,8 +17,10 @@
 
 void UAdditionalWidget::BindingOpenWidgetFunction(UNewItemObject* ItemObj)
 {
-	if (ItemObj == nullptr || ItemObj->ItemInfo.DataAsset->bHasStorage == false)
+	if (ItemObj == nullptr) 
 	{
+		UCustomPDA* CPDA = Cast<UCustomPDA>(ItemObj->ItemInfo.DataAsset);
+		if(!CPDA || (CPDA && CPDA->bHasStorage == false))
 		return;
 	}
 	UItemStorageObject* StorageObj = Cast<UItemStorageObject>(ItemObj);

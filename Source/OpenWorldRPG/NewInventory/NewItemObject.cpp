@@ -2,8 +2,10 @@
 
 
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
+#include "OpenWorldRPG/NewInventory/ItemStorageObject.h"
 #include "OpenWorldRPG/NewInventory/Widget/EquipmentSlot.h"
 #include "OpenWorldRPG/NewInventory/Widget/NewInventoryGrid.h"
+#include "OpenWorldRPG/NewInventory/Library/CustomInventoryLibrary.h"
 #include "OpenWorldRPG/Item/Item.h"
 
 UNewItemObject::UNewItemObject()
@@ -112,3 +114,37 @@ void UNewItemObject::SetMotherEquipComp(UEquipmentComponent* Var_EquipSlot)
 	MotherEquipComp = Var_EquipSlot;
 }
 
+void UNewItemObject::AddCount(int32 Cnt)
+{
+	ItemInfo.Count = ItemInfo.Count + Cnt;
+	if(MotherStorage)
+	{
+		MotherStorage->OnInventoryAdd.Broadcast(nullptr);
+	}
+}
+
+void UNewItemObject::RemoveCount(int32 Cnt)
+{
+	ItemInfo.Count -= Cnt;
+	if(MotherStorage)
+	{
+		MotherStorage->OnInventoryAdd.Broadcast(nullptr);
+	}
+	
+}
+
+
+void UNewItemObject::UseItem(UWorld* World)
+{
+	UE_LOG(LogTemp,Warning,TEXT("UNewItemObj::UseItem"));
+	//UWorld* World = GetMotherStorage()->GetWorld();
+	UE_LOG(LogTemp, Warning, TEXT("UNewItemObj::Try SpawnItem"));
+	AItem* SpawnItem = UCustomInventoryLibrary::SpawnItem(World,this);
+	
+	if (SpawnItem)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("UNewItemObj::Success SpawnItem"));
+		ABaseCharacter* BChar = Cast<ABaseCharacter>(World->GetFirstPlayerController()->GetCharacter());
+		SpawnItem->Use(BChar, this);
+	}
+}

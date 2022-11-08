@@ -5,16 +5,25 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "OpenWorldRPG/NewInventory/Library/Interactive_Interface.h"
+#include "OpenWorldRPG/NewInventory/Library/ItemInterface.h"
 #include "Perception/AISightTargetInterface.h"
 #include "BaseCharacter.generated.h"
 
+
+//WeaponStatusWidget에서 receive한다.
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnChangeWeapon, AWeapon*, EquipWeapon);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGetAmmo, AWeapon*, EquipWeapon);
+
+class USoundCue;
 class UMainAnimInstance;
+class UCharacterLootWidget;
+class UItemStorageObject;
+
+class UAudioComponent;
 class UNewInventoryComponent;
 class UEquipmentComponent;
 class ULootWidgetComponent;
-class UCharacterLootWidget;
-class UItemStorageObject;
-class USoundCue;
+class UStatManagementComponent;
 
 class AItem;
 class AContainer;
@@ -29,7 +38,7 @@ enum class ETeamType : uint8
 	ETT_MAX		UMETA(DisplayName = "DefaultsMAX")
 };
 
-UENUM(BlueprintType)
+UENUM()
 enum class ECharacterStatus : uint8
 {
 	EPS_Dead		UMETA(DisplayName = "Dead"),
@@ -37,10 +46,9 @@ enum class ECharacterStatus : uint8
 	EPS_Normal		UMETA(DisplayName = "Normal"),
 	EPS_Walk		UMETA(DisplayName = "Walk"),
 	EPS_Sprint		UMETA(DisplayName = "Sprint"),
-
-	EPS_MAX		UMETA(DisplayName = "DefaultMAX")
+	 
+	EPS_MAX			UMETA(DisplayName = "DefaultsMAX")
 };
-
 
 UCLASS()
 class OPENWORLDRPG_API ABaseCharacter : public ACharacter, public IAISightTargetInterface, public IInteractive_Interface
@@ -50,7 +58,9 @@ class OPENWORLDRPG_API ABaseCharacter : public ACharacter, public IAISightTarget
 public:
 	// Sets default values for this character's properties
 	ABaseCharacter();
-	
+
+	FOnChangeWeapon OnChangeWeapon;
+	FOnGetAmmo OnGetAmmo;
 
 	/* Socket Name */
 	const FName HeadSocketName = FName("headsocket");
@@ -61,13 +71,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Enums")
 	ECharacterStatus ChracterStatus;
 
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enums")
 	ETeamType TeamType;
-
-	/* Stats */
-	UPROPERTY(EditDefaultsOnly, Category = Stats)
-	float Health;
-
 
 
 	bool bIsDie;
@@ -84,8 +90,12 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement)
 	bool bIsWalking;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement)
+	bool bIsSprinting;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Input)
 	bool bIsAim;
+
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Sounds)
 	USoundCue* StepSoundCue;
@@ -149,7 +159,13 @@ public:
 	UItemStorageObject* SecureBoxStorage;
 
 	/*  Components */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
+	UPROPERTY(VisibleAnywhere, Category = "Component | DataComponent")
+	UAudioComponent* AudioComp;
+
+	UPROPERTY(VisibleAnywhere, Category = "Component | DataComponent")
+	UStatManagementComponent* StatManagementComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Component | Item")
 	UNewInventoryComponent* BaseInventoryComp;
 
 	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
@@ -158,10 +174,10 @@ public:
 	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
 	//UNewInventoryComponent* SecureBoxInventoryComp;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Component | Item")
 	UEquipmentComponent* Equipment;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Component | Item")
 	ULootWidgetComponent* LootWidgetComp;
 
 	/* Anim Instance */
@@ -192,6 +208,15 @@ public:
 
 	void SetEquippedWeapon(AWeapon* Weapon);
 
+	/****************** Weapon ******************************/
+
+	/*Weapon의 Pri, Sub, Pistol을 지정한다.
+	* RifleSlot이 MAX인 경우, Pistol로 지정한다.
+	*/
+	UFUNCTION()
+	void SetWeaponAssign(AWeapon* Weapon, ERifleSlot RifleSlot);
+
+	void ReloadWeapon();
 	void ChangePrimaryWeapon();
 	void ChangeSubWeapon();
 	void ChangePistolWeapon();
@@ -201,7 +226,16 @@ public:
 
 	virtual void ChangeWeapon(int32 index);
 
-	UFUNCTION(BlueprintCallable)
+	/* Weapon Ammo */
+	bool CheckAmmo();
+	bool CheckAmmoStep(UItemStorageObject* Storage, int32& AmmoCnt, bool bIsCheckAmmo = false);
+
+	int32 GetNumberofCanReload();
+	int32 CollectRemainAmmo(UItemStorageObject* Storage, int32 NumberofAmmoReq);
+
+	int32 GetTotalNumberofSameTypeAmmo();
+
+	UFUNCTION()
 	void UseItem(AActor* Item);
 
 	// AIController::ItemFarming함수에서 사용됨
@@ -211,11 +245,14 @@ public:
 	FTransform LeftHandik();
 
 	void StepSound();
+	void SpeakSound(USoundCue* Sound);
 
 	float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
+	UFUNCTION()
 	void Die();
 
+	
 
 	/*******************************/
 	virtual void Interaction(AActor* Actor) override;

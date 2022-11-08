@@ -26,6 +26,12 @@ struct FWeaponStat
 {
 	GENERATED_BODY()
 
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Ammo")
+	int32 AmmoPerMag;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Ammo")
+	EAmmoType AmmoType;
+
 	//Weapon의 Damage
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
 	float Damage;
@@ -41,41 +47,33 @@ struct FWeaponStat
 	float AimBulletSpread;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
-	int32 AmmoPerMag;
-
-
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
-	bool bHasBurstMode;
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
-	int32 BurstRound;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
 	float FireRatePerMin;
 	UPROPERTY(VisibleAnywhere, Category = "Weapon | Stat")
 	float FireRatePerSec;
 	UPROPERTY(VisibleAnywhere, Category = "Weapon | Stat")
 	float SecondPerBullet;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Burst")
+	bool bHasBurstMode;
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Burst", meta = (EditCondition = "bHasBurstMode"))
+	int32 BurstRound;
+
 	/* Recoil */
-	UPROPERTY(EditDefaultsOnly, Category = "Recoil")
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Recoil")
 	UCurveFloat* Recoil_X;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Recoil")
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Recoil")
 	UCurveFloat* Recoil_Y;
 
 	/* FWeaponStat Defaults */
 	FWeaponStat()
 	{
+		AmmoPerMag = 30;
+
 		WeaponRange = 5000.f;
 		HipBulletSpread = 1.5f;
 		AimBulletSpread = 1.f;
-
-		AmmoPerMag = 30;
-
-		bHasBurstMode = true;
-		BurstRound = 3;
-
-
+		
 		//m4a1은 분당 700~950발.분당 950으로 잡고 초당 15.8발을 쏘면됨. 0.06초당 한발씩.
 		FireRatePerMin = 950;
 
@@ -83,6 +81,9 @@ struct FWeaponStat
 		 * FireRatePerMin이 Weapon마다 변할 수 있으니.
 		 * Equip함수에서 계산하여 저장한다.
 		 */
+
+		bHasBurstMode = false;
+		BurstRound = 3;
 
 	}
 };
@@ -92,52 +93,52 @@ class OPENWORLDRPG_API UWeaponPDA : public UCustomPDA
 {
 	GENERATED_BODY()
 public:
-	UPROPERTY(EditAnywhere, Category = "WeaponStat")
+	UPROPERTY(EditAnywhere, Category = "Weapon | WeaponStat")
 	FWeaponStat WeaponStat;
 	
 
 	/* FPS Aim 모드일때 위치값 저장 */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Equip | Aim Transform")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon | Aim Transform")
 	FTransform CharFPMeshTransform;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Equip | Aim Transform")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon | Aim Transform")
 	FTransform WeapSKMeshTransform;
 
 
 	//FPMesh의 WeaponGrip 소켓에 붙일 Weapon의 Transform값.
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equip | Transform")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon | Transform")
 	FTransform FPMeshAttachTransform;
 
 	//TPMesh에 Weapon을 Attach할 소켓의 Transform값.
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equip | Transform")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon | Transform")
 	FTransform PrimaryWeaponAttachTransform;
 
 	//TPMesh에 Weapon을 Attach할 소켓의 Transform값.
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equip | Transform")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon | Transform")
 	FTransform SubWeaponAttachTransform;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon | Transform")
+	FTransform PistolAttachTransform;
 
 
 	/* FX */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Sound")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon | FX")
 	USoundCue* FireSound;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Sound")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon | FX")
 	USoundCue* BulletHitSound;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Sound")
-	USoundCue* EquippedSound;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "FX")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon | FX")
 	UParticleSystem* FireMuzzleEffect;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "FX")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon | FX")
 	UParticleSystem* BulletHitEffect;
 
-	UPROPERTY(EditDefaultsOnly, Category = "FX")
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon | FX")
 	TSubclassOf<UCameraShakeBase> CamShake;	
 
 	/* Animation */
-	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Animation")
 	FWeaponAnim FireAnimaton;
 
 };

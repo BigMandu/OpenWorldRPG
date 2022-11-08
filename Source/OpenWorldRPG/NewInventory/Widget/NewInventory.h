@@ -33,15 +33,18 @@ private:
 public:
 	AMainCharacter* Main;
 
-	//UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	//UNewInventoryComponent* PocketInventoryComp;
-	//UNewInventoryComponent* SecureBoxInventoryComp;
-
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	class UCanvasPanel* MainCanvas;
 
 	UEquipmentComponent* EquipComp;
 	
+	UPROPERTY(meta = (BindWidget))
+	class UButton* StatusButton;
+	UPROPERTY(meta = (BindWidget))
+	UButton* InventoryButton;
+	UPROPERTY(meta = (BindWidget))
+	UButton* CraftButton;
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UWidgetSwitcher* MainInventorySwitcher;
 
@@ -53,15 +56,6 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	class UAdditionalWidget* AdditionalWidget;
-
-	/*UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UScrollBox* RightWidgetScrollBox;*/
-
-	/*UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UNewInventoryGrid* PocketWidget;
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UNewInventoryGrid* SecureBoxWidget;*/
 
 	UPROPERTY(meta = (BindWidget))
 	UCharacterInventoryWidget* CharInvWidget;
@@ -78,9 +72,6 @@ public:
 	
 	UPROPERTY()
 	TArray<UDraggInventoryWindow*> InventoryWindowArray;
-	//UDraggInventoryWindow* StorageWindow;
-
-	//float TileSize;
 
 
 public:
@@ -89,6 +80,11 @@ public:
 public:
 	virtual bool Initialize() override;
 	virtual void NativeConstruct() override;
+
+	UFUNCTION()
+	void ChangeMainSwitchToStatus();
+	UFUNCTION()
+	void ChangeMainSwitchToInventory();
 
 	void SetRightWidget(UUserWidget* Widget);
 	void ChangeRightSwitcher();

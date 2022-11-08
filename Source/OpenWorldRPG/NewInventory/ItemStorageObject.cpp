@@ -3,7 +3,7 @@
 
 #include "OpenWorldRPG/NewInventory/ItemStorageObject.h"
 #include "OpenWorldRPG/NewInventory/Library/InventoryStruct.h"
-
+#include "OpenWorldRPG/NewInventory/Library/CustomInventoryLibrary.h"
 
 FTile UItemStorageObject::IndexToTile(int32 index)
 {
@@ -103,7 +103,7 @@ bool UItemStorageObject::IsAvailableSpace(UNewItemObject* ItemObj, int32 TLind)
 }
 
 
-bool UItemStorageObject::TryAddItem(UNewItemObject* ItemObj)
+bool UItemStorageObject::TryAddItem(UNewItemObject* ItemObj, bool bWantToGenerateRandomCount)
 {
 	bool bResult = false;
 
@@ -159,6 +159,7 @@ void UItemStorageObject::AddItemAtIndex(UNewItemObject* ItemObj, int32 Index)
 		ItemObj->MotherEquipComp->RemoveEquipment(ItemObj);
 	}
 
+
 	ItemObj->TopLeftIndex = Index;
 	ItemObj->MotherStorage = this;
 	ItemObj->bIsDestoryed = true;
@@ -211,7 +212,6 @@ bool UItemStorageObject::RemoveItem(UNewItemObject* ItemObj)
 	{
 		for (int32 j = ItemIndex.Y; j <= loopY; j++)
 		{
-
 			removeTile.X = i;
 			removeTile.Y = j;
 			int32 removeIndex = TileToIndex(removeTile);
@@ -220,8 +220,9 @@ bool UItemStorageObject::RemoveItem(UNewItemObject* ItemObj)
 			{
 				UE_LOG(LogTemp, Warning, TEXT("ItemStorageObj::RemoveItem : Some thing wrong.."));
 				return false;
-			}	
+			}
 			Inventory[removeIndex] = nullptr;
+			ItemObj->bIsPendingDelete = true;
 		}
 	}
 	OnInventoryAdd.Broadcast(ItemObj);

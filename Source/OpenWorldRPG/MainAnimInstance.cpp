@@ -45,6 +45,8 @@ void UMainAnimInstance::UpdateAnimationProperties()
 		FRotator Rotate = Player->GetActorRotation();
 		Direction = CalculateDirection(Speed, Rotate); //방향 계산
 
+		SetHandIK();
+
 		/**************   Aim Offset **************/
 		FRotator ControlRot = Player->GetControlRotation(); //컨트롤러 회전값
 		FRotator ActorRot = Player->GetActorRotation(); //캐릭터 회전값
@@ -75,6 +77,20 @@ void UMainAnimInstance::UpdateAnimationProperties()
 	}
 }
 
+void UMainAnimInstance::SetHandIK()
+{
+	//여기서는 LeftHandLocation만 세팅해주고
+	//실제 2bone IK는 AnimGraph에서 해준다.
+	if (Player->EquippedWeapon)
+	{
+		LeftHandLocation = Player->LeftHandik().GetLocation();
+		LeftHandAlpha = 1.0f;
+	}
+	else
+	{
+		LeftHandAlpha = 0.0f;
+	}
+}
 
 void UMainAnimInstance::AnimNotify_StepSound()
 {

@@ -8,6 +8,7 @@
 #include "EquipWidget.generated.h"
 
 
+
 /*
 각 슬롯을 생성.
 */
@@ -23,6 +24,8 @@ class UItemStorageObject;
 class UOverlay;
 class UBorder;
 
+//ENUM_RANGE_BY_COUNT(EEquipSlot, EEquipSlot::EES_MAX)
+
 UCLASS()
 class OPENWORLDRPG_API UEquipWidget : public UUserWidget, public IItemInterface
 {
@@ -37,21 +40,24 @@ public:
 
 	UPROPERTY()
 	ABaseCharacter* LootedChar_Owner;
+
+	/*UPROPERTY(VisibleAnywhere)
+	EEquipSlot EquipSlot;*/
 	
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
 	UEquipmentSlot* HelmetSlot;
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
 	UEquipmentSlot* PlateSlot;
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
+	UEquipmentSlot* VestSlot;
+	UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
+	UEquipmentSlot* BackpackSlot;
+	UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
 	UEquipmentSlot* PistolSlot;
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
 	UEquipmentSlot* PrimarySlot;
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
 	UEquipmentSlot* SubSlot;
-	UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
-	UEquipmentSlot* VestSlot;
-	UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
-	UEquipmentSlot* BackpackSlot;
 
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
 	UOverlay* VestOverlay;
@@ -73,6 +79,7 @@ public:
 
 	UFUNCTION()
 	void RefreshEquipWidget();
+
 
 	//UFUNCTION()
 	//void RemoveEquipment(UObject* T_ItemObj);

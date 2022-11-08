@@ -57,6 +57,10 @@ public:
 	bool bCanEquip;
 	bool bIsDestoryed;
 
+	bool bIsRegQuickSlot;
+
+	bool bIsPendingDelete = false;
+
 	//when you Dragging NewItemWidget this Var turn True.
 	//And Dropping NewItemWidget, This var turn False.
 	//Use at NewInventoryGrid, EquipmentSlot, NewInventory
@@ -69,24 +73,13 @@ public:
 
 	AEquipment* Equipment;
 
-	//UNewInventoryGrid* MotherContainer;
 	UItemStorageObject* MotherStorage;
 	UEquipmentComponent* MotherEquipComp;
 	UEquipmentSlot* SettedSlot;
 
 	ERifleSlot RifleAssign;
-	//UEquipmentSlot* MotherEquipSlot;
-
-	/*********** Storage *************/
-	//bool bHasStorage;
-	
-	/*TSubclassOf<UUserWidget> WEquipGridWidget;
-	UNewInventoryGrid* EquipGridWidget;
-	UNewInventoryComponent* ObjInvComp;*/
 
 
-
-	//UFUNCTION(BlueprintCallable)
 	FIntPoint GetItemSize();
 
 	UClass* GetItemClass();
@@ -103,9 +96,10 @@ public:
 	const UEquipmentComponent* GetMotherEquipComp();
 	void SetMotherEquipComp(UEquipmentComponent* Var_MotherEquipComp);
 
-	
+	void AddCount(int32 Cnt);
+	void RemoveCount(int32 Cnt);
 
-
+	void UseItem(UWorld* World);
 	
 
 	

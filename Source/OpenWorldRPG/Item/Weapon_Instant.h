@@ -9,21 +9,21 @@
 /**
  * 
  */
-USTRUCT()
-struct FBulletData
-{
-	GENERATED_BODY()
-	
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
-	int32 Damage;
-
-
-	/* FBulletData Defaults */
-	FBulletData()
-	{
-		Damage = 10;
-	}
-};
+//USTRUCT()
+//struct FBulletData
+//{
+//	GENERATED_BODY()
+//	
+//	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
+//	int32 Damage;
+//
+//
+//	/* FBulletData Defaults */
+//	FBulletData()
+//	{
+//		Damage = 10;
+//	}
+//};
 
 UCLASS()
 class OPENWORLDRPG_API AWeapon_Instant : public AWeapon
@@ -33,8 +33,8 @@ class OPENWORLDRPG_API AWeapon_Instant : public AWeapon
 public:
 	AWeapon_Instant();
 
-	UPROPERTY(EditDefaultsOnly, Category = "WeaponStat")
-	FBulletData BulletStat;
+	/*UPROPERTY(EditDefaultsOnly, Category = "WeaponStat")
+	FBulletData BulletStat;*/
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Sound")
 	USoundCue* BulletHitSound;
