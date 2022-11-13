@@ -12,7 +12,6 @@
 #include "OpenWorldRPG/GameData/StatManagementComponent.h"
 #include "OpenWorldRPG/NewInventory/EquipmentComponent.h"
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
-#include "OpenWorldRPG/NewInventory/Widget/CharacterInventoryWidget.h"
 #include "OpenWorldRPG/NewInventory/Widget/NewInventory.h"
 
 #include "OpenWorldRPG/MainHud.h"
@@ -149,12 +148,6 @@ void AMainCharacter::BeginPlay()
 	UMainHud* MainHud = Cast<UMainHud>(MainController->MainHud);
 	if (MainHud)
 	{
-		UCharacterInventoryWidget* CharWidget = MainHud->NewInventoryWidget->CharInvWidget;
-		if (CharWidget)
-		{
-			CharWidget->InitializeInventory(this);
-			CharWidget->BindingAdditional(MainHud->NewInventoryWidget);
-		}
 
 		if(StatManagementComponent)
 		{
@@ -181,6 +174,8 @@ void AMainCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
+	
+
 	//bIsLookInput 세팅
 	float turnvalue = GetInputAxisValue("Turn");
 	float lookvalue = GetInputAxisValue("LookUp");
@@ -225,15 +220,6 @@ void AMainCharacter::Tick(float DeltaTime)
 	}
 	*/
 
-
-	//나중에 Event로 바꿔야함
-	/* 3인칭 모드에서 총이 있고 움직이고 있으면 시점을 방향으로 지정한다.*/
-	//if (EquippedWeapon && CameraMode == ECameraMode::ECM_TPS)
-	//{
-	//	bUseControllerRotationYaw = true;
-	//	GetCharacterMovement()->bOrientRotationToMovement = false;
-	//}
-	
 
 	/* 상호작용 텍스트를 띄움 */
 	/* Static FHitResult를 리턴받아서 Interface 변환, 성공하면 Outline과 TEXT를 띄움.*/
@@ -910,6 +896,7 @@ void AMainCharacter::ChangeWeapon(int32 index)
 	//For WeaponStatus Widget
 	OnChangeWeapon.Broadcast(EquippedWeapon);
 	OnGetAmmo.Broadcast(EquippedWeapon);
+	OnChangeMode.Broadcast(EquippedWeapon);
 }
 
 /*************************  Interaction 관련 ***************************************************/

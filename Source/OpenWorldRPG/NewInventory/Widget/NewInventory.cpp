@@ -3,7 +3,6 @@
 
 #include "OpenWorldRPG/NewInventory/Widget/NewInventory.h"
 #include "OpenWorldRPG/NewInventory/Widget/EquipWidget.h"
-#include "OpenWorldRPG/NewInventory/Widget/CharacterInventoryWidget.h"
 #include "OpenWorldRPG/NewInventory/Widget/NewInventoryGrid.h"
 #include "OpenWorldRPG/NewInventory/Widget/DropWidget.h"
 #include "OpenWorldRPG/NewInventory/Widget/AdditionalWidget.h"
@@ -44,19 +43,16 @@ void UNewInventory::NativeConstruct()
 	SetVisibility(ESlateVisibility::Collapsed);
 	if (EquipComp)
 	{
+		EquipmentWidget->InitializeInventory(Main);
 		EquipmentWidget->EquipInitialize(EquipComp);
 		EquipmentWidget->MainWidget = this;
 		
+		EquipmentWidget->PocketWidget->OpenAdditionalWidget.AddDynamic(this, &UNewInventory::BindingOpenWidgetFunc);
+		EquipmentWidget->SecureBoxWidget->OpenAdditionalWidget.AddDynamic(this, &UNewInventory::BindingOpenWidgetFunc);
 	}
 
 	StatusButton->OnClicked.AddDynamic(this, &UNewInventory::ChangeMainSwitchToStatus);
 	InventoryButton->OnClicked.AddDynamic(this, &UNewInventory::ChangeMainSwitchToInventory);
-
-	//MainCharacter의 Beginplay에서 호출하는것으로 변경함.
-	//if (CharInvWidget)
-	//{
-	//	CharInvWidget->InitializeInventory(Main);
-	//}
 }
 
 /* Navive Construct 보다 먼저 실행됨.*/

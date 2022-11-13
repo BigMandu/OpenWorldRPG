@@ -13,6 +13,8 @@
 //WeaponStatusWidget에서 receive한다.
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnChangeWeapon, AWeapon*, EquipWeapon);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGetAmmo, AWeapon*, EquipWeapon);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnChangeMode, AWeapon*, EquipWeapon);
+
 
 class USoundCue;
 class UMainAnimInstance;
@@ -61,6 +63,7 @@ public:
 
 	FOnChangeWeapon OnChangeWeapon;
 	FOnGetAmmo OnGetAmmo;
+	FOnChangeMode OnChangeMode;
 
 	/* Socket Name */
 	const FName HeadSocketName = FName("headsocket");

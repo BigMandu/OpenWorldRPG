@@ -360,19 +360,15 @@ void AWeapon::ChangeSafetyLever()
 		switch (WeaponFiringMode)
 		{
 		case EWeaponFiringMode::EWFM_Safe:
-			UE_LOG(LogTemp, Warning, TEXT("Semi Auto"));
 			WeaponFiringMode = EWeaponFiringMode::EWFM_SemiAuto;
 			break;
 		case EWeaponFiringMode::EWFM_SemiAuto:
-			UE_LOG(LogTemp, Warning, TEXT("3-round burst"));
 			WeaponFiringMode = EWeaponFiringMode::EWFM_Burst;
 			break;
 		case EWeaponFiringMode::EWFM_Burst:
-			UE_LOG(LogTemp, Warning, TEXT("Full Automatic"));
 			WeaponFiringMode = EWeaponFiringMode::EWFM_FullAuto;
 			break;
 		case EWeaponFiringMode::EWFM_FullAuto:
-			UE_LOG(LogTemp, Warning, TEXT("Safe"));
 			WeaponFiringMode = EWeaponFiringMode::EWFM_Safe;
 			break;
 		}
@@ -470,6 +466,10 @@ bool AWeapon::CanFire()
 				{	
 					bCanFire = true;					
 				}
+				else
+				{
+					//틱틱 하는 Sound 추가하기.
+				}
 			}
 		}
 	}
@@ -484,24 +484,18 @@ int32 AWeapon::GetCurrentAmmoInMag()
 bool AWeapon::CheckAmmo()
 {
 	if (AmmoLeftInMag <= 0)
-	{
+	{	
+		// -1이하로 내려갈일은 없지만 혹시나 해서 방어용.
+		AmmoLeftInMag = 0;
 		return false;
 	}
 	return true;
-	/*bool bHasAmmo = false;
-	SearchAmmo(bHasAmmo);
-	return bHasAmmo;*/
 }
 
 void AWeapon::UseAmmo()
 {
-	//bool bflag = false;
-	//int32 AmmoConsumed = 1; //탄 소모 개수.
-	//SearchAmmo(bflag, true, AmmoConsumed);
-
-	//++ConsumeAmmoCnt;
 	--AmmoLeftInMag;
-	//GetTotalAmmo();
+
 	OwningPlayer->OnGetAmmo.Broadcast(this);
 }
 
@@ -513,14 +507,14 @@ void AWeapon::Reload()
 	CntAmmoSameType = 0;
 	if(bHasAmmo)
 	{
-		//AmmoPerMag을 초과해버림
+		//Current 잔탄에 장전 가능한 탄약을 더한다.
 		AmmoLeftInMag += OwningPlayer->GetNumberofCanReload();
+
 		CntAmmoSameType = OwningPlayer->GetTotalNumberofSameTypeAmmo();
 	}
 	else
 	{
 		//Ammo가 없다면 reload 실패.
-
 	}
 
 	OwningPlayer->OnGetAmmo.Broadcast(this);

@@ -57,9 +57,6 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	class UAdditionalWidget* AdditionalWidget;
 
-	UPROPERTY(meta = (BindWidget))
-	UCharacterInventoryWidget* CharInvWidget;
-
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UEquipWidget* EquipmentWidget;
 

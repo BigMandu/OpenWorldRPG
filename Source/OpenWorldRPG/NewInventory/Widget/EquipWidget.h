@@ -66,6 +66,12 @@ public:
 	/*UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
 	UBorder* VestBorder;*/
 
+	UPROPERTY(meta = (BindWidget))
+	UNewInventoryGrid* PocketWidget;
+	UPROPERTY(meta = (BindWidget))
+	UNewInventoryGrid* SecureBoxWidget;
+
+
 	UPROPERTY()
 	UEquipmentComponent* EquipComp;
 
@@ -76,6 +82,7 @@ public:
 	TSubclassOf<UUserWidget> WGridInvWidget = nullptr;
 
 	void EquipInitialize(UEquipmentComponent* p_EquipComp);
+	void InitializeInventory(ABaseCharacter* BChar);
 
 	UFUNCTION()
 	void RefreshEquipWidget();
@@ -85,7 +92,7 @@ public:
 	//void RemoveEquipment(UObject* T_ItemObj);
 
 	//Old Version
-	void SetSlot(AEquipment* Equip, UEquipmentSlot* EquipSlot);
+	//void SetSlot(AEquipment* Equip, UEquipmentSlot* EquipSlot);
 	
 	//New Version
 	void SetSlot(UNewItemObject* EquipObj, UEquipmentSlot* EquipSlot);
@@ -93,6 +100,9 @@ public:
 	void SettingStorageWidget(UOverlay* EquipOverlay, UItemStorageObject* Var_StorageObj);
 
 	void RemoveSlot();
+
+
+	
 
 	//virtual bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
 };

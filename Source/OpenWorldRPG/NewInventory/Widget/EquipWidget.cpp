@@ -34,8 +34,8 @@ void UEquipWidget::EquipInitialize(UEquipmentComponent* p_EquipComp)
 	if (EquipComp)
 	{
 		EquipComp->OnEquipmentUpdated.AddUFunction(this, FName("RefreshEquipWidget"));
-		//UE_LOG(LogTemp, Warning, TEXT("UEquipWidget:: Bind Success"));
 
+		//AI의 LootWidget에서 사용할때
 		if (LootedChar_Owner)
 		{
 			HelmetSlot->LootedChar_Owner = LootedChar_Owner;
@@ -52,15 +52,18 @@ void UEquipWidget::EquipInitialize(UEquipmentComponent* p_EquipComp)
 	{
 		RefreshEquipWidget();
 	}
-
-	/*for (EEquipSlot EquipSlot : TEnumRange<EEquipSlot>())
-	{
-
-	}*/
-
-	
 	
 }
+
+void UEquipWidget::InitializeInventory(ABaseCharacter* BChar)
+{
+	PocketWidget->StorageObj = BChar->PocketStorage;
+	SecureBoxWidget->StorageObj = BChar->SecureBoxStorage;
+
+	PocketWidget->GridInit();
+	SecureBoxWidget->GridInit();
+}
+
 
 void UEquipWidget::RefreshEquipWidget()
 {
@@ -191,43 +194,43 @@ void UEquipWidget::SetSlot(UNewItemObject* EquipObj, UEquipmentSlot* EquipSlot)
 }
 
 //OldVersion
-void UEquipWidget::SetSlot(AEquipment* Equip, UEquipmentSlot* EquipSlot)
-{
-	if (WNewItemWidget)
-	{
-		UNewItemwidget* ItemWidget = CreateWidget<UNewItemwidget>(this, WNewItemWidget);
-
-		if (ItemWidget)
-		{
-			EquipSlot->Initialize();
-			//ItemWidget->OnRemoved.AddUFunction(this, FName("RemoveEquipment"));
-			EquipSlot->BGBorder->ClearChildren();
-			//VestOverlay->ClearChildren();
-
-			
-			ItemWidget->Tilesize = 60.f;//Equip->EquipInventoryComp->TileSize; //임시로 이렇게 사이즈를 박아뒀다., GetDesiredSize는 widget이 화면에 출력되야 구할수 있는건데 ..  //EquipSlot->GetDesiredSize().X;
-			ItemWidget->ItemObj = Equip->ItemObj; // ele.Key;
-			ItemWidget->Refresh();// Equip->ItemObj, 60.f);
-			
-			if(LootedChar_Owner != nullptr)
-			{
-				EquipSlot->LootedChar_Owner = LootedChar_Owner;
-			}
-			
-			//Equip->ItemObj->SetMotherEquipSlot(EquipSlot);
-			//Equip->ItemObj->SetMotherContainer(nullptr);
-
-			EquipSlot->BGBorder->AddChild(ItemWidget);
-			EquipSlot->PaintBGBorder();
-			
-
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Eqiupwidget :: Item widget is null"));
-	}
-}
+//void UEquipWidget::SetSlot(AEquipment* Equip, UEquipmentSlot* EquipSlot)
+//{
+//	if (WNewItemWidget)
+//	{
+//		UNewItemwidget* ItemWidget = CreateWidget<UNewItemwidget>(this, WNewItemWidget);
+//
+//		if (ItemWidget)
+//		{
+//			EquipSlot->Initialize();
+//			//ItemWidget->OnRemoved.AddUFunction(this, FName("RemoveEquipment"));
+//			EquipSlot->BGBorder->ClearChildren();
+//			//VestOverlay->ClearChildren();
+//
+//			
+//			ItemWidget->Tilesize = 60.f;//Equip->EquipInventoryComp->TileSize; //임시로 이렇게 사이즈를 박아뒀다., GetDesiredSize는 widget이 화면에 출력되야 구할수 있는건데 ..  //EquipSlot->GetDesiredSize().X;
+//			ItemWidget->ItemObj = Equip->ItemObj; // ele.Key;
+//			ItemWidget->Refresh();// Equip->ItemObj, 60.f);
+//			
+//			if(LootedChar_Owner != nullptr)
+//			{
+//				EquipSlot->LootedChar_Owner = LootedChar_Owner;
+//			}
+//			
+//			//Equip->ItemObj->SetMotherEquipSlot(EquipSlot);
+//			//Equip->ItemObj->SetMotherContainer(nullptr);
+//
+//			EquipSlot->BGBorder->AddChild(ItemWidget);
+//			EquipSlot->PaintBGBorder();
+//			
+//
+//		}
+//	}
+//	else
+//	{
+//		UE_LOG(LogTemp, Warning, TEXT("Eqiupwidget :: Item widget is null"));
+//	}
+//}
 
 void UEquipWidget::SettingStorageWidget(UOverlay* EquipOverlay, UItemStorageObject* Var_StorageObj)
 {

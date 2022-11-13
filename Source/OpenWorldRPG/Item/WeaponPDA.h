@@ -96,6 +96,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Weapon | WeaponStat")
 	FWeaponStat WeaponStat;
 	
+	UPROPERTY(EditAnywhere, Category = "Weapon | IMG")
+	UTexture2D* WeaponVectorIMG;
+
 
 	/* FPS Aim 모드일때 위치값 저장 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon | Aim Transform")

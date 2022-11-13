@@ -138,6 +138,7 @@ bool AItem::Pickup(class AActor* Actor, UNewItemObject* obj)
 
 				UItemStorageObject* ItemStorage = Cast<UItemStorageObject>(TempObj);
 				if(ItemStorage == nullptr) continue;
+
 				bFlag = BChar->BaseInventoryComp->TryAddItem(ItemStorage,ItemSetting, obj);
 				if (bFlag) break;
 			}

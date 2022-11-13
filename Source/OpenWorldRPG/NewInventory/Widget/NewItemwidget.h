@@ -16,7 +16,7 @@
 /**
  * 
  */
-class UDragDropOperation;
+//class UDragDropOperation;
 class UCustomDDOperation;
 
 class UNewInventoryGrid;
@@ -65,7 +65,10 @@ public:
 	FOnDragDetect OnDragDetect;
 	
 	//UDragDropOperation* DDOper;
-	//UCustomDDOperation* DDOper;
+
+	//Rotate를 (OnKeyDown event) 하기 위해 DDOper를 저장해놓는다.
+	bool bIsDragWidget = false;
+	UCustomDDOperation* DDOper;
 
 	
 
@@ -106,11 +109,10 @@ protected:
 
 	virtual FReply NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent) override;
 
+
+
 public:
 	virtual bool Initialize() override;
-	
-	//virtual void SynchronizeProperties() override;
-	
 	
 	void Refresh();// UNewItemObject* V_Obj, float V_Tilesize);// float var_tilesize);
 

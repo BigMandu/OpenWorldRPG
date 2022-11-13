@@ -8,9 +8,8 @@
 #include "ItemStorageObject.generated.h"
 
 
-/**
- * 
- */
+/*	UNewInventoryGrid::RefreshInventory를 호출하기 위한 Delegate
+*/
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnInventoryAdd, UNewItemObject*);
 
 

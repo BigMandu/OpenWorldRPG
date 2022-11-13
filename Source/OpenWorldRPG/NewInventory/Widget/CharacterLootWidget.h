@@ -23,8 +23,6 @@ class OPENWORLDRPG_API UCharacterLootWidget : public UUserWidget
 public:
 	UPROPERTY(meta = (BindWidget))
 	UEquipWidget* EquipWidget;
-	UPROPERTY(meta = (BindWidget))
-	UCharacterInventoryWidget* CharInvWidget;
 
 	virtual bool Initialize() override;
 	void InitCharLootWidget(ABaseCharacter* DeadChar);

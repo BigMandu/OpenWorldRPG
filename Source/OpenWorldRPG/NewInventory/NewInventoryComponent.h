@@ -64,7 +64,7 @@ public:
 	bool RemoveItem(UItemStorageObject* StorageObj, UNewItemObject* ItemObj);
 	UNewItemObject* CreateObject(FItemSetting ItemStruct, bool& bIsCreated);
 
-	void AddItemCount(UNewItemObject* DroppedItemObj, UNewItemObject* OnItemObj);
+	bool AddItemCount(UNewItemObject* DroppedItemObj, UNewItemObject* OnItemObj);
 	void RemoveItemCount(UNewItemObject* RemoveItemObj, int32 RemoveCount);
 	int32 GetItemCount(UNewItemObject* ItemObj);
 

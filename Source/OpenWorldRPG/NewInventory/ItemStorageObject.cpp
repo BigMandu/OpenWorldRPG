@@ -199,6 +199,7 @@ void UItemStorageObject::AddItemAtIndex(UNewItemObject* ItemObj, int32 Index)
 	OnInventoryAdd.Broadcast(ItemObj);
 }
 
+
 bool UItemStorageObject::RemoveItem(UNewItemObject* ItemObj)
 {
 	FIntPoint Size = ItemObj->GetItemSize();
@@ -222,7 +223,6 @@ bool UItemStorageObject::RemoveItem(UNewItemObject* ItemObj)
 				return false;
 			}
 			Inventory[removeIndex] = nullptr;
-			ItemObj->bIsPendingDelete = true;
 		}
 	}
 	OnInventoryAdd.Broadcast(ItemObj);

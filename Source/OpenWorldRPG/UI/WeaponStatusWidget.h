@@ -21,25 +21,35 @@ protected:
 public:
 
 	UPROPERTY(meta=(BindWidget))
-	class UBorder* WeaponImage;
+	class UImage* WeaponImage;
 
-	//1 ÅºÃ¢¿¡ ³²Àº Åº °³¼ö
+	//ÅºÃ¢¿¡ ³²Àº Åº °³¼ö
 	UPROPERTY(meta = (BindWidget))
-	class UTextBlock* LeftinMagazine;
+	class UTextBlock* AmmoText;
 
 	//Inventory¿¡ ³²Àº Åº °³¼ö
+	/*UPROPERTY(meta = (BindWidget))
+	UTextBlock* LeftinInventory;*/
+
+
 	UPROPERTY(meta = (BindWidget))
-	UTextBlock* LeftinInventory;
+	UTextBlock* FiringModeText;
+	
+
+	class AMainCharacter* Player;
 
 	class AWeapon* PlayerEquippedWeapon;
 
-	void BindWeaponWidget(class AMainCharacter* MainChar);
+	void BindWeaponWidget(AMainCharacter* MainChar);
 
 
 	UFUNCTION()
 	void UpdateWeaponImage(AWeapon* EquippedWeapon);
 	UFUNCTION()
 	void GetAmmoStatus(AWeapon* EquippedWeapon);
+
+	UFUNCTION()
+	void UpdateFiringMode(AWeapon* EquippedWeapon);
 
 	/*void UpdateAmmoInMagazine(int32 LeftAmmo);
 	void UpdateAmmoInInventory(int32 LeftAmmo);*/

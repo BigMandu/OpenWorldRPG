@@ -257,13 +257,13 @@ int32 ABaseCharacter::GetNumberofCanReload()
 	UItemStorageObject* Storage = Cast<UItemStorageObject>(Equipment->GetEquipStorage(EEquipmentType::EET_Vest));
 	if(EquippedWeapon)
 	{
-		//매거진 최대 개수 - 매거진에 들어있는 개수 = 장전시 필요한 최대 탄약개수
-		int32 CurAmmoInMag = EquippedWeapon->GetCurrentAmmoInMag();
 		int32 APM = EquippedWeapon->WeaponDataAsset->WeaponStat.AmmoPerMag;
+		int32 CurAmmoInMag = EquippedWeapon->GetCurrentAmmoInMag();		
 
-		//Storage 
+		//Ammo Per Mag - Current Ammo In Mag = Number of Ammo To Fill Mag (NeedToFillAmmoCnt)
 		int32 NeedToFillAmmoCount = FMath::Clamp<int32>(APM-CurAmmoInMag,0,APM);
 		int32 TempNTFAC = NeedToFillAmmoCount;
+
 		if (Storage)
 		{
 			NeedToFillAmmoCount = CollectRemainAmmo(Storage,NeedToFillAmmoCount);
@@ -320,12 +320,15 @@ int32 ABaseCharacter::GetTotalNumberofSameTypeAmmo()
 		{
 			CheckAmmoStep(Storage, Ammocnt);
 		}
-		CheckAmmoStep(PocketStorage, Ammocnt+=Ammocnt);
+		CheckAmmoStep(PocketStorage, Ammocnt);
 		
 	}
 	return Ammocnt;
 }
 
+/*
+	EquippedWeapon의 AmmoType과 맞는 Type의 Ammo가 있다면 true를 리턴한다.
+*/
 bool ABaseCharacter::CheckAmmo()
 {
 	bool bHasAmmo = false;
@@ -346,6 +349,11 @@ bool ABaseCharacter::CheckAmmo()
 	return bHasAmmo;
 }
 
+
+/* @Storage : Ammo를 검색할 스토리지
+*  @bIsCheckAmmo : True면, 오로지 Ammo의 존재 여부만 체크하기 위해 함수가 동작된다.
+*  @AmmoCnt : bIsCheckAmmo가 False여야 이 파라미터가 사용되며, 동일한 Ammo Type의 총 개수를 구하기 위함이디ㅏ.
+*/
 bool ABaseCharacter::CheckAmmoStep(UItemStorageObject* Storage, int32& AmmoCnt, bool bIsCheckAmmo)
 {	
 	for (auto item : Storage->Inventory)
@@ -399,6 +407,8 @@ void ABaseCharacter::ChangeSafetyLever()
 	if (EquippedWeapon)
 	{
 		EquippedWeapon->ChangeSafetyLever();
+
+		OnChangeMode.Broadcast(EquippedWeapon);
 	}
 }
 

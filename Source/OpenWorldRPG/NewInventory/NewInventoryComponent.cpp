@@ -374,11 +374,11 @@ bool UNewInventoryComponent::TryAddItem(UItemStorageObject* StorageObj, FItemSet
 			const auto ItemInStorage = StorageObj->GetAllItems();
 			for (auto Item : ItemInStorage)
 			{
+				if (Item.Key->ItemInfo.DataAsset != ItemObj->ItemInfo.DataAsset) continue;
 				if(Item.Key->ItemInfo.DataAsset->bCanStack == false) continue;
-				if(Item.Key->ItemInfo.DataAsset != ItemObj->ItemInfo.DataAsset) continue;
+				
 
-				AddItemCount(ItemObj, Item.Key);
-				bAddCount = true;
+				bAddCount = AddItemCount(ItemObj, Item.Key);
 				//if(ItemObj->ItemInfo.Count > 0) continue;
 			}
 		}
@@ -400,7 +400,11 @@ bool UNewInventoryComponent::RemoveItem(UItemStorageObject* StorageObj, UNewItem
 	return StorageObj->RemoveItem(ItemObj);
 }
 
-void UNewInventoryComponent::AddItemCount(UNewItemObject* DroppedItemObj, UNewItemObject* OnItemObj)
+
+/*DroppedItem의 Count가 모두 Stack이 됐다면 true를 리턴하고
+* DroppedItem의 Count가 남았으면 false를 리턴한다.
+*/
+bool UNewInventoryComponent::AddItemCount(UNewItemObject* DroppedItemObj, UNewItemObject* OnItemObj)
 {
 	int32 OnMAXStack = OnItemObj->ItemInfo.DataAsset->MaxStackSize;
 	
@@ -408,14 +412,22 @@ void UNewInventoryComponent::AddItemCount(UNewItemObject* DroppedItemObj, UNewIt
 	int32 OnCanStackCount = OnMAXStack - OnItemObj->ItemInfo.Count;
 	int32 DroppedStackCount = DroppedItemObj->ItemInfo.Count;
 
+	bool bReturn = false;
+
+	// 1 이상 쌓을 수 없다면, Stack가능한 count가 0이면 걍 바로 false를 리턴한다.
+	if (OnCanStackCount <= 0)
+	{
+		return false;
+	}
+
 	/*드랍개수가 Stack가능한 개수보다 크다면
-	* OnItem(있던것)에 Stack가능한 개수를 넣어주고
-	* DroppedItem(드랍한것)에서 Stack 가능한 개수를 빼준다.
+	* OnItem(있던것)에 Stack가능한 개수를 넣어주고 DroppedItem(드랍한것)에서 Stack 가능한 개수를 빼준다.
 	*/
 	if (DroppedStackCount >= OnCanStackCount)
 	{
 		OnItemObj->AddCount(OnCanStackCount);
-		DroppedItemObj->RemoveCount(OnCanStackCount);
+		RemoveItemCount(DroppedItemObj,OnCanStackCount);
+		//DroppedItemObj->RemoveCount(OnCanStackCount);
 	}
 	else
 	{
@@ -424,12 +436,23 @@ void UNewInventoryComponent::AddItemCount(UNewItemObject* DroppedItemObj, UNewIt
 		//Item이 Spawn이라 Storage가 없는 경우가 있ㄷㄷㅏ.
 		if(DroppedItemObj->MotherStorage)
 		{
-			DroppedItemObj->MotherStorage->RemoveItem(DroppedItemObj);
+			RemoveItemCount(DroppedItemObj, DroppedStackCount);
+			//DroppedItemObj->MotherStorage->RemoveItem(DroppedItemObj);
 		}
 	}
 
+	if (DroppedItemObj && DroppedItemObj->ItemInfo.Count >= 1)
+	{
+		bReturn = false;
+	}
+	else
+	{
+		bReturn = true;
+	}
+	return bReturn;
 }
 
+//ItemObj의 Count를 안전하게 지우는 함수
 void UNewInventoryComponent::RemoveItemCount(UNewItemObject* RemoveItemObj, int32 RemoveCount)
 {	
 	int32 RemoveStackCount = FMath::Clamp<int32>(RemoveItemObj->ItemInfo.Count - RemoveCount,0, RemoveItemObj->ItemInfo.Count - RemoveCount);
@@ -439,6 +462,12 @@ void UNewInventoryComponent::RemoveItemCount(UNewItemObject* RemoveItemObj, int3
 	{
 		if (RemoveItemObj->MotherStorage)
 		{
+			//삭제 대기 여부를 True로 변경한다. 
+			/*(MotherStorage의 RemoveItem에서 InventoryGrid Widget의 RefreshInvtory함수에서 
+			* Quickslot 삭제를 해야하는지 판단할때 사용되는 bool변수임.
+			* */
+			RemoveItemObj->bIsPendingDelete = true;
+			RemoveItemObj->RemoveCount(RemoveCount);
 			RemoveItemObj->MotherStorage->RemoveItem(RemoveItemObj);
 		}
 	}

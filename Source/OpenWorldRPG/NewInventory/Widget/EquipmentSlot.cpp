@@ -213,13 +213,16 @@ FReply UEquipmentSlot::NativeOnPreviewKeyDown(const FGeometry& InGeometry, const
 	bool bDragging = UWidgetBlueprintLibrary::IsDragDropping();
 	if (bDragging)
 	{
-		UNewItemObject* Obj = Cast<UNewItemObject>(UWidgetBlueprintLibrary::GetDragDroppingContent()->Payload);
+		UCustomDDOperation* CusDDOper = Cast<UCustomDDOperation>(UWidgetBlueprintLibrary::GetDragDroppingContent());
+		if(CusDDOper == nullptr) return Reply;
+
+		UNewItemObject* Obj = CusDDOper->ItemObj;
 		if (Obj && Obj->bCanRotated)
 		{
 			if (InKeyEvent.GetKey() == EKeys::R)
 			{
 				Obj->ItemRotate();
-				UNewItemwidget* Itemwidget = Cast<UNewItemwidget>(UWidgetBlueprintLibrary::GetDragDroppingContent()->DefaultDragVisual);
+				UNewItemwidget* Itemwidget = Cast<UNewItemwidget>(CusDDOper->DefaultDragVisual);
 				if (Itemwidget)
 				{
 					Itemwidget->Refresh();

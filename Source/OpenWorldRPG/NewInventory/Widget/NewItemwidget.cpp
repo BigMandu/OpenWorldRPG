@@ -35,8 +35,11 @@ bool UNewItemwidget::Initialize()
 void UNewItemwidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	bIsFocusable = true;
+
 	Refresh();
+
+	bIsFocusable = true;
+	
 	CreateTooltip();
 }
 
@@ -50,9 +53,8 @@ void UNewItemwidget::CreateTooltip()
 	}
 }
 
-void UNewItemwidget::Refresh() //UNewItemObject* V_Obj, float V_Tilesize)
-{
-	
+void UNewItemwidget::Refresh()
+{	
 	if (ItemObj && BGSizeBox && ItemIcon && BGBorder)
 	{
 		//Tilesize = var_tilesize;
@@ -69,7 +71,6 @@ void UNewItemwidget::Refresh() //UNewItemObject* V_Obj, float V_Tilesize)
 			BGSizeBox->SetHeightOverride(widgetsize.Y);
 
 			BGBorder->SetBrushColor(NormalColor);
-			//ItemIcon->SetBrush(GetIconImage());
 
 
 			//그림넣기
@@ -105,8 +106,6 @@ FSlateBrush UNewItemwidget::GetIconImage()
 			icon = UWidgetBlueprintLibrary::MakeBrushFromMaterial(ItemObj->GetItemIcon(), widgetsize.X, widgetsize.Y);
 		}
 	
-		//Item이 지워질때 해당 event에 bind된 함수를 호출한다.
-		//OnRemoved.Broadcast(ItemObj);
 	}
 	return icon;
 }
@@ -114,10 +113,12 @@ FSlateBrush UNewItemwidget::GetIconImage()
 void UNewItemwidget::NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
 	Super::NativeOnMouseEnter(InGeometry, InMouseEvent);
+
 	if (BGBorder)
 	{
 		// Set Focus
-		SetFocus();		
+		SetFocus();
+		UE_LOG(LogTemp, Warning, TEXT("NewItemWidget::OnMouseEnter / SetFocus Name : %s"), *GetFName().ToString());
 
 		BGBorder->SetBrushColor(HoverColor);
 		
@@ -131,6 +132,18 @@ void UNewItemwidget::NativeOnMouseEnter(const FGeometry& InGeometry, const FPoin
 void UNewItemwidget::NativeOnMouseLeave(const FPointerEvent& InMouseEvent)
 {
 	Super::NativeOnMouseLeave(InMouseEvent);
+
+	//Remove Focus
+	if (!bIsDragWidget && HasAnyUserFocus())
+	{
+		ULocalPlayer* LocalPlayer = GetOwningLocalPlayer();
+		if (LocalPlayer)
+		{
+			FReply& DelayedSlateOperations = LocalPlayer->GetSlateOperations();
+			DelayedSlateOperations.ClearUserFocus();
+			UE_LOG(LogTemp, Warning, TEXT("NewItemWidget::OnMouse Leave / Remove Focus Name : %s"), *GetFName().ToString());
+		}
+	}
 
 	//Set Focus
 	/*TSharedPtr<SWidget> SafeWidget = GetCachedWidget();
@@ -146,13 +159,7 @@ void UNewItemwidget::NativeOnMouseLeave(const FPointerEvent& InMouseEvent)
 	}*/
 	if (BGBorder)
 	{
-		//Remove Focus
-		ULocalPlayer* LocalPlayer = GetOwningLocalPlayer();
-		if (LocalPlayer)
-		{
-			FReply& DelayedSlateOperations = LocalPlayer->GetSlateOperations();
-			DelayedSlateOperations.ClearUserFocus();
-		}
+		
 
 		BGBorder->SetBrushColor(NormalColor);
 		if (ToolTipWidget)
@@ -165,11 +172,21 @@ void UNewItemwidget::NativeOnMouseLeave(const FPointerEvent& InMouseEvent)
 FReply UNewItemwidget::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
 	Super::NativeOnMouseButtonDown(InGeometry, InMouseEvent);
+	FEventReply Reply;
 
-	FEventReply Reply = UWidgetBlueprintLibrary::DetectDragIfPressed(InMouseEvent, this, EKeys::LeftMouseButton);
+	//기존
+	//Reply = UWidgetBlueprintLibrary::DetectDragIfPressed(InMouseEvent, this, EKeys::LeftMouseButton);
 
-	//FPointerEvent point;
-	//point.
+	//개선, LeftButton, Right Button을 구분하기 위해 if문으로 분기한다.
+	if (InMouseEvent.IsMouseButtonDown(EKeys::LeftMouseButton))
+	{
+		Reply = UWidgetBlueprintLibrary::DetectDragIfPressed(InMouseEvent,this, EKeys::LeftMouseButton);
+	}
+	else if (InMouseEvent.IsMouseButtonDown(EKeys::RightMouseButton))
+	{
+		// open menu widget
+	}
+	
 	
 	return Reply.NativeReply;
 }
@@ -177,17 +194,17 @@ FReply UNewItemwidget::NativeOnMouseButtonDown(const FGeometry& InGeometry, cons
 void UNewItemwidget::NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation)
 {
 	Super::NativeOnDragDetected(InGeometry, InMouseEvent, OutOperation);
-	//UDragDropOperation
-
-	//DDOper = UWidgetBlueprintLibrary::CreateDragDropOperation(nullptr);
-	UCustomDDOperation* DDOper = Cast<UCustomDDOperation>(UWidgetBlueprintLibrary::CreateDragDropOperation(UCustomDDOperation::StaticClass()));
+	
+	DDOper = Cast<UCustomDDOperation>(UWidgetBlueprintLibrary::CreateDragDropOperation(UCustomDDOperation::StaticClass()));
 	
 	//Dragwidget을 복제해서 새로 생성해준다.
-	UNewItemwidget* DragWidget = Cast<UNewItemwidget>(CreateWidget<UUserWidget>(GetWorld(), this->GetClass()));
+	UNewItemwidget* DragWidget = CreateWidget<UNewItemwidget>(GetWorld(), this->GetClass());//, FName(TEXT("DragWidget")));//Cast<UNewItemwidget>(CreateWidget<UUserWidget>(GetWorld(), this->GetClass()));
 	check(DragWidget)
 
+	DragWidget->bIsDragWidget = true;
 	DragWidget->ItemObj = ItemObj;
 	DragWidget->Tilesize = Tilesize;
+	DragWidget->SetFocus();
 
 	//New Version
 	/* DragWidget은 현 위젯을 복제한것으로 대체한다. 
@@ -197,11 +214,13 @@ void UNewItemwidget::NativeOnDragDetected(const FGeometry& InGeometry, const FPo
 	{
 		ItemObj->bIsDragging = true;
 		
+
 		DDOper->DefaultDragVisual = DragWidget;
-		//DDOper->Payload = this;
-		DDOper->ItemObj = ItemObj;
-		//DDOper->ParentGridWidget = MotherContainer;
 		DDOper->DragWidget = DragWidget;
+		DDOper->ItemObj = ItemObj;
+		DDOper->Pivot = EDragPivot::CenterCenter;
+		
+		
 
 		OutOperation = DDOper;
 		//OnDragDetect.Broadcast(ItemObj);
@@ -236,25 +255,24 @@ bool UNewItemwidget::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEv
 
 	UE_LOG(LogTemp, Warning, TEXT("NewItemWidget::OnDrop func called"));
 
-	/* 같은 Item이고 Stackable이 가능하다면, stack한다.
-	 *
-	 */
-	 //auto DroppedItemObj = Cast< UCustomDDOperation
-	UCustomDDOperation* DDOper = Cast<UCustomDDOperation>(InOperation);
+	/* 같은 Item이고 Stackable이 가능하다면, stack한다.  */
+	 
+	
+	UCustomDDOperation* CusDDOper = Cast<UCustomDDOperation>(InOperation);
 	//DDOper가 없거나, 같은 Widget이면 return한다.
-	 if(DDOper == nullptr) return false;
-	 if (ItemObj == DDOper->ItemObj) return false;
+	 if(CusDDOper == nullptr) return false;
+	 if (ItemObj == CusDDOper->ItemObj) return false;
 
 	UCustomPDA* CPDA = Cast<UCustomPDA>(ItemObj->ItemInfo.DataAsset);
 	if(CPDA && CPDA->bHasStorage)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("ItemWidget::OnDrop / Has Storage, Try add item"));
-		Cast<UItemStorageObject>(ItemObj)->TryAddItem(DDOper->ItemObj);
+		Cast<UItemStorageObject>(ItemObj)->TryAddItem(CusDDOper->ItemObj);
 		
 	}
-	else if(ItemObj->ItemInfo.DataAsset->bCanStack && ItemObj->ItemInfo.DataAsset == DDOper->ItemObj->ItemInfo.DataAsset)
+	else if(ItemObj->ItemInfo.DataAsset->bCanStack && ItemObj->ItemInfo.DataAsset == CusDDOper->ItemObj->ItemInfo.DataAsset)
 	{
-		MotherContainer->MoveItemToItem(DDOper->ItemObj,ItemObj);		
+		MotherContainer->MoveItemToItem(CusDDOper->ItemObj,ItemObj);
 	}
 
 	return bReturn;
@@ -284,12 +302,30 @@ FReply UNewItemwidget::NativeOnMouseButtonDoubleClick(const FGeometry& InGeometr
 */
 FReply UNewItemwidget::NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
 {
-	//FReply Rep = Super::NativeOnKeyDown(InGeometry,InKeyEvent);
-	//Super::NativeOnPreviewKeyDown
+	UE_LOG(LogTemp, Warning, TEXT("UNewItemwidget::NativeOnKeyDown"));
+
 	FKey key = InKeyEvent.GetKey();
+	
+	/* Rotate Item */
+	//if (DDOper)
+	//{
+	//	bool bDragging = UWidgetBlueprintLibrary::IsDragDropping();
+	//	if (key == EKeys::R) //&& bDragging)
+	//	{
+	//		if (ItemObj && ItemObj->ItemInfo.DataAsset->bCanRotate)
+	//		{
+	//			DDOper->ItemObj->ItemRotate();
+
+	//			DDOper->DragWidget->ItemIcon->SetBrush(GetIconImage());
+	//			return FReply::Handled();
+	//		}
+	//	}
+	//}
+
 
 	AMainController* PlayerCon = Cast<AMainController>(GetOwningPlayer());
 	check(PlayerCon);
+
 	UQuickSlotWidget* QuickSlot = PlayerCon->MainHud->QuickSlot;
 	check(QuickSlot);
 	
@@ -318,6 +354,15 @@ FReply UNewItemwidget::NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEv
 		QuickSlot->SetItemInQuickSlot(EQuickSlotNumber::EQSN_N8, ItemObj);
 		return FReply::Handled();
 	}
+	else if (key == EKeys::Nine || key == EKeys::NumPadNine)
+	{
+		QuickSlot->SetItemInQuickSlot(EQuickSlotNumber::EQSN_N9, ItemObj);
+		return FReply::Handled();
+	}
 	
+
+
 	return FReply::Unhandled();
 }
+
+

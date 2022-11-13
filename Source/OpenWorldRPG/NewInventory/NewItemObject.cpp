@@ -24,7 +24,16 @@ FIntPoint UNewItemObject::GetItemSize()
 	FIntPoint ItemSize;
 	if (ItemInfo.DataAsset != nullptr)
 	{
-		ItemSize = FIntPoint(ItemInfo.DataAsset->ItemSize.X, ItemInfo.DataAsset->ItemSize.Y);
+		if (bRotated)
+		{
+			//ItemRotateSize.X = ItemInfo.DataAsset->ItemSize.Y;
+			//ItemRotateSize.Y = ItemInfo.DataAsset->ItemSize.X,
+			ItemSize = FIntPoint(ItemInfo.DataAsset->ItemSize.Y, ItemInfo.DataAsset->ItemSize.X);
+		}
+		else
+		{
+			ItemSize = FIntPoint(ItemInfo.DataAsset->ItemSize.X, ItemInfo.DataAsset->ItemSize.Y);
+		}
 		return ItemSize;
 	}
 	return ItemSize;
@@ -38,13 +47,17 @@ UClass* UNewItemObject::GetItemClass()
 void UNewItemObject::ItemRotate()
 {
 	//UE_LOG(LogTemp, Warning, TEXT("NewItemObj::ItemRotate func called"));
-	if (bCanRotated)
+	if (ItemInfo.DataAsset->bCanRotate)
 	{	
-		FIntPoint ItemSize = FIntPoint(ItemInfo.DataAsset->ItemSize.X, ItemInfo.DataAsset->ItemSize.Y);
+		//FIntPoint ItemSize = FIntPoint(ItemInfo.DataAsset->ItemSize.X, ItemInfo.DataAsset->ItemSize.Y);
 		//회전을 했다면 item size를 swap해줌.
-		int32 temp = ItemSize.X;
+		/*int32 temp = ItemSize.X;
 		ItemSize.X = ItemSize.Y;
-		ItemSize.Y = temp;
+		ItemSize.Y = temp;*/
+
+		//ItemRotateSize.X = ItemInfo.DataAsset->ItemSize.Y; 
+		//ItemRotateSize.Y = ItemInfo.DataAsset->ItemSize.X,
+		
 		
 
 		/* flip flop*/

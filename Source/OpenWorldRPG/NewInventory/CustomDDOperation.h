@@ -22,5 +22,4 @@ public:
 	UNewItemObject* ItemObj;
 	UNewInventoryGrid* ParentGridWidget;
 	UNewItemwidget* DragWidget;
-	
 };

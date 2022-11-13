@@ -44,7 +44,7 @@ public:
 
 	FItemSetting ItemInfo;
 
-	//FIntPoint itemsize;
+	FIntPoint ItemRotateSize;
 	EEquipmentType EquipmentType;
 	EInteractType InteractType;
 
@@ -53,7 +53,7 @@ public:
 	UMaterialInterface* iconRotated;
 
 	bool bCanRotated;
-	bool bRotated;
+	bool bRotated = false;
 	bool bCanEquip;
 	bool bIsDestoryed;
 

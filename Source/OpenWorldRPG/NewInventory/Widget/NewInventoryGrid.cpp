@@ -54,6 +54,7 @@ UNewInventoryGrid::UNewInventoryGrid(const FObjectInitializer& ObjectInitializer
 void UNewInventoryGrid::NativeConstruct()
 {
 	Super::NativeConstruct();
+	bIsFocusable = true;
 	GridInit();
 }
 
@@ -206,11 +207,10 @@ void UNewInventoryGrid::RefreshInventory(UNewItemObject* Obj)
 		GridCanvasPanel->ClearChildren();
 
 		//Obj파라미터를 사용하는 경우는 아래 경우밖에 없다.
-		/*Obj가 ItemStorageObj에서 삭제 되는경우
-		* QuickSlot에 등록되어 있는지 확인하고,
-		* 등록 되어 있는 경우에 삭제 process를 진행한다.
+		/* "Obj가 Use되어 Count가 0 이하가 되어 삭제되는 경우"
+		* QuickSlot에 등록되어 있는지 확인하고 등록 되어 있는 경우에 QuickSlot에서 삭제 process를 진행한다.
 		*/
-		if (Obj && Obj->bIsPendingDelete && Obj->bIsRegQuickSlot)
+		if (Obj && Obj->bIsPendingDelete && Obj->bIsRegQuickSlot && Obj->ItemInfo.Count <= 0)
 		{
 			MainCon->MainHud->QuickSlot->CheckAlreadyRegistered(Obj);
 		}
@@ -550,6 +550,7 @@ FVector2D UNewInventoryGrid::GetMousePositionInEachTile(FVector2D MousePos)
 void UNewInventoryGrid::NativeOnDragEnter(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
 {
 	Super::NativeOnDragEnter(InGeometry, InDragDropEvent, InOperation);
+	SetFocus();
 	bNeedDropLocation = true;
 	bCanDrop = true;
 	//UE_LOG(LogTemp, Warning, TEXT("InvGrid bCanDrop = %s"), bCanDrop ? "true" : "false");
@@ -558,6 +559,16 @@ void UNewInventoryGrid::NativeOnDragEnter(const FGeometry& InGeometry, const FDr
 void UNewInventoryGrid::NativeOnDragLeave(const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
 {
 	Super::NativeOnDragLeave(InDragDropEvent, InOperation);
+	if (HasAnyUserFocus())
+	{
+		ULocalPlayer* LocalPlayer = GetOwningLocalPlayer();
+		if (LocalPlayer)
+		{
+			FReply& DelayedSlateOperations = LocalPlayer->GetSlateOperations();
+			DelayedSlateOperations.ClearUserFocus();
+			UE_LOG(LogTemp, Warning, TEXT("NewItemWidget:: DragDetected / Remove Focus Name : %s"), *GetFName().ToString());
+		}
+	}
 	bNeedDropLocation = false;
 	bCanDrop = false;
 	//UE_LOG(LogTemp, Warning, TEXT("InvGrid bCanDrop = %s"), bCanDrop ? "true" : "false");
@@ -614,31 +625,6 @@ void UNewInventoryGrid::DrawDropLocation(FPaintContext& Context) const
 	}
 }
 
-FReply UNewInventoryGrid::NativeOnPreviewKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
-{
-	//UE_LOG(LogTemp, Warning, TEXT("NewInventoryGrid::OnPreviewKeyDown"));
-	FReply Reply = Super::NativeOnPreviewKeyDown(InGeometry, InKeyEvent);
-	
-	bool bDragging = UWidgetBlueprintLibrary::IsDragDropping();
-	if (bDragging)
-	{
-		UNewItemObject* Obj = Cast<UNewItemObject>(UWidgetBlueprintLibrary::GetDragDroppingContent()->Payload);
-		if (Obj && Obj->bCanRotated)
-		{
-			if (InKeyEvent.GetKey() == EKeys::R)
-			{
-				Obj->ItemRotate();
-				UNewItemwidget* Itemwidget = Cast< UNewItemwidget>(UWidgetBlueprintLibrary::GetDragDroppingContent()->DefaultDragVisual);
-				if (Itemwidget)
-				{
-					Itemwidget->Refresh();
-				}
-			}
-		}
-	}
-	return Reply;
-}
-
 UNewInventoryComponent* UNewInventoryGrid::GetInventoryComp()
 {
 	if (InventoryComp)
@@ -654,4 +640,35 @@ void UNewInventoryGrid::MoveItemToItem(UNewItemObject* DroppedItemObj, UNewItemO
 	if(BaseInvComp == nullptr) return;
 
 	BaseInvComp->AddItemCount(DroppedItemObj,OnItemObj);
+}
+
+// NewItemwidget으로 옮김
+
+FReply UNewInventoryGrid::NativeOnPreviewKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
+{
+	UE_LOG(LogTemp, Warning, TEXT("NewInventoryGrid::OnPreviewKeyDown"));
+	//FReply Reply = Super::NativeOnPreviewKeyDown(InGeometry, InKeyEvent);
+
+	//bool bDragging = UWidgetBlueprintLibrary::IsDragDropping();
+	//if (bDragging)
+	{
+		UCustomDDOperation* DDOper = Cast<UCustomDDOperation>(UWidgetBlueprintLibrary::GetDragDroppingContent());
+		if (DDOper == nullptr) return FReply::Unhandled();
+
+		UNewItemObject* Obj = DDOper->ItemObj;
+		if (Obj && Obj->ItemInfo.DataAsset->bCanRotate)
+		{
+			if (InKeyEvent.GetKey() == EKeys::R)
+			{
+				Obj->ItemRotate();
+				UNewItemwidget* Itemwidget = Cast<UNewItemwidget>(DDOper->DefaultDragVisual);// DragWidget;// Cast<UNewItemwidget>(CusDDOper->DefaultDragVisual);
+				if (Itemwidget)
+				{
+					Itemwidget->Refresh();
+					FReply::Handled();
+				}
+			}
+		}
+	}
+	return FReply::Unhandled();
 }
