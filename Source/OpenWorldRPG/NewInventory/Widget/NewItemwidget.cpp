@@ -53,14 +53,22 @@ void UNewItemwidget::CreateTooltip()
 	}
 }
 
-void UNewItemwidget::Refresh()
+void UNewItemwidget::Refresh(bool bIsTempRotate)
 {	
 	if (ItemObj && BGSizeBox && ItemIcon && BGBorder)
 	{
 		//Tilesize = var_tilesize;
 		if (ItemObj->GetItemSize() != FIntPoint(0))
 		{
-			FIntPoint Itemsize = ItemObj->GetItemSize();
+			FIntPoint Itemsize;
+			if (bIsTempRotate)
+			{
+				Itemsize = ItemObj->GetTempItemSize();
+			}
+			else
+			{
+				Itemsize = ItemObj->GetItemSize();
+			}
 
 			//Item의 사이즈를 가져와서 TileSize만큼 곱해 Widget의 사이즈를 결정한다.
 			widgetsize = FVector2D(Itemsize.X * Tilesize, Itemsize.Y * Tilesize);
@@ -79,7 +87,7 @@ void UNewItemwidget::Refresh()
 			{
 				//CanvasSlot->SetSize(FVector2D(200.f));
 				CanvasSlot->SetSize(widgetsize);
-				ItemIcon->SetBrush(GetIconImage());
+				ItemIcon->SetBrush(GetIconImage(bIsTempRotate));
 			}
 			//Item 개수 넣기
 			if(ItemObj->ItemInfo.DataAsset->bCanStack)
@@ -96,12 +104,16 @@ void UNewItemwidget::Refresh()
 	
 }
 
-FSlateBrush UNewItemwidget::GetIconImage()
+FSlateBrush UNewItemwidget::GetIconImage(bool bIsTempRotate)
 {
 	FSlateBrush icon;
 	if (ItemObj)
 	{
-		if (ItemObj->GetItemIcon() != nullptr)
+		if (bIsTempRotate)
+		{
+			icon = UWidgetBlueprintLibrary::MakeBrushFromMaterial(ItemObj->GetTempItemIcon(), widgetsize.X, widgetsize.Y);
+		}
+		else
 		{
 			icon = UWidgetBlueprintLibrary::MakeBrushFromMaterial(ItemObj->GetItemIcon(), widgetsize.X, widgetsize.Y);
 		}
@@ -285,13 +297,16 @@ FReply UNewItemwidget::NativeOnMouseButtonDoubleClick(const FGeometry& InGeometr
 
 	if (InMouseEvent.IsMouseButtonDown(EKeys::LeftMouseButton))
 	{
+		/* EquipWidget, InvWidget에서 doubleclick event bind, (실제 bind는 NewInventory class에서 진행한다.) */
 		//InventoryGrid에 Bind된 event broadcast하기.
 		if (MotherContainer)
 		{
 			MotherContainer->OpenAdditionalWidget.Broadcast(ItemObj);
 		}
-
-
+		else if (MotherEquipWidget)
+		{
+			MotherEquipWidget->OpenAdditionalWidget_Equip.Broadcast(ItemObj);
+		}
 	}
 
 	return Super::NativeOnMouseButtonDoubleClick(InGeometry, InMouseEvent);

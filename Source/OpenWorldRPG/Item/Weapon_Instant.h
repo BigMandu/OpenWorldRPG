@@ -42,6 +42,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "FX")
 	UParticleSystem* BulletHitEffect;
 	
+private:
+	//for AI BulletOut And Old_BulletOut(RandomStream)
+	float CurFiringSpread = 0.f;
 	
 	
 protected:
@@ -54,6 +57,7 @@ public:
 
 	
 	virtual void New_BulletOut() override;
+	virtual void AIBulletOut() override;
 	void ApplyRecoil();
 	void CheckHit(const FHitResult& Hit, const FVector Dir);
 	void ApplyDamage(const FHitResult& Hit, const FVector Dir);

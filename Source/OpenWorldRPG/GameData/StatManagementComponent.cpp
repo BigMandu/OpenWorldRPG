@@ -72,15 +72,43 @@ void UStatManagementComponent::SetStaminaStatus(EStaminaStatus NewStatus)
 
 void UStatManagementComponent::DamageApply(float Damage)
 {
-	if (CurrentStat.Health - Damage <= 0.f)
+	if (CurrentStat.Health - Damage <= 0.f)                           
 	{
 		OnHPZero.Broadcast();
 		CurrentStat.Health = 0.f;
-	}
+	}	
 	CurrentStat.Health -= Damage;
+	UE_LOG(LogTemp, Warning, TEXT("StatManager::DamageApply// DamagePoint :  %f // CurrentHealth : %f"), Damage, CurrentStat.Health);
 	OnHPChange.Broadcast();
 	TakeDamageSound();
 }
+
+void UStatManagementComponent::AddHPPoint(float RecoveryPoint)
+{
+	CurrentStat.Health += RecoveryPoint;
+	UE_LOG(LogTemp,Warning,TEXT("StatManager::AddHPPoint// RecoveryPoint :  %f // CurrentHealth : %f"),RecoveryPoint, CurrentStat.Health);
+	OnHPChange.Broadcast();
+}
+void UStatManagementComponent::AddStaminaPoint(float RecoveryPoint)
+{
+
+}
+
+//for Widget
+void UStatManagementComponent::AddCurrentHPRecoveryPoint(float Points)
+{
+	TestHPRecPts += Points;
+	UE_LOG(LogTemp, Warning, TEXT("StatManager::AddCurrentHPRecoveryPoint// HpRegen :  %f"), TestHPRecPts);
+}
+
+void UStatManagementComponent::RemoveCurrentHPRecoveryPoint(float Points)
+{
+	TestHPRecPts -= Points;
+	UE_LOG(LogTemp, Warning, TEXT("StatManager::RemoveCurrentHPRecoveryPoint// HpRegen :  %f"), TestHPRecPts);
+}
+
+
+
 
 void UStatManagementComponent::StaminaManage(bool bIsSprintKeyDown)
 {

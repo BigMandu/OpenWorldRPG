@@ -39,6 +39,10 @@
 			"Name": "ReplicaLink",
 			"Enabled": true,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/319ae183aabb405c8eb1011c130c10e9"
+		},
+		{
+			"Name": "GLTFImporter",
+			"Enabled": true
 		}
 	]
 }

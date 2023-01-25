@@ -21,8 +21,10 @@
 #include "OpenWorldRPG/NewInventory/LootWidgetComponent.h"
 #include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
 #include "OpenWorldRPG/NewInventory/EquipmentComponent.h"
+#include "OpenWorldRPG/NewInventory/SpawnItemEquipComponent.h"
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
 #include "OpenWorldRPG/NewInventory/ItemStorageObject.h"
+
 
 #include "OpenWorldRPG/NewInventory/Widget/CharacterLootWidget.h"
 #include "OpenWorldRPG/NewInventory/Widget/NewInventory.h"
@@ -31,6 +33,7 @@
 #include "OpenWorldRPG/Item/Item.h"
 #include "OpenWorldRPG/Item/Equipment.h"
 #include "OpenWorldRPG/Item/Weapon.h"
+#include "OpenWorldRPG/Item/BaseGrenade.h"
 
 
 
@@ -42,7 +45,9 @@ ABaseCharacter::ABaseCharacter()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	GetCharacterMovement()->bOrientRotationToMovement = true; //움직인 방향 = 진행방향으로 설정
+	GetCharacterMovement()->bOrientRotationToMovement = false; //움직인 방향 != 진행방향으로 설정
+	GetCharacterMovement()->bUseControllerDesiredRotation = true;
+
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 540.f, 0.f); //회전속도
 	GetCharacterMovement()->JumpZVelocity = 440.f;
 	GetCharacterMovement()->AirControl = 0.2f;
@@ -54,12 +59,15 @@ ABaseCharacter::ABaseCharacter()
 	GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
 	bIsWalking = false; //걷기 기본설정은 false
 
+	FallingHighestZ = -999.f;
+
 	StatManagementComponent = CreateDefaultSubobject<UStatManagementComponent>(TEXT("StatManageComp"));
 	BaseInventoryComp = CreateDefaultSubobject<UNewInventoryComponent>(TEXT("BaseInventoryComp"));
 	//PocketInventoryComp = CreateDefaultSubobject<UNewInventoryComponent>(TEXT("PocketInventoryComp"));
 	//SecureBoxInventoryComp= CreateDefaultSubobject<UNewInventoryComponent>(TEXT("SecureBoxInventoryComp"));
 	Equipment = CreateDefaultSubobject<UEquipmentComponent>(TEXT("Equipment"));
 	LootWidgetComp = CreateDefaultSubobject<ULootWidgetComponent>(TEXT("LootWidgetComp"));
+	SpawnItemEquipComp = CreateDefaultSubobject<USpawnItemEquipComponent>(TEXT("SpawnItemEquipComp"));
 	//AudioComp = CreateDefaultSubobject<UAudioComponent>(TEXT("AudioComp"));
 	//AudioComp->SetupAttachment(GetRootComponent());
 
@@ -85,14 +93,27 @@ void ABaseCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	FVector VecLength = FVector(0.f);
-	if (GetVelocity().Size() > VecLength.Size())
+	/* Setting bIsAccelerating*/
 	{
-		bIsAccelerating = true;
+		FVector VecLength = FVector(0.f);
+		if (GetVelocity().Size() > VecLength.Size())
+		{
+			bIsAccelerating = true;
+		}
+		else
+		{
+			bIsAccelerating = false;
+		}
 	}
-	else
+
+	/* Fall LineTrace*/
+	if(GetCharacterMovement()->IsFalling())
 	{
-		bIsAccelerating = false;
+		CalcFallingDistance(FallHit);
+	}
+	else if(FallingHighestZ != -999.f)
+	{
+		ApplyFallingDamage(FallHit);
 	}
 
 }
@@ -103,21 +124,26 @@ void ABaseCharacter::PostInitializeComponents()
 
 	TPAnimInstance = Cast<UMainAnimInstance>(GetMesh()->GetAnimInstance());
 
-	if (TPAnimInstance)
-	{
-		/* 사운드는 TP Animation을 기준으로 출력한다. */ //AnimInstance의 StepSound_Notify에서 호출.
-		TPAnimInstance->StepSound.AddUObject(this, &ABaseCharacter::StepSound);
-		TPAnimInstance->WeaponTypeNumber = 0;
-	}
+	if (TPAnimInstance == nullptr) return;
+	
+
+	/* 사운드는 TP Animation을 기준으로 출력한다. */ //AnimInstance의 StepSound_Notify에서 호출.
+	TPAnimInstance->StepSound.AddUObject(this, &ABaseCharacter::StepSound);
+	TPAnimInstance->WeaponTypeNumber = 0;
+	
 
 	SetTeamType(TeamType);
 	SettingStorage();
-	if (bHasSpawnItems)
-	{
-		SpawnItems();
-	}
 
-	
+	//if (bHasSpawnItems)
+	//{
+	//	SpawnItems();
+	//}
+
+	//if (bHasSpawnEquipments)
+	//{
+	//	SpawnEquipments();
+	//}
 
 }
 
@@ -140,6 +166,39 @@ void ABaseCharacter::SettingStorage()
 	}
 	
 
+}
+
+void ABaseCharacter::CalcFallingDistance(FHitResult& _FallHit)
+{
+	
+	FCollisionQueryParams QParams = FCollisionQueryParams(NAME_Name, false, this);
+
+	FVector FallStartTrace = GetCharacterMovement()->GetActorFeetLocation();
+	FVector FallEndTrace = FallStartTrace - FVector(0.f, 0.f, 1000.f);
+
+	FVector Distance = FallStartTrace - FallEndTrace;
+	float AfterZ = 0.f;
+
+	GetWorld()->LineTraceSingleByChannel(_FallHit, FallStartTrace, FallEndTrace, ECollisionChannel::ECC_Visibility, QParams);
+	
+	FallingHighestZ = (FallingHighestZ < FallStartTrace.Z) ? FallStartTrace.Z : FallingHighestZ;
+	UE_LOG(LogTemp, Warning, TEXT("BaseChar::CalcFallingDistance // HighestZ : %f"), FallingHighestZ);
+
+}
+
+void ABaseCharacter::ApplyFallingDamage(FHitResult& _FallHit)
+{
+	if (_FallHit.IsValidBlockingHit())
+	{
+		float FallingDistance = FallingHighestZ - _FallHit.ImpactPoint.Z;
+		UE_LOG(LogTemp, Warning, TEXT("BaseChar::ApplyFallingDamage // Fall Dist : %f"), FallingDistance);
+		if (FallingDistance >= GetDefaultHalfHeight() * 3.f)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("BaseChar::ApplyFallingDamage // Fall Damage : %f"), FallingDistance*0.05f);
+			StatManagementComponent->DamageApply(FallingDistance*0.05f); //FallingDamage는 떨어진 높이의 5%로 한다.
+		}
+		FallingHighestZ = -999.f;
+	}
 }
 
 void ABaseCharacter::SetCharacterStatus(ECharacterStatus Type)
@@ -167,25 +226,38 @@ void ABaseCharacter::SetCharacterStatus(ECharacterStatus Type)
 	}
 }
 
-void ABaseCharacter::SpawnItems()
-{
-	for (auto& AddItem : SpawnItemList)
-	{
-		AItem* Item = GetWorld()->SpawnActor<AItem>(AddItem);
-		if (Item)
-		{
-			//if (PocketInventoryComp->TryAddItem(Item->GetDefaultItemObj()))
-			//if(PocketStorage->TryAddItem()
-			
-			if(BaseInventoryComp->TryAddItem(PocketStorage,Item->ItemSetting))
-			{
-				Item->SetItemState(EItemState::EIS_Pickup);
-				//Item->ItemObj->bIsDestoryed = true;
-				Item->Destroy();
-			}
-		}
-	}
-}
+//void ABaseCharacter::SpawnItems()
+//{
+//	for (auto& AddItem : SpawnItemList)
+//	{
+//		AItem* Item = GetWorld()->SpawnActor<AItem>(AddItem);
+//		if (Item)
+//		{
+//			//if (PocketInventoryComp->TryAddItem(Item->GetDefaultItemObj()))
+//			//if(PocketStorage->TryAddItem()
+//			
+//			if(BaseInventoryComp->TryAddItem(PocketStorage,Item->ItemSetting))
+//			{
+//				Item->SetItemState(EItemState::EIS_Pickup);
+//				//Item->ItemObj->bIsDestoryed = true;
+//				Item->Destroy();
+//			}
+//		}
+//	}
+//}
+//
+//void ABaseCharacter::SpawnEquipments()
+//{
+//	for (auto& AddEquipment : SpawnEquipmentList)
+//	{
+//		AEquipment* WantToEquip = GetWorld()->SpawnActor<AEquipment>(AddEquipment);
+//		if (WantToEquip)
+//		{
+//			WantToEquip->Equip(this);
+//		}
+//	}
+//}
+
 
 void ABaseCharacter::SetEquippedWeapon(AWeapon* Weapon)
 {
@@ -252,6 +324,7 @@ void ABaseCharacter::ReloadWeapon()
 	}
 }
 
+/* AmmoPerMag에서 남은 잔탄을 뺀, 장전 가능한 탄약 개수를 리턴한다. */
 int32 ABaseCharacter::GetNumberofCanReload()
 {
 	UItemStorageObject* Storage = Cast<UItemStorageObject>(Equipment->GetEquipStorage(EEquipmentType::EET_Vest));
@@ -277,7 +350,10 @@ int32 ABaseCharacter::GetNumberofCanReload()
 	return 0;
 }
 
-//Storage에서 ammo를 찾아 장전시 필요한 탄약 개수를 구하고, 모든 탄약을 찾지 못한 경우 남은 탄약의 개수를 리턴한다.
+/* GetNumberofCanReload함수에서 사용,
+* Storage에서 ammo를 찾아 장전시 필요한 탄약 개수를 구하고, 
+* 모든 탄약을 찾지 못한 경우 남은 탄약의 개수를 리턴한다.
+*/
 int32 ABaseCharacter::CollectRemainAmmo(UItemStorageObject* Storage, int32 NumberofAmmoReq)
 {
 	int32 NumberofRemainingAmmoReq = NumberofAmmoReq;
@@ -309,6 +385,7 @@ int32 ABaseCharacter::CollectRemainAmmo(UItemStorageObject* Storage, int32 Numbe
 	return NumberofRemainingAmmoReq;
 }
 
+/* Pocket, Vest에 있는 Equipped Weapon에 Reload가능한 Type의 Ammo의 개수를 리턴한다.*/
 int32 ABaseCharacter::GetTotalNumberofSameTypeAmmo()
 {
 	int32 Ammocnt = 0;
@@ -373,7 +450,7 @@ bool ABaseCharacter::CheckAmmoStep(UItemStorageObject* Storage, int32& AmmoCnt, 
 	return false;
 }
 
-//RifleSlot이 MAX인 경우 Pistol로 지정한다.
+
 void ABaseCharacter::SetWeaponAssign(AWeapon* Weapon, ERifleSlot RifleSlot)
 {
 	if(Weapon == nullptr) return;
@@ -389,17 +466,19 @@ void ABaseCharacter::SetWeaponAssign(AWeapon* Weapon, ERifleSlot RifleSlot)
 			SubWeapon = Weapon;
 		break;
 		}
+		Weapon->RifleAssign = RifleSlot;
 	}
 	else if (Weapon->WeaponDataAsset->EquipmentType == EEquipmentType::EET_Pistol)
 	{
 		PistolWeapon = Weapon;
 	}
 
-	Weapon->RifleAssign = RifleSlot;
-	if (Weapon->ItemObj)
-	{
-		Weapon->ItemObj->RifleAssign = RifleSlot;
-	}
+	
+	//if (Weapon->ItemObj)
+	//{
+	//	Weapon->ItemObj->RifleAssign = RifleSlot;
+	//}
+	
 }
 
 void ABaseCharacter::ChangeSafetyLever()
@@ -412,57 +491,74 @@ void ABaseCharacter::ChangeSafetyLever()
 	}
 }
 
-void ABaseCharacter::ChangeWeapon(int32 index)
+bool ABaseCharacter::ChangeWeapon(int32 index)
 {
-	if (TPAnimInstance)// && FPAnimInstance)
-	{
-		switch (index)
-		{
-		case 0:
-			TPAnimInstance->WeaponTypeNumber = 0;
-			//FPAnimInstance->WeaponTypeNumber = 0;
-			break;
-		case 1:
-			// 현재 장착하고 있는 무기가 Primary와 다를경우에만 변경. 일치하면 똑같은걸 장착할 필요가 없음.
-			if (PrimaryWeapon && (PrimaryWeapon != EquippedWeapon))
-			{
-				if(EquippedWeapon)
-					EquippedWeapon->GunAttachToSubSocket(this);
-
-				PrimaryWeapon->GunAttachToMesh(this);
-				TPAnimInstance->WeaponTypeNumber = 1;
-				//FPAnimInstance->WeaponTypeNumber = 1;
-				EquippedWeapon = PrimaryWeapon;
-				
-			}
-			break;
-		case 2:
-			if (SubWeapon && (SubWeapon != EquippedWeapon))
-			{
-				if (EquippedWeapon)
-					EquippedWeapon->GunAttachToSubSocket(this);
-
-				SubWeapon->GunAttachToMesh(this);
-				TPAnimInstance->WeaponTypeNumber = 1;
-				//FPAnimInstance->WeaponTypeNumber = 1;
-				EquippedWeapon = SubWeapon;
-			}
-			break;
-		case 3:
-			if (PistolWeapon && (PistolWeapon != EquippedWeapon))
-			{
-				if (EquippedWeapon) 
-					EquippedWeapon->GunAttachToSubSocket(this);
-
-				PistolWeapon->GunAttachToMesh(this);
-				TPAnimInstance->WeaponTypeNumber = 2;
-				//FPAnimInstance->WeaponTypeNumber = 2;
-				EquippedWeapon = PistolWeapon;			
-			}
-			break;
-		}
+	//for BTService_DecideWhatToDo.
+	bool bSuccessChangeWeapon = false;
+	if(TPAnimInstance == nullptr) return false;
 		
+	switch (index)
+	{
+	case 0:
+		TPAnimInstance->WeaponTypeNumber = 0;
+		//FPAnimInstance->WeaponTypeNumber = 0;
+		break;
+	case 1:
+		// 현재 장착하고 있는 무기가 Primary와 다를경우에만 변경. 일치하면 똑같은걸 장착할 필요가 없음.
+		if (PrimaryWeapon && (PrimaryWeapon != EquippedWeapon))
+		{
+			if(EquippedWeapon)
+			{
+				EquippedWeapon->GunAttachToSubSocket(this);
+			}
+			PrimaryWeapon->GunAttachToMesh(this);
+				
+			TPAnimInstance->WeaponTypeNumber = 1;
+			//FPAnimInstance->WeaponTypeNumber = 1;
+			EquippedWeapon = PrimaryWeapon;
+			bSuccessChangeWeapon = true;
+		}
+		break;
+	case 2:
+		if (SubWeapon && (SubWeapon != EquippedWeapon))
+		{
+			if (EquippedWeapon)
+			{
+				EquippedWeapon->GunAttachToSubSocket(this);
+			}
+			SubWeapon->GunAttachToMesh(this);
+			TPAnimInstance->WeaponTypeNumber = 1;
+				
+			//FPAnimInstance->WeaponTypeNumber = 1;
+			EquippedWeapon = SubWeapon;
+			bSuccessChangeWeapon = true;
+		}
+		break;
+	case 3:
+		if (PistolWeapon && (PistolWeapon != EquippedWeapon))
+		{
+			if (EquippedWeapon)
+			{
+				EquippedWeapon->GunAttachToSubSocket(this);
+			}				
+
+			PistolWeapon->GunAttachToMesh(this);
+			TPAnimInstance->WeaponTypeNumber = 2;
+			//FPAnimInstance->WeaponTypeNumber = 2;
+			EquippedWeapon = PistolWeapon;			
+			bSuccessChangeWeapon = true;
+		}
+		break;
 	}
+	if (bSuccessChangeWeapon)
+	{
+		if (EquippedGrenade.IsValid())
+		{
+			EquippedGrenade->Destroy();
+		}
+	}
+	
+	return bSuccessChangeWeapon;
 }
 
 void ABaseCharacter::ChangePrimaryWeapon()
@@ -503,7 +599,7 @@ void ABaseCharacter::SpeakSound(USoundCue* Sound)
 		AudioComp->Play();
 		//UGameplayStatics::PlaySoundAtLocation(GetWorld(),Sound,GetMesh()->GetSocketLocation(HeadSocketName));
 		UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), 1.f, this);
-	}
+	}	
 }
 
 void ABaseCharacter::StepSound()
@@ -514,6 +610,90 @@ void ABaseCharacter::StepSound()
 		UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), 1.f, this);
 	}
 }
+
+
+//동시 사용, multiple Activate를 위해 pointer를 사용한다.
+void ABaseCharacter::RecoveryHealthDelegate(const float Time, const float RecoveryAmount, TWeakObjectPtr<AItem> UsingItemInfo)
+{
+	FTimerDelegate RecoverHPTimerDelegate;
+	FTimerHandle* RecoverHealthTimer = new FTimerHandle();
+
+	float* TickRecoveryAmount = new float (RecoveryAmount / Time);
+	//float RecoveryTickTime = 0.f;
+	RecoveryTickTime = 0.f;
+	StatManagementComponent->AddCurrentHPRecoveryPoint(*TickRecoveryAmount);
+	
+	UE_LOG(LogTemp, Warning, TEXT("BChar::RecoveryHealth // RecoveryTickTime : %f"), RecoveryTickTime);
+
+	/*RecoverHPTimerDelegate.BindUFunction(this,FName("RecoveryHealth"), RecoverHealthTimer, Time, TickRecoveryAmount, RecoveryTickTime);
+	GetWorldTimerManager().SetTimer(RecoverHealthTimer,RecoverHPTimerDelegate, GetWorld()->GetDeltaSeconds(),true);
+	*/
+
+	
+	GetWorldTimerManager().SetTimer(*RecoverHealthTimer, FTimerDelegate::CreateLambda([=]()//[this, Time, TickRecoveryAmount, RecoverHealthTimer]()
+	{
+		if (RecoveryTickTime >= Time)
+		{
+			RecoveryTickTime = 0.f;
+			StatManagementComponent->RemoveCurrentHPRecoveryPoint(*TickRecoveryAmount);
+			GetWorldTimerManager().ClearTimer(*RecoverHealthTimer);
+		
+			//HaltRecoveryTimer(RecoverHealthTimer);
+		}
+		else
+		{
+		
+			RecoveryTickTime += 1.f;
+			StatManagementComponent->AddHPPoint(*TickRecoveryAmount);
+		}		
+	})
+	, 1.f,true);
+	
+	/*GetWorldTimerManager().SetTimer(RecoverHealthTimer, [=]
+		{
+			UE_LOG(LogTemp,Warning,TEXT("BChar::RecoveryHealth // RecoveryTickTime : %f"), RecoveryTickTime);
+			if (RecoveryTickTime >= Time)
+			{
+				HaltRecoveryTimer(RecoverHealthTimer);
+			}
+			RecoveryTickTime += GetWorld()->GetDeltaSeconds();
+			StatManagementComponent->AddHPPoint(TickRecoveryAmount);
+
+		}, GetWorld()->GetDeltaSeconds(), true);*/
+	
+}
+
+//void ABaseCharacter::RecoveryHealth(const FTimerHandle RecTimer, const float RecoveryTime, const float RecoveryTickAmount)//, float RecoveryTickTime)
+//{
+//	if (RecoveryTickTime >= RecoveryTime)
+//	{
+//		HaltRecoveryTimer(RecTimer);
+//	}
+//	RecoveryTickTime += GetWorld()->GetDeltaSeconds();
+//	UE_LOG(LogTemp, Warning, TEXT("BChar::RecoveryHealth // RecoveryTickTime : %f"), RecoveryTickTime);
+//	StatManagementComponent->AddHPPoint(RecoveryTickAmount);
+//}
+
+void ABaseCharacter::RecoveryStaminaDelegate(const float Time, const float RecoveryAmount, TWeakObjectPtr<AItem> UsingItemInfo)
+{
+	
+	
+}
+
+
+
+void ABaseCharacter::RecoveryStamina(const float Time, const float RecoveryAmount)
+{
+
+}
+
+void ABaseCharacter::HaltRecoveryTimer(FTimerHandle WantToStop)
+{
+	
+	GetWorldTimerManager().ClearTimer(WantToStop);
+	RecoveryTickTime = 0.f;
+}
+
 
 float ABaseCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,	AActor* DamageCauser)
 {
@@ -549,7 +729,10 @@ void ABaseCharacter::Die()
 
 			TPMesh->SetSimulatePhysics(true);
 			TPMesh->WakeAllRigidBodies();
+			TPMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 			TPMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
+			TPMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Block);
+			//TPMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
 			
 			bIsDie = true;
 		}
@@ -609,20 +792,23 @@ bool ABaseCharacter::CanBeSeenFrom(const FVector& ObserverLocation, FVector& Out
 /**********************************************************/
 void ABaseCharacter::Interaction(AActor* Actor)
 {
-	APawn* Pawn = Cast<APawn>(Actor);
-	if (Pawn && bIsDie)
+	ABaseCharacter* BChar = Cast<ABaseCharacter>(Actor);
+	if (BChar && bIsDie)
 	{
 
 		//UE_LOG(LogTemp, Warning, TEXT("Actor name : %s"), *Actor->GetFName().ToString());
 		UE_LOG(LogTemp, Warning, TEXT("Character Interaction"));
 
-		AMainController* MainCon = Cast<AMainController>(Pawn->GetController());
-		AEnemyAIController* AICon = Cast<AEnemyAIController>(Pawn->GetController());
+		AMainController* PlayerCon = Cast<AMainController>(BChar->GetController());
+		ABaseCharacter* Player = Cast<ABaseCharacter>(BChar);
 
-		if (MainCon)
+		AEnemyAIController* AICon = Cast<AEnemyAIController>(BChar->GetController());
+
+		if (PlayerCon && Player)
 		{
-			MainCon->bIsInteractCharacterLoot = true;
-			LootWidgetComp->CreateInteractionWidget(MainCon, this); //새로추가
+			PlayerCon->bIsInteractCharacterLoot = true;
+			//Player->LootWidgetComp->CreateInteractionWidget(PlayerCon,this);
+			LootWidgetComp->CreateInteractionWidget(PlayerCon, this); //새로추가
 		}
 
 		if (AICon)

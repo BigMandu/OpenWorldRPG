@@ -32,6 +32,7 @@ void UAdditionalWidget::BindingOpenWidgetFunction(UNewItemObject* ItemObj)
 
 void UAdditionalWidget::OpenAdditionalWidget(UItemStorageObject* StorageObj)
 {
+/*
 	if (StorageObj && WStorageWindow)
 	{
 		StorageWindow = CreateWidget<UDraggInventoryWindow>(this, WStorageWindow);
@@ -40,8 +41,8 @@ void UAdditionalWidget::OpenAdditionalWidget(UItemStorageObject* StorageObj)
 			StorageWindow->GridInventory->StorageObj = StorageObj;
 			
 			UCanvasPanelSlot* CanvasSlot = ContentCanvas->AddChildToCanvas(StorageWindow);// ->AddChildToOverlay(StorageWindow);
-			/*OverlaySlot->SetHorizontalAlignment(EHorizontalAlignment::HAlign_Center);
-			OverlaySlot->SetVerticalAlignment(EVerticalAlignment::VAlign_Center);*/
+			//OverlaySlot->SetHorizontalAlignment(EHorizontalAlignment::HAlign_Center);
+			//OverlaySlot->SetVerticalAlignment(EVerticalAlignment::VAlign_Center);
 
 			float MouseX;
 			float MouseY;
@@ -55,7 +56,7 @@ void UAdditionalWidget::OpenAdditionalWidget(UItemStorageObject* StorageObj)
 			StorageWindow->GridInventory->OpenAdditionalWidget.AddDynamic(this, &UAdditionalWidget::BindingOpenWidgetFunction);
 		}
 	}
-
+	*/
 }
 
 

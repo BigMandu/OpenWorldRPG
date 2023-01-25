@@ -12,8 +12,12 @@ class AWeapon;
 class AEquipment;
 class UNewItemObject;
 
-//DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEquipmentUpdated);
+//for EquipWidget Refresh
 DECLARE_MULTICAST_DELEGATE(FOnEquipmentUpdated);
+
+//for QuickSlot weaponSet
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeaponSetSlot, UNewItemObject*, EquipWeaponObj);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeaponRemoveSlot, ERifleSlot, EquipWeaponSlot);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class OPENWORLDRPG_API UEquipmentComponent : public UActorComponent, public IItemInterface
@@ -26,6 +30,8 @@ public:
 
 	//UPROPERTY(BlueprintAssignable, Category = Equipment)
 	FOnEquipmentUpdated OnEquipmentUpdated;
+	FOnWeaponSetSlot OnWeaponSetSlot;
+	FOnWeaponRemoveSlot OnWeaponRemoveSlot;
 
 	/*UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Equipment)
 	TArray<AEquipment*> EquipmentItems;*/
@@ -43,6 +49,9 @@ public:
 	UNewItemObject* VestObj = nullptr;
 
 	
+private:
+	//WeaponPartsManager를 생성 , data를 넘겨준다.
+	void SetWeaponPartsManager(AEquipment* WantToEquip, UNewItemObject* WeaponObj);
 
 protected:
 	// Called when the game starts

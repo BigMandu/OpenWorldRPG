@@ -33,6 +33,9 @@ private:
 public:
 	AMainCharacter* Main;
 
+	//for Z order
+	int32 HighestZ = 2;
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	class UCanvasPanel* MainCanvas;
 
@@ -47,28 +50,47 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UWidgetSwitcher* MainInventorySwitcher;
-
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UWidgetSwitcher* RightWidgetSwitcher;
-
+	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBorder* ContentBorder;
-
-	UPROPERTY(meta = (BindWidget))
-	class UAdditionalWidget* AdditionalWidget;
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UEquipWidget* EquipmentWidget;
-
-
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UDropWidget* DropWidget;
+
+	/*UPROPERTY(meta = (BindWidget))
+	class UAdditionalWidget* AdditionalWidget;*/
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	class UResourceStatusWidgetInInventory* ResourceStatusWidget;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	class UEquipStorageWidget* EquipmentStorageWidget;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UEquipWidget* EquipmentWidget;	
+
+
+	
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"))
 	TSubclassOf<class UDraggInventoryWindow> WStorageWindow;
 	
+	TWeakObjectPtr<UWidget> CurrentHoldingWidget;
+	bool bCanMoveWindow = false;
+	FVector2D LastWindowPos;
+	FVector2D LastMousePos;
+	
+
+	//Widget Container (Z-Order and prevent duplicate)
 	UPROPERTY()
-	TArray<UDraggInventoryWindow*> InventoryWindowArray;
+	TArray<UDraggInventoryWindow*> OpenedWindowArray;
+	
+
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"))
+	//TSubclassOf<class UWeaponPartsWidget> WWeaponPartsWindow;
+	//UPROPERTY()
+	//TArray<UWeaponPartsWidget*> WeaponPartsWindowArray;
+
 
 
 public:
@@ -82,6 +104,8 @@ public:
 	void ChangeMainSwitchToStatus();
 	UFUNCTION()
 	void ChangeMainSwitchToInventory();
+	UFUNCTION()
+	void ChangeMainSwitchToCraft();
 
 	void SetRightWidget(UUserWidget* Widget);
 	void ChangeRightSwitcher();
@@ -89,10 +113,34 @@ public:
 
 	UFUNCTION()
 	void BindingOpenWidgetFunc(class UNewItemObject* ItemObj);
-	void OpenAdditionalWidget(class UItemStorageObject* StorageObj);
+	void CreateAdditionalWidget(UNewItemObject* T_Obj);
+
+	/* AdditionalWindow안에 들어갈 실제 Widget을 생성한다. */
+	UWidget* CreateChildWidget(UDraggInventoryWindow* StorageWindow, UNewItemObject* Obj);
+	bool CheckAlreadyOpened(UNewItemObject* T_Obj);
+
+
 	
+	virtual FReply NativeOnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
+	virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
+
+	virtual FReply NativeOnMouseMove(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
+	//void AdditionalOtherWidget(UNewItemObject* ItemObj);
+
 	UFUNCTION()
 	void CloseAddiionalWidget(UDraggInventoryWindow* WindowWidget);
+
+	UFUNCTION()
+	void MoveZOrderTop(UDraggInventoryWindow* Window);
+
+	UFUNCTION()
+	void DraggingWindow(UDraggInventoryWindow* DraggingWindow, const FPointerEvent InMouseEvent);
+
+
+	void CloseAllAdditionalWidget(int32 ArrayNum);
+
+	/*UFUNCTION()
+	void ReleaseWindow();*/
 
 	
 };

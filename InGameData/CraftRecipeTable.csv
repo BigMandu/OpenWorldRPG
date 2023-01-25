@@ -1,0 +1,4 @@
+---,Name,CraftedItem,NumberOfIngredient,Ingredient_One,IngOne_NeedNum,Ingredient_Two,IngTwo_NeedNum,Ingredient_Three,IngThree_NeedNum,Ingredient_Four,IngFour_NeedNum
+KA47,"KA47_1","WeaponPDA'/Game/Items/DataAsset/Weapon/WPDA_AK47.WPDA_AK47'","2","BasePDA'/Game/Items/DataAsset/BPDA_Ammo_762.BPDA_Ammo_762'","5","BasePDA'/Game/Items/DataAsset/BPDA_Ammo_556.BPDA_Ammo_556'","5","None","0","None","0"
+7.62mm,"None","BasePDA'/Game/Items/DataAsset/BPDA_Ammo_762.BPDA_Ammo_762'","2","BasePDA'/Game/Items/DataAsset/BPDA_Ammo_556.BPDA_Ammo_556'","2","ConsumePDA'/Game/Items/DataAsset/ConPDA_Bread.ConPDA_Bread'","5","None","0","None","0"
+Suppressor_OilFilter,"Suppressor_OilFilter","CustomPDA'/Game/Items/DataAsset/EPDA_Suppressor_Oilfilter.EPDA_Suppressor_Oilfilter'","3","ConsumePDA'/Game/Items/DataAsset/ConPDA_Bread.ConPDA_Bread'","2","BasePDA'/Game/Items/DataAsset/BPDA_Ammo_556.BPDA_Ammo_556'","10","BasePDA'/Game/Items/DataAsset/BPDA_Ammo_762.BPDA_Ammo_762'","10","None","0"

@@ -35,15 +35,18 @@ EBTNodeResult::Type UBTTask_GetPatrolPos::ExecuteTask(UBehaviorTreeComponent& Ow
 				FVector NewPatrolPos;
 				FNavLocation NavLocation;
 				float sub = 0.f;
-
+				int32 Count = 0;
 				while ( sub <= 500.f) //현재위치와 새로구한 정찰위치가 x이상 차이날때까지
 				{
-					//NewPatrolPos = NavSys->GetRandomReachablePointInRadius(Enemy->GetWorld(), OriginPos, 1000.f); // Radius는 임의의 숫자 500.f로 해줬다. 추후 Enemy에 변수 추가 예정.
-					bool bNavResult = NavSys->GetRandomReachablePointInRadius(OriginPos, Enemy->RandomPatrolRadius, NavLocation); //위의 FVector리턴하는 함수는 언리얼에서 비추한다고 함.
+					//10번 이상 시도해도 못찾으면 종료한다.
+					if(Count >= 10) break;
+		
+					bool bNavResult = NavSys->GetRandomReachablePointInRadius(OriginPos, Enemy->RandomPatrolRadius, NavLocation);
 					if (bNavResult)
 					{
 						NewPatrolPos = NavLocation.Location;
 						sub = abs(CurrentEnemyPos.Size() - NewPatrolPos.Size());
+						++Count;
 					}
 				}
 				BBComp->SetValueAsVector(AIController->TargetLocationKey, NewPatrolPos);

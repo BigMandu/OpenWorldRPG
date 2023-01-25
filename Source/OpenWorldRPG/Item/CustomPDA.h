@@ -31,7 +31,11 @@ public:
 	FTransform MeshAttachTransform;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Equipment")
-	USoundCue* EquippedSound;
+	class USoundCue* EquippedSound;
+
+
+	UPROPERTY(EditAnywhere, Category = "Item | Info")
+	EWeaponPartsType WeaponPartsType;
 
 	/***** Storage ********/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment | Storage")

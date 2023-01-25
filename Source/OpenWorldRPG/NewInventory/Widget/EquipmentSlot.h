@@ -18,6 +18,10 @@ class UNewItemObject;
 
 class ABaseCharacter;
 
+//for WeaponPartsWidget
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEquipWeaponParts, UNewItemObject*, EquipPartsObj);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUnEquipWeaponParts, UNewItemObject*, UnEquipPartsObj);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRefreshWidget);
 
 
 UCLASS()
@@ -26,17 +30,29 @@ class OPENWORLDRPG_API UEquipmentSlot : public UUserWidget, public IItemInterfac
 	GENERATED_BODY()
 
 public:
-	
+
+	//for WeaponPartsWidget	
+	FOnEquipWeaponParts OnEquipWeaponParts;
+	FOnUnEquipWeaponParts OnUnEquipWeaponParts;
+	FOnRefreshWidget OnRefreshWidget;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slot | EquipSlot")
 	EEquipmentType SlotType;
 	
+	//RifleSlot기능일때
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slot | RifleSlot")
 	bool bIsforRifleSlot = false;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slot | RifleSlot")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slot | RifleSlot", meta = (EditCondition = "bIsforRifleSlot"))
 	ERifleSlot RifleSlotType;
 
-	//UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
-	//UImage* ItemIcon;
+	//Weapon Parts Slot 기능일 때 ( for WeaponPartsWidget)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slot | WeaponParts")
+	bool bIsforWeaponParts = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slot | WeaponParts", meta = (EditCondition = "bIsforWeaponParts"))
+	EWeaponPartsType WeaponPartsType;
+
+	TWeakObjectPtr<UNewItemObject> OwnerWeaponObj = nullptr;
+	
 
 	UPROPERTY(meta = (BindWidget))
 	UBorder* BGBorder;
@@ -48,6 +64,8 @@ public:
 private:
 
 	bool IsEmpty();
+	AEquipment* SpawnEquipment(UNewItemObject* Obj);
+
 
 protected:
 
@@ -61,9 +79,14 @@ public:
 	void PaintBGBorder(UNewItemObject* ItemObj = nullptr);
 	bool IsSupportedEquip(UNewItemObject* ItemObj);
 	
+
+	/* Equipment를 Spawn하여 장착 시도한다. */
 	bool TrySlotEquip(UNewItemObject* Var_ItemObj);
 
-	void RegisterQuickSlot(UNewItemObject* WantToSlot);
+	/* Parts를 WeaponPDA에 등록 시킨다. */
+	bool TrySlotParts(UNewItemObject* PartsObj);
 	
+	/* 등록된 Parts를 지운다. */
+	void RemoveParts(UNewItemObject* PartsObj);
 
 };

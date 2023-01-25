@@ -8,8 +8,6 @@
 #include "OpenWorldRPG/NewInventory/Library/ItemInterface.h"
 #include "Item.generated.h"
 
-//for Enum iterator
-ENUM_RANGE_BY_COUNT(EEquipmentType, EEquipmentType::EET_MAX)
 /**
  * 
  */
@@ -115,6 +113,6 @@ public:
 	virtual void Drop();
 
 	UFUNCTION(BlueprintCallable)
-	void Use(ABaseCharacter* Actor, UNewItemObject* Obj = nullptr);
+	virtual void Use(ABaseCharacter* Actor, UNewItemObject* Obj = nullptr);
 
 };

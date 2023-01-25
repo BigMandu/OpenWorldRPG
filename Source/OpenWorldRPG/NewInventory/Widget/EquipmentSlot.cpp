@@ -6,6 +6,7 @@
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
 #include "OpenWorldRPG/NewInventory/CustomDDOperation.h"
 #include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
+#include "OpenWorldRPG/NewInventory/EquipmentComponent.h"
 
 #include "OpenWorldRPG/NewInventory/Library/CustomInventoryLibrary.h"
 #include "OpenWorldRPG/NewInventory/Library/InventoryStruct.h"
@@ -85,24 +86,44 @@ bool UEquipmentSlot::IsSupportedEquip(UNewItemObject* ItemObj)
 {
 	bool bReturn = false;
 
+	ABaseCharacter* TempChar = Cast<ABaseCharacter>(GetOwningPlayerPawn());
+	
+
 	//장착템이면서  장착템의 Type과 이 Slot의 Type이 같다면 true를 리턴한다.
 	UCustomPDA* CPDA = Cast<UCustomPDA>(ItemObj->ItemInfo.DataAsset);
-	if(CPDA == nullptr) return bReturn;
+	
+	if(CPDA == nullptr) return false;
 
-	if (CPDA->InteractType == EInteractType::EIT_Equipment &&
+	if (bIsforWeaponParts)
+	{
+		if (WeaponPartsType == CPDA->WeaponPartsType)
+		{
+			if (IsEmpty())
+			{
+				bReturn = true;
+			}
+		}
+	}
+	else if (CPDA->InteractType == EInteractType::EIT_Equipment &&
 		CPDA->EquipmentType == SlotType)
 	{
 		//슬롯이 같으면 비어있는지 확인한다.
 		if (IsEmpty())
 		{
-			UE_LOG(LogTemp,Warning,TEXT("EquipSlot::SupportedEquip / Empty"));
+			//UE_LOG(LogTemp,Warning,TEXT("EquipSlot::SupportedEquip / Empty"));
 			bReturn = true;
 		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("EquipSlot::SupportedEquip / Not empty"));
-		}
 	}
+	//else if (CPDA->InteractType == EInteractType::EIT_Equipment &&
+	//	bIsforWeaponParts && WeaponPartsType == CPDA->WeaponPartsType)
+	//{
+	//	if (IsEmpty())
+	//	{
+	//		bReturn = true;
+	//	}
+	//}
+
+
 	return bReturn;
 }
 
@@ -113,11 +134,67 @@ bool UEquipmentSlot::IsEmpty()
 		UE_LOG(LogTemp, Warning, TEXT("EquipSlot::SupportedEquip / Not empty"));
 		return false;
 	}
+	return true;
+}
+
+bool UEquipmentSlot::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
+{
+	bool bReturn = Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);
+	
+	PaintBGBorder();
+	UCustomDDOperation* DDOper = Cast<UCustomDDOperation>(InOperation);
+	if (DDOper)
+	{
+		if (DDOper->ItemObj == false) return false;
+		
+
+		if (DDOper->ItemObj->bIsDragging && !SettedObj)// != DDOper->ItemObj)
+		{
+			DDOper->ItemObj->bIsDragging = false;
+
+			//EquipSlot으로 작동할 때
+			if (bIsforWeaponParts == false)
+			{
+				bReturn = TrySlotEquip(DDOper->ItemObj);
+				//UE_LOG(LogTemp, Warning, TEXT("EquipSlot::OnDrop / TrySlotEquip func result is true. set link obj"));
+			}
+			//WeaponParts Slot으로 작동할 때
+			else if( bIsforWeaponParts)
+			{
+				bReturn = TrySlotParts(DDOper->ItemObj);
+				//UE_LOG(LogTemp, Error, TEXT("EquipSlot::OnDrop / TrySlotEquip func result is false."));
+			}
+		}
+		
+	}
+	return bReturn;
+}
+
+AEquipment* UEquipmentSlot::SpawnEquipment(UNewItemObject* Obj)
+{
+	//Item이 Destroy된 상태면 (InventoryGrid에 있었던 Equipment들이 해당됨)
+	//Item을 Spawn하고 기존에 저장된 정보를  새로 Spawn한 item에 이관한다.
+	//대부분 bIsDestroyed에 분기됨. else문은 거의 사용되지 않음
+	AEquipment* ReturnEquip = nullptr;
+
+	if (Obj->bIsDestoryed)
+	{
+		ReturnEquip = UCustomInventoryLibrary::SpawnEquipment(GetWorld(), Obj);
+	}
 	else
 	{
-		return true;
+		ReturnEquip = Obj->Equipment;
+		if (Obj->MotherEquipComp)
+		{
+			Obj->MotherEquipComp->RemoveEquipment(Obj);
+			Obj->MotherEquipComp = nullptr;
+			ReturnEquip = UCustomInventoryLibrary::SpawnEquipment(GetWorld(), Obj);
+		}
 	}
+
+	return ReturnEquip;
 }
+
 
 bool UEquipmentSlot::TrySlotEquip(UNewItemObject* Var_ItemObj)
 {
@@ -127,7 +204,7 @@ bool UEquipmentSlot::TrySlotEquip(UNewItemObject* Var_ItemObj)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("EquipSlot::Correct Slot"));
 
-			
+
 			//AI와 플레이어를 나눈다.
 			ABaseCharacter* BChar;
 			if (LootedChar_Owner != nullptr)
@@ -139,22 +216,15 @@ bool UEquipmentSlot::TrySlotEquip(UNewItemObject* Var_ItemObj)
 				BChar = Cast<ABaseCharacter>(GetOwningPlayerPawn());
 			}
 
+			////같은 EquipmentComp면 장착이 불가능하도록 한다. (Weapon Swap 방지 차원)
+			//if(Var_ItemObj->MotherEquipComp == BChar->Equipment) return false;
+
 			//BChar가 정상이면 장착을 시도한다.
 			if (BChar != nullptr)
 			{
 				AEquipment* Equipment = nullptr;
-				//Item이 Destroy된 상태면 (InventoryGrid에 있었던 Equipment들이 해당됨)
-				//Item을 Spawn하고 기존에 저장된 정보를  새로 Spawn한 item에 이관한다.
-				//대부분 bIsDestroyed에 분기됨. else문은 거의 사용되지 않음
-				if (Var_ItemObj->bIsDestoryed)
-				{
-					Equipment = UCustomInventoryLibrary::SpawnEquipment(GetWorld(), Var_ItemObj);
-				}
-				else
-				{
-					Equipment = Var_ItemObj->Equipment;
-				}
 
+				Equipment = SpawnEquipment(Var_ItemObj);
 
 				if (Equipment != nullptr)
 				{
@@ -177,33 +247,41 @@ bool UEquipmentSlot::TrySlotEquip(UNewItemObject* Var_ItemObj)
 	return false;
 }
 
-bool UEquipmentSlot::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
+bool UEquipmentSlot::TrySlotParts(UNewItemObject* PartsObj)
 {
-	bool bReturn = Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);
+	if(IsSupportedEquip(PartsObj) == false) return false;
+	UCustomPDA* WeaponPartsPDA = Cast<UCustomPDA>(PartsObj->ItemInfo.DataAsset);
+
+	//if( OwnerWeaponObj == nullptr || WeaponPartsPDA == nullptr) return false;
+	if( WeaponPartsPDA == nullptr) return false;
+	if (OwnerWeaponObj.IsValid() == false) return false;
 	
-	PaintBGBorder();
-	UCustomDDOperation* DDOper = Cast<UCustomDDOperation>(InOperation);
-	if (DDOper)
-	{
-		if (DDOper->ItemObj == false) return false;
-
-		if (DDOper->ItemObj->bIsDragging && SettedObj != DDOper->ItemObj)
-		{
-			DDOper->ItemObj->bIsDragging = false;
-
-			if (TrySlotEquip(DDOper->ItemObj))
-			{
-				UE_LOG(LogTemp, Warning, TEXT("EquipSlot::OnDrop / TrySlotEquip func result is true. set link obj"));
-			}
-			else
-			{
-				UE_LOG(LogTemp, Error, TEXT("EquipSlot::OnDrop / TrySlotEquip func result is false."));
-			}
-		}
 		
-	}
-	return bReturn;
+		
+		/*OnEquipWeaponParts.Broadcast(PartsObj);
+		OnRefreshWidget.Broadcast();*/
+		//OnChangeWeaponParts.Broadcast();
+
+		//OnEquipWeaponParts.Broadcast(PartsObj);
+		OwnerWeaponObj.Get()->WeaponPartsManager->AddParts(PartsObj);
+		return true;
+	//}
+	//return false;
 }
+
+void UEquipmentSlot::RemoveParts(UNewItemObject* PartsObj)
+{
+	//this 자체가 nullptr..
+	if(SettedObj == PartsObj)
+	{
+
+		SettedObj = nullptr;
+		//OnChangeWeaponParts.Broadcast();
+		OnRefreshWidget.Broadcast();
+	}
+}
+
+
 
 FReply UEquipmentSlot::NativeOnPreviewKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
 {

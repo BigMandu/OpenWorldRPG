@@ -4,6 +4,8 @@
 #include "Item.h"
 #include "OpenWorldRPG/Item/BasePDA.h"
 #include "OpenWorldRPG/Item/CustomPDA.h"
+#include "OpenWorldRPG/Item/ConsumePDA.h"
+
 #include "OpenWorldRPG/BaseCharacter.h"
 #include "OpenWorldRPG/NewInventory/EquipmentComponent.h"
 #include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
@@ -19,13 +21,12 @@
 #include "Equipment.h"
 
 
-AItem::AItem()
+AItem::AItem() : Super()
 {
 	ItemState = EItemState::EIS_Spawn;
 
 	StimuliComp = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("StimuliComp"));
 	StimuliComp->bAutoRegister = true;
-	
 }
 
 void AItem::PostInitializeComponents()
@@ -39,6 +40,16 @@ void AItem::PostInitializeComponents()
 void AItem::OnConstruction(const FTransform& Transform)
 {
 	Super::OnConstruction(Transform);
+
+	if (Mesh)
+	{
+		Mesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
+		Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
+		Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Block);
+		//Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+	}
+	
+
 
 	/*MeshComponent->SetSimulatePhysics(true);
 	MeshComponent->SetEnableGravity(true);
@@ -67,10 +78,17 @@ void AItem::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	/*if (ItemObj == nullptr)
+	Cast<UMeshComponent>(GetRootComponent())->SetSimulatePhysics(true);
+	if (Mesh)
 	{
-		ItemObj = GetDefaultItemObj();
-	}*/
+		Mesh->SetSimulatePhysics(true);
+		//SetRootComponent(Mesh);
+	}
+	if (SKMesh)
+	{
+		SKMesh->SetSimulatePhysics(false);
+		
+	}
 }
 
 UNewItemObject* AItem::GetDefaultItemObj()
@@ -154,16 +172,16 @@ bool AItem::Pickup(class AActor* Actor, UNewItemObject* obj)
 					bFlag = AddAtCharInv(BChar, BChar->SecureBoxStorage);
 					if(bFlag == false)
 					{
+						//DDOPer의 defaultVisual을 복제하면서 필요 없어짐.
 						//PickUP상태의 Item Add에 실패했다면 CustomInventoryLibrary의 BackToItem을 실행한다.
-						if (ItemState == EItemState::EIS_Pickup)
+						/*if (ItemState == EItemState::EIS_Pickup)
 						{
 							ItemObj->bIsDestoryed = true;
 							Destroy();
 							
-							UCustomInventoryLibrary::DirectInToInventory(ItemObj, BChar);
-							
-						}
-						UE_LOG(LogTemp, Warning, TEXT("Item Add fail."));
+							UCustomInventoryLibrary::DirectInToInventory(ItemObj, BChar);							
+						}*/
+						UE_LOG(LogTemp, Warning, TEXT("Item Add fail. No Space"));
 					}
 				}
 			}
@@ -272,15 +290,38 @@ void AItem::Use(ABaseCharacter* Char, UNewItemObject* Obj)
 {
 	check(Char)
 	UE_LOG(LogTemp, Warning, TEXT("AItem::Use"));
+	bool bUsed = false;
 	if (ItemSetting.DataAsset->ItemType == EItemType::EIT_Food || ItemSetting.DataAsset->ItemType == EItemType::EIT_Medical)
+	{	
+		
+		UConsumePDA* ConsumablePDA = Cast<UConsumePDA>(ItemSetting.DataAsset);
+		
+		if (ConsumablePDA->bIsHPRecovery)
+		{
+			
+			Char->RecoveryHealthDelegate(ConsumablePDA->RecoveryTime, ConsumablePDA->RecoveryAmount,this);
+			bUsed = true;
+			UE_LOG(LogTemp,Warning, TEXT("AItem::Use // HP Recovery "));
+		}
+
+		if (ConsumablePDA->bIsStaminaRecovery)
+		{
+			Char->RecoveryStaminaDelegate(ConsumablePDA->RecoveryTime, ConsumablePDA->RecoveryAmount, this);
+			UE_LOG(LogTemp, Warning, TEXT("AItem::Use // Stamina Recovery "));
+			bUsed = true;
+		}
+
+	}
+
+	if (bUsed)
 	{
-		UE_LOG(LogTemp,Warning,TEXT("AItem::Use item. dd"));
 		if (Obj && ItemSetting.DataAsset->bCanStack)
 		{
 			Char->BaseInventoryComp->RemoveItemCount(Obj, 1);
 		}
+		Destroy();
 	}
-	Destroy();
+	
 }
 
 //void AItem::SettingStorage()

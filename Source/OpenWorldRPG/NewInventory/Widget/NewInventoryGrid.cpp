@@ -207,11 +207,11 @@ void UNewInventoryGrid::RefreshInventory(UNewItemObject* Obj)
 		GridCanvasPanel->ClearChildren();
 
 		//Obj파라미터를 사용하는 경우는 아래 경우밖에 없다.
-		/* "Obj가 Use되어 Count가 0 이하가 되어 삭제되는 경우"
-		* QuickSlot에 등록되어 있는지 확인하고 등록 되어 있는 경우에 QuickSlot에서 삭제 process를 진행한다.
+		/* "Obj가 Use되어 Count가 0 이하가 되어 삭제되는 경우" 
 		*/
 		if (Obj && Obj->bIsPendingDelete && Obj->bIsRegQuickSlot && Obj->ItemInfo.Count <= 0)
 		{
+			//QuickSlot에 등록되어 있는지 확인하고 등록 되어 있는 경우에 QuickSlot에서 삭제 process를 진행한다.
 			MainCon->MainHud->QuickSlot->CheckAlreadyRegistered(Obj);
 		}
 
@@ -443,7 +443,7 @@ bool UNewInventoryGrid::NativeOnDragOver(const FGeometry& InGeometry, const FDra
 	//UNewItemwidget* ItemWid = Cast<UNewItemwidget>(InOperation->Payload);
 	UCustomDDOperation* DDOper = Cast<UCustomDDOperation>(InOperation);
 
-	if (DDOper)
+	if (DDOper && DDOper->ItemObj)
 	{
 		int32 AddRight = 0;
 		int32 AddDown = 0;
@@ -456,7 +456,7 @@ bool UNewInventoryGrid::NativeOnDragOver(const FGeometry& InGeometry, const FDra
 
 		FVector2D MousePosInEachTile = GetMousePositionInEachTile(MousePosInWidget);
 
-		FIntPoint Itemsize = DDOper->ItemObj->GetItemSize();
+		FIntPoint Itemsize = DDOper->ItemObj->GetTempItemSize();
 
 		// 해당 타일의 오른쪽으로 반이상, 아래로 반이상 내려갔는지 판단.
 		if (MousePosInEachTile.X > StorageObj->TileSize / 2.f)
@@ -559,6 +559,8 @@ void UNewInventoryGrid::NativeOnDragEnter(const FGeometry& InGeometry, const FDr
 void UNewInventoryGrid::NativeOnDragLeave(const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
 {
 	Super::NativeOnDragLeave(InDragDropEvent, InOperation);
+
+	//remove focus
 	if (HasAnyUserFocus())
 	{
 		ULocalPlayer* LocalPlayer = GetOwningLocalPlayer();
@@ -595,7 +597,7 @@ void UNewInventoryGrid::DrawDropLocation(FPaintContext& Context) const
 		FLinearColor Green = FLinearColor(0.f, 1.f, 0.f, 0.25f);
 		FLinearColor Red = FLinearColor(1.f, 0.f, 0.f, 0.25f);
 		FVector2D DropLocationPos = FVector2D(DraggedTile.X, DraggedTile.Y);
-		FVector2D DropLocationSize = FVector2D(DDOper->ItemObj->GetItemSize().X * StorageObj->TileSize, DDOper->ItemObj->GetItemSize().Y * StorageObj->TileSize);
+		FVector2D DropLocationSize = FVector2D(DDOper->ItemObj->GetTempItemSize().X * StorageObj->TileSize, DDOper->ItemObj->GetTempItemSize().Y * StorageObj->TileSize);
 		
 		if (Brush)
 		{
@@ -660,11 +662,11 @@ FReply UNewInventoryGrid::NativeOnPreviewKeyDown(const FGeometry& InGeometry, co
 		{
 			if (InKeyEvent.GetKey() == EKeys::R)
 			{
-				Obj->ItemRotate();
 				UNewItemwidget* Itemwidget = Cast<UNewItemwidget>(DDOper->DefaultDragVisual);// DragWidget;// Cast<UNewItemwidget>(CusDDOper->DefaultDragVisual);
 				if (Itemwidget)
 				{
-					Itemwidget->Refresh();
+					Obj->ItemRotate();
+					Itemwidget->Refresh(true);
 					FReply::Handled();
 				}
 			}

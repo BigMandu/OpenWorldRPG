@@ -7,18 +7,16 @@
 #include "ItemInterface.generated.h"
 
 
-
-
 UENUM(BlueprintType)
 enum class EEquipmentType : uint8
 {
 	EET_Backpack	UMETA(DisplayName = "Backpack"),
 	EET_Vest		UMETA(DisplayName = "Vest"),
-	
 	EET_Rifle		UMETA(DisplayName = "Rifle"),
 	EET_Pistol		UMETA(DisplayName = "Pistol"),
 	EET_Helmet		UMETA(DisplayName = "Helmet"),
 	EET_Plate		UMETA(Displayname = "Plate_Carrier"),
+	EET_WeaponParts	UMETA(Displayname = "WeaponParts"),
 	
 	EET_MAX	= 6		UMETA(Hidden)
 };
@@ -40,6 +38,7 @@ enum class ERifleSlot :uint8
 {
 	ERS_Primary		UMETA(DisplayName = "Primary"),
 	ERS_Sub			UMETA(DisplayName = "Sub"),
+	ERS_Pistol		UMETA(DisplayName = "Pistol"),
 
 	ERS_MAX			UMETA(DisplayName = "defaultsMAX")
 };
@@ -53,9 +52,11 @@ enum class EItemType : uint8
 	EIT_Medical		UMETA(DisplayName = "Medical_Type"),
 	EIT_Scrap		UMETA(DisplayName = "Scrap_Type"),
 	EIT_Ammo		UMETA(DisplayName = "Ammo_Type"),
+	EIT_Grenade		UMETA(DisplayName = "Grenade_Type"),
 
 	EIT_MAX			UMETA(DisplayName = "DefaultMAX")
 };
+
 
 UENUM()
 enum class EAmmoType : uint8
@@ -65,6 +66,15 @@ enum class EAmmoType : uint8
 	EAT_9		UMETA(DisplayName = "9mm"),
 
 	EAT_MAX		UMETA(DisplayName = "DefaultMAX")
+};
+
+UENUM()
+enum class EGrenadeType : uint8
+{
+	EGT_Fragment	UMETA(DisplayName = "Fragmentation"),
+	EGT_Smoke		UMETA(DisplayName = "Smoke"),
+
+	EGT_MAX			UMETA(DisplayName = "DefaultMAX")
 };
 
 UENUM()
@@ -89,19 +99,23 @@ enum class EQuickSlotNumber : uint8
 	EQSN_MAX = 6	UMETA(Hidden)
 };
 
-//UENUM()
-//enum class EEquipSlot : uint8 
-//{
-//	EES_Helmet		UMETA(DisplayName = "HelmetSlot"),
-//	EES_Plate		UMETA(DisplayName = "PlateSlot"),
-//	EES_Vest		UMETA(DisplayName = "VestSlot"),
-//	EES_Backpack	UMETA(DisplayName = "BackpackSlot"),
-//	EES_Pistol		UMETA(DisplayName = "PistolSlot"),
-//	EES_Primary		UMETA(DisplayName = "PrimarySlot"),
-//	EES_Sub			UMETA(DisplayName = "SubSlot"),
-//
-//	EES_MAX			UMETA(DisplayName = "DefaultMAX")
-//};
+UENUM(BlueprintType)
+enum class EWeaponPartsType : uint8
+{
+	EWPT_Muzzle		UMETA(DisplayName = "Muzzle"),
+	EWPT_Tactical	UMETA(DisplayName = "Tactical"),
+	EWPT_Scope		UMETA(DisplayName = "Scope"),
+
+
+	EWPT_MAX = 3	UMETA(Hidden)
+};
+
+
+//for Enum iterator
+ENUM_RANGE_BY_COUNT(EEquipmentType, EEquipmentType::EET_MAX)
+ENUM_RANGE_BY_COUNT(EWeaponPartsType, EWeaponPartsType::EWPT_MAX)
+
+
 
 UINTERFACE(MinimalAPI)
 class UItemInterface : public UInterface

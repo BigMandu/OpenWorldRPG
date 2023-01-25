@@ -3,6 +3,7 @@
 
 #include "OpenWorldRPG/NewInventory/Widget/CharacterLootWidget.h"
 #include "OpenWorldRPG/NewInventory/Widget/EquipWidget.h"
+#include "OpenWorldRPG/NewInventory/Widget/EquipStorageWidget.h"
 #include "OpenWorldRPG/NewInventory/Widget/NewInventoryGrid.h"
 #include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
 #include "OpenWorldRPG/BaseCharacter.h"
@@ -19,21 +20,21 @@ bool UCharacterLootWidget::Initialize()
 
 void UCharacterLootWidget::InitCharLootWidget(ABaseCharacter* DeadChar)
 {
-	//ABaseCharacter* BChar = Cast<ABaseCharacter>(DeadChar);
-	//AEnemyCharacter* AIChar = Cast<AEnemyCharacter>(DeadChar);
 	if(DeadChar && EquipWidget)
 	{
 		if(DeadChar->Equipment)
 		{
+			EquipStorageWidget->LootedChar_Owner = DeadChar;
+			EquipStorageWidget->EquipInitialize(DeadChar->Equipment);
+			EquipStorageWidget->InitializeInventory(DeadChar);
+			EquipStorageWidget->RefreshEquipWidget();
+			
+
 			EquipWidget->LootedChar_Owner = DeadChar;
 			EquipWidget->EquipInitialize(DeadChar->Equipment);
-			
+			//EquipWidget->InitializeInventory(DeadChar);
 			EquipWidget->RefreshEquipWidget();
-
-			//Widget ¼ÕºÁ¾ßÇÔ. Pocket, SecureBoxÃß°¡ÇØ¾ßµÊ.
-			//InvenWidget->GridInitialize(DeadChar->PocketInventoryComp, DeadChar->PocketInventoryComp->TileSize);
 		}
-		//EquipWidget->RefreshEquipWidget();
 	}
 }
 

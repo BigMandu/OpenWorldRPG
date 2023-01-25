@@ -55,4 +55,9 @@ public:
 	UFUNCTION()
 	void UseItemInQuickSlot(EQuickSlotNumber QuickSlotNum);
 	
+	UFUNCTION()
+	void SetWeaponQuickSlot(UNewItemObject* WantToSet);
+	UFUNCTION()
+	void RemoveWeaponQuickSlot(ERifleSlot WantToRemoveSlot);
+
 };

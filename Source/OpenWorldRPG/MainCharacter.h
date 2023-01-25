@@ -30,6 +30,7 @@ class UInventoryComponent; //안씀
 class UNewInventoryComponent;
 class UEquipmentComponent;
 class UStatManagementComponent;
+class UCraftSystemComponent;
 
 
 UENUM(BlueprintType)
@@ -59,6 +60,8 @@ public:
 	AMainCharacter();
 
 	FOnQuickSlotUse OnQuickSlotUse;
+	/* Anim Instance */
+	UMainAnimInstance* FPAnimInstance;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Character)
 	AMainController* MainController;
@@ -67,7 +70,10 @@ public:
 	USkeletalMeshComponent* FPMesh;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Character)
-	USkeletalMeshComponent* FPLowerLegMesh;
+	USkeletalMeshComponent* ShadowMesh;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Character)
+	UCraftSystemComponent* CraftSysComp;
 
 
 
@@ -211,7 +217,7 @@ public:
 
 
 	//FPMesh때문에 override해서 FPAnim을 따로 갱신해준다.
-	virtual void ChangeWeapon(int32 index) override;
+	virtual bool ChangeWeapon(int32 index) override;
 
 
 	/********  Interaction 관련 ******/

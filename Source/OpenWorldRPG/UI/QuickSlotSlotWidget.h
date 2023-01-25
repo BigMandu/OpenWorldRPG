@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "OpenWorldRPG/NewInventory/Library/ItemInterface.h"
 #include "QuickSlotSlotWidget.generated.h"
 
 /**
@@ -13,9 +14,10 @@
  class UBorder;
  class UImage;
  class UNewItemObject;
+ class UNewItemwidget;
 
 UCLASS()
-class OPENWORLDRPG_API UQuickSlotSlotWidget : public UUserWidget, public IItemInterface
+class OPENWORLDRPG_API UQuickSlotSlotWidget : public UUserWidget
 {
 	GENERATED_BODY()
 private:
@@ -43,5 +45,7 @@ public:
 	void RegisterQuickSlot(UNewItemObject* WantToSlot);
 	FORCEINLINE UNewItemObject* GetMountedObject() {return MountedItemObj;}
 	void RemoveMountedObj();
+
+	void SetWeaponQuickSlot(UNewItemObject* WantToSlot);
 	
 };

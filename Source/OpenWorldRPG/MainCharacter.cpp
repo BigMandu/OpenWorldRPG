@@ -15,7 +15,8 @@
 #include "OpenWorldRPG/NewInventory/Widget/NewInventory.h"
 
 #include "OpenWorldRPG/MainHud.h"
-#include "OpenWorldRPG/UI/CharacterStatusWidget.h"
+#include "OpenWorldRPG/UI/ResourceStatusWidgetInInventory.h"
+#include "OpenWorldRPG/UI/ResourceStatusWidget.h"
 #include "OpenWorldRPG/UI/WeaponStatusWidget.h"
 #include "OpenWorldRPG/UI/QuickSlotWidget.h"
 
@@ -36,6 +37,7 @@
 // Sets default values
 AMainCharacter::AMainCharacter() : Super()
 {
+	GetCharacterMovement()->bOrientRotationToMovement = true; //움직인 방향 = 진행방향으로 설정
 	/********** Input ***********/
 	bDisableInput = false;
 
@@ -81,8 +83,10 @@ AMainCharacter::AMainCharacter() : Super()
 	FPMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FPMesh"));
 	FPMesh->SetupAttachment(CameraFPS);
 
-	FPLowerLegMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FPLegMesh"));
-	FPLowerLegMesh->SetupAttachment(GetRootComponent());
+	ShadowMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("ShadowMesh"));
+	ShadowMesh->SetupAttachment(GetRootComponent());
+
+	CraftSysComp = CreateDefaultSubobject<UCraftSystemComponent>(TEXT("CraftSysComp"));
 }
 
 
@@ -102,31 +106,50 @@ void AMainCharacter::PostInitializeComponents()
 		FPAnimInstance->WeaponTypeNumber = 0;
 	}
 
+	//ShadowMesh의 AnimInstance를 넣어준다.
+	ShadowMesh->SetAnimInstanceClass(GetMesh()->GetAnimClass());
+	
+	ShadowMesh->SetOnlyOwnerSee(true);
+	ShadowMesh->SetRenderInMainPass(false);
+	ShadowMesh->SetHiddenInGame(true);
+
+	//ShadowMesh->SetOwnerNoSee(true);
+	//ShadowMesh->SetCastShadow(true);
+	
+	//ShadowMesh->SetHiddenInGame(true);
+	//ShadowMesh->SetCastHiddenShadow(true);
+	
+	
+
 
 	FPMeshOriginTransform = FPMesh->GetRelativeTransform();
 	FPMesh->SetHiddenInGame(true);
-	
-	//FPMesh->HideBoneByName(FName("spine_02"));
-	FPLowerLegMesh->HideBoneByName(FName("neck_01"), EPhysBodyOp::PBO_None);
-	FPLowerLegMesh->HideBoneByName(FName("upperarm_l"), EPhysBodyOp::PBO_None);
-	FPLowerLegMesh->HideBoneByName(FName("upperarm_r"), EPhysBodyOp::PBO_None);
-	FPLowerLegMesh->SetHiddenInGame(true);
+	FPMesh->SetCastShadow(false);
+	GetMesh()->SetCastShadow(false);
 
-	FPLowerLegMesh->SetCastShadow(false);
-	FPLowerLegMesh->SetOnlyOwnerSee(true);
-	FPLowerLegMesh->SetReceivesDecals(false);
+	
 
 	/* FPS Aim관련 기본 설정 값 저장*/
 	BaseCamTPSfov = CameraTPS->FieldOfView;
 	BaseCamFPSfov = CameraFPS->FieldOfView;
 	BaseFPMeshTransform = FPMesh->GetRelativeTransform();
 
-
+	
 	//GetCapsuleComponent()->SetCollisionProfileName(FName("MainChar"));
 	GetCapsuleComponent()->SetCollisionObjectType(ECollisionChannel::ECC_GameTraceChannel2);
 	//GetCapsuleComponent()->SetCollisionProfileName("MainChar");
 
-	
+
+	//FPMesh->HideBoneByName(FName("spine_02"));
+	/*FPLowerLegMesh->HideBoneByName(FName("neck_01"), EPhysBodyOp::PBO_None);
+	FPLowerLegMesh->HideBoneByName(FName("upperarm_l"), EPhysBodyOp::PBO_None);
+	FPLowerLegMesh->HideBoneByName(FName("upperarm_r"), EPhysBodyOp::PBO_None);
+	FPLowerLegMesh->SetHiddenInGame(true);
+
+	FPLowerLegMesh->SetCastShadow(false);
+	FPLowerLegMesh->SetOnlyOwnerSee(true);
+	FPLowerLegMesh->SetReceivesDecals(false);*/
+
 	
 	
 	
@@ -151,7 +174,8 @@ void AMainCharacter::BeginPlay()
 
 		if(StatManagementComponent)
 		{
-			MainHud->CharStatWidget->BindStatManager(StatManagementComponent);
+			MainHud->ResourceWidget->BindStatManager(StatManagementComponent);
+			MainHud->NewInventoryWidget->ResourceStatusWidget->BindStatManager(StatManagementComponent);
 		}
 		
 		
@@ -174,9 +198,7 @@ void AMainCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
-	
-
-	//bIsLookInput 세팅
+	//bIsLookInput 세팅 (Aim Init을 위한것.)
 	float turnvalue = GetInputAxisValue("Turn");
 	float lookvalue = GetInputAxisValue("LookUp");
 	if (turnvalue == 0.f && lookvalue == 0.f)
@@ -224,28 +246,25 @@ void AMainCharacter::Tick(float DeltaTime)
 	/* 상호작용 텍스트를 띄움 */
 	/* Static FHitResult를 리턴받아서 Interface 변환, 성공하면 Outline과 TEXT를 띄움.*/
 	AActor* HitActor = InteractableLineTrace(Interact_LineTrace_StartLocation, Interact_LineTrace_EndLocation).GetActor();
-	if (HitActor)
+
+	AInteractable* HitInteractActor = Cast<AInteractable>(HitActor);
+	if (HitInteractActor && HitInteractActor->bCanNotInteractable == false)
 	{
 		if (InteractActor) //이미 InteractActor가 있고
 		{
-			if (HitActor != InteractActor) //지금 보고 있는 Actor와 InteractActor가 다르면
+			if (HitInteractActor != InteractActor) //지금 보고 있는 Actor와 InteractActor가 다르면
 			{
 				UnsetInteractActor(); //InteractActor를 Unset해준다.
 			}
 			else
 			{
 				//거리에 따라 InteractText가 업데이트 되기 때문에 추가 해준다.
-				SetInteractActor(HitActor); 
+				SetInteractActor(HitInteractActor);
 			}
 		}
 		else //InteractActor가 없을 경우
 		{
-			//AInteractable* Interactable = Cast<AInteractable>(HitActor);
-			//if (Interactable)
-			{
-				//SetInteractActor(HitActor); //Interactable인 경우 Set을 해준다.
-				SetInteractActor(HitActor); //Interactable인 경우 Set을 해준다.
-			}
+			SetInteractActor(HitInteractActor); //Interactable인 경우 Set을 해준다.
 		}
 	}
 	else
@@ -271,8 +290,7 @@ void AMainCharacter::Tick(float DeltaTime)
 		if (EquippedWeapon->RecoilAlphaTime >= 1.f)
 		{
 			GetWorldTimerManager().ClearTimer(EquippedWeapon->RecoilHandle);
-		}
-		
+		}	
 	}
 	
 	
@@ -355,7 +373,6 @@ void AMainCharacter::FPSAimLocationAdjust()
 			const FTransform NewFPMeshTransform = EquippedWeapon->CharFPMeshTransform;
 			const FTransform NewWeaponTransform = EquippedWeapon->WeapSKMeshTransform;
 			CameraFPS->SetFieldOfView(70.f);
-			//FPMesh->SetRelativeLocation(NewFPMeshLocation);
 			FPMesh->SetRelativeTransform(NewFPMeshTransform);
 			EquippedWeapon->SKMesh->SetRelativeTransform(NewWeaponTransform);
 		}
@@ -383,25 +400,17 @@ void AMainCharacter::SetCameraMode(ECameraMode Type)
 		bUseControllerRotationPitch = false;
 		bUseControllerRotationRoll = false;
 		bUseControllerRotationYaw = true;
-		UE_LOG(LogTemp,Warning,TEXT("MainChar::SetCamMode / Setting ControllerRotation "));
 		GetCharacterMovement()->bOrientRotationToMovement = false;
-		UE_LOG(LogTemp, Warning, TEXT("MainChar::SetCamMode / Setting OrientRotationToMov "));
+
 		/* Character Mesh 설정 */
 		FPMesh->SetHiddenInGame(true);  //1인칭 Mesh 숨김
-		GetMesh()->SetHiddenInGame(false); //3인칭 Mesh 안숨김
+		//GetMesh()->SetHiddenInGame(false); //3인칭 Mesh 안숨김
+		GetMesh()->SetCastShadow(true);
+		GetMesh()->UnHideBoneByName(FName("spine_01")); //spine_02
+		ShadowMesh->SetHiddenInGame(true);
 
-		GetMesh()->SetRenderInMainPass(true);
-		FPLowerLegMesh->SetHiddenInGame(true);
 
-		/* 장착한 장비 모두 HIde하기 */
-		for (auto Equipped : Equipment->EquipmentItems)
-		{
-			if (Equipped && Equipped->Equipment)
-			{
-				Equipped->Equipment->SKMesh->SetRenderInMainPass(true);
-				//Equipped->Equipment->SetActorHiddenInGame(true); //SetHidden(true);
-			}
-		}
+		UCustomInventoryLibrary::ShowAllEquipment(Equipment);
 
 	break;
 
@@ -418,33 +427,16 @@ void AMainCharacter::SetCameraMode(ECameraMode Type)
 
 		/*  Character Mesh 설정 */
 		FPMesh->SetHiddenInGame(false);
-		FPLowerLegMesh->SetHiddenInGame(false);
+		GetMesh()->HideBoneByName(FName("spine_01"), EPhysBodyOp::PBO_None);
+		ShadowMesh->SetHiddenInGame(false);
+		GetMesh()->SetCastShadow(false);
 
-		GetMesh()->SetHiddenInGame(true);
 		//bRenderInMainPass를 false로 하게되면 Rendering은 되지 않지만, Shadow는 렌더링 된다.
 		// 이걸 사용하려면 Mesh가 Show되어야 한다. SetHiddenInGame을 True로 하면 안됨.	
-		GetMesh()->SetRenderInMainPass(false);
+		//GetMesh()->SetRenderInMainPass(false);
 
-	
-
-		UCustomPDA* CPDA;
-		/* 장착한 장비 모두 HIde하기 */
-		for (auto Equipped : Equipment->EquipmentItems)
-		{
-			if (Equipped && Equipped->Equipment)
-			{
-				CPDA = Cast<UCustomPDA>(Equipped->Equipment->ItemSetting.DataAsset);
-
-				if (CPDA && 
-					(CPDA->EquipmentType == EEquipmentType::EET_Rifle
-					|| CPDA->EquipmentType == EEquipmentType::EET_Pistol))
-				{
-					continue;
-				}
-				Equipped->Equipment->SKMesh->SetRenderInMainPass(false);
-				//Equipped->Equipment->SetActorHiddenInGame(true); //SetHidden(true);
-			}
-		}
+		//장착중인 장비를 모두 hide한다.
+		UCustomInventoryLibrary::HideAllEquipment(Equipment);
 
 	break;
 	}
@@ -453,6 +445,10 @@ void AMainCharacter::SetCameraMode(ECameraMode Type)
 	if (EquippedWeapon)
 	{
 		EquippedWeapon->GunAttachToMesh(this);
+	}
+	else if (EquippedGrenade.IsValid())
+	{
+		EquippedGrenade->GunAttachToMesh(this);
 	}
 
 }
@@ -484,12 +480,12 @@ void AMainCharacter::SetAimMode(EAimMode Mode)
 			else if (CameraMode == ECameraMode::ECM_FPS)
 			{
 				//정확한 위치를 받아오기 위해 Animation을 끈다.
-				//FPMesh->bPauseAnims = true;
+				FPMesh->bPauseAnims = true;
 
 				//EquippedWeapon에서 SightSocket을 Get하는 함수를 호출한다.
 				FTransform SightTransform = EquippedWeapon->GetSightSocketTransform();
 				FTransform FPMeshWorld = FPMesh->GetComponentTransform();
-
+				
 
 				//SightSocket에서  FPMesh의 Relative Transform을 구한다.
 				//이렇게 구한 Offset을 Mesh의 Transform에 적용한다.
@@ -498,16 +494,16 @@ void AMainCharacter::SetAimMode(EAimMode Mode)
 				//Example: ChildOffset = MakeRelativeTransform(Child.GetActorTransform(), Parent.GetActorTransform())
 				//This computes the relative transform of the Child from the Parent.
 
-				FTransform  Offset = FPMeshWorld.GetRelativeTransform(SightTransform);
-
+				FTransform  Offset = FPMeshWorld.GetRelativeTransform(SightTransform);//.Inverse();
+				
 				// Weapon의 Clipping을 위한 Trace를 FPMesh일때 Aim, NotAim을 보완하기 위해 Aim일때 Mesh를 앞으로 좀 나가게 한다.
 				// (기존 Aim때는 FPMesh가 뒤로 들어가버려 Clipping문제가 안일어 났음.)
 				FTransform OffsetWithoutX = FTransform(Offset.GetRotation(), FVector(5.f, Offset.GetTranslation().Y, Offset.GetTranslation().Z));
 
-
 				//FPMesh를 해당 Offset만큼 이동, Camera의 중앙에 오도록 한다.
-				//FPMesh->SetRelativeTransform(OffsetWithoutX); //임시로 주석처리
-				//CameraFPS->FieldOfView = 75.f;
+
+				FPMesh->SetRelativeTransform(OffsetWithoutX); //임시로 주석처리
+				CameraFPS->FieldOfView = 75.f;
 				//CameraFPS->SetWorldTransform(SightTransform);
 			}
 			break;
@@ -520,19 +516,6 @@ void AMainCharacter::SetAimMode(EAimMode Mode)
 
 			if (CameraMode == ECameraMode::ECM_TPS)
 			{
-				//if (EquippedWeapon)
-				//{
-				//	GetCharacterMovement()->bOrientRotationToMovement = false;
-				//	bUseControllerRotationYaw = true; //false; //3인칭에 Aim상태가 아니면, Yaw를 풀어준다.
-				//}
-				//else
-				//{
-				//	GetCharacterMovement()->bOrientRotationToMovement = true; //움직인 방향 = 진행방향으로 설정
-				//	bUseControllerRotationYaw = false; //3인칭에 Aim상태가 아니면, Yaw를 풀어준다.
-				//}
-
-
-
 				//땡긴 카메라를 다시 원복 시킨다.
 				/*float CurrentLength = CameraBoom->TargetArmLength;
 				float CameraLength = FMath::FInterpTo(CurrentLength, BeforeCameraLength, GetWorld()->GetDeltaSeconds(), 15.f);*/
@@ -542,9 +525,8 @@ void AMainCharacter::SetAimMode(EAimMode Mode)
 			}
 			else if (CameraMode == ECameraMode::ECM_FPS)
 			{
-				//FPMesh->bPauseAnims = false;
-				//FPMesh->SetRelativeTransform(FPMeshOriginTransform);
-
+				FPMesh->bPauseAnims = false;
+				FPMesh->SetRelativeTransform(FPMeshOriginTransform);
 				CameraFPS->FieldOfView = BaseCamFPSfov;
 				
 			}
@@ -792,6 +774,10 @@ void AMainCharacter::LMBDown()
 		{
 			EquippedWeapon->StartFire();
 		}
+		else if (EquippedGrenade.IsValid())
+		{
+			EquippedGrenade->ReadyToThrow();
+		}
 	}
 }
 
@@ -802,6 +788,10 @@ void AMainCharacter::LMBUp()
 		if (EquippedWeapon)
 		{
 			EquippedWeapon->StopFire();
+		}
+		else if (EquippedGrenade.IsValid())
+		{
+			EquippedGrenade->ThrowGrenade(this);
 		}
 	}
 }
@@ -863,32 +853,38 @@ void AMainCharacter::EKeyDown()
 }
 
 /*************************  Weapon, Item 관련 ***************************************************/
-void AMainCharacter::ChangeWeapon(int32 index)
+bool AMainCharacter::ChangeWeapon(int32 index)
 {
 	Super::ChangeWeapon(index);
-
-	//FPMode의 AnimUpdate를 위해 갱신한다.
+	
+	//FPMode +Shadow Mesh의 AnimUpdate를 위해 갱신한다.
+	UMainAnimInstance* ShadowAnim = Cast<UMainAnimInstance>(ShadowMesh->GetAnimInstance());
+	check(ShadowAnim);
 	switch (index)
 	{
 	case 0:
 		FPAnimInstance->WeaponTypeNumber = 0;
+		ShadowAnim->WeaponTypeNumber = 0;
 		break;
 	case 1:
 		if (PrimaryWeapon)
 		{			
 			FPAnimInstance->WeaponTypeNumber = 1;
+			ShadowAnim->WeaponTypeNumber = 1;
 		}
 		break;
 	case 2:
 		if (SubWeapon)
 		{			
 			FPAnimInstance->WeaponTypeNumber = 1;
+			ShadowAnim->WeaponTypeNumber = 1;
 		}
 		break;
 	case 3:
 		if (PistolWeapon)
 		{
-			FPAnimInstance->WeaponTypeNumber = 2;			
+			FPAnimInstance->WeaponTypeNumber = 2;
+			ShadowAnim->WeaponTypeNumber = 2;
 		}
 		break;
 	}
@@ -897,6 +893,7 @@ void AMainCharacter::ChangeWeapon(int32 index)
 	OnChangeWeapon.Broadcast(EquippedWeapon);
 	OnGetAmmo.Broadcast(EquippedWeapon);
 	OnChangeMode.Broadcast(EquippedWeapon);
+	return true;
 }
 
 /*************************  Interaction 관련 ***************************************************/
@@ -908,6 +905,15 @@ FHitResult AMainCharacter::InteractableLineTrace(const FVector& StartLo, const F
 	FCollisionQueryParams Params;
 	FCollisionShape Shape = FCollisionShape::MakeCapsule(10.f, 10.f); //살짝 넓게 해서 탐지가 쉽게 했다.
 	Params.AddIgnoredActor(this);
+
+	if (EquippedWeapon)
+	{
+		Params.AddIgnoredActor(EquippedWeapon);
+	}
+	else if (EquippedGrenade.IsValid())
+	{
+		Params.AddIgnoredActor(EquippedGrenade.Get());
+	}
 
 	//SweepSingle로 변경, 캡슐형태의 모양으로 LineTrace.	
 	GetWorld()->SweepSingleByChannel(Hit, StartLo, EndLo, FQuat::Identity, ECollisionChannel::ECC_WorldStatic, Shape, Params); 

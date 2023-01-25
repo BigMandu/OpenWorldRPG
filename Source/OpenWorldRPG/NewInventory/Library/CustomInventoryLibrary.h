@@ -10,6 +10,8 @@
  * 
  */
 class UNewItemObject;
+class UBasePDA;
+class UCustomPDA;
 class ABaseCharacter;
 class AEquipment;
 class AItem;
@@ -23,14 +25,35 @@ public:
 
 	static UNewItemObject* CreateObject(FItemSetting ItemStruct, bool& bIsCreated);
 
+	/*ItemObj를 이용해 Item class를 Spawn한다.*/
 	static AItem* SpawnItem(UWorld* World, UNewItemObject* ItemObj);
-	//if Actor var is valid, Call StepEquip func. else return AEquipment
-	static AEquipment* SpawnEquipment(UWorld* World, UNewItemObject* ItemObj);// , AActor* Actor = nullptr);
-	
 
+	/*ItemObj를 이용해 Equipment Class를 Spawn한다*/
+	static AEquipment* SpawnEquipment(UWorld* World, UNewItemObject* ItemObj);
+	
+	/*ItemObj를 이용해 Equipment Class를 Spawn한다*/
+	static ABaseGrenade* SpawnGrenade(UWorld* World, UNewItemObject* ItemObj);
+
+
+	/*PDA를 이용해 Item class를 Spawn한다.*/
+	static AItem* SpawnItem(UWorld* World, UBasePDA* ItemDA);
+
+	/*PDA를 이용해 Equipment Class를 Spawn한다 */
+	static AEquipment* SpawnEquipment(UWorld* World, UCustomPDA* EquipDA);
+
+
+	/*  */
 	static void GenerateRandomCount(UNewItemObject* ItemObj);
 
+	/* Weapon을 제외한 장착중인 모든 Equipment를 Hide한다.*/
+	static void HideAllEquipment(UEquipmentComponent* EComp);
 
+	/* 장착중인 모든 Equipment를 Show한다.*/
+	static void ShowAllEquipment(UEquipmentComponent* EComp);
+
+
+
+	/// 이하 사용하지 않는 함수들
 	static void BackToItem(UNewItemObject* ItemObj);
 	static void DirectInToInventory(UNewItemObject* ItemObj, ABaseCharacter* BChar);
 };

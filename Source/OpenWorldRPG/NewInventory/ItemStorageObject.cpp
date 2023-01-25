@@ -4,6 +4,7 @@
 #include "OpenWorldRPG/NewInventory/ItemStorageObject.h"
 #include "OpenWorldRPG/NewInventory/Library/InventoryStruct.h"
 #include "OpenWorldRPG/NewInventory/Library/CustomInventoryLibrary.h"
+#include "OpenWorldRPG/NewInventory/Widget/WeaponPartsWidget.h"
 
 FTile UItemStorageObject::IndexToTile(int32 index)
 {
@@ -68,7 +69,7 @@ bool UItemStorageObject::IsAvailableSpace(UNewItemObject* ItemObj, int32 TLind)
 	}
 
 	FTile tile = IndexToTile(TLind);
-	FIntPoint Itemsize = ItemObj->GetItemSize();
+	FIntPoint Itemsize = ItemObj->GetTempItemSize();
 
 	FTile checktile;
 	checktile.X = 0; checktile.Y = 0;
@@ -112,7 +113,7 @@ bool UItemStorageObject::TryAddItem(UNewItemObject* ItemObj, bool bWantToGenerat
 		bResult = TryAddItemStep(ItemObj);
 
 		/* Item추가에 실패했고 Item을 돌릴 수 있다면 */
-		if (!bResult && ItemObj->bCanRotated)
+		if (!bResult && ItemObj->ItemInfo.DataAsset->bCanRotate)
 		{
 			/* Item을 돌리고 다시 추가한다. */
 			ItemObj->ItemRotate();
@@ -153,12 +154,20 @@ void UItemStorageObject::AddItemAtIndex(UNewItemObject* ItemObj, int32 Index)
 	if (ItemObj->MotherStorage)
 	{
 		ItemObj->MotherStorage->RemoveItem(ItemObj);
+		ItemObj->MotherStorage = nullptr;
 	}
 	else if (ItemObj->MotherEquipComp)
 	{
 		ItemObj->MotherEquipComp->RemoveEquipment(ItemObj);
+		ItemObj->MotherEquipComp = nullptr;
 	}
-
+	else if (ItemObj->WeaponPartsManager.IsValid())
+	{
+		ItemObj->WeaponPartsManager->RemoveParts(ItemObj);
+	}
+	 
+	//Item이 회전했다면 삭제후 적용한다.
+	ItemObj->SetItemRotate();
 
 	ItemObj->TopLeftIndex = Index;
 	ItemObj->MotherStorage = this;
@@ -188,13 +197,12 @@ void UItemStorageObject::AddItemAtIndex(UNewItemObject* ItemObj, int32 Index)
 			}
 		}
 	}
-#if DEBUG
-	UE_LOG(LogTemp, Warning, TEXT("NewInvComp::AddItem = Success Add Item"));
-#endif
+
+	//UE_LOG(LogTemp, Warning, TEXT("NewInvComp::AddItem = Success Add Item"));
+
 
 	
-	/*	AddItem이 성공적이면 UNewInventoryGrid::RefreshInventory를 호출하기 위해
-		Delegate를 생성하고 broadcast를 때려준다.
+	/*	AddItem이 성공적이면 UNewInventoryGrid::RefreshInventory를 호출하기 위해 broadcast를 때려준다.
 	*/
 	OnInventoryAdd.Broadcast(ItemObj);
 }
@@ -219,7 +227,7 @@ bool UItemStorageObject::RemoveItem(UNewItemObject* ItemObj)
 
 			if (Inventory[removeIndex] != ItemObj)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("ItemStorageObj::RemoveItem : Some thing wrong.."));
+				//UE_LOG(LogTemp, Warning, TEXT("ItemStorageObj::RemoveItem : Some thing wrong.."));
 				return false;
 			}
 			Inventory[removeIndex] = nullptr;

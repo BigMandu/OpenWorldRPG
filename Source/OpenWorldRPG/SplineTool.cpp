@@ -25,6 +25,11 @@ ASplineTool::ASplineTool()
 
 	Billboard = CreateDefaultSubobject<UBillboardComponent>(TEXT("BillboardComp"));
 	Billboard->SetupAttachment(GetRootComponent());
+
+	HISMComp = CreateDefaultSubobject<UHierarchicalInstancedStaticMeshComponent>(TEXT("HISMComp"));
+	HISMComp->SetupAttachment(GetRootComponent());
+
+
 }
 
 void ASplineTool::BeginPlay()
@@ -38,7 +43,14 @@ void ASplineTool::OnConstruction(const FTransform& Transform)
 	switch (SplineElementType)
 	{
 	case ESplineElementType::ESET_Mesh:
-		MeshSpline();
+		if (bSetNewVersion)
+		{
+			NewMeshSpline();
+		}
+		else
+		{
+			MeshSpline();
+		}		
 		break;
 	case ESplineElementType::ESET_Decal:
 		DecalSpline();
@@ -46,14 +58,46 @@ void ASplineTool::OnConstruction(const FTransform& Transform)
 	}	
 }
 
+//개선버전 Toggle로 on/off가능.
+void ASplineTool::NewMeshSpline()
+{
+	HISMComp->ClearInstances();
+
+		
+	if(NewSplineSetting.WantToPlaceMesh == nullptr) return;
+	HISMComp->SetStaticMesh(NewSplineSetting.WantToPlaceMesh);
+
+	FBox PlacedMeshBox = NewSplineSetting.WantToPlaceMesh->GetBoundingBox();
+	FVector PlacedMeshSize = PlacedMeshBox.Max - PlacedMeshBox.Min;
+
+	Gap = PlacedMeshSize.X + NewSplineSetting.GapOffset;
+
+	int32 PlacedMeshCount = GetPlacedeleCount(Gap);
+
+
+	for (int32 i = 0; i <= PlacedMeshCount; i++)
+	{
+		FVector PlacedLocalVec;
+		FVector PlaceRotateVec;
+		GetSplineElementPlacedLoRo(PlacedLocalVec, PlaceRotateVec, i * Gap); //Newfunction			
+		FTransform newTransform = CalculateFinalPlacedElement(PlacedLocalVec, PlaceRotateVec, NewSplineSetting.ElementTransform);
+		HISMComp->AddInstance(newTransform);
+	}
+
+	
+}
+
 void ASplineTool::MeshSpline()
 {
-	for (auto storedComp : ISMCompStoredArray)
+
+	
+	for (UHierarchicalInstancedStaticMeshComponent* storedComp : ISMCompStoredArray)
 	{
 		//두번의 valid check
+		
 		if (!storedComp) break;
 		if (storedComp->GetInstanceCount() < 1) break;
-
+		
 		//storedComp->ClearInstances(); 
 		storedComp->DestroyComponent();
 	}

@@ -78,6 +78,7 @@ protected:
 	virtual void BeginPlay() override;
 	
 public:
+	virtual void OnConstruction(const FTransform& Transform) override;
 	virtual UNewItemObject* GetDefaultItemObj() override;
 	
 	void ReInitialize(UNewItemObject* Obj);

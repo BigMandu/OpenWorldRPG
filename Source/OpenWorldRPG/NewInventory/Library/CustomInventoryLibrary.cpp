@@ -49,6 +49,7 @@ UNewItemObject* UCustomInventoryLibrary::CreateObject(FItemSetting ItemStruct, b
 
 }
 
+/*ItemObj를 이용해 Item class를 Spawn한다.*/
 AItem* UCustomInventoryLibrary::SpawnItem(UWorld* World, UNewItemObject* ItemObj)
 {
 	if (World && ItemObj)
@@ -72,23 +73,28 @@ AItem* UCustomInventoryLibrary::SpawnItem(UWorld* World, UNewItemObject* ItemObj
 	return nullptr;
 }
 
-
+/*ItemObj를 이용해 Equipment Class를 Spawn한다*/
 AEquipment* UCustomInventoryLibrary::SpawnEquipment(UWorld* World, UNewItemObject* ItemObj)//, AActor* Actor)
 {
-	UE_LOG(LogTemp, Warning, TEXT("UCustomInventoryLibrary::SpawnEquipment"));
+	//UE_LOG(LogTemp, Warning, TEXT("UCustomInventoryLibrary::SpawnEquipment"));
 	if (World && ItemObj)
 	{
 		AEquipment* Equipment = nullptr;
 
-		//Weapon인 경우 WeaponInstant로 생성해준다.
+		
 
 		UCustomPDA* CPDA = Cast<UCustomPDA>(ItemObj->ItemInfo.DataAsset);
 		check(CPDA);
 
+		//Weapon인 경우 WeaponInstant class로 생성해준다.
 		UWeaponPDA* WeaponPDA = Cast<UWeaponPDA>(ItemObj->ItemInfo.DataAsset);
 		if (WeaponPDA)
 		{
 			Equipment = Cast<AWeapon_Instant>(World->SpawnActor<AActor>(AWeapon_Instant::StaticClass()));
+			if (ItemObj->WeaponPartsManager.IsValid())
+			{
+				Cast<AWeapon>(Equipment)->WeaponPartsManager = ItemObj->WeaponPartsManager.Get();
+			}
 		}
 		else
 		{
@@ -110,6 +116,9 @@ AEquipment* UCustomInventoryLibrary::SpawnEquipment(UWorld* World, UNewItemObjec
 					Equipment->ItemSetting.Inventory = StorageObj->Inventory;
 				}
 			}
+			
+			
+
 			Equipment->SetItemState(EItemState::EIS_Pickup);
 			return Equipment;
 		}
@@ -117,10 +126,99 @@ AEquipment* UCustomInventoryLibrary::SpawnEquipment(UWorld* World, UNewItemObjec
 	return nullptr;
 }
 
+ABaseGrenade* UCustomInventoryLibrary::SpawnGrenade(UWorld* World, UNewItemObject* ItemObj)
+{
+	if (World && ItemObj)
+	{
+		ABaseGrenade* ReturnActor = nullptr;
+		UGrenadePDA* GPDA = Cast<UGrenadePDA>(ItemObj->ItemInfo.DataAsset);
+		if (GPDA)
+		{
+			ReturnActor = Cast<ABaseGrenade>(World->SpawnActor<ABaseGrenade>(ABaseGrenade::StaticClass()));
+
+			if (ReturnActor)
+			{
+				ItemObj->bIsDestoryed = false;
+				ReturnActor->ItemSetting = ItemObj->ItemInfo;
+				ReturnActor->SetMesh();
+				ReturnActor->SetItemState(EItemState::EIS_Pickup);
+				return ReturnActor;
+			}
+		}
+	}
+	return nullptr;
+}
+
+
+
+
+/*PDA를 이용해 Item class를 Spawn한다.*/
+AItem* UCustomInventoryLibrary::SpawnItem(UWorld* World, UBasePDA* ItemDA)
+{
+	AItem* ReturnItem = nullptr;
+	if (World && ItemDA)
+	{
+		UBasePDA* BPDA = Cast<UBasePDA>(ItemDA);
+		if (BPDA)
+		{
+			
+			ReturnItem = Cast<AItem>(World->SpawnActor<AItem>(AItem::StaticClass()));
+
+			if (ReturnItem)
+			{
+				//ItemObj->bIsDestoryed = false;
+				ReturnItem->ItemSetting = FItemSetting(ItemDA,1,0);
+				ReturnItem->SetMesh();
+				ReturnItem->SetItemState(EItemState::EIS_Spawn);
+				return ReturnItem;
+			}
+		}
+	}
+	return ReturnItem;
+}
+
+/*PDA를 이용해 Equipment Class를 Spawn한다 */
+AEquipment* UCustomInventoryLibrary::SpawnEquipment(UWorld* World, UCustomPDA* EquipDA)
+{
+	if (World && EquipDA)
+	{
+		AEquipment* Equipment = nullptr;
+
+		//Weapon인 경우 WeaponInstant로 생성해준다.
+
+		UCustomPDA* T_CPDA = Cast<UCustomPDA>(EquipDA);
+		UCustomPDA* CPDA = T_CPDA? T_CPDA : nullptr;
+		
+
+		UWeaponPDA* WeaponPDA = Cast<UWeaponPDA>(EquipDA);
+		if (WeaponPDA)
+		{
+			Equipment = Cast<AWeapon_Instant>(World->SpawnActor<AActor>(AWeapon_Instant::StaticClass()));
+		}
+		else if(CPDA)
+		{
+			Equipment = Cast<AEquipment>(World->SpawnActor<AActor>(AEquipment::StaticClass()));// ItemObj->GetItemClass()));
+		}
+		
+		
+		if (Equipment)
+		{
+			//ItemObj->bIsDestoryed = false;
+			Equipment->ItemSetting = FItemSetting(EquipDA, 1, 0);
+			Equipment->SetMesh();
+			Equipment->SetItemState(EItemState::EIS_Pickup);
+			return Equipment;
+		}
+	}
+	return nullptr;
+}
+
+
+
 //Item의 Type별로 개수를 랜덤 지정한다.
 void UCustomInventoryLibrary::GenerateRandomCount(UNewItemObject* ItemObj)
 {
-	UE_LOG(LogTemp, Warning, TEXT("CustomInvLib::GenerateRandomCount"));
+	//UE_LOG(LogTemp, Warning, TEXT("CustomInvLib::GenerateRandomCount"));
 	int32 MAX_Generate = 1;
 	int32 MIN_Generate = 1;
 
@@ -146,6 +244,44 @@ void UCustomInventoryLibrary::GenerateRandomCount(UNewItemObject* ItemObj)
 }
 
 
+//bRenderInMainPass를 false로 하게되면 Rendering은 되지 않지만, Shadow는 렌더링 된다.
+// 이걸 사용하려면 Mesh가 Show되어야 한다. SetHiddenInGame을 True로 하면 안됨.
+
+/* Weapon을 제외한 장착중인 모든 Equipment를 Hide한다. */
+void UCustomInventoryLibrary::HideAllEquipment(UEquipmentComponent* EComp)
+{
+	UCustomPDA* CPDA;
+	/* 장착한 장비 모두 HIde하기 */
+	for (auto Equipped : EComp->EquipmentItems)
+	{
+		if (Equipped && Equipped->Equipment)
+		{
+			CPDA = Cast<UCustomPDA>(Equipped->Equipment->ItemSetting.DataAsset);
+
+			if (CPDA &&
+				(CPDA->EquipmentType == EEquipmentType::EET_Rifle
+					|| CPDA->EquipmentType == EEquipmentType::EET_Pistol))
+			{
+				continue;
+			}
+			Equipped->Equipment->SKMesh->SetRenderInMainPass(false);
+		}
+	}
+}
+
+
+/* 장착중인 모든 Equipment를 show 한다.*/
+void UCustomInventoryLibrary::ShowAllEquipment(UEquipmentComponent* EComp)
+{
+	for (auto Equipped : EComp->EquipmentItems)
+	{
+		if (Equipped && Equipped->Equipment)
+		{
+			
+			Equipped->Equipment->SKMesh->SetRenderInMainPass(true);
+		}
+	}
+}
 
 
 /////////////////////////////////////////////////////////////////////////

@@ -5,16 +5,17 @@
 #include "OpenWorldRPG/UI/QuickSlotSlotWidget.h"
 #include "OpenWorldRPG/MainCharacter.h"
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
+#include "OpenWorldRPG/NewInventory/EquipmentComponent.h"
 
 
 void UQuickSlotWidget::BindSlotWidget(class AMainCharacter* Player)
 {
-	
 	Player->OnQuickSlotUse.AddDynamic(this, &UQuickSlotWidget::UseItemInQuickSlot);
-	
+	Player->Equipment->OnWeaponSetSlot.AddDynamic(this,&UQuickSlotWidget::SetWeaponQuickSlot);
+	Player->Equipment->OnWeaponRemoveSlot.AddDynamic(this,&UQuickSlotWidget::RemoveWeaponQuickSlot);
 }
 
-
+/* 특정 Slot 하나씩 Register하는 방식이다.  (Inventory, Equipwidget 과는 다른 형식임 <- 얘들은 전체 refresh) */
 void UQuickSlotWidget::SetItemInQuickSlot(EQuickSlotNumber QuickSlotNum, UNewItemObject* ItemObj)
 {
 	if (ItemObj)
@@ -88,21 +89,40 @@ bool UQuickSlotWidget::CheckCanBeRegister(UNewItemObject* WantToSlot)
 
 	auto VestObj = Player->Equipment->GetEquipStorage(EEquipmentType::EET_Vest);
 
-	bool bCanbeSet = false;
+	bool bIsInPocketOrVest = false;
+	bool bCanRegist = false;
+
+
 	if (WantToSlot->MotherStorage == Player->PocketStorage)
 	{
-		bCanbeSet = true;
+		bIsInPocketOrVest = true;
 	}
 	else if (VestObj)
 	{
 		auto VestStorageObj = Cast<UItemStorageObject>(VestObj);
 		if (WantToSlot->MotherStorage == VestStorageObj)
 		{
-			bCanbeSet = true;
+			bIsInPocketOrVest = true;
 		}
 	}
 
-	return bCanbeSet;
+	//Pocket이나 Vest에 있는 경우 ItemType을 검증한다.
+	if (bIsInPocketOrVest)
+	{
+		EItemType ObjItemType = WantToSlot->ItemInfo.DataAsset->ItemType;
+		UGrenadePDA* GrenadeDA = Cast<UGrenadePDA>(WantToSlot->ItemInfo.DataAsset);
+		if (ObjItemType == EItemType::EIT_Food || ObjItemType == EItemType::EIT_Medical)
+		{
+			bCanRegist = true;
+		}
+		else if (GrenadeDA)
+		{
+			bCanRegist = true;
+		}
+	}
+
+
+	return bCanRegist;
 }
 
 
@@ -162,5 +182,38 @@ void UQuickSlotWidget::UseItemInQuickSlot(EQuickSlotNumber QuickSlotNum)
 			WantToUse->UseItem(World);
 		}
 		
+	}
+}
+
+
+void UQuickSlotWidget::SetWeaponQuickSlot(UNewItemObject* WantToSet)
+{
+	switch (WantToSet->RifleAssign)
+	{
+	case ERifleSlot::ERS_Primary:
+		QSlot_Primary->SetWeaponQuickSlot(WantToSet);
+	break;
+	case ERifleSlot::ERS_Sub:
+		QSlot_Sub->SetWeaponQuickSlot(WantToSet);
+	break;
+	case ERifleSlot::ERS_Pistol:
+		QSlot_Pistol->SetWeaponQuickSlot(WantToSet);
+	break;
+	}
+}
+
+void UQuickSlotWidget::RemoveWeaponQuickSlot(ERifleSlot WantToRemoveSlot)
+{
+	switch (WantToRemoveSlot)
+	{
+	case ERifleSlot::ERS_Primary:
+		QSlot_Primary->RemoveMountedObj();
+	break;
+	case ERifleSlot::ERS_Sub:
+		QSlot_Sub->RemoveMountedObj();
+	break;
+	case ERifleSlot::ERS_Pistol:
+		QSlot_Pistol->RemoveMountedObj();
+	break;
 	}
 }

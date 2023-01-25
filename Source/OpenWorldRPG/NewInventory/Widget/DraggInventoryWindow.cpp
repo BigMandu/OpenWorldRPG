@@ -9,6 +9,7 @@
 
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Blueprint/SlateBlueprintLibrary.h"
+#include "Blueprint/WidgetLayoutLibrary.h"
 
 #include "Components/CanvasPanelSlot.h"
 #include "Components/CanvasPanel.h"
@@ -22,53 +23,126 @@
 void UDraggInventoryWindow::NativeConstruct()
 {
 	Super::NativeConstruct();
-	if(GridInventory && GridInventory->StorageObj)
+	/*if(GridInventory && GridInventory->StorageObj)
 	{
-		StorageWidgetName->SetText(GridInventory->StorageObj->ItemInfo.DataAsset->ItemName);
+		StorageWidgetName->SetText(GridInventory->StorageObj->ItemInfo.DataAsset->ItemName);*/
 
 		UE_LOG(LogTemp, Warning, TEXT("DraggingInventoryWindow::Binding ClsoeWindow func"));
 		CloseButton->OnClicked.AddDynamic(this,&UDraggInventoryWindow::CloseWindow);
-	}
+	//}
 }
+
+FReply UDraggInventoryWindow::NativeOnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+	Super::NativeOnMouseButtonUp(InGeometry,InMouseEvent);
+	bMouseDown = false;
+
+	FEventReply ReturnReply = UWidgetBlueprintLibrary::DetectDragIfPressed(InMouseEvent, this, EKeys::LeftMouseButton);
+	ReturnReply = UWidgetBlueprintLibrary::ReleaseMouseCapture(ReturnReply);
+
+	OnReleaseWindow.Broadcast();
+
+	return FReply::Unhandled();//ReturnReply.NativeReply;
+}
+
 
 FReply UDraggInventoryWindow::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
 	Super::NativeOnMouseButtonDown(InGeometry,InMouseEvent);
-
-	bMouseDown = true;
-	/*MousePos = InGeometry.AbsoluteToLocal(InMouseEvent.GetScreenSpacePosition());
-	FEventReply DragPressEve = UWidgetBlueprintLibrary::DetectDragIfPressed(InMouseEvent, this, EKeys::LeftMouseButton);
-	FEventReply CaptureMouseEve = UWidgetBlueprintLibrary::CaptureMouse(DragPressEve,this);
-
-	FirstMousePos = InGeometry.AbsoluteToLocal(InMouseEvent.GetScreenSpacePosition());*/
 	
-	return DetectDragWidget(InMouseEvent,this); //CaptureMouseEve.NativeReply;
+	//FEventReply ReturnReply;
+	
+	if(InMouseEvent.GetEffectingButton() == EKeys::LeftMouseButton)
+	{
+		/*bMouseDown = true;
+
+		FirstMousePos = GetParent()->GetCachedGeometry().AbsoluteToLocal(InMouseEvent.GetScreenSpacePosition());
+
+		UE_LOG(LogTemp,Warning,TEXT("DraggInv : OnMouseButtonDown : FirstMousePos = %s "),*FirstMousePos.ToString());
+
+		ReturnReply = UWidgetBlueprintLibrary::DetectDragIfPressed(InMouseEvent, this, EKeys::LeftMouseButton);
+		ReturnReply = UWidgetBlueprintLibrary::CaptureMouse(ReturnReply,this);*/
+
+		DetectDragWidget(InMouseEvent,this);
+		//return  FReply::Unhandled(); //ReturnReply.NativeReply;
+	}
+	return FReply::Unhandled(); //ReturnReply.NativeReply;
 }
+
+/*
+FReply UDraggInventoryWindow::NativeOnMouseMove(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+	FReply ReturnReply = Super::NativeOnMouseMove(InGeometry,InMouseEvent);
+
+	if (bMouseDown) // && HeaderBorder->IsHovered())
+	{		
+			
+		FVector2D Offset = (GetParent()->GetCachedGeometry().AbsoluteToLocal(InMouseEvent.GetScreenSpacePosition()) - GetParent()->GetCachedGeometry().AbsoluteToLocal(InMouseEvent.GetLastScreenSpacePosition()))
+		* UWidgetLayoutLibrary::GetViewportScale(GetWorld()->GetGameViewport());
+		//FVector2D CurrentPosition =  //this-> Slot->GetPosition();
+
+		
+		//Slot->SetPosition(SlotPosition + Offset);
+
+
+
+		FVector2D MouseScreenPos = GetParent()->GetTickSpaceGeometry().AbsoluteToLocal(InMouseEvent.GetScreenSpacePosition());
+
+		const FVector2D ClickLoc = MouseScreenPos+Offset;//MouseScreenPos - FirstMousePos;
+
+		UE_LOG(LogTemp, Warning, TEXT("DraggInv : NativeOnMouseMove : Offset = %s "), *Offset.ToString());
+		UE_LOG(LogTemp, Warning, TEXT("DraggInv : NativeOnMouseMove : FirstMousePos = %s "), *FirstMousePos.ToString());
+		UE_LOG(LogTemp, Warning, TEXT("DraggInv : NativeOnMouseMove : MouseScreenPos = %s "), *MouseScreenPos.ToString());
+		UE_LOG(LogTemp, Warning, TEXT("DraggInv : NativeOnMouseMove : ClickLoc = %s "), *ClickLoc.ToString());
+
+		SetRenderTranslation(ClickLoc);
+	}
+	return ReturnReply;
+}
+*/
+
 
 FReply UDraggInventoryWindow::DetectDragWidget(const FPointerEvent& InMouseEvent, UWidget* DragWidget)
 {
-	if (InMouseEvent.GetEffectingButton() == EKeys::LeftMouseButton && HeaderBorder->IsHovered())
+	if (InMouseEvent.GetEffectingButton() == EKeys::LeftMouseButton)
 	{
-		FEventReply Reply;
-		Reply.NativeReply = FReply::Handled();
-
-		if (DragWidget)
+		OnDraggingWindow.Broadcast(this, InMouseEvent);
+		OnButtonDownWindow.Broadcast(this);
+		/*
+		if(HeaderBorder->IsHovered())
 		{
-			TSharedPtr<SWidget> SlateDetectedWidget = DragWidget->GetCachedWidget();
+
+			OnDraggingWindow.Broadcast(this, InMouseEvent);
 			
-			if (SlateDetectedWidget.IsValid())
-			{
-				//DetectDrag가 정상 호출된다면, NativeOnDragDetected가 호출된다.
-				Reply.NativeReply = Reply.NativeReply.DetectDrag(SlateDetectedWidget.ToSharedRef(),EKeys::LeftMouseButton);
-				
-				return Reply.NativeReply;
-			}
+			//FEventReply Reply;
+			//Reply.NativeReply = FReply::Handled();
+
+			//if (DragWidget)
+			//{
+			//	TSharedPtr<SWidget> SlateDetectedWidget = DragWidget->GetCachedWidget();
+			//
+
+			//	if (SlateDetectedWidget.IsValid())
+			//	{
+			//		//DetectDrag가 정상 호출된다면, NativeOnDragDetected가 호출된다.
+			//		Reply.NativeReply = Reply.NativeReply.DetectDrag(SlateDetectedWidget.ToSharedRef(),EKeys::LeftMouseButton);
+			//	
+			//		return Reply.NativeReply;
+			//	}
+			//}
+			return FReply::Handled();
 		}
+		else
+		{
+			OnButtonDownWindow.Broadcast(this);
+		}
+	*/
 	}
 	return FReply::Unhandled();
 }
 
 //이 이후의 루틴은 NewInventory의 NativeOnDrop이 호출된다.
+/*
 void UDraggInventoryWindow::NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation)
 {
 	Super::NativeOnDragDetected(InGeometry,InMouseEvent,OutOperation);
@@ -86,20 +160,21 @@ void UDraggInventoryWindow::NativeOnDragDetected(const FGeometry& InGeometry, co
 	OutOperation = DaDOper;
 }
 
+
 void UDraggInventoryWindow::NativeOnDragEnter(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
 {
 	UAdditionalDaDWidget* DragWidget = Cast<UAdditionalDaDWidget>(InOperation);
 	
 	if (DragWidget)
 	{
-		//지금 Dragging하고 있는게 Widget이고,
-		//Dragging 중인 Widget과 이 Widget이 다른 위젯이면 이 Widget을 비활성화 한다.
+		지금 Dragging하고 있는게 Widget이고,
+		Dragging 중인 Widget과 이 Widget이 다른 위젯이면 이 Widget을 비활성화 한다.
 		
-		/*if (DragWidget->AdditionalWidget->GetName() != GetName())
+		if (DragWidget->AdditionalWidget->GetName() != GetName())
 		{
 			UE_LOG(LogTemp, Warning, TEXT("DraggingInvWidget::HitTestInvisible"));
 			SetVisibility(ESlateVisibility::HitTestInvisible);
-		}*/
+		}
 	}
 	
 	
@@ -126,7 +201,7 @@ void UDraggInventoryWindow::NativeOnDragLeave(const FDragDropEvent& InDragDropEv
 	}
 	
 }
-
+*/
 void UDraggInventoryWindow::CloseWindow()
 {
 	UE_LOG(LogTemp,Warning,TEXT("DraggingInventoryWindow::ClsoeWindow func called"));

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "OpenWorldRPG/GameData/MyGameInstance.h"
 #include "StatManagementComponent.generated.h"
 
 /*
@@ -91,6 +92,11 @@ public:
 
 
 	FStrengthStats* CurrentMAXStrengthStats;
+
+
+
+	float TestHPRecPts;
+
 private:
 	
 	FCharacterCurrentStat CurrentStat;
@@ -105,6 +111,8 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Stamina")
 	EStaminaStatus StaminaStatus;
 
+	
+
 
 protected:
 	virtual void BeginPlay() override;
@@ -118,10 +126,20 @@ public:
 	void StrengthLevelUp(int32 SetLevel);
 	FORCEINLINE EStaminaStatus GetStaminaStatus() {return StaminaStatus;}
 	void StaminaManage(bool bIsSprintKeyDown);
+
+	FORCEINLINE float GetCurrentHealth() { return CurrentStat.Health; }
+	FORCEINLINE float GetCurrentStamina() { return CurrentStat.Stamina; }
+
 	float GetStaminaRatio();
 	float GetHealthRatio();
 
 	void DamageApply(float Damage);
+	
+	void AddHPPoint(float RecoveryPoint);
+	void AddStaminaPoint(float RecoveryPoint);
+
+	void AddCurrentHPRecoveryPoint(float Points);
+	void RemoveCurrentHPRecoveryPoint(float Points);
 
 private:
 	//FORCEINLINE void SetStaminaStatus(EStaminaStatus SetStatus) { StaminaStatus = SetStatus; }

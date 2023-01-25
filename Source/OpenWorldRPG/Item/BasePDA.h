@@ -63,6 +63,7 @@ public:
 	EAmmoType AmmoType;
 
 
+
 	/**** Stackable ****/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Stack")
 	bool bCanStack;

@@ -35,6 +35,7 @@ AEquipment::AEquipment() : Super()
 	//Mesh->SetupAttachment(GetRootComponent());
 
 	
+	
 
 }
 
@@ -47,7 +48,7 @@ void AEquipment::BeginPlay()
 		SettingStorage();
 	}*/
 	
-
+	
 	if (ItemSetting.DataAsset)
 	{
 		CPDA = Cast<UCustomPDA>(ItemSetting.DataAsset);
@@ -61,6 +62,22 @@ void AEquipment::BeginPlay()
 		}
 	}
 }
+
+void AEquipment::OnConstruction(const FTransform& Transform)
+{
+	Super::OnConstruction(Transform);
+
+	/*if (SKMesh && Mesh)
+	{
+		SetRootComponent(Mesh);
+		SKMesh->SetupAttachment(GetRootComponent());
+	}
+	else if (SKMesh && !Mesh)
+	{
+		SetRootComponent(SKMesh);
+	}*/
+}
+
 void AEquipment::SettingStorage()
 {
 	StorageObj = NewObject<UItemStorageObject>();
@@ -247,13 +264,44 @@ bool AEquipment::Equip(AActor* Actor, ERifleSlot RifleSlot)
 
 	if (BChar)
 	{
-		bool bIsInvEquipSwapState = false;
+		bool bIsInvEquipSwapState = false;	
+
+		// Mesh Setting
+		SKMesh->SetHiddenInGame(false);
+		SKMesh->SetSimulatePhysics(false);
+		SKMesh->SetEnableGravity(false);
+
+		Mesh->SetHiddenInGame(true); //Static Mesh를 안보이게 하고, Collision을 끈다.
+		Mesh->SetSimulatePhysics(false);
+		Mesh->SetEnableGravity(false);
+		Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		
+
+		//장착할수 없는 Type이거나 // 이미 같은 타입의 장비를 장착 중 이라면 false를 리턴하고 마친다.
+		if ((Cast<UCustomPDA>(this->ItemSetting.DataAsset)->bCanEquip == false) || (BChar->Equipment->IsSameTypeExist(this, RifleSlot)))
+		{
+			
+			// Mesh Setting
+			SKMesh->SetHiddenInGame(true);
+			SKMesh->SetSimulatePhysics(true);
+			SKMesh->SetEnableGravity(true);
+
+			Mesh->SetHiddenInGame(false);
+			Mesh->SetSimulatePhysics(true);
+			Mesh->SetEnableGravity(true);
+			Mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+			
+			return false;
+		}
+
+
+		//아래 코드는 Swap을 하는 코드다. Swap기능은 없앴다.
 		/*이 무기의 타입과 일치하는 무기가 이미 있다면 아래 2가지 조건에 따라 분기한다.
 		 * 1. 이 무기가 월드에 스폰된 상태라면, Inventory에 추가를 시도한다.
 		 * 2. 이 무기가 Inventory에 있는 상태라면 원래 장착된 장비와 바꿔 장착 한다.
 		 * 일치하는 무기가 없다면 Equip함수를 호출한다.
 		 */
-		if (BChar->Equipment->IsSameTypeExist(this,RifleSlot))
+		/*
 		{
 			if (GetItemState() == EItemState::EIS_Spawn)
 			{
@@ -278,9 +326,8 @@ bool AEquipment::Equip(AActor* Actor, ERifleSlot RifleSlot)
 			//{
 			////장비간 Swap 기능은 없앰.
 
-			//	/* 장착 하려는 장비가 Pickup상태(Inventory에 있는 상태)면
-			//	 * 장비 Swap을 진행한다.
-			//	 */
+			//	// 장착 하려는 장비가 Pickup상태(Inventory에 있는 상태)면
+			//	 // 장비 Swap을 진행한다.
 			//	BeforeEquippedObj = BChar->Equipment->GetEquippedWeaponSameType(EEquipmentType::EET_MAX, ItemObj, RifleSlot);
 			//	if (BeforeEquippedObj != nullptr)
 			//	{
@@ -288,28 +335,29 @@ bool AEquipment::Equip(AActor* Actor, ERifleSlot RifleSlot)
 			//	}
 			//}
 		}
-
+	*/
 		/*if (bIsInvEquipSwapState)
 		{
 			//Equip을 하고나서 기존에 장착했던걸 옮긴다.. 새로 장착할 이 weapon이 attach socket에 부착되는 단점이 있지만
 			//Inventory 정리가 더 깔끔하기 때문에 이렇게 했다.
 			SwapBetweenInvAndEquipped(BChar, BeforeEquippedObj);
 		}*/
-
-		bReturn = StepEquip(Actor, RifleSlot);
 		
-		
+		bReturn = StepEquip(Actor, RifleSlot);		
 
 	}
 
 	return bReturn;
 }
 
+
 bool AEquipment::StepEquip(AActor* Actor, ERifleSlot RifleSlot)
 {
 	bool bReturn = false;
+
 	ABaseCharacter* BChar = Cast<ABaseCharacter>(Actor);
 	const USkeletalMeshSocket* Socket = nullptr;
+
 	CPDA = Cast<UCustomPDA>(ItemSetting.DataAsset);
 	switch (CPDA->EquipmentType)
 	{
@@ -322,31 +370,34 @@ bool AEquipment::StepEquip(AActor* Actor, ERifleSlot RifleSlot)
 	case EEquipmentType::EET_Backpack:
 		Socket = BChar->GetMesh()->GetSocketByName("BackpackSocket");
 		break;
+		//Weapon Parts면 false를 리턴한다.
+	case EEquipmentType::EET_WeaponParts:
+		return false;
+		break;
 	}
 
 	//Socket이 있거나, WeaponType이면 해당 (Weapon은 WeaponClass에서 진행하기 때문에 Socket이 없음)
 	//if (Socket != nullptr || (ItemSetting.DataAsset->EquipmentType == EEquipmentType::EET_Rifle || ItemSetting.DataAsset->EquipmentType == EEquipmentType::EET_Pistol))
+	if (Socket != nullptr)
 	{
-		if (Socket != nullptr)
-		{
-			Socket->AttachActor(this, BChar->GetMesh());
-			SetActorRelativeTransform(CPDA->MeshAttachTransform);
-		}
-
-		// Mesh Setting
-		SKMesh->SetHiddenInGame(false);
-		Mesh->SetHiddenInGame(true); //Static Mesh를 안보이게 하고, Collision을 끈다.
-		Mesh->SetSimulatePhysics(false);
-		Mesh->SetEnableGravity(false);
-		Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
-		SetOwningPlayer(BChar);
-		
-		//Main에 있는 Equipment에 Add해준다.
-		//BChar->Equipment->AddEquipment(this);
-		BChar->Equipment->AddEquipment(ItemSetting, this);
-
+		Socket->AttachActor(this, BChar->GetMesh());
+		SetActorRelativeTransform(CPDA->MeshAttachTransform);
+	}
+	
+	SetOwningPlayer(BChar);
+	
+	//Main에 있는 Equipment에 Add해준다.
+	AMainCharacter* Main = Cast<AMainCharacter>(BChar);
+	if (BChar->Equipment->AddEquipment(ItemSetting, this) && Main)
+	{
 		bReturn = true;
+
+		//만일, MainChar의 Cammode가 fpsmode라면 hide함수를 호출해 그림자만 켠다.
+		// V keyDN에도 있는 기능이지만, FPS모드일때 장착하면 꺼지지 않아 새로 추가했다.
+		if (Main->CameraMode == ECameraMode::ECM_FPS)
+		{
+			UCustomInventoryLibrary::HideAllEquipment(BChar->Equipment);
+		}
 	}
 
 	if (CPDA->EquippedSound)
@@ -354,8 +405,8 @@ bool AEquipment::StepEquip(AActor* Actor, ERifleSlot RifleSlot)
 		UGameplayStatics::SpawnSoundAttached(CPDA->EquippedSound, OwningPlayer->GetRootComponent());
 		//UGameplayStatics::PlaySoundAtLocation(GetWorld(), EquippedSound, OwningPlayer->GetActorLocation()
 	}
-
-	return bReturn;
+	
+	return true;
 }
 
 
@@ -398,6 +449,10 @@ void AEquipment::Remove()
 {
 	/* 아무것도 안함. .. 음..*/
 	//Weapon의 Remove가 있음. 꼭 호출해야됨.
+
+
+	SKMesh->SetHiddenInGame(true);
+	Mesh->SetHiddenInGame(true);
 
 	//if (ItemSetting.DataAsset->bHasStorage)// && EquipInventoryComp)
 	{

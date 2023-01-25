@@ -13,7 +13,7 @@
 
 #include "Containers/Array.h"
 
-#define DEBUG 0
+#define DEBUG_INVCOMP 0
 // Sets default values for this component's properties
 UNewInventoryComponent::UNewInventoryComponent()
 {
@@ -39,7 +39,7 @@ void UNewInventoryComponent::BeginPlay()
 
 bool UNewInventoryComponent::RemoveItem(UNewItemObject* ItemObj)
 {
-#if DEBUG
+#ifdef DEBUG_INVCOMP
 	UE_LOG(LogTemp, Warning, TEXT("NewInvComp::Remove"));
 #endif	
 	
@@ -88,7 +88,7 @@ bool UNewInventoryComponent::TryAddItem(UNewItemObject* ItemObj)
 		/* Item추가에 실패했고 Item을 돌릴 수 있다면 */
 		if (!bResult && ItemObj->bCanRotated)
 		{
-#if DEBUG
+#ifdef DEBUG_INVCOMP
 			UE_LOG(LogTemp, Warning, TEXT("NewInvComp::AddItem = Inventory is full, Try Item Rotate."));
 #endif
 			/* Item을 돌리고 다시 추가한다. */
@@ -99,13 +99,13 @@ bool UNewInventoryComponent::TryAddItem(UNewItemObject* ItemObj)
 			if (!bResult)
 			{
 				ItemObj->ItemRotate();
-#if DEBUG
+#ifdef DEBUG_INVCOMP
 				UE_LOG(LogTemp, Warning, TEXT("NewInvComp::AddItem = Inventory is Completely full"));
 #endif
 			}
 		}
 	}
-#if DEBUG
+#ifdef DEBUG_INVCOMP
 	UE_LOG(LogTemp, Warning, TEXT("NewInvComp::AddItem = Item Obj is invalid"));
 #endif
 	return bResult;
@@ -113,11 +113,11 @@ bool UNewInventoryComponent::TryAddItem(UNewItemObject* ItemObj)
 
 bool UNewInventoryComponent::TryAddItemStep(UNewItemObject* ItemObj)
 {
-	UE_LOG(LogTemp, Warning, TEXT("UNEWINVCOMP : TryaddItemStep"));
+//	UE_LOG(LogTemp, Warning, TEXT("UNEWINVCOMP : TryaddItemStep"));
 	bool bResult = false;
 	if (ItemObj)
 	{
-		UE_LOG(LogTemp, Warning,  TEXT("UNEWINVCOMP : Item Obj is valid"));
+//		UE_LOG(LogTemp, Warning,  TEXT("UNEWINVCOMP : Item Obj is valid"));
 		for (int32 iter = 0; iter < InventoryItems.Num(); ++iter)
 		{
 			bResult = IsAvailableSpace(ItemObj, iter);
@@ -130,7 +130,10 @@ bool UNewInventoryComponent::TryAddItemStep(UNewItemObject* ItemObj)
 				//SetItemState(EItemState::EIS_Pickup);
 				return bResult;
 			}
+#ifdef DEBUG_INVCOMP
 			UE_LOG(LogTemp, Warning, TEXT("UNEWINVCOMP : there is no space"));
+#endif // DEBUG_INVCOMP
+			
 		}
 	}
 	else
@@ -166,7 +169,7 @@ void UNewInventoryComponent::AddItemAtIndex(UNewItemObject* ItemObj, int32 Index
 			}
 		}
 	}
-#if DEBUG
+#ifdef DEBUG_INVCOMP
 	UE_LOG(LogTemp, Warning, TEXT("NewInvComp::AddItem = Success Add Item"));
 #endif			
 	/*	AddItem이 성공적이면 UNewInventoryGrid::RefreshInventory를 호출하기 위해
@@ -212,7 +215,7 @@ bool UNewInventoryComponent::IsAvailableSpace(UNewItemObject* ItemObj, int32 Top
 			}
 			else
 			{
-#if DEBUG
+#ifdef DEBUG_INVCOMP
 				UE_LOG(LogTemp, Warning, TEXT("NewInvComp::IsAvaSpace = Tile is invalid, wrong range"));
 #endif
 				bReturn = false;
@@ -274,13 +277,13 @@ UNewItemObject* UNewInventoryComponent::GetItemAtIndex(int32 index)
 	if (index >= 0 && index < InventoryItems.Num())
 	{
 		ReturnObj = InventoryItems[index];
-#if DEBUG
+#ifdef DEBUG_INVCOMP
 		UE_LOG(LogTemp, Warning, TEXT("NewInvComp::GetItem = Success get Item Obj at index"));
 #endif
 	}
 	else
 	{
-#if DEBUG
+#ifdef DEBUG_INVCOMP
 		UE_LOG(LogTemp, Warning, TEXT("NewInvComp::GetItem = Index is wrong range"));
 #endif
 	}
@@ -349,12 +352,16 @@ bool UNewInventoryComponent::TryAddItem(UItemStorageObject* StorageObj, FItemSet
 
 	if(Obj == nullptr)
 	{
-		UE_LOG(LogTemp,Warning,TEXT("InvComp::TryAddItem / No Obj, call CreateObj func "));
+#ifdef DEBUG_INVCOMP
+		//UE_LOG(LogTemp,Warning,TEXT("InvComp::TryAddItem / No Obj, call CreateObj func "));
+#endif
 		ItemObj = UCustomInventoryLibrary::CreateObject(ItemSetting, bCreated); //CreateObject(ItemSetting, bCreated);
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("InvComp::TryAddItem / already has Obj"));
+#ifdef DEBUG_INVCOMP
+		//UE_LOG(LogTemp, Warning, TEXT("InvComp::TryAddItem / already has Obj"));
+#endif
 		ItemObj = Obj;
 		bCreated = true;
 	}
@@ -378,11 +385,19 @@ bool UNewInventoryComponent::TryAddItem(UItemStorageObject* StorageObj, FItemSet
 				if(Item.Key->ItemInfo.DataAsset->bCanStack == false) continue;
 				
 
-				bAddCount = AddItemCount(ItemObj, Item.Key);
-				//if(ItemObj->ItemInfo.Count > 0) continue;
+				//ItemAddCount를 했다면 for문을 break한다.
+				if (AddItemCount(ItemObj, Item.Key))
+				{
+					bAddCount = true;
+					break;
+
+				}
 			}
 		}
-		UE_LOG(LogTemp, Warning, TEXT("InvComp::TryAddItem / confirm, Call StorageObj::TryAddItem"));
+#ifdef DEBUG_INVCOMP
+		//UE_LOG(LogTemp, Warning, TEXT("InvComp::TryAddItem / confirm, Call StorageObj::TryAddItem"));
+#endif
+		
 		if (bAddCount)
 		{
 			return true;
@@ -434,7 +449,7 @@ bool UNewInventoryComponent::AddItemCount(UNewItemObject* DroppedItemObj, UNewIt
 		OnItemObj->AddCount(DroppedStackCount);
 
 		//Item이 Spawn이라 Storage가 없는 경우가 있ㄷㄷㅏ.
-		if(DroppedItemObj->MotherStorage)
+		//if(DroppedItemObj->MotherStorage)
 		{
 			RemoveItemCount(DroppedItemObj, DroppedStackCount);
 			//DroppedItemObj->MotherStorage->RemoveItem(DroppedItemObj);
@@ -455,8 +470,10 @@ bool UNewInventoryComponent::AddItemCount(UNewItemObject* DroppedItemObj, UNewIt
 //ItemObj의 Count를 안전하게 지우는 함수
 void UNewInventoryComponent::RemoveItemCount(UNewItemObject* RemoveItemObj, int32 RemoveCount)
 {	
-	int32 RemoveStackCount = FMath::Clamp<int32>(RemoveItemObj->ItemInfo.Count - RemoveCount,0, RemoveItemObj->ItemInfo.Count - RemoveCount);
+	int32 RemoveStackCount = FMath::Clamp<int32>(RemoveItemObj->ItemInfo.Count - RemoveCount, 0, RemoveItemObj->ItemInfo.Count - RemoveCount);
+#ifdef DEBUG_INVCOMP
 	UE_LOG(LogTemp,Warning,TEXT("InvComp::RemoveItemCnt / RemoveStackCount is %d"),RemoveStackCount);
+#endif
 	//있던것 - 뺄갯수가 0이하면 RemoveItem을 진행한다.
 	if (RemoveStackCount <= 0)
 	{
@@ -469,6 +486,12 @@ void UNewInventoryComponent::RemoveItemCount(UNewItemObject* RemoveItemObj, int3
 			RemoveItemObj->bIsPendingDelete = true;
 			RemoveItemObj->RemoveCount(RemoveCount);
 			RemoveItemObj->MotherStorage->RemoveItem(RemoveItemObj);
+		}
+		else
+		{
+			//MotherStorage가 없는 경우 -> Spawn된 Item인 경우(Craft, Pickup)
+			//그냥 RemoveCount를 진행한다. ItemClass의 Destory는 Craft, Pickup에서 진행.
+			RemoveItemObj->RemoveCount(RemoveCount);
 		}
 	}
 	else

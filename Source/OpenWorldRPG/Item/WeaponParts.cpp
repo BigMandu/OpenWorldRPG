@@ -3,3 +3,8 @@
 
 #include "OpenWorldRPG/Item/WeaponParts.h"
 
+AWeaponParts::AWeaponParts()
+{
+	ItemState = EItemState::EIS_Spawn;
+	OwnerWeapon = nullptr;
+}

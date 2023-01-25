@@ -26,7 +26,7 @@ void UBTService_TryFindObject::TickNode(UBehaviorTreeComponent& OwnerComp, uint8
 	if(AlphaTime >= 1.0f || BBComp->GetValueAsBool(AICon->bOutOfAmmoKey))
 	{
 		//Time = 0.f;
-		BBComp->SetValueAsBool(AICon->bTryFindObejct, true);
+		BBComp->SetValueAsBool(AICon->bTryFindObejctKey, true);
 	}
 
 }

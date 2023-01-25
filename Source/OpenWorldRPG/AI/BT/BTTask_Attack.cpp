@@ -11,7 +11,34 @@ UBTTask_Attack::UBTTask_Attack()
 EBTNodeResult::Type UBTTask_Attack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	EBTNodeResult::Type Result = EBTNodeResult::Succeeded;
-	UE_LOG(LogTemp, Warning, TEXT("Attack!"));
+	UE_LOG(LogTemp, Warning, TEXT("UBTTask_Attack::Attack!"));
+	
+	BBComp = OwnerComp.GetBlackboardComponent();
+	AICon = Cast<AEnemyAIController>(OwnerComp.GetAIOwner());
+	AIChar = Cast<AEnemyCharacter>(AICon->GetCharacter());
+
+
+	FiringWeapon();
 
 	return Result;
+}
+
+
+void UBTTask_Attack::FiringWeapon()
+{
+	CheckWeapon();
+	AIChar->EquippedWeapon->StartFire();
+}
+
+
+void UBTTask_Attack::CheckWeapon()
+{
+	AIChar->EquippedWeapon->ChangeSafetyLeverForAI(EWeaponFiringMode::EWFM_SemiAuto);
+	AIChar->EquippedWeapon->bLMBDown = false;
+
+	if (AIChar->EquippedWeapon->AmmoLeftInMag <= 0)
+	{
+		AIChar->EquippedWeapon->Reload();
+	}
+
 }

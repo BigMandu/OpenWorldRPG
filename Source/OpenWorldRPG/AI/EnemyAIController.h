@@ -65,9 +65,12 @@ public:
 	const FName ObjectKey = FName("Object");
 
 	//FVector
-	const FName OriginPosKey = FName("OriginPos");
 	const FName PatrolPointIndexKey = FName("PatrolPointIndex");
+	const FName OriginPosKey = FName("OriginPos");	
 	const FName TargetLocationKey = FName("TargetLocation");
+	const FName LastTargetLocationKey = FName("LastTargetLocation");
+	const FName LastTargetRotationKey = FName("LastTargetRotation");
+	const FName EstimatedLocationOfTargetKey = FName("EstimatedLocation");
 	//const FName PatrolPosKey = FName("PatrolPos");
 	//const FName HearLocation = FName("HearLocation");
 	//const FName AttackableLocationKey = FName("AttackableLocation");
@@ -78,8 +81,17 @@ public:
 	const FName bHearEnemyKey = FName("HearEnemy");
 	const FName bCanAttackKey = FName("CanAttack");
 	const FName bHasPatrolPointsKey = FName("HasPatrolPoints");
+	
+	//DecideBranch boolean
 	const FName bOutOfAmmoKey = FName("OutOfAmmo");
-	const FName bTryFindObejct = FName("TryFindObject");
+	const FName bTryFindObejctKey = FName("TryFindObject");
+	const FName bNeedToCheckKey = FName("NeedToCheck");
+	const FName bNoWeaponKey = FName("NoWeapon");
+	const FName bLowHPKey = FName("LowHP");
+	const FName bLowAmmoKey = FName("LowAmmo");
+	const FName bWasEngageKey = FName("WasEngage");
+	const FName bInEnemyFOVKey = FName("InEnemyFOV");
+	
 
 
 	/*********************************************/
@@ -101,7 +113,7 @@ public:
 	UFUNCTION()
 	void DetectedTarget(AActor* Target, FAIStimulus Stimulus);
 
-	void DetectedCharacter(ABaseCharacter* Player, FAIStimulus Stimulus);
+	void DetectedEnemy(ABaseCharacter* Player, FAIStimulus Stimulus);
 	//void DetectedObject(AInteractable* Obj, FAIStimulus Stimulus);
 	void DetectedObject(AActor* Obj, FAIStimulus  Stimulus);
 
@@ -120,6 +132,7 @@ public:
 	void AttackMoving(const FVector Vec, FVector RightVec);
 
 	
+	void DecideWhatToDoAfterDetected();
 
 	/**********   Update BlackBoard Key func  ***********/
 	//BT Task에서 사용하기 위한 함수인데 여기에서도 씀.

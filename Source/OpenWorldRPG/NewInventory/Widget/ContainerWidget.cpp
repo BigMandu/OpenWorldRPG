@@ -24,6 +24,7 @@ void UContainerWidget::InitContainerWidget(AActor* actor)
 	{
 		ContainerGridwidget->StorageObj = Container->ContainerStorage;
 		ContainerGridwidget->GridInit();
+
 		//ContainerGridwidget->GridInitialize(Container->ContainerInventoryComp, Container->ContainerInventoryComp->TileSize);
 
 	}

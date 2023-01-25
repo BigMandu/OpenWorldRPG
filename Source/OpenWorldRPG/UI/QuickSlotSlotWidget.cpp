@@ -20,6 +20,21 @@ void UQuickSlotSlotWidget::RemoveMountedObj()
 	SlotBorder->ClearChildren();
 }
 
+
+void UQuickSlotSlotWidget::SetWeaponQuickSlot(UNewItemObject* WantToSlot)
+{
+	if(WItemWidget == nullptr) return;
+	UNewItemwidget* ItemWidget = CreateWidget<UNewItemwidget>(this, WItemWidget);
+	if(ItemWidget == nullptr) return;
+
+	SlotBorder->ClearChildren();
+	ItemWidget->Tilesize = 40.f;
+	ItemWidget->ItemObj = WantToSlot;
+	ItemWidget->Refresh();
+
+	SlotBorder->AddChild(ItemWidget);
+}
+
 /**등록 여부를 체크한 뒤에
 * 등록을 진행한다.
 * QuickSlot 특성상, 동일 슬롯에 등록을 요청하면 기존에 있던 Item정보는 삭제 되도록 한다.
@@ -27,28 +42,24 @@ void UQuickSlotSlotWidget::RemoveMountedObj()
 */
 void UQuickSlotSlotWidget::RegisterQuickSlot(UNewItemObject* WantToSlot)
 {
-	EItemType ObjItemType = WantToSlot->ItemInfo.DataAsset->ItemType;
-	AMainController* PlayerCon = Cast<AMainController>(GetOwningPlayer());
+	EItemType ObjItemType = WantToSlot->ItemInfo.DataAsset->ItemType;	
 	
-	if(WItemWidget && PlayerCon)
-	{
-		//bool bCanRegister = PlayerCon->MainHud->QuickSlot->CheckCanBeRegister(WantToSlot);
-		if(ObjItemType == EItemType::EIT_Food || ObjItemType == EItemType::EIT_Medical ) //&& bCanRegister
-		{
-			UNewItemwidget* ItemWidget = CreateWidget<UNewItemwidget>(this, WItemWidget);
+	if(WItemWidget)
+	{		
+		UNewItemwidget* ItemWidget = CreateWidget<UNewItemwidget>(this, WItemWidget);
 
-			Initialize();
-			SlotBorder->ClearChildren();
+		Initialize();
+		SlotBorder->ClearChildren();
 			
-			SetMountedObject(WantToSlot);
-			WantToSlot->bIsRegQuickSlot = true;
+		SetMountedObject(WantToSlot);
+		WantToSlot->bIsRegQuickSlot = true;
 
-			ItemWidget->Tilesize = 70.f;
-			ItemWidget->ItemObj = WantToSlot;
-			ItemWidget->Refresh();
+		ItemWidget->Tilesize = 70.f;
+		ItemWidget->ItemObj = WantToSlot;
+		ItemWidget->Refresh();
 
-			SlotBorder->AddChild(ItemWidget);
-		}
+		SlotBorder->AddChild(ItemWidget);
+		
 	}
 }
 
@@ -65,7 +76,6 @@ bool UQuickSlotSlotWidget::NativeOnDrop(const FGeometry& InGeometry, const FDrag
 		{
 			PlayerCon->MainHud->QuickSlot->SetItemInQuickSlot(QuickSlotNumber,DDOper->ItemObj);
 		}
-		//RegisterQuickSlot(DDOper->ItemObj);
 	}
 
 	bReturn = false;

@@ -13,5 +13,17 @@ UCLASS()
 class OPENWORLDRPG_API AWeaponParts : public AEquipment
 {
 	GENERATED_BODY()
+private:
+	UNewItemObject* OwnerWeapon;
+public:
+	AWeaponParts();
+
+
+
+	//UNewItemObject* GetOwnerWeapon();
+
+	//void SetOwnerWeapon(UNewItemObject* OwnerWeapon);
+
+	//void RemoveOwnerWeapon(UNewItemObject* OwnerWeapon);
 	
 };

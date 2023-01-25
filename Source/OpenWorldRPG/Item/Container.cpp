@@ -31,23 +31,7 @@ AContainer::AContainer()
 	StimuliComp = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("StimuliComp"));
 	StimuliComp->bAutoRegister = true;
 	
-
-	/*Mesh->SetSimulatePhysics(false);
-	Mesh->SetEnableGravity(true);
-	Mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-
-	Mesh->SetCollisionObjectType(ECollisionChannel::ECC_WorldStatic);
-	Mesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);*/
-
 	bHasSpawnItem = false;
-	/*Mesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-	Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
-	Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_EngineTraceChannel2, ECollisionResponse::ECR_Block);*/
-
-
-	
-
-
 	
 
 	//WidgetBlueprint'/Game/Inventory/WBP_LootBox.WBP_LootBox'
@@ -72,7 +56,6 @@ AContainer::AContainer()
 	}
 	*/
 	
-	//LootItemCount = 1;
 }
 
 void AContainer::PostInitializeComponents()
@@ -149,27 +132,12 @@ void AContainer::OpenContainer(AActor* Actor)
 	}
 }
 
-/*
-	시작하자마자 LootBox Interaction시 LootBox위젯이 나오지 않음.
-	인벤토리를 한번 보고나면 보임... ->> 해결해야됨.
-*/
 void AContainer::ShowWidget(AMainController* MainCon)
 {
 	UNewInventory* MainInventory = Cast<UNewInventory>(MainCon->MainHud->NewInventoryWidget);
 	if (MainInventory)
 	{
 		LootWidgetComp->CreateInteractionWidget(MainCon, this); //새로추가
-
-		//LootBoxWidget = CreateWidget<ULootBoxWidget>(MainCon, WLootBoxWidget);
-		//if (LootBoxWidget)
-		//{
-		//	LootBoxWidget->InitLootBoxWidget(this);
-
-		//	UE_LOG(LogTemp, Warning, TEXT("LootBox::ShowWidget, Widget name : %s"), *LootBoxWidget->GetFName().ToString());
-		//	//NewInventory의 오른쪽 위젯에 LootBoxWidget을 넣어준다.
-		//	MainInventory->SetRightWidget(LootBoxWidget);
-		//	MainCon->ShowInventory_Implementation();// ToggleInventory();
-		//}
 	}
 }
 

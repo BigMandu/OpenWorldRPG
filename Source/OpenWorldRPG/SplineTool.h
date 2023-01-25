@@ -37,7 +37,7 @@ struct FSplineElement
 	class UMaterialInstance* WantToPlaceDecal;
 
 	UPROPERTY(EditAnywhere, Category = "SplineTool")
-	float GapOffset = 1.f;
+	float GapOffset = 50.f;
 
 	//UPROPERTY(EditAnywhere, Category = "SplineTool")
 	//EMeshForwardAxis ForwardAxis;
@@ -67,10 +67,18 @@ protected:
 	float Gap;
 	//TArray<UInstancedStaticMeshComponent*>ISMCompStoredArray;
 	TArray<UHierarchicalInstancedStaticMeshComponent*>ISMCompStoredArray;
+	
+	UHierarchicalInstancedStaticMeshComponent* HISMComp;
 
 	TArray<UMaterialInstance*> DecalArray;
 
 public:	
+	UPROPERTY(EditAnywhere, Category = "SplineTool")
+	bool bSetNewVersion;
+
+	UPROPERTY(EditAnywhere, Category = "SplineTool")
+	FSplineElement NewSplineSetting;
+
 	UPROPERTY(EditAnywhere, Category = "SplineTool")
 	class UBillboardComponent* Billboard;
 
@@ -101,6 +109,8 @@ public:
 	FTransform AdjustPreviouseleRotation(FVector CurrenteleVec, FTransform PreviousElement);
 
 	FTransform CalculateFinalPlacedElement(FVector Vec, FVector RotVec, FTransform ElementTransform);
+
+	void NewMeshSpline();
 
 	void MeshSpline();
 	void DecalSpline();

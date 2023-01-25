@@ -94,7 +94,7 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly, Category = "WidgetVariable")
 	TSubclassOf<UUserWidget> WNewItemWidget = nullptr;
-
+	
 
 	/******************** Storage ********************/
 	//Grid에 담긴 Widget을 저장한다.

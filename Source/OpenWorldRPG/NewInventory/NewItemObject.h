@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 #include "OpenWorldRPG/NewInventory/Library/ItemInterface.h"
+#include "OpenWorldRPG/NewInventory/Library/InventoryStruct.h"
 #include "NewItemObject.generated.h"
 
 /**
@@ -15,8 +16,10 @@ class AEquipment;
 
 class UTexture2D;
 class UTextBlock;
+
 class UNewInventoryGrid;
 class UNewInventoryComponent;
+class UEquipmentComponent;
 class UItemStorageObject;
 class UEquipmentSlot;
 class UCustomPDA;
@@ -53,12 +56,14 @@ public:
 	UMaterialInterface* iconRotated;
 
 	bool bCanRotated;
+	
+	
+	bool bTempRotate = false;
 	bool bRotated = false;
+	
 	bool bCanEquip;
 	bool bIsDestoryed;
-
 	bool bIsRegQuickSlot;
-
 	bool bIsPendingDelete = false;
 
 	//when you Dragging NewItemWidget this Var turn True.
@@ -75,17 +80,28 @@ public:
 
 	UItemStorageObject* MotherStorage;
 	UEquipmentComponent* MotherEquipComp;
+	class UWeaponPDA* OwnerWeaponPDA;
+
+	TWeakObjectPtr<class UWeaponPartsManagerObject> WeaponPartsManager;
+	//class UWeaponPartsWidget* MotherWeaponPartsWidget;
 	UEquipmentSlot* SettedSlot;
 
 	ERifleSlot RifleAssign;
 
+	//GridWidget에서 On-Drop시에 Rotate값을 확정한다. (TempRotate값을 Rotate값으로 넣어주기만 한다.)
+	void SetItemRotate();
 
-	FIntPoint GetItemSize();
-
-	UClass* GetItemClass();
+	//DragDefaultVisual만 회전시킨다.
 	void ItemRotate();
 
 	UMaterialInterface* GetItemIcon();
+	UMaterialInterface* GetTempItemIcon();
+	FIntPoint GetItemSize();
+	FIntPoint GetTempItemSize();
+
+
+	UClass* GetItemClass();
+	
 
 	FORCEINLINE void SetLinkSlot(UEquipmentSlot* WantToLinkSlot) { SettedSlot = WantToLinkSlot; }
 	void RemoveLinkSlot();

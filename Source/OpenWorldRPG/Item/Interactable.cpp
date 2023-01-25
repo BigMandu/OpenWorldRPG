@@ -18,10 +18,14 @@ AInteractable::AInteractable()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
+	//DummyComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DummyComponent"));
+
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Static Mesh"));
 	SKMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMesh"));
 
-	RootComponent = Mesh;
+	//SetRootComponent(DummyComp);
+	SetRootComponent(Mesh);
+	//Mesh->SetupAttachment(GetRootComponent());
 	SKMesh->SetupAttachment(GetRootComponent());
 
 	//InteractType = EInteractType::EIT_Item;
@@ -65,9 +69,12 @@ void AInteractable::SetMesh()// UCustomPDA* PDA)//, UMeshComponent*& MeshComp)
 		//auto SKMeshComp = NewObject<USkeletalMeshComponent>(this, TEXT("SkeletalMeshComp"));
 		//if (SKMeshComp)
 		{
+			
 			SKMesh->SetSkeletalMesh(ItemSetting.DataAsset->SKMesh);
 
 			SKMesh->SetHiddenInGame(true);
+			//SKMesh->SetHiddenInGame(false);  //for test
+
 			SKMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_EngineTraceChannel2, ECollisionResponse::ECR_Overlap);
 		
 			if (!ItemSetting.DataAsset->ReSizeScale.IsZero())
@@ -106,16 +113,9 @@ void AInteractable::Interaction(class AActor* Actor)
 	* 
 	*/
 	if (ItemSetting.DataAsset == nullptr) return;
-	//check(ItemSetting.DataAsset);
+	
 	UE_LOG(LogTemp, Warning, TEXT("Actor is : %s"), *GetName());
-	//switch (InteractType)
 
-	//이건 왜 해놨는지 모르겠다.
-	/*AMainCharacter* MainChar = Cast<AMainCharacter>(Actor);
-	if (MainChar && MainChar->BaseInventoryComp)
-	{
-
-	}*/
 
 	switch (ItemSetting.DataAsset->InteractType)
 	{
@@ -130,26 +130,18 @@ void AInteractable::Interaction(class AActor* Actor)
 	}
 	case EInteractType::EIT_Equipment:
 	{
-		//여기서 Weapon을 검사하지 말고, 걍 바로 Equip을 호출해야함.
+		//Weapon으로 cast, equip함수 호출
 		AEquipment* Equipment = Cast<AEquipment>(this);
 		if (Equipment)
 		{
-			Equipment->Equip(Actor, ERifleSlot::ERS_MAX); //Weapon으로 cast, equip함수 호출
+			if(Equipment->Equip(Actor, ERifleSlot::ERS_MAX) == false)
+			{	
+				//장착에 실패했으면 Pickup을 진행한다.
+				Equipment->Pickup(Actor);
+			}
 		}
 		break;
 	}
-	case EInteractType::EIT_LootBox:
-	{
-		AContainer* Box = Cast<AContainer>(this);
-		if (Box)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Call Open Box"));
-			Box->OpenContainer(Actor);
-
-		}
-	}
-	default:
-		break;
 	}
 }
 

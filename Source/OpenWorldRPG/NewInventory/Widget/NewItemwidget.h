@@ -84,6 +84,8 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
 	UTextBlock* ItemCount;
 
+
+	class UEquipWidget* MotherEquipWidget;
 	/* GridWidget에서 data를 넣어줌*/
 	UNewInventoryGrid* MotherContainer;
 	UNewItemObject* ItemObj;
@@ -94,7 +96,7 @@ public:
 
 
 private:
-	FSlateBrush GetIconImage();
+	FSlateBrush GetIconImage(bool bIsTempRotate);
 	void CreateTooltip();
 
 protected:
@@ -114,7 +116,7 @@ protected:
 public:
 	virtual bool Initialize() override;
 	
-	void Refresh();// UNewItemObject* V_Obj, float V_Tilesize);// float var_tilesize);
+	void Refresh(bool bIsTempRotate = false);// UNewItemObject* V_Obj, float V_Tilesize);// float var_tilesize);
 
 	
 	

@@ -41,6 +41,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ItemSettings")//, meta = (ExposeOnSpawn = "true"))
 	FItemSetting ItemSetting;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "ItemSettings")
+		UStaticMeshComponent* DummyComp;
+
 	/* Item Mesh */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "ItemSettings")
 	UStaticMeshComponent* Mesh;
@@ -69,6 +72,9 @@ public:
 	//UPROPERTY(EditAnywhere, Category = Item)
 	//EInteractType InteractType;
 
+
+	//If true, This Actor Can't Interact.
+	bool bCanNotInteractable = false;
 
 	//AI끼리 충돌방지, 먼저 선점(인식) 했는지 여부.
 	bool bIsPreOccupied;

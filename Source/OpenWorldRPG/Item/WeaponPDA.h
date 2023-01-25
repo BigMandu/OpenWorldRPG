@@ -124,15 +124,32 @@ public:
 	FTransform PistolAttachTransform;
 
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon | Capsule")
+	FTransform CapsuleComponentTF;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon | Capsule")
+	float CapsuleHalfHeight;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon | Capsule")
+	float CapsuleRadius;
+
+
+
+	TWeakObjectPtr<class UNewItemObject> MuzzleParts;
+	TWeakObjectPtr<UNewItemObject> TacticalParts;
+	TWeakObjectPtr<UNewItemObject> ScopeParts;
+	/*class UNewItemObject* MuzzleParts;
+	UNewItemObject* TacticalParts;
+	UNewItemObject* ScopeParts;*/
+
+
 	/* FX */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon | FX")
-	USoundCue* FireSound;
+	class USoundCue* FireSound;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon | FX")
 	USoundCue* BulletHitSound;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon | FX")
-	UParticleSystem* FireMuzzleEffect;
+	class UParticleSystem* FireMuzzleEffect;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon | FX")
 	UParticleSystem* BulletHitEffect;

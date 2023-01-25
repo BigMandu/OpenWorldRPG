@@ -1,0 +1,155 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "GameFramework/Actor.h"
+#include "SpawnVolume.generated.h"
+
+
+
+
+//UENUM(BlueprintType)
+//enum class EInteractType : uint8
+//{
+//	EIT_Gizmo		UMETA(DisplayName = "EIT_Gizmo"),
+//	EIT_Item		UMETA(DisplayName = "EIT_Item"),
+//	EIT_Equipment	UMETA(DisplayName = "EIT_Equipment"),
+//	EIT_LootBox		UMETA(DisplayName = "EIT_LootBox"),
+//
+//	EIT_MAX			UMETA(DisplayName = "DefaultMAX")
+//};
+
+
+UENUM()
+enum class ESpawnItemType : uint8 
+{
+	ESIT_Overall	UMETA(DisplayName = "Overall"),
+	ESIT_Food		UMETA(DisplayName = "Food"),
+	ESIT_Medical	UMETA(DisplayName = "Medical"),
+	ESIT_Scrap		UMETA(DisplayName = "Scrap"),
+	ESIT_Ammo		UMETA(DisplayName = "Ammo"),
+
+	ESIT_MAX		UMETA(DisplayName = "DefaultMAX")
+};
+
+UENUM()
+enum class ESpawnType : uint8 
+{
+	EST_Volume		UMETA(DisplayName = "Volume Type"),
+	EST_Point		UMETA(DisplayName = "Point Type"),
+
+	EST_MAX			UMETA(DisplayName = "DefaultMAX")
+};
+
+UENUM()
+enum class EWhichSide : uint8 
+{
+	EWS_RightLeft,
+	EWS_UpDown,
+	EWS_FrontRear,
+
+	EWS_MAX
+};
+
+
+UCLASS()
+class OPENWORLDRPG_API ASpawnVolume : public AActor
+{
+	GENERATED_BODY()
+
+private:
+
+	class UDataTable* FoodDT;
+	UDataTable* MedicalDT;
+	UDataTable* ScrapDT;
+	UDataTable* AmmoDT;
+
+	UDataTable* RifleDT;
+	UDataTable* HelmetDT;	
+	UDataTable* VestDT;
+	UDataTable* BackPackDT;
+	
+public:	
+	ASpawnVolume();
+
+	UPROPERTY(EditAnywhere, Category = "SpawnVolume | Settings")
+	ESpawnType SpawnType;
+
+	/* SpawnType이 VolumeType일 때만 작동한다. // true - 땅에 붙어서 스폰, false - 공중에서 스폰 */
+	UPROPERTY(EditAnywhere, Category = "SpawnVolume | Settings")
+	bool bOnGround;
+
+	/* SpawnType이 VolumeType일 때, bOnGround가 true일 때만 작동한다.// true - 캐릭터 키 이상으로는 스폰 x, false - 제한없이 스폰*/
+	UPROPERTY(EditAnywhere, Category = "SpawnVolume | Settings", meta = (EditCondition = "bOnGround"))
+	bool bLimitZ;
+
+	UPROPERTY(EditAnywhere, Category = "SpawnVolume | Settings", meta = (EditCondition = "bLimitZ"))
+	bool bNeedDoubleCheck;
+
+
+	//UPROPERTY(EditAnywhere, Category = "SpawnVolume | SelectSpawnItem")
+	//ESpawnItemType MustSpawnItemType;
+
+	UPROPERTY(EditAnywhere, Category = "SpawnVolume | SelectSpawnItem")
+	bool bSpawnFood;
+	UPROPERTY(EditAnywhere, Category = "SpawnVolume | SelectSpawnItem")
+	bool bSpawnMedical;
+	UPROPERTY(EditAnywhere, Category = "SpawnVolume | SelectSpawnItem")
+	bool bSpawnScrap;
+	UPROPERTY(EditAnywhere, Category = "SpawnVolume | SelectSpawnItem")
+	bool bSpawnAmmo;
+
+	UPROPERTY(EditAnywhere, Category = "SpawnVolume | SelectSpawnItem")
+	bool bSpawnHelmet;
+	UPROPERTY(EditAnywhere, Category = "SpawnVolume | SelectSpawnItem")
+	bool bSpawnVest;
+	UPROPERTY(EditAnywhere, Category = "SpawnVolume | SelectSpawnItem")
+	bool bSpawnBackPack;
+	UPROPERTY(EditAnywhere, Category = "SpawnVolume | SelectSpawnItem")
+	bool bSpawnRifle;
+
+
+	UPROPERTY(EditAnywhere, Category = "SpawnVolume | Settings")
+	int32 SpawnCount;
+
+	UPROPERTY(VisibleAnywhere, Category = "SpawnVolume | Settings")
+	FVector SpawnPoint;
+
+	UPROPERTY(VisibleAnywhere, Category = "SpawnVolume | Settings")
+	class UBoxComponent* SpawnVolume;
+
+	
+	UPROPERTY(VisibleAnywhere, Category = "SpawnVolume | Settings")
+	class UBillboardComponent* Billboard;
+
+	
+
+
+private:
+	FVector GetPointInVolume();
+	bool VerifyCanSpawn(const FVector WantToSpawn, const FVector SpawnItemSize);
+
+	FVector GetGroundVector(const FVector OriginVector, bool& bCanSpawn, const FVector ItemSize);
+
+	bool CheckLimitZ(FHitResult HitResult);
+	bool StepCheckLimit_Loop1(FHitResult ParentHit, float CharHeight, FVector SpawnLocation, float Num1, FColor Color);
+	//bool StepCheckLimit_Loop2(float CharHeight, FVector SpawnLocation, float Num1);
+
+	void StartVolumeSpawn();
+	void StartPointSpawn();
+
+	EWhichSide GetWhichSide(FVector ImpactNormal, AActor* HitActor);
+
+	class AItem* GetSpawnItem(const int32 TableTypeNumber);
+
+
+protected:
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+
+
+	
+
+	
+};

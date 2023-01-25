@@ -37,7 +37,15 @@ public:
 	UPROPERTY()
 	class UDataTable* STRLevelDataTable;
 
+	UPROPERTY()
+	UDataTable* CraftRecipeDataTable;
+
 	/** virtual function to allow custom GameInstances an opportunity to set up what it needs */
 	virtual void Init() override;
 	FStrengthStats* GetStrengthStats(int32 Level);
+
+	//int32 GetCraftRecipeCount();
+
+	//TMap<FName,uint8*> GetCraftRecipeMap();
+
 };

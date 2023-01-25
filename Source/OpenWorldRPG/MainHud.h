@@ -21,7 +21,7 @@ public:
 	class UNewInventory* NewInventoryWidget;
 
 	UPROPERTY(meta = (BindWidget))
-	class UCharacterStatusWidget* CharStatWidget;
+	class UResourceStatusWidget* ResourceWidget;
 	UPROPERTY(meta = (BindWidget))
 	class UWeaponStatusWidget* WeaponStatus;
 	UPROPERTY(meta = (BindWidget))
@@ -33,7 +33,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets | Interact")
 	UUserWidget* InteractText;
 
-	
+	//for ZOrder
+	int32 HighestZ = 2;
+
+private:
+	void ShowOtherUI();
+	void HideOtherUI();
 
 protected:
 	void SetFocus(UUserWidget* Focus);
@@ -48,5 +53,7 @@ public:
 
 	void ShowInteractText();
 	void HideInteractText();
+
+	
 
 };

@@ -16,6 +16,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGetAmmo, AWeapon*, EquipWeapon);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnChangeMode, AWeapon*, EquipWeapon);
 
 
+
 class USoundCue;
 class UMainAnimInstance;
 class UCharacterLootWidget;
@@ -26,8 +27,10 @@ class UNewInventoryComponent;
 class UEquipmentComponent;
 class ULootWidgetComponent;
 class UStatManagementComponent;
+class USpawnItemEquipComponent;
 
 class AItem;
+class AEquipment;
 class AContainer;
 class AWeapon;
 
@@ -64,6 +67,7 @@ public:
 	FOnChangeWeapon OnChangeWeapon;
 	FOnGetAmmo OnGetAmmo;
 	FOnChangeMode OnChangeMode;
+
 
 	/* Socket Name */
 	const FName HeadSocketName = FName("headsocket");
@@ -106,8 +110,13 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interactive")
 	AContainer* InteractLootBox;
 	
+	/* Fall Damage */
+	FHitResult FallHit;
+	float FallingHighestZ;
+
 
 	/* Weapon */
+	TWeakObjectPtr<class ABaseGrenade> EquippedGrenade;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item | Weapon")
 	AWeapon* EquippedWeapon;
@@ -121,6 +130,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item | Weapon")
 	AWeapon* PistolWeapon;
 
+	/*Consume*/
+	float RecoveryTickTime = 0.f;
+
 	//아래 Widget들을 대신해 Widgetcomponent를 사용함.
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LootWidget")
 	//TSubclassOf<UCharacterLootWidget> WCharLootWidget;
@@ -129,11 +141,18 @@ public:
 	//UCharacterLootWidget* CharLootWidget;
 
 
-	/* Spawn Items */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "SpawnItems")
-	bool bHasSpawnItems;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "SpawnItems")
-	TArray<TSubclassOf<AItem>> SpawnItemList;
+	///* Spawn Items */
+	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "SpawnItems")
+	//bool bHasSpawnItems;
+	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "SpawnItems", meta = (EditCondition = "bHasSpawnItems"))
+	//TArray<TSubclassOf<AItem>> SpawnItemList;
+
+	///* Spawn Equipments */
+	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "SpawnItems")
+	//bool bHasSpawnEquipments;
+	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "SpawnItems", meta = (EditCondition = "bHasSpawnEquipments"))
+	//TArray<TSubclassOf<AEquipment>> SpawnEquipmentList;
+
 
 	/* Storage */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Storage")
@@ -171,6 +190,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Component | Item")
 	UNewInventoryComponent* BaseInventoryComp;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Component | Item")
+	USpawnItemEquipComponent* SpawnItemEquipComp;
+
 	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
 	//UNewInventoryComponent* PocketInventoryComp;
 
@@ -185,7 +207,7 @@ public:
 
 	/* Anim Instance */
 	UMainAnimInstance* TPAnimInstance;
-	UMainAnimInstance* FPAnimInstance;
+	
 
 protected:
 	// Called when the game starts or when spawned
@@ -203,8 +225,9 @@ public:
 	void SetTeamType(ETeamType Team);
 	FORCEINLINE ETeamType GetTeamType() { return TeamType; }
 
-	/**** Spawn items *******/
-	void SpawnItems();
+	///**** Spawn items *******/
+	//void SpawnItems();
+	//void SpawnEquipments();
 
 	/* Set Storage */
 	void SettingStorage();
@@ -227,15 +250,22 @@ public:
 	/* Change Weapon Firing Mode*/
 	void ChangeSafetyLever();
 
-	virtual void ChangeWeapon(int32 index);
+	virtual bool ChangeWeapon(int32 index);
 
 	/* Weapon Ammo */
 	bool CheckAmmo();
 	bool CheckAmmoStep(UItemStorageObject* Storage, int32& AmmoCnt, bool bIsCheckAmmo = false);
 
+	/* AmmoPerMag에서 남은 잔탄을 뺀, 장전 가능한 탄약 개수를 리턴한다. */
 	int32 GetNumberofCanReload();
+
+	/* GetNumberofCanReload함수에서 사용,
+	* Storage에서 ammo를 찾아 장전시 필요한 탄약 개수를 구하고,
+	* 모든 탄약을 찾지 못한 경우 남은 탄약의 개수를 리턴한다.
+	*/
 	int32 CollectRemainAmmo(UItemStorageObject* Storage, int32 NumberofAmmoReq);
 
+	/* Pocket, Vest에 있는 Equipped Weapon에 Reload가능한 Type의 Ammo의 개수를 리턴한다.*/
 	int32 GetTotalNumberofSameTypeAmmo();
 
 	UFUNCTION()
@@ -252,10 +282,19 @@ public:
 
 	float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
+	void RecoveryHealthDelegate(const float Time, const float RecoveryAmount, TWeakObjectPtr<AItem> UsingItemInfo);
+	void RecoveryStaminaDelegate(const float Time, const float RecoveryAmount, TWeakObjectPtr<AItem> UsingItemInfo);
+
+	//void RecoveryHealth(const FTimerHandle RecTimer, const float RecoveryTime, const float RecoveryTickAmount, float RecoveryTickTime);
+	void RecoveryStamina(const float Time, const float RecoveryAmount);
+
+	void HaltRecoveryTimer(FTimerHandle WantToStop);
+
 	UFUNCTION()
 	void Die();
 
-	
+	void CalcFallingDistance(FHitResult& _FallHit);
+	void ApplyFallingDamage(FHitResult& _FallHit);
 
 	/*******************************/
 	virtual void Interaction(AActor* Actor) override;

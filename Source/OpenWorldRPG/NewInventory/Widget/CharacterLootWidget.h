@@ -9,11 +9,7 @@
 /**
  * 
  */
-class UEquipWidget;
-class UNewInventoryGrid;
-class UCharacterInventoryWidget;
 
-class ABaseCharacter;
 
 
 UCLASS()
@@ -22,9 +18,11 @@ class OPENWORLDRPG_API UCharacterLootWidget : public UUserWidget
 	GENERATED_BODY()
 public:
 	UPROPERTY(meta = (BindWidget))
-	UEquipWidget* EquipWidget;
+	class UEquipWidget* EquipWidget;
+	UPROPERTY(meta = (BindWidget))
+	class UEquipStorageWidget* EquipStorageWidget;
 
 	virtual bool Initialize() override;
-	void InitCharLootWidget(ABaseCharacter* DeadChar);
+	void InitCharLootWidget(class ABaseCharacter* DeadChar);
 
 };

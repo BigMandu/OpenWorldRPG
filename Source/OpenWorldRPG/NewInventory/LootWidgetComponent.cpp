@@ -4,8 +4,10 @@
 #include "OpenWorldRPG/NewInventory/LootWidgetComponent.h"
 #include "OpenWorldRPG/NewInventory/Widget/CharacterLootWidget.h"
 #include "OpenWorldRPG/NewInventory/Widget/EquipWidget.h"
+#include "OpenWorldRPG/NewInventory/Widget/EquipStorageWidget.h"
 #include "OpenWorldRPG/NewInventory/Widget/ContainerWidget.h"
 #include "OpenWorldRPG/NewInventory/Widget/NewInventory.h"
+
 #include "OpenWorldRPG/MainController.h"
 #include "OpenWorldRPG/BaseCharacter.h"
 #include "OpenWorldRPG/MainHud.h"
@@ -27,15 +29,17 @@ void ULootWidgetComponent::CreateInteractionWidget(AMainController* MainCon, AAc
 		UNewInventory* MainInventory = Cast<UNewInventory>(MainCon->MainHud->NewInventoryWidget);
 		if (MainInventory)
 		{
+			MainInventory->ChangeMainSwitchToInventory();
+
 			switch (WidgetType)
 			{
 			case EWidgetType::EWT_LootBox:
 				{
-					UContainerWidget* Widget = CreateWidget<UContainerWidget>(MainCon, WBPWidget);
-					if (Widget)
+					UContainerWidget* RWidget = CreateWidget<UContainerWidget>(MainCon, WBPWidget);
+					if (RWidget)
 					{
-						Widget->InitContainerWidget(actor);
-						MainInventory->SetRightWidget(Widget);
+						RWidget->InitContainerWidget(actor);
+						MainInventory->SetRightWidget(RWidget);
 
 						//NewInventory의 오른쪽 위젯에 LootBoxWidget을 넣어준다.
 
@@ -48,7 +52,9 @@ void ULootWidgetComponent::CreateInteractionWidget(AMainController* MainCon, AAc
 				UCharacterLootWidget* RWidget = CreateWidget<UCharacterLootWidget>(MainCon, WBPWidget);//(BChar, WBPWidget);
 				if (RWidget && BChar)
 				{
-					RWidget->InitCharLootWidget(BChar);
+					//for Delegate, CharLootWidget에 있는 EquipStorageWidget의 OpenAdditional bind를 위함
+					RWidget->EquipStorageWidget->MainWidget = MainInventory;
+					RWidget->InitCharLootWidget(BChar);					
 					//ABaseCharacter* BChar = Cast<ABaseCharacter>(actor);
 					//Widget->EquipInitialize(BChar->Equipment);
 					MainInventory->SetRightWidget(RWidget);
@@ -60,8 +66,9 @@ void ULootWidgetComponent::CreateInteractionWidget(AMainController* MainCon, AAc
 			}
 
 		}
+		MainCon->ToggleInventory();
 		//MainCon->ShowInventory_Implementation();// ToggleInventory();
-		MainCon->MainHud->ShowInventoryWindow();
+		//MainCon->MainHud->ShowInventoryWindow();
 	}
 }
 

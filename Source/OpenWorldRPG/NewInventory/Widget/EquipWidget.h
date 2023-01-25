@@ -8,7 +8,7 @@
 #include "EquipWidget.generated.h"
 
 
-
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOpenAdditionalWidget_Equip, UNewItemObject*, ItemObj);
 /*
 각 슬롯을 생성.
 */
@@ -35,6 +35,8 @@ public:
 	/*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WidgetVariable")
 	EEquipmentType SlotType;*/
 
+	FOpenAdditionalWidget_Equip OpenAdditionalWidget_Equip;
+
 	UPROPERTY()
 	UNewInventory* MainWidget;
 
@@ -48,10 +50,10 @@ public:
 	UEquipmentSlot* HelmetSlot;
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
 	UEquipmentSlot* PlateSlot;
-	UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
-	UEquipmentSlot* VestSlot;
-	UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
-	UEquipmentSlot* BackpackSlot;
+
+
+	
+
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
 	UEquipmentSlot* PistolSlot;
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
@@ -59,17 +61,20 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
 	UEquipmentSlot* SubSlot;
 
+
+	//삭제 대기중
+	/*UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
+	UEquipmentSlot* VestSlot;
+	UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
+	UEquipmentSlot* BackpackSlot;
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
 	UOverlay* VestOverlay;
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
 	UOverlay* BackpackOverlay;
-	/*UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
-	UBorder* VestBorder;*/
-
 	UPROPERTY(meta = (BindWidget))
 	UNewInventoryGrid* PocketWidget;
 	UPROPERTY(meta = (BindWidget))
-	UNewInventoryGrid* SecureBoxWidget;
+	UNewInventoryGrid* SecureBoxWidget;*/
 
 
 	UPROPERTY()

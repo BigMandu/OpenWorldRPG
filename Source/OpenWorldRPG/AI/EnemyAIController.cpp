@@ -6,7 +6,7 @@
 #include "EnemyAIController.h"
 #include "Navigation/CrowdFollowingComponent.h"
 #include "EnemyCharacter.h"
-#include "OpenWorldRPG/MainCharacter.h"
+#include "OpenWorldRPG/BaseCharacter.h"
 #include "TimerManager.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -83,16 +83,16 @@ void AEnemyAIController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (BBComp->GetValueAsBool(bSeeEnemyKey) == true)
-	{
-		//Attack Distance가 된다면
-		//CanAttack boolean을 세팅해준다, Range가 x이하면 좌우로 무빙한다.
-		CalcAttackDist(DeltaTime);
-	}
-	else
-	{
-		SetFocus(nullptr); //식별하지 못했으면 Focus초기화.
-	}
+	//if (BBComp->GetValueAsBool(bSeeEnemyKey) == true)
+	//{
+	//	//Attack Distance가 된다면
+	//	//CanAttack boolean을 세팅해준다, Range가 x이하면 좌우로 무빙한다.
+	//	CalcAttackDist(DeltaTime);
+	//}
+	//else
+	//{
+	//	SetFocus(nullptr); //식별하지 못했으면 Focus초기화.
+	//}
 }
 
 
@@ -147,7 +147,7 @@ void AEnemyAIController::DetectedTarget(AActor* Target, FAIStimulus Stimulus)
 		//Character를 감지했을 경우 Enemy인지 확인한다.
 		if (Char && CheckIsEnemy(Char))
 		{
-			DetectedCharacter(Char, Stimulus);
+			DetectedEnemy(Char, Stimulus);
 			//UE_LOG(LogTemp, Warning, TEXT("AI Found Player!"));
 		}
 		//Object를 감지했을경우는 Interact를 할수있는지 check한다.
@@ -167,7 +167,7 @@ void AEnemyAIController::DetectedTarget(AActor* Target, FAIStimulus Stimulus)
 /***********    Detected Type         ************/
 /**************************************************/
 //Sight와 Hearing을 구분한다.
-void AEnemyAIController::DetectedCharacter(ABaseCharacter* Player, FAIStimulus Stimulus)
+void AEnemyAIController::DetectedEnemy(ABaseCharacter* Player, FAIStimulus Stimulus)
 {
 
 	FVector DetectedLocation = Stimulus.StimulusLocation;
@@ -190,7 +190,7 @@ void AEnemyAIController::DetectedCharacter(ABaseCharacter* Player, FAIStimulus S
 		//UE_LOG(LogTemp, Warning, TEXT("DominantSense is %s"), *PerceptionComponent->GetDominantSenseID().Name.ToString());
 		
 
-		//Sight를 감지 했을때
+		//Sight를 감지 했을때 (sight로 detect 했다면, hearing은 필요없다.)
 		if (Stimulus.Type == SightSenseID)// && Stimulus.Strength >= 1.f) //Sight를 감지했을때
 		{
 			//Sight로 적이라는걸 식별했을때만 실행한다.
@@ -217,9 +217,12 @@ void AEnemyAIController::DetectedCharacter(ABaseCharacter* Player, FAIStimulus S
 			//Enemy->bHearPlayer = true; //디버깅
 			//Enemy->bSeePlayer = false;
 			UpdateBBCompBoolKey(bHearEnemyKey, true);
-			UpdateBBCompVectorKey(TargetLocationKey, Stimulus.StimulusLocation);
+			UpdateBBCompObjectKey(EnemyKey, Player);
+			//UpdateBBCompBoolKey(bSeeEnemyKey, false);
 
-			UpdateBBCompBoolKey(bSeeEnemyKey, false);
+			UpdateBBCompVectorKey(TargetLocationKey, Stimulus.StimulusLocation);
+			
+			
 			
 			//UpdateSeePlayerKey(false);
 			///UpdateHearPlayerKey(true);
@@ -237,11 +240,12 @@ void AEnemyAIController::DetectedCharacter(ABaseCharacter* Player, FAIStimulus S
 	}
 	else //감지를 못했을때 (시야만 동작)
 	{
-		//Enemy->bSeePlayer = false; //디버깅
-		UpdateBBCompBoolKey(bSeeEnemyKey, false);
-		//UpdateSeePlayerKey(false);
-		//Enemy->bHearPlayer = false; //디버깅
+		//감지를  실패했을때, 마지막 Target의 Vector값과 Rotation값을 저장한다.
+		UpdateBBCompVectorKey(LastTargetLocationKey, DetectedLocation);
+		BBComp->SetValueAsRotator(LastTargetRotationKey, Player->GetActorRotation());
 
+		UpdateBBCompBoolKey(bSeeEnemyKey, false);
+		
 		EnemyLostDelegate = FTimerDelegate::CreateUObject(this, &AEnemyAIController::LostTarget, Player); // Target);
 		GetWorldTimerManager().SetTimer(EnemyLostTimer, EnemyLostDelegate, SightConfig->GetMaxAge(), false); //특정초 이후에 LostTarget함수를 호출한다.
 
@@ -282,28 +286,20 @@ void AEnemyAIController::LostTarget(ABaseCharacter* Target) //AActor* Target)
 	{
 		GetWorldTimerManager().ClearTimer(EnemyLostTimer);
 	}
+
 	if (BBComp->GetValueAsBool(bHearEnemyKey))
 	{
 		UpdateBBCompBoolKey(bHearEnemyKey, false);
-		//UpdateHearPlayerKey(false);
-	}
+		UpdateBBCompBoolKey(bNeedToCheckKey, false);
 
-	//디버깅용
-	/*if (Enemy->bHearPlayer)
-	{
-		Enemy->bHearPlayer = false;
-	}*/
+	}
 
 	//새로 추가함.
 	GetPerceptionComponent()->ForgetActor(Target); //test
 
 	UpdateBBCompObjectKey(EnemyKey, nullptr);
 	UpdateBBCompVectorKey(TargetLocationKey, FVector::ZeroVector);
-
-	//UpdatePlayerKey(nullptr);
-	//UpdateHearLocationKey(FVector::ZeroVector);
-	//PerceptionComp->ForgetActor(Target);
-	//UE_LOG(LogTemp, Warning, TEXT("AI : Target Lost!, Lost Target : %s"), *Target->GetFName().ToString());
+	UpdateBBCompBoolKey(bWasEngageKey, false);
 }
 
 void AEnemyAIController::LostObject(AActor* InteractActor)
@@ -312,14 +308,7 @@ void AEnemyAIController::LostObject(AActor* InteractActor)
 
 	//Perception에 Sight된 Log를 삭제하고
 	GetPerceptionComponent()->ForgetActor(InteractActor);
-	/*AInteractable* Inter = Cast<AInteractable>(InteractActor);
-	if (Inter)
-	{
-		if (Inter->bIsPreOccupied)
-		{
-			Inter->bIsPreOccupied = false;
-		}
-	}*/
+	
 	//Perception IgnoreActor에 추가한다.
 	//OwnerActor->PerceptionIgnoreActor.Add(InteractActor);
 }
@@ -330,6 +319,7 @@ void AEnemyAIController::LostObject(AActor* InteractActor)
  * Interactable class의 Interaction함수에서 각각의 Object마다 호출.
  * ex) Equipment의 Equip함수에서 호출
 */
+
 //True - Interact가능, false - 불가능
 bool AEnemyAIController::CanInteraction(AActor* Object)
 {
@@ -373,7 +363,6 @@ void AEnemyAIController::ItemFarming(AActor* InteractActor)
 
 		if (Char)
 		{
-
 			//backpack, vest, pocket, secure box 순으로 InvComp를 가져온다. 
 			for (int32 iter = 0; iter < 4; ++iter)
 			{
@@ -417,9 +406,10 @@ void AEnemyAIController::ItemChoice(UNewInventoryComponent* GiverInvComp)
 
 /******************  ***********************/
 
+
 void AEnemyAIController::CalcAttackDist(float DeltaTime)
 {
-	AMainCharacter* Main = Cast<AMainCharacter>(BBComp->GetValueAsObject(EnemyKey));
+	ABaseCharacter* Main = Cast<ABaseCharacter>(BBComp->GetValueAsObject(EnemyKey));
 	if (Main)
 	{
 		//Player를 식별하면 계속해서 Player의 방향으로 회전한다.
@@ -505,40 +495,3 @@ void AEnemyAIController::UpdateBBCompObjectKey(FName KeyName, AActor* Actor)
 	BBComp->SetValueAsObject(KeyName, Actor);
 }
 
-
-/*
-void AEnemyAIController::UpdatePatrolPointIndex(int32 index)
-{
-	BBComp->SetValueAsInt(PatrolPointIndexKey, index);
-}
-
-void AEnemyAIController::UpdatePatrolPosKey(FVector NewPatrolPos)
-{
-	BBComp->SetValueAsVector(PatrolPosKey, NewPatrolPos);
-}
-
-void AEnemyAIController::UpdatePlayerKey(AActor* Actor)
-{
-	BBComp->SetValueAsObject(PlayerKey, Actor);
-}
-
-void AEnemyAIController::UpdateHearLocationKey(FVector Location)
-{
-	BBComp->SetValueAsVector(HearLocation, Location);
-}
-
-void AEnemyAIController::UpdateSeePlayerKey(bool HasSee)
-{
-	BBComp->SetValueAsBool(bSeePlayerKey, HasSee);
-}
-void AEnemyAIController::UpdateHearPlayerKey(bool HasHear)
-{
-	BBComp->SetValueAsBool(bHearPlayerKey, HasHear);
-}
-
-void AEnemyAIController::UpdateAttackableLocationKey(FVector Location)
-{
-	BBComp->SetValueAsVector(AttackableLocationKey, Location);
-}
-
-*/

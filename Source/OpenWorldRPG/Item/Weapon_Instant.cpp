@@ -31,24 +31,62 @@ void AWeapon_Instant::New_BulletOut()
 	FVector StartTrace = GetTraceStartLocation(AimPos.Rotator().Vector());
 	FVector EndTrace = GetTraceEndLocation(StartTrace, AimPos.Rotator().Vector());
 	 
-
-	
+	 	
 	//그냥 WorldAimPos를 EndPoint로 지정할경우.
 	//가끔 딱 맞아떨어질때, Hit이 안먹히는 경우가 생겨 거리를 늘려준다.
 	//FHitResult Hit = BulletTrace(StartTrace, WorldAimPosition + AimPos.Rotator().Vector() * 30.f);
 	FHitResult Hit = BulletTrace(StartTrace, EndTrace);
 
 	DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor::Green, false, 2.f, (uint8)nullptr, 2.f);
-	DrawDebugPoint(GetWorld(), Hit.Location, 10.f, FColor::Blue, false, 5.f);
 
-	CheckHit(Hit, AimPos.Rotator().Vector());
-
+	if (Hit.bBlockingHit)
+	{
+		DrawDebugPoint(GetWorld(), Hit.Location, 10.f, FColor::Blue, false, 5.f);
+		CheckHit(Hit, AimPos.Rotator().Vector());
+	}
 	GetWorldTimerManager().ClearTimer(RecoilHandle);
 
 	//여기서, Burst모드일 때 따로 Recoil을 적용하기 위해 다른 함수를 호출하자.
 	//Burst모드는 Random으로 적용하자.
 	ApplyRecoil();
 }
+
+
+//Old_BulletOut을 가져다썼다.
+void AWeapon_Instant::AIBulletOut()
+{
+	if(GetInstigatorController())
+	{
+		int32 Seed = FMath::Rand();
+		FRandomStream BulletRandomStream(Seed);
+		float LastSpread = 10.f + CurFiringSpread; //함수로 빼서 AimBulletSpread추가.
+		float ConeHalfAngle = FMath::DegreesToRadians(LastSpread *0.5);
+
+
+		FVector Dir = GetInstigatorController()->GetControlRotation().Vector(); // = GetAimRotation();
+		FVector StartTrace = SKMesh->GetSocketLocation(MuzzleFlashSocketName); // GetTraceStartLocation(Dir);
+
+		// 이어서 새로추가. (RandomStream을 이용한 Weapon Spread)  
+
+		FVector ShootDir = BulletRandomStream.VRandCone(Dir, ConeHalfAngle*2, ConeHalfAngle);
+		DrawDebugCone(GetWorld(), StartTrace, Dir, 2000.f, ConeHalfAngle*2, ConeHalfAngle, 6, FColor::Blue, false, 2.f, (uint8)nullptr, 1.f);	//2000.f = WeaponStat.WeaponRange
+		FVector EndTrace = StartTrace + ShootDir * 2000.f;///WeaponStat.WeaponRange;
+
+		DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor::Magenta, false, 2.f, uint8(0), 4.f);
+
+		FHitResult Hit = BulletTrace(StartTrace, EndTrace);
+		
+		if(Hit.bBlockingHit)
+		{
+			DrawDebugPoint(GetWorld(), Hit.Location, 10.f, FColor::Green, false, 3.f);
+			CheckHit(Hit,Dir);
+		}
+		CurFiringSpread = (10.f < CurFiringSpread + 1.f) ? 10.f : CurFiringSpread + 1.f; //RandomStream을 이용한 Spread.
+	}
+}
+
+
+
 
 /* Recoil_X와 Recoil_Y는 Curve float 에디터에 생성해놓음.
  * rpm이 950면, rps는 15.8, 0.06초당 1발

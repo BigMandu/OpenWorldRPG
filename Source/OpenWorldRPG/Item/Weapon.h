@@ -11,6 +11,7 @@
  */
 #define COLLISION_WEAPON_INST	ECC_GameTraceChannel1
 
+
 //DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBeginHighReady);
 //DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEndHighReady);
 
@@ -33,10 +34,10 @@ class UItemStorageObject;
 UENUM(BlueprintType)
 enum class EWeaponFiringMode : uint8
 {
-	EWFM_Safe		UMETA(DisplayName = "Safe"), //안전
-	EWFM_SemiAuto	UMETA(DisplayName = "SemiAuto"), //단발
-	EWFM_Burst		UMETA(DisplayName = "Burst"), //점사
-	EWFM_FullAuto	UMETA(DisplayName = "FullAuto"), //연발
+	EWFM_Safe		UMETA(DisplayName = "Safe"),	//안전
+	EWFM_SemiAuto	UMETA(DisplayName = "SemiAuto"),//단발
+	EWFM_Burst		UMETA(DisplayName = "Burst"),	//점사
+	EWFM_FullAuto	UMETA(DisplayName = "FullAuto"),//연발
 
 	EWFM_MAX		UMETA(DisplayName = "DefaultMAX")
 };
@@ -57,6 +58,50 @@ UCLASS(Abstract)
 class OPENWORLDRPG_API AWeapon : public AEquipment
 {
 	GENERATED_BODY()
+
+protected:
+	//for gun spread
+	int32 FireCount;
+
+	bool bDetectLookInput;
+
+	float LastFireTime;
+
+	float WeaponClippingLength;
+
+	FTimerHandle FiringTimer;
+	//WeaponClipping을 위해 Hand와 Muzzle의 Relative값.
+	FTransform MuzzleRelative;
+
+	FVector WorldAimPosition;
+	//FVector WeaponMuzzleLocation;
+
+	//아래 3개의 FTransform은 PDA로 옮김.
+	//FPMesh의 WeaponGrip 소켓에 붙일 Weapon의 Transform값.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")
+		FTransform FPMeshAttachTransform;
+
+	//TPMesh에 Weapon을 Attach할 소켓의 Transform값.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")
+		FTransform PrimaryWeaponAttachTransform;
+
+	//TPMesh에 Weapon을 Attach할 소켓의 Transform값.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")
+		FTransform SubWeaponAttachTransform;
+
+
+
+	/* Aim Initialize에서 사용 */
+	FRotator StartFiringRotation;
+	FRotator EndFiringRotation;
+
+	float RecoilTime; //Curve float에서 사용.
+	float Time;
+
+	FVector PreviousSpread;
+	FVector NextSpread;
+
+
 public:
 	AWeapon();
 	
@@ -71,12 +116,17 @@ public:
 	//지정한 값을 쉽게 사용하기 위해 Cast해둔다.
 	UWeaponPDA* WeaponDataAsset;
 
+	UPROPERTY()
+	class UWeaponPartsManagerObject* WeaponPartsManager;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UCapsuleComponent* CapsuleComp;
 
 	FTransform OriginalWeaponTransform;
 
 	FName MuzzleFlashSocketName;
+
+	bool bLMBDown;
 
 	bool bIsFiring;
 	bool bIsAiming; //Main에서 값을 단순히 넣어주기만 한다.
@@ -96,8 +146,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon | Transform")
 	FTransform WeapSKMeshTransform;
 
-
-	/* Enums */
 
 	//Primary, Sub을 지정한다.
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
@@ -126,61 +174,39 @@ public:
 
 	//////////////////////////////////
 
-	
-protected:
-	//for gun spread
-	int32 FireCount;
-
-	bool bDetectLookInput;
-	bool bLMBDown;	
-	float LastFireTime;
-
-	float WeaponClippingLength;
-
-	FTimerHandle FiringTimer;
-	//WeaponClipping을 위해 Hand와 Muzzle의 Relative값.
-	FTransform MuzzleRelative;
-	
-	FVector WorldAimPosition;
-	//FVector WeaponMuzzleLocation;
-
-
-	//아래 3개의 FTransform은 PDA로 옮김.
-	//FPMesh의 WeaponGrip 소켓에 붙일 Weapon의 Transform값.
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")
-	FTransform FPMeshAttachTransform;
-
-	//TPMesh에 Weapon을 Attach할 소켓의 Transform값.
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")
-	FTransform PrimaryWeaponAttachTransform;
-
-	//TPMesh에 Weapon을 Attach할 소켓의 Transform값.
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")
-	FTransform SubWeaponAttachTransform;
-
-
-
-	/* Aim Initialize에서 사용 */
-	FRotator StartFiringRotation;
-	FRotator EndFiringRotation;
-
-	float RecoilTime; //Curve float에서 사용.
-	float Time;
-
-	FVector PreviousSpread;
-	FVector NextSpread;
-
-	
 
 private:
-	void UpdateAim();
+	
 	void WeaponClipping();
 	bool CheckAmmo();
 
 	void UseAmmo();
 
-protected:
+
+
+	/* Setting New Weapon State, And Call SetWeaponState func */
+	void TempNewWeaponState();
+
+	/* Compare Preview State, And Setting State , And Call Firing func */
+	void SetWeaponState(EWeaponState NewState);
+	void ControlFiring();
+	void Firing();
+	void ReFiring();
+	void EndFiring();
+
+	bool CheckRefire();
+	bool CanFire();
+	bool CanEndFire();
+
+
+	void CapsuleAdjust();
+	
+
+protected:	
+	void UpdateAim();
+	virtual void BeginPlay() override;
 	virtual bool StepEquip(AActor* Char, ERifleSlot RifleSlot = ERifleSlot::ERS_MAX) override;
+	
 public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void PostInitializeComponents() override;
@@ -189,6 +215,9 @@ public:
 	void GunAttachToSubSocket(AActor* Actor);
 
 	FTransform GetSightSocketTransform();
+	void CheckWeaponPartsManager();
+	UFUNCTION()
+	void UpdateWeaponParts();
 
 	//for WeaponStatusWidget
 	void GetTotalAmmo();
@@ -196,20 +225,11 @@ public:
 	int32 GetCurrentAmmoInMag();
 
 	void ChangeSafetyLever();
+	void ChangeSafetyLeverForAI(EWeaponFiringMode FiringMode);
 	
 	/* Attack */
 	void StartFire();
 	void StopFire();
-
-	void ControlFiring();
-	void Firing();
-	void ReFiring();
-	void EndFiring();
-
-	bool CheckRefire();
-	bool CanFire();
-
-	bool CanEndFire();
 
 
 	void Reload();
@@ -217,6 +237,7 @@ public:
 
 	virtual void Old_BulletOut() PURE_VIRTUAL(AWeapon::BulletOut);
 	virtual void New_BulletOut() PURE_VIRTUAL(AWeapon::New_BulletOut);
+	virtual void AIBulletOut() PURE_VIRTUAL(AWeapon::AIBulletOut);
 
 	/*
 	UFUNCTION()
@@ -232,12 +253,8 @@ public:
 	FVector GetTraceStartLocation(FVector Dir = FVector::ZeroVector);
 	FVector GetTraceEndLocation(FVector StartVector = FVector::ZeroVector, FVector Dir = FVector::ZeroVector);
 	FHitResult BulletTrace(FVector StartTrace, FVector EndTrace);
-	
-	/* Setting New Weapon State, And Call SetWeaponState func */
-	void TempNewWeaponState();
-	
-	/* Compare Preview State, And Setting State , And Call Firing func */
-	void SetWeaponState(EWeaponState NewState);
+
+
 
 
 	void WeaponFX();
