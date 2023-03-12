@@ -8,6 +8,8 @@
 #include "OpenWorldRPG/NewInventory/Library/ItemInterface.h"
 #include "Item.generated.h"
 
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FItemUseEnd);
 /**
  * 
  */
@@ -32,6 +34,7 @@ class AEquipment;
 //};
 
 
+
 UENUM(BlueprintType)
 enum class EItemState : uint8
 {
@@ -46,11 +49,16 @@ class OPENWORLDRPG_API AItem : public AInteractable //, public IItemInterface
 {
 	GENERATED_BODY()
 	//GENERATED_UCLASS_BODY()
-	
+protected:
+
+	TWeakObjectPtr<class AWeapon> BeforeEquipppedWeapon = nullptr;
+
 public:
 
 	AItem();
 	
+	FItemUseEnd ItemUseEnd;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Item)
 	UNewItemObject* ItemObj;
 
@@ -89,7 +97,9 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-
+protected:
+	void RemoveCountAtIventory(ABaseCharacter* Char, int32 RemoveCount = 0);
+	void SettingItemObj(UNewItemObject* Obj);
 public:
 
 	virtual void PostInitializeComponents() override;
@@ -101,18 +111,24 @@ public:
 	FORCEINLINE void SetItemState(EItemState State) { ItemState = State; }
 
 	/* child class에서 override할 예정임*/
-	virtual UNewItemObject* GetDefaultItemObj();
+	//virtual UNewItemObject* GetDefaultItemObj();
 
 	bool Pickup(AActor* Actor, UNewItemObject* obj = nullptr);
 
 	bool AddAtEquip(AEquipment* Equipped);
 	bool AddAtCharInv(ABaseCharacter* Character, UItemStorageObject* InvComp);
 
+
 	
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION()
 	virtual void Drop();
 
-	UFUNCTION(BlueprintCallable)
+
+	virtual void AttachToHand(class ABaseCharacter* Actor, class UNewItemObject* Obj);
+	void AttachToHand_Step(ABaseCharacter* Actor);
+	virtual void DetachFromHand(ABaseCharacter* Actor, bool bIsNeedToEquipBeforeWeapon);
+	void EquipBeforeWeapon(ABaseCharacter* Actor);
+	UFUNCTION()
 	virtual void Use(ABaseCharacter* Actor, UNewItemObject* Obj = nullptr);
 
 };

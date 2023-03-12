@@ -37,6 +37,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Item | Info")
 	EWeaponPartsType WeaponPartsType;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment | Widget")
+	bool bHasWidget;
+
 	/***** Storage ********/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment | Storage")
 	bool bHasStorage;

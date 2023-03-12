@@ -96,12 +96,12 @@ void UNewInventory::ChangeRightSwitcher()
 		{
 			if (MainCon->bIsInteractLootBox || MainCon->bIsInteractCharacterLoot)
 			{
-				RightWidgetSwitcher->SetActiveWidgetIndex(2);
+				RightWidgetSwitcher->SetActiveWidgetIndex(0);
 			}
 			else
 			{
 				SetRightWidget(nullptr);
-				RightWidgetSwitcher->SetActiveWidgetIndex(1);
+				RightWidgetSwitcher->SetActiveWidgetIndex(0);
 			}
 		}
 	}
@@ -144,6 +144,7 @@ void UNewInventory::BindingOpenWidgetFunc(UNewItemObject* ItemObj)
 	
 	UCustomPDA* CPDA = Cast<UCustomPDA>(ItemObj->ItemInfo.DataAsset);
 	if (CPDA == nullptr) return;
+	if (CPDA->bHasWidget == false) return;
 	
 	CreateAdditionalWidget(ItemObj);
 }
@@ -274,13 +275,14 @@ UWidget* UNewInventory::CreateChildWidget(UDraggInventoryWindow* AdditionalWindo
 	{
 		UWeaponPartsWidget* PartsWidget = CreateWidget<UWeaponPartsWidget>(this, AdditionalWindow->WPartsWidget);
 		if (PartsWidget == nullptr) return ReturnSubWidget;
-		{
-			PartsWidget->Initialize();
-			PartsWidget->WidgetInit(Obj);
-			PartsWidget->RefreshWidget();
-			ReturnSubWidget = PartsWidget;
-			//PartsWidget->AddToViewport();
-		}
+
+		
+		PartsWidget->Initialize();
+		PartsWidget->WidgetInit(Obj);
+		PartsWidget->RefreshWidget();
+		ReturnSubWidget = PartsWidget;
+		//PartsWidget->AddToViewport();
+		
 	}
 
 	return ReturnSubWidget;

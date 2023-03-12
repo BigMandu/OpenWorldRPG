@@ -34,15 +34,9 @@ class OPENWORLDRPG_API AInteractable : public AActor, public IInteractive_Interf
 public:	
 	// Sets default values for this actor's properties
 	AInteractable();
-
-	/*UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ItemSettings")
-	UCustomPDA* CusPDA;*/
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ItemSettings")//, meta = (ExposeOnSpawn = "true"))
 	FItemSetting ItemSetting;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "ItemSettings")
-		UStaticMeshComponent* DummyComp;
 
 	/* Item Mesh */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "ItemSettings")
@@ -50,28 +44,6 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "ItemSettings")
 	USkeletalMeshComponent* SKMesh;
-
-
-
-	/*UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Item")
-	UMeshComponent* MeshComponent;*/
-
-	/* Item의 사용 액션 (Equip, Food, etc..) */
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Item)
-	//FText UseActionText;
-
-	/* Item 이름 */
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Item)
-	//FText ItemName;
-	
-	/* Item의 Interactive할때 나오는 Tip*/
-	//UPROPERTY(EditAnywhere, Category = Item)
-	//FString InteractText;
-
-
-	//UPROPERTY(EditAnywhere, Category = Item)
-	//EInteractType InteractType;
-
 
 	//If true, This Actor Can't Interact.
 	bool bCanNotInteractable = false;
@@ -92,10 +64,9 @@ public:
 	virtual void OnConstruction(const FTransform& Transform) override;
 
 	virtual void PostInitializeComponents() override;
-	void SetMesh();// UCustomPDA* PDA);// , UMeshComponent*& MeshComp);
+	virtual void SetMesh();// UCustomPDA* PDA);// , UMeshComponent*& MeshComp);
 
 	virtual void Interaction(AActor* Actor) override;
-
 	virtual void SetOutline() override;
 	virtual void UnsetOutline() override;
 };

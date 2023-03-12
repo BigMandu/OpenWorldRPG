@@ -14,6 +14,7 @@
 #include "OpenWorldRPG/Item/CustomPDA.h"
 #include "OpenWorldRPG/Item/Weapon.h"
 #include "OpenWorldRPG/Item/Weapon_Instant.h"
+#include "OpenWorldRPG/Item/CoreUsableItem.h"
 #include "OpenWorldRPG/Item/Equipment.h"
 #include "OpenWorldRPG/Item/Container.h"
 #include "OpenWorldRPG/BaseCharacter.h"
@@ -58,7 +59,14 @@ AItem* UCustomInventoryLibrary::SpawnItem(UWorld* World, UNewItemObject* ItemObj
 		UBasePDA* BPDA = Cast<UBasePDA>(ItemObj->ItemInfo.DataAsset);
 		if (BPDA)
 		{
-			ReturnItem = Cast<AItem>(World->SpawnActor<AItem>(AItem::StaticClass()));
+			if (BPDA->ItemType == EItemType::EIT_Usable)
+			{
+				ReturnItem = Cast<ACoreUsableItem>(World->SpawnActor<ACoreUsableItem>(ACoreUsableItem::StaticClass()));
+			}
+			else
+			{
+				ReturnItem = Cast<AItem>(World->SpawnActor<AItem>(AItem::StaticClass()));
+			}
 
 			if (ReturnItem)
 			{

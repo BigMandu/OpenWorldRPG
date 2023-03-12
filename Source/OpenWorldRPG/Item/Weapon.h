@@ -58,8 +58,11 @@ UCLASS(Abstract)
 class OPENWORLDRPG_API AWeapon : public AEquipment
 {
 	GENERATED_BODY()
-
 protected:
+	FName SightSocketName = FName("AimPos");
+	FName MuzzleFlashSocketName = FName("muzzleflash");
+
+
 	//for gun spread
 	int32 FireCount;
 
@@ -70,6 +73,7 @@ protected:
 	float WeaponClippingLength;
 
 	FTimerHandle FiringTimer;
+
 	//WeaponClipping을 위해 Hand와 Muzzle의 Relative값.
 	FTransform MuzzleRelative;
 
@@ -79,15 +83,15 @@ protected:
 	//아래 3개의 FTransform은 PDA로 옮김.
 	//FPMesh의 WeaponGrip 소켓에 붙일 Weapon의 Transform값.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")
-		FTransform FPMeshAttachTransform;
+	FTransform FPMeshAttachTransform;
 
 	//TPMesh에 Weapon을 Attach할 소켓의 Transform값.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")
-		FTransform PrimaryWeaponAttachTransform;
+	FTransform PrimaryWeaponAttachTransform;
 
 	//TPMesh에 Weapon을 Attach할 소켓의 Transform값.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")
-		FTransform SubWeaponAttachTransform;
+	FTransform SubWeaponAttachTransform;
 
 
 
@@ -124,7 +128,7 @@ public:
 
 	FTransform OriginalWeaponTransform;
 
-	FName MuzzleFlashSocketName;
+	
 
 	bool bLMBDown;
 

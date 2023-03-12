@@ -5,8 +5,10 @@
 #include "OpenWorldRPG/Item/BasePDA.h"
 #include "OpenWorldRPG/Item/CustomPDA.h"
 #include "OpenWorldRPG/Item/ConsumePDA.h"
+#include "OpenWorldRPG/Item/Weapon.h"
 
 #include "OpenWorldRPG/BaseCharacter.h"
+#include "OpenWorldRPG/MainCharacter.h"
 #include "OpenWorldRPG/NewInventory/EquipmentComponent.h"
 #include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
@@ -15,6 +17,10 @@
 #include "OpenWorldRPG/NewInventory/Widget/NewInventoryGrid.h"
 #include "OpenWorldRPG/NewInventory/Library/CustomInventoryLibrary.h"
 
+#include "OpenWorldRPG/MainAnimInstance.h"
+
+
+#include "Engine/SkeletalMeshSocket.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "Perception/AISense_Sight.h"
 #include "DrawDebugHelpers.h"
@@ -46,6 +52,8 @@ void AItem::OnConstruction(const FTransform& Transform)
 		Mesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
 		Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
 		Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Block);
+
+		
 		//Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
 	}
 	
@@ -91,37 +99,37 @@ void AItem::BeginPlay()
 	}
 }
 
-UNewItemObject* AItem::GetDefaultItemObj()
-{
-	UNewItemObject* Obj = NewObject<UNewItemObject>(this, UNewItemObject::StaticClass(), FName(GetName()));
-	if (Obj && ItemSetting.DataAsset)
-	{
-		//Obj->thumbnail = Thumbnail;
-		Obj->item = this;
-		Obj->bCanRotated = ItemSetting.DataAsset->bCanRotate;
-		//Obj->itemsize = ItemSetting.DataAsset->ItemSize;
-		Obj->itemName = ItemSetting.DataAsset->ItemName;
-		Obj->itemDesc = ItemSetting.DataAsset->ItemDescription;
-
-		Obj->icon = ItemSetting.DataAsset->Icon;
-		Obj->iconRotated = ItemSetting.DataAsset->IconRotated;
-		Obj->InteractType = ItemSetting.DataAsset->InteractType;
-
-		UCustomPDA* CPDA = Cast<UCustomPDA>(ItemSetting.DataAsset);
-		if(CPDA)
-		{
-			Obj->bCanEquip = CPDA->bCanEquip;
-			Obj->EquipmentType = CPDA->EquipmentType;
-			
-		}
-		//UE_LOG(LogTemp, Warning, TEXT("AItem::Create object"));
-	}
-	else
-	{
-		//UE_LOG(LogTemp, Warning, TEXT("AItem::fail to Create object"));
-	}
-	return Obj;
-}
+//UNewItemObject* AItem::GetDefaultItemObj()
+//{
+//	UNewItemObject* Obj = NewObject<UNewItemObject>(this, UNewItemObject::StaticClass(), FName(GetName()));
+//	if (Obj && ItemSetting.DataAsset)
+//	{
+//		//Obj->thumbnail = Thumbnail;
+//		Obj->item = this;
+//		Obj->bCanRotated = ItemSetting.DataAsset->bCanRotate;
+//		//Obj->itemsize = ItemSetting.DataAsset->ItemSize;
+//		Obj->itemName = ItemSetting.DataAsset->ItemName;
+//		Obj->itemDesc = ItemSetting.DataAsset->ItemDescription;
+//
+//		Obj->icon = ItemSetting.DataAsset->Icon;
+//		Obj->iconRotated = ItemSetting.DataAsset->IconRotated;
+//		Obj->InteractType = ItemSetting.DataAsset->InteractType;
+//
+//		UCustomPDA* CPDA = Cast<UCustomPDA>(ItemSetting.DataAsset);
+//		if(CPDA)
+//		{
+//			Obj->bCanEquip = CPDA->bCanEquip;
+//			Obj->EquipmentType = CPDA->EquipmentType;
+//			
+//		}
+//		//UE_LOG(LogTemp, Warning, TEXT("AItem::Create object"));
+//	}
+//	else
+//	{
+//		//UE_LOG(LogTemp, Warning, TEXT("AItem::fail to Create object"));
+//	}
+//	return Obj;
+//}
 
 
 bool AItem::Pickup(class AActor* Actor, UNewItemObject* obj)
@@ -286,43 +294,165 @@ void AItem::Drop()
 	//UE_LOG(LogTemp, Warning, TEXT("AItem::Drop fail"));
 }
 
+
+//Remove Weapon Or Item before Attached, And Change Holding Item.
+//Attach하기 전 과정
+void AItem::AttachToHand(ABaseCharacter* Actor, UNewItemObject* Obj)
+{
+	if (Actor->EquippedWeapon)
+	{
+		Actor->EquippedWeapon->GunAttachToSubSocket(Actor);
+
+		//재장착을 위해 임시저장한다.
+		BeforeEquipppedWeapon = Actor->EquippedWeapon;
+		Actor->EquippedWeapon = nullptr;
+	}
+	//이미 다른 HoldingItem이 있다면 비교한다.
+	else if (Actor->HoldingItem.IsValid())
+	{
+		//만일 이거랑 동일한거면 새로 생성한 이 item을 destory한다.
+		if (Actor->HoldingItem.Get() == this)
+		{
+			this->Destroy();
+			return;
+		}
+		//만일 다른 item을 들고 있었다면, 기 등록된 holding actor를 삭제한다.
+		else if (Actor->HoldingItem.Get() != this)
+		{
+			Actor->HoldingItem.Get()->Destroy();
+			Actor->SetHoldingItem(nullptr);
+		}
+	}
+
+	if (Obj)
+	{
+		ItemObj = Obj;
+	}
+
+
+	Mesh->SetSimulatePhysics(false);
+
+	//손에 든 순간부터 Interaction이 되지 않도록 한다.
+	bCanNotInteractable = true;
+
+	//MainChar의 LMBDown, Up을 위해 EquippedGrenade변수를 선언, 대입한다.
+	Actor->SetHoldingItem(this);//HoldingItem = this;
+	
+	AttachToHand_Step(Actor);
+}
+
+void AItem::AttachToHand_Step(ABaseCharacter* Actor)
+{
+	AMainCharacter* Player = Cast<AMainCharacter>(Actor);
+	if (Player)
+	{
+		Player->ReAttachHoldingItem();
+	}
+	else
+	{
+		const USkeletalMeshSocket* AttachSocket = nullptr;
+		FTransform AttachTransform;
+
+		if (Actor)
+		{
+			const USkeletalMeshSocket* LeftHandSocket = Actor->GetMesh()->GetSocketByName(Actor->LeftHandGripSocketName);
+			if (LeftHandSocket)
+			{
+				if (LeftHandSocket->AttachActor(this,Actor->GetMesh()))
+				{
+					if (ItemSetting.DataAsset)
+					{
+						SetActorRelativeTransform(ItemSetting.DataAsset->TPS_HandAttachTransform);
+					}
+
+					//SKMesh->SetHiddenInGame(false);
+					//BChar->SetEquippedWeapon(this);
+				}
+			}
+
+		}
+	}
+}
+
+void AItem::DetachFromHand(ABaseCharacter* Actor, bool bIsNeedToEquipBeforeWeapon)
+{
+	//Detach를 한다.
+	FDetachmentTransformRules Rules = FDetachmentTransformRules(EDetachmentRule::KeepWorld, false);
+	this->DetachFromActor(Rules);
+
+	//던진뒤 PrimaryWeapon을 장착시킨다.
+	Actor->SetHoldingItem(nullptr);// = nullptr;
+	if(bIsNeedToEquipBeforeWeapon)
+	{
+		EquipBeforeWeapon(Actor);
+	}
+
+}
+
 void AItem::Use(ABaseCharacter* Char, UNewItemObject* Obj)
 {
 	check(Char)
 	UE_LOG(LogTemp, Warning, TEXT("AItem::Use"));
-	bool bUsed = false;
+	
+	
+	Char->PlayUseItemAnim(this);
+
 	if (ItemSetting.DataAsset->ItemType == EItemType::EIT_Food || ItemSetting.DataAsset->ItemType == EItemType::EIT_Medical)
-	{	
-		
-		UConsumePDA* ConsumablePDA = Cast<UConsumePDA>(ItemSetting.DataAsset);
-		
+	{			
+		UConsumePDA* ConsumablePDA = Cast<UConsumePDA>(ItemSetting.DataAsset);		
 		if (ConsumablePDA->bIsHPRecovery)
-		{
-			
+		{			
 			Char->RecoveryHealthDelegate(ConsumablePDA->RecoveryTime, ConsumablePDA->RecoveryAmount,this);
-			bUsed = true;
 			UE_LOG(LogTemp,Warning, TEXT("AItem::Use // HP Recovery "));
 		}
-
 		if (ConsumablePDA->bIsStaminaRecovery)
 		{
 			Char->RecoveryStaminaDelegate(ConsumablePDA->RecoveryTime, ConsumablePDA->RecoveryAmount, this);
 			UE_LOG(LogTemp, Warning, TEXT("AItem::Use // Stamina Recovery "));
-			bUsed = true;
 		}
-
-	}
-
-	if (bUsed)
-	{
-		if (Obj && ItemSetting.DataAsset->bCanStack)
-		{
-			Char->BaseInventoryComp->RemoveItemCount(Obj, 1);
-		}
-		Destroy();
 	}
 	
+	
+	RemoveCountAtIventory(Char,1);
+	Destroy();
+	
+	
 }
+
+
+void AItem::RemoveCountAtIventory(ABaseCharacter* Char, int32 RemoveCount)
+{
+	if (ItemObj)// && ItemSetting.DataAsset->bCanStack)
+	{
+		Char->BaseInventoryComp->RemoveItemCount(ItemObj, RemoveCount);
+	}
+}
+
+void AItem::EquipBeforeWeapon(ABaseCharacter* Actor)
+{
+	if (BeforeEquipppedWeapon.IsValid())
+	{
+		if (Actor->TPAnimInstance)
+		{
+			Actor->TPAnimInstance->WeaponTypeNumber = 0;
+		}
+
+		switch (BeforeEquipppedWeapon->RifleAssign)
+		{
+			case ERifleSlot::ERS_Primary:
+				Actor->ChangePrimaryWeapon();
+			break;
+			case ERifleSlot::ERS_Sub:
+				Actor->ChangeSubWeapon();
+			break;
+			case ERifleSlot::ERS_Pistol:
+				Actor->ChangePistolWeapon();
+			break;
+		}
+	}
+}
+
+
 
 //void AItem::SettingStorage()
 //{

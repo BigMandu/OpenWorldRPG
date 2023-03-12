@@ -17,18 +17,14 @@ AInteractable::AInteractable()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
-
-	//DummyComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DummyComponent"));
-
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Static Mesh"));
 	SKMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMesh"));
-
-	//SetRootComponent(DummyComp);
 	SetRootComponent(Mesh);
-	//Mesh->SetupAttachment(GetRootComponent());
-	SKMesh->SetupAttachment(GetRootComponent());
 
-	//InteractType = EInteractType::EIT_Item;
+	if(SKMesh)
+	{
+		SKMesh->SetupAttachment(GetRootComponent());
+	}
 }
 
 // Called when the game starts or when spawned
@@ -84,8 +80,7 @@ void AInteractable::SetMesh()// UCustomPDA* PDA)//, UMeshComponent*& MeshComp)
 			//MeshComp = SKMeshComp;
 		}
 	}
-	
-	if (ItemSetting.DataAsset->Mesh)
+	else if (ItemSetting.DataAsset->Mesh)
 	{
 		//auto SMeshComp = NewObject<UStaticMeshComponent>(this, TEXT("StaticMeshComp"));
 		//if (SMeshComp)
@@ -113,6 +108,7 @@ void AInteractable::Interaction(class AActor* Actor)
 	* 
 	*/
 	if (ItemSetting.DataAsset == nullptr) return;
+	if(bCanNotInteractable) return;
 	
 	UE_LOG(LogTemp, Warning, TEXT("Actor is : %s"), *GetName());
 
@@ -150,6 +146,7 @@ void AInteractable::SetOutline()
 	//UE_LOG(LogTemp, Warning, TEXT("Interactable::enable outline"));
 	
 	//Mesh->SetRenderCustomDepth(true);
+	if(bCanNotInteractable) return;
 	Mesh->SetRenderCustomDepth(true);
 }
 
@@ -157,5 +154,6 @@ void AInteractable::SetOutline()
 void AInteractable::UnsetOutline()//_Implementation()
 {
 	//UE_LOG(LogTemp, Warning, TEXT("Interactable::disable outline"));
+	if(bCanNotInteractable) return;
 	Mesh->SetRenderCustomDepth(false);
 }

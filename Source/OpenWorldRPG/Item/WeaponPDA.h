@@ -15,10 +15,14 @@ struct FWeaponAnim
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	UPROPERTY(EditDefaultsOnly, Category = "Fire Animation")
 	UAnimMontage* FPSAnim;
-	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	UPROPERTY(EditDefaultsOnly, Category = "Fire Animation")
 	UAnimMontage* TPSAnim;
+
+	UPROPERTY(EditDefaultsOnly, Category = "ADS Animation")
+	UAnimMontage* FPS_ADS_Anim;
+
 };
 
 USTRUCT()
@@ -159,6 +163,6 @@ public:
 
 	/* Animation */
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Animation")
-	FWeaponAnim FireAnimaton;
+	FWeaponAnim Animaton;
 
 };

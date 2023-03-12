@@ -72,15 +72,19 @@ void UStatManagementComponent::SetStaminaStatus(EStaminaStatus NewStatus)
 
 void UStatManagementComponent::DamageApply(float Damage)
 {
+	TakeDamageSound();
+
 	if (CurrentStat.Health - Damage <= 0.f)                           
 	{
 		OnHPZero.Broadcast();
 		CurrentStat.Health = 0.f;
+
+		return;
 	}	
 	CurrentStat.Health -= Damage;
 	UE_LOG(LogTemp, Warning, TEXT("StatManager::DamageApply// DamagePoint :  %f // CurrentHealth : %f"), Damage, CurrentStat.Health);
 	OnHPChange.Broadcast();
-	TakeDamageSound();
+	
 }
 
 void UStatManagementComponent::AddHPPoint(float RecoveryPoint)

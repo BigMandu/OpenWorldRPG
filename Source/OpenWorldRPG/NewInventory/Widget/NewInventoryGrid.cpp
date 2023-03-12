@@ -212,7 +212,7 @@ void UNewInventoryGrid::RefreshInventory(UNewItemObject* Obj)
 		if (Obj && Obj->bIsPendingDelete && Obj->bIsRegQuickSlot && Obj->ItemInfo.Count <= 0)
 		{
 			//QuickSlot에 등록되어 있는지 확인하고 등록 되어 있는 경우에 QuickSlot에서 삭제 process를 진행한다.
-			MainCon->MainHud->QuickSlot->CheckAlreadyRegistered(Obj);
+			MainCon->MainHud->QuickSlot->CheckAlreadyRegistered(Obj,false);
 		}
 
 

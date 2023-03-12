@@ -12,6 +12,7 @@
 #include "OpenWorldRPG/Item/CustomPDA.h"
 #include "OpenWorldRPG/Item/Equipment.h"
 #include "OpenWorldRPG/Item/Weapon.h"
+#include "OpenWorldRPG/Item/WeaponPartsManagerObject.h"
 
 // Sets default values for this component's properties
 UEquipmentComponent::UEquipmentComponent()
@@ -223,6 +224,8 @@ bool UEquipmentComponent::AddEquipment(FItemSetting ItemSetting, AEquipment* Wan
 	{
 		EquipObj = UCustomInventoryLibrary::CreateObject(ItemSetting, bCreated); //CreateObject(ItemSetting, bCreated);
 		if (bCreated == false) return false;
+		//생성한걸 할당한다.
+		WantToEquip->ItemObj = EquipObj;
 	}
 	else
 	{
@@ -452,14 +455,21 @@ bool UEquipmentComponent::IsSameTypeExist(AEquipment* Equip, ERifleSlot RifleSlo
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
+//Weapon에
 void UEquipmentComponent::SetWeaponPartsManager(AEquipment* WantToEquip, UNewItemObject* WeaponObj)
 {
 	if (UWeaponPDA* WeaponPDA = Cast<UWeaponPDA>(WeaponObj->ItemInfo.DataAsset))
 	{
 		if (WeaponObj->WeaponPartsManager.IsValid() == false)
 		{
-			WeaponObj->WeaponPartsManager = NewObject<UWeaponPartsManagerObject>(UWeaponPartsManagerObject::StaticClass());
+			if (UWeaponPartsManagerObject* WeapWPM = Cast<AWeapon>(WantToEquip)->WeaponPartsManager)
+			{
+				WeaponObj->WeaponPartsManager = WeapWPM;
+			}
+			else
+			{
+				WeaponObj->WeaponPartsManager = NewObject<UWeaponPartsManagerObject>(UWeaponPartsManagerObject::StaticClass());
+			}
 		}
-		WeaponObj->WeaponPartsManager = Cast<AWeapon>(WantToEquip)->WeaponPartsManager;
 	}	
 }

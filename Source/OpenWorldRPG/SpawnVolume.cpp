@@ -126,6 +126,7 @@ void ASpawnVolume::StartVolumeSpawn()
 				WantToSpawn->SetActorLocation(SpawnVector);
 				UE_LOG(LogTemp, Warning, TEXT("SpawnVolume::StartVolumeSpawn // ActualCount ; %d"), ActualSpawnCount);
 			}
+			//스폰 불가할 경우
 			else
 			{
 				if (loop >= DTCount -1 && ActualSpawnCount < SpawnCount)
@@ -176,8 +177,9 @@ bool ASpawnVolume::VerifyCanSpawn(const FVector WantToSpawn, const FVector Spawn
 
 	FCollisionResponseContainer CollisionContainer;
 	CollisionContainer.SetResponse(ECollisionChannel::ECC_WorldStatic,ECollisionResponse::ECR_Ignore);
-
+	
 	FCollisionResponseParams RParams(CollisionContainer);
+
 	
 	bool bStaticHit = GetWorld()->SweepSingleByChannel(VerifyHit,WantToSpawn,WantToSpawn,FQuat::Identity,ECollisionChannel::ECC_WorldStatic, BoxShape,QParams, RParams);
 	bool bDynamicHit = GetWorld()->SweepSingleByChannel(VerifyHit,WantToSpawn,WantToSpawn,FQuat::Identity,ECollisionChannel::ECC_WorldDynamic, BoxShape, QParams, RParams);

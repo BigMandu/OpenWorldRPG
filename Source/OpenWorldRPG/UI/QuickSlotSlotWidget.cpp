@@ -74,7 +74,7 @@ bool UQuickSlotSlotWidget::NativeOnDrop(const FGeometry& InGeometry, const FDrag
 		AMainController* PlayerCon = Cast<AMainController>(GetOwningPlayer());
 		if(PlayerCon)
 		{
-			PlayerCon->MainHud->QuickSlot->SetItemInQuickSlot(QuickSlotNumber,DDOper->ItemObj);
+			PlayerCon->MainHud->QuickSlot->SetItemInQuickSlot(QuickSlotNumber,DDOper->ItemObj, true);
 		}
 	}
 

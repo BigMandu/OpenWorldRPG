@@ -45,8 +45,6 @@ AWeapon::AWeapon() : Super()
 	bLMBDown = false;
 	bDetectLookInput = false;
 
-
-	MuzzleFlashSocketName = FName("muzzleflash");
 }
 
 void AWeapon::Tick(float DeltaTime)
@@ -90,7 +88,6 @@ bool AWeapon::StepEquip(AActor* Char, ERifleSlot RifleSlot)
 	check(WeaponDataAsset)
 
 	CapsuleAdjust();
-	UpdateWeaponParts();
 	
 	
 	if (RifleAssign == ERifleSlot::ERS_MAX)
@@ -154,11 +151,26 @@ bool AWeapon::StepEquip(AActor* Char, ERifleSlot RifleSlot)
 	//Fire시 계산을 편히 하기 위해 값을 미리 세팅 한다.
 	WeaponDataAsset->WeaponStat.FireRatePerSec = WeaponDataAsset->WeaponStat.FireRatePerMin / 60;
 	WeaponDataAsset->WeaponStat.SecondPerBullet = 1 / WeaponDataAsset->WeaponStat.FireRatePerSec; //0.06
-
 	
-
+	
 	//모든 세팅이 끝나고 AddEquipment를 호출하기 위해 나중에 호출했다.
 	Super::StepEquip(Char);
+
+	/* 아래는 AddEquipment 이후에 진행 해야할 함수들을 호출..
+	* 아래함수들은 ItemObj가 필요함.
+	*/
+	UpdateWeaponParts();
+
+	/**장착 직후 Ammo Widget을 update하기 위해
+	 * CheckAmmo로 obj의 AmmoInMag 변수를 불러오고 broadcast를 한다.
+	 */
+	if (OwningPlayer)
+	{
+		CheckAmmo();
+		OwningPlayer->OnGetAmmo.Broadcast(this);
+	}
+
+
 	return true;
 }
 
@@ -168,7 +180,6 @@ bool AWeapon::StepEquip(AActor* Char, ERifleSlot RifleSlot)
 */
 void AWeapon::GunAttachToMesh(AActor* Actor)
 {
-	
 	ABaseCharacter* BChar = Cast<ABaseCharacter>(Actor);
 	AMainCharacter* Main = Cast<AMainCharacter>(BChar);
 
@@ -285,22 +296,54 @@ void AWeapon::GunAttachToSubSocket(AActor* Actor)
 FTransform AWeapon::GetSightSocketTransform()
 {
 	//if have any sight device. return that location.
-	
+
+	//Socket의 위치를 얻기 전에, Weapon의 위치를 강제한다.
+	//Animation에 의해 Attach된 Weapon의 위치가 바뀌므로 강제하여 Socket의 일관성 있는 위치를 리턴하기 위함.
+	//SetActorRelativeTransform(WeaponDataAsset->FPMeshAttachTransform);
+
 	FTransform ReturnTransform;
 
-	ReturnTransform = SKMesh->GetSocketTransform("AimPos", ERelativeTransformSpace::RTS_World);
-
+	
+	if(AEquipment* A_Scope = WeaponPartsManager->GetWeaponParts(EWeaponPartsType::EWPT_Scope))
+	{
+		ReturnTransform = A_Scope->SKMesh->GetSocketTransform(SightSocketName, ERelativeTransformSpace::RTS_World);
+	}
+	else
+	{
+		ReturnTransform = SKMesh->GetSocketTransform(SightSocketName, ERelativeTransformSpace::RTS_World);
+	}
+	
+	UE_LOG(LogTemp, Warning, TEXT("AWeapon::GetSightSocketTransform / Sight Socket World : %s"), *ReturnTransform.GetLocation().ToString())
+	//FTransform TestTF = SKMesh->GetSocketTransform(SightSocketName, ERelativeTransformSpace::RTS_ParentBoneSpace);
+	/*FVector DebugLocation = TestTF.GetLocation() + GetActorLocation();
+	DrawDebugSphere(GetWorld(), DebugLocation, 6.f,6,FColor::Blue,false,10.f,0,3.f);
+	
+	UE_LOG(LogTemp, Warning, TEXT("AWeapon::GetSightSocketTransform / Sight Socket World : %s"), *ReturnTransform.GetLocation().ToString());
+	UE_LOG(LogTemp, Warning, TEXT("AWeapon::GetSightSocketTransform / TEST TF : %s"), *DebugLocation.ToString());
+	*/
 
 	return ReturnTransform;
 }
 
 void AWeapon::CheckWeaponPartsManager()
 {
+	if(ItemObj)
+	{
+		if (WeaponPartsManager == nullptr && ItemObj->WeaponPartsManager.IsValid())
+		{
+			WeaponPartsManager = ItemObj->WeaponPartsManager.Get();
+		}
+		
+	}
+	
+	//위 코드가 실패했을 경우. WeponPartsManager를 생성한다.
 	if(WeaponPartsManager == nullptr)
 	{
-		WeaponPartsManager = NewObject<UWeaponPartsManagerObject>();
-		WeaponPartsManager->OwnerWeapon = this;
+		WeaponPartsManager = NewObject<UWeaponPartsManagerObject>();	
 	}
+
+	WeaponPartsManager->OwnerWeapon = this;
+
 	WeaponPartsManager->OnChangeParts.AddDynamic(this, &AWeapon::UpdateWeaponParts);
 	
 }
@@ -351,6 +394,10 @@ void AWeapon::Remove()
 	}
 
 	OwningPlayer = nullptr;
+	if(WeaponPartsManager)
+	{
+		WeaponPartsManager->DestroyAllAttachParts(this);
+	}
 	
 	//Destory 함수로 Attach된게 Destory안되면 호출 해야됨.
 
@@ -545,9 +592,14 @@ int32 AWeapon::GetCurrentAmmoInMag()
 
 bool AWeapon::CheckAmmo()
 {
+	if (ItemObj)
+	{
+		AmmoLeftInMag = ItemObj->GetAmmoLeftInMag();
+	}
+
 	if (AmmoLeftInMag <= 0)
 	{	
-		// -1이하로 내려갈일은 없지만 혹시나 해서 방어용.
+		// -1이하로 내려갈일은 없지만 방지용으로.
 		AmmoLeftInMag = 0;
 		return false;
 	}
@@ -557,6 +609,10 @@ bool AWeapon::CheckAmmo()
 void AWeapon::UseAmmo()
 {
 	--AmmoLeftInMag;
+	if (ItemObj)
+	{
+		ItemObj->SetAmmoLeftInMag(AmmoLeftInMag);
+	}
 
 	OwningPlayer->OnGetAmmo.Broadcast(this);
 }
@@ -572,7 +628,13 @@ void AWeapon::Reload()
 		//Current 잔탄에 장전 가능한 탄약을 더한다.
 		AmmoLeftInMag += OwningPlayer->GetNumberofCanReload();
 
+		//잔여 ammo를 업데이트 한다.
 		CntAmmoSameType = OwningPlayer->GetTotalNumberofSameTypeAmmo();
+		if (ItemObj)
+		{
+			ItemObj->SetAmmoLeftInMag(AmmoLeftInMag);
+		}
+
 	}
 	else
 	{

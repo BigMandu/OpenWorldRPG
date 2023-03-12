@@ -31,20 +31,24 @@ public:
 	/***** Widget ******/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets | Interact")
 	TSubclassOf<UUserWidget> WInteractText;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets | Interact")
 	UUserWidget* InteractText;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets | Inventory")
 	TSubclassOf<UUserWidget> WInventory;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets | Inventory")
 	UUserWidget* Inventory;
 
-	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets | Menu")
+	TSubclassOf<UUserWidget> WDeathWidget;
+	UUserWidget* DeathWidget;
+
 	bool bIsInteractLootBox;
 	bool bIsInteractCharacterLoot;
 	bool bIsInventoryVisible;
+	bool bIsCompassWidgetVisible;
+
+	/********** Vehicle ********/
+	bool bIsinCar;
+	TWeakObjectPtr<class ANiceCar> Car;
 
 protected:
 	virtual void BeginPlay() override;
@@ -54,11 +58,23 @@ public:
 
 	void ControlInteractText(bool bIsInteract);
 
+	void ControlCoreUsableWidget(bool bIsTPSMode);
+
 	void CreateLootWidget();
 	void ShowLootBoxWidget();
 	void HideLootBoxWidget();
 
 	void SetInputAndFocus(bool bIsShow);
+
+	void Die();
+
+	void Respawn();
+
+	/*************Vehicle *********/
+	void ToggleCar(class ANiceCar* vCar, FVector OutPos = FVector(0.f));
+	void GetIntheCar(ANiceCar* vCar);
+	void GetOuttheCar(FVector OutPos);//ANiceCar* Car);
+
 
 	//void UseQuickSlotItem(EQuickSlotNumber QuickSlotNum);
 };

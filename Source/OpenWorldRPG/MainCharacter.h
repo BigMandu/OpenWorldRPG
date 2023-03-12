@@ -8,6 +8,8 @@
 
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnQuickSlotUse, EQuickSlotNumber, SlotNum);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FCompassBeginUse);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FCompassEndUse);
 
 class AActor;
 class AMainController;
@@ -42,15 +44,6 @@ enum class ECameraMode : uint8
 	ECM_MAX		UMETA(DisplayName = "DefaultMAX")
 };
 
-UENUM(BlueprintType)
-enum class EAimMode : uint8
-{
-	EAM_Aim				UMETA(DisplayName = "Aim"),
-	EAM_NotAim			UMETA(DisplayName = "NotAim"),
-
-	EAM_MAX				UMETA(DisplayName = "DefaultMAX")
-};
-
 
 UCLASS()
 class OPENWORLDRPG_API AMainCharacter : public ABaseCharacter
@@ -60,6 +53,12 @@ public:
 	AMainCharacter();
 
 	FOnQuickSlotUse OnQuickSlotUse;
+
+	/* CoreUsableItem에서 broadcast,*/
+	FCompassBeginUse CompassBeginUse;
+	FCompassEndUse CompassEndUse;
+	bool bIsUsingCompass;
+
 	/* Anim Instance */
 	UMainAnimInstance* FPAnimInstance;
 
@@ -103,8 +102,9 @@ public:
 	const float MINCameraLength = 80.f;
 	float BeforeCameraLength;
 
-	//아래는 안쓰는 변수들.
 	FTransform FPMeshOriginTransform;
+	//아래는 안쓰는 변수들.
+	
 	/* FPS Aim을 위한 저장값*/
 	FTransform BaseFPMeshTransform;
 	FTransform BaseWeapTransform;
@@ -112,8 +112,9 @@ public:
 	/********** enum **********/
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Enums")
 	ECameraMode CameraMode;
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Enums")
-	EAimMode AimMode;
+
+	
+
 
 	/********* Input *********/
 	bool bMoveForward = false;
@@ -137,7 +138,7 @@ public:
 
 	/********* 입력 막아주기 *********/
 	bool bDisableInput; //Widget을 보고 있을때 true로 만들어 특정키 입력을 막는다.
-
+	bool bDisableInteractionLineTrace;
 	
 	/**********  Interactive 관련 ************/
 	//Minimum value of Active Interaction Distance.
@@ -153,6 +154,15 @@ public:
 	/************** Timer **************/
 	FTimerHandle T_SprintKeyDown;
 	FTimerHandle T_SprintKeyUp;
+	FTimerHandle T_CompassHandle;
+	FTimerHandle T_ADSTimerHandle;
+	FTimerHandle T_CameraHandle;
+
+	float ADSTime;
+	float ADSAlphaTime;
+
+	float CamTime;
+	float CamAlphaTime;
 
 	
 protected:
@@ -167,17 +177,19 @@ public:
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	virtual void PostInitializeComponents() override;
 
+
+	void InteractionLineTrace();
+
 	void TurnAtRate(float Rate);
 	void LookUpAtRate(float Rate);
 
-	/************** Enum 함수 **************/
-	//void SetMainCharacterStatus(EPlayerStatus Type); //To base
-	void SetCameraMode(ECameraMode Type);
-	void SetAimMode(EAimMode Mode);
+	
+	
+	
 
 	/***** Timer 관련 ******/
 	void ClearSprintUpTimer();
-
+	
 	/********   Movement 함수 *******/
 	void MoveForward(float Value);
 	void MoveRight(float Value);
@@ -210,10 +222,38 @@ public:
 	void LMBUp();
 
 	/* Item & Weapon 관련 */
+
+	
 	void RMBDown();
 	void RMBUp();
+
+	//called when rmbdown
+	virtual void SetAimMode(EAimMode Mode) override;
 	
+	UFUNCTION()
+	void FPSADS();
+	void FPSnotADS();
+	FTransform GetFpsAdsPosition();
+
+
+	//called when v key down
+	void SetCameraMode(ECameraMode Type);	
+	void LerpCamera(UCameraComponent* VarTPScam, float TargetBoomLength, FVector TargetCamRelativeLocation, float TargetFOV);
+	void LerpCamera(UCameraComponent* VarFPScam, float TargetFOV);
+	void ReAttachHoldingItem();
+
 	void FPSAimLocationAdjust();
+
+
+	virtual void PlayUseItemAnim(AItem* Item) override;
+	virtual void StopUseItemAnim() override;
+
+
+	/* bind function. CompassBeginUse, EndUse*/
+	UFUNCTION()
+	void CompassStart();
+	UFUNCTION()
+	void CompassStop();
 
 
 	//FPMesh때문에 override해서 FPAnim을 따로 갱신해준다.
@@ -229,7 +269,6 @@ public:
 	void UnsetInteractActor();
 
 	void Interactive();
-
 
 
 	/* Quick Slot */

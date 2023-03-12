@@ -346,32 +346,32 @@ FReply UNewItemwidget::NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEv
 	
 	if (key == EKeys::Four || key == EKeys::NumPadFour)
 	{
-		QuickSlot->SetItemInQuickSlot(EQuickSlotNumber::EQSN_N4,ItemObj);
+		QuickSlot->SetItemInQuickSlot(EQuickSlotNumber::EQSN_N4,ItemObj,true);
 		return FReply::Handled();
 	}
 	else if (key == EKeys::Five || key == EKeys::NumPadFive)
 	{
-		QuickSlot->SetItemInQuickSlot(EQuickSlotNumber::EQSN_N5, ItemObj);
+		QuickSlot->SetItemInQuickSlot(EQuickSlotNumber::EQSN_N5, ItemObj, true);
 		return FReply::Handled();
 	}
 	else if (key == EKeys::Six || key == EKeys::NumPadSix)
 	{
-		QuickSlot->SetItemInQuickSlot(EQuickSlotNumber::EQSN_N6, ItemObj);
+		QuickSlot->SetItemInQuickSlot(EQuickSlotNumber::EQSN_N6, ItemObj, true);
 		return FReply::Handled();
 	}
 	else if (key == EKeys::Seven || key == EKeys::NumPadSeven)
 	{
-		QuickSlot->SetItemInQuickSlot(EQuickSlotNumber::EQSN_N7, ItemObj);
+		QuickSlot->SetItemInQuickSlot(EQuickSlotNumber::EQSN_N7, ItemObj, true);
 		return FReply::Handled();
 	}
 	else if (key == EKeys::Eight || key == EKeys::NumPadEight)
 	{
-		QuickSlot->SetItemInQuickSlot(EQuickSlotNumber::EQSN_N8, ItemObj);
+		QuickSlot->SetItemInQuickSlot(EQuickSlotNumber::EQSN_N8, ItemObj, true);
 		return FReply::Handled();
 	}
 	else if (key == EKeys::Nine || key == EKeys::NumPadNine)
 	{
-		QuickSlot->SetItemInQuickSlot(EQuickSlotNumber::EQSN_N9, ItemObj);
+		QuickSlot->SetItemInQuickSlot(EQuickSlotNumber::EQSN_N9, ItemObj, true);
 		return FReply::Handled();
 	}
 	

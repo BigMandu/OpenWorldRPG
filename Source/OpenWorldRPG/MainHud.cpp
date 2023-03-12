@@ -16,12 +16,17 @@ void UMainHud::NativeConstruct()
 			InteractText->SetVisibility(ESlateVisibility::Collapsed);
 		}
 	}
+	if(CompassWidget)
+	{
+		CompassWidget->SetVisibility(ESlateVisibility::Collapsed);
+	}
 }
 
 void UMainHud::ShowInventoryWindow()
 {
 	if (NewInventoryWidget)
 	{
+		//Inventory를 열면 표시된 widget을 hide한다.
 		HideOtherUI();
 
 		FInputModeGameAndUI Mode; ///TabKey로 HIde를 하기위해 Game And UI mode로 했는데도 키가 안먹힌다. 
@@ -38,6 +43,7 @@ void UMainHud::HideInventoryWindow()
 {
 	if (NewInventoryWidget)
 	{
+		//Inventory를 닫으면 표시해야할 widget을 show한다.
 		ShowOtherUI();
 		//닫을때 마다 HighestZ를 2로 초기화 한다.
 		NewInventoryWidget->HighestZ = 2;
@@ -52,6 +58,11 @@ void UMainHud::ShowOtherUI()
 {
 	ResourceWidget->SetVisibility(ESlateVisibility::Visible);
 	WeaponStatus->SetVisibility(ESlateVisibility::Visible);
+
+	if (bIsCompassWidgetVisible)
+	{
+		CompassWidget->SetVisibility(ESlateVisibility::Visible);
+	}
 	//QuickSlot->SetVisibility(ESlateVisibility::Visible);
 }
 
@@ -60,6 +71,11 @@ void UMainHud::HideOtherUI()
 	ResourceWidget->SetVisibility(ESlateVisibility::Collapsed);
 	WeaponStatus->SetVisibility(ESlateVisibility::Collapsed);
 	//QuickSlot->SetVisibility(ESlateVisibility::Collapsed);
+
+	if (bIsCompassWidgetVisible)
+	{
+		CompassWidget->SetVisibility(ESlateVisibility::Collapsed);
+	}
 }
 
 
@@ -78,4 +94,10 @@ void UMainHud::HideInteractText()
 	{
 		InteractText->SetVisibility(ESlateVisibility::Collapsed);
 	}
+}
+
+//for Show/Hide OtherUI function
+void UMainHud::SettingIsCompassWidgetVisible(bool bIsVisible)
+{
+	bIsCompassWidgetVisible = bIsVisible;
 }

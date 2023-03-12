@@ -4,6 +4,8 @@
 #include "OpenWorldRPG/Item/WeaponPartsManagerObject.h"
 #include "OpenWorldRPG/Item/Weapon.h"
 #include "OpenWorldRPG/Item/WeaponPDA.h"
+#include "OpenWorldRPG/NewInventory/NewItemObject.h"
+#include "OpenWorldRPG/NewInventory/Library/CustomInventoryLibrary.h"
 
 
 void UWeaponPartsManagerObject::AddParts(UNewItemObject* Parts)
@@ -47,6 +49,10 @@ void UWeaponPartsManagerObject::AddParts(UNewItemObject* Parts)
 			Parts->WeaponPartsManager = this;
 		}
 	}
+	/**WeaponPartsWidget, Weapon에서 Bind된다
+	 * WeaponPartsWidget의 Widget을 update하고
+	 * Weapon에서 이 class의 함수인 partsUpdate를 호출한다.
+	 */
 	OnChangeParts.Broadcast();
 }
 
@@ -63,6 +69,7 @@ void UWeaponPartsManagerObject::RemoveParts(UNewItemObject* Parts)
 			if (MuzzleParts.IsValid() && MuzzleParts.Get() == Parts)
 			{
 				MuzzleParts = nullptr;
+				A_MuzzleParts = nullptr;
 				bSuccessRemove = true;
 			}
 			break;
@@ -70,6 +77,7 @@ void UWeaponPartsManagerObject::RemoveParts(UNewItemObject* Parts)
 			if (ScopeParts.IsValid() && ScopeParts.Get() == Parts)
 			{
 				ScopeParts = nullptr;
+				A_ScopeParts = nullptr;
 				bSuccessRemove = true;
 			}
 			break;
@@ -77,6 +85,7 @@ void UWeaponPartsManagerObject::RemoveParts(UNewItemObject* Parts)
 			if (TacticalParts.IsValid() && TacticalParts.Get() == Parts)
 			{
 				TacticalParts = nullptr;
+				A_TacticalParts = nullptr;
 				bSuccessRemove = true;
 			}
 			break;
@@ -169,21 +178,42 @@ void UWeaponPartsManagerObject::SpawnAndAttachParts(UWorld* World, UNewItemObjec
 		{
 		case EWeaponPartsType::EWPT_Muzzle:
 			WeaponSocket = OwnerWeapon->SKMesh->GetSocketByName(MuzzleSocketName);
+			A_MuzzleParts = Parts;
 			break;
 		case EWeaponPartsType::EWPT_Scope:
 			WeaponSocket = OwnerWeapon->SKMesh->GetSocketByName(ScopeSocketName);
+			A_ScopeParts = Parts;
 			break;
 		case EWeaponPartsType::EWPT_Tactical:
 			WeaponSocket = OwnerWeapon->SKMesh->GetSocketByName(TacticalSocketName);
+			A_TacticalParts = Parts;
 			break;
 		}
 
 		if (WeaponSocket)
 		{
-			if (WeaponSocket->AttachActor(Parts, OwnerWeapon->SKMesh))
+			if (Parts->SKMesh->SkeletalMesh)
+			{
+				Parts->SKMesh->SetSimulatePhysics(false);
+			}
+			else
+			{
+				Parts->Mesh->SetSimulatePhysics(false);
+			}
+
+			FAttachmentTransformRules rules(EAttachmentRule::KeepRelative,false);
+			if (Parts->SKMesh->AttachToComponent(OwnerWeapon->SKMesh, rules, ScopeSocketName))
 			{
 				Parts->SetActorEnableCollision(false);
 			}
+
+			
+
+			/*if (WeaponSocket->AttachActor(Parts, OwnerWeapon->SKMesh))
+			{
+
+
+			}*/
 		}
 
 	}
@@ -214,7 +244,22 @@ void UWeaponPartsManagerObject::DestroyAllAttachParts(AWeapon* VarWeapon)
 	}
 }
 
-
+AEquipment* UWeaponPartsManagerObject::GetWeaponParts(EWeaponPartsType PartsWantToGet)
+{
+	switch (PartsWantToGet)
+	{
+	case EWeaponPartsType::EWPT_Muzzle:
+		return A_MuzzleParts.Get();
+	break;
+	case EWeaponPartsType::EWPT_Scope:
+		return A_ScopeParts.Get();
+	break;
+	case EWeaponPartsType::EWPT_Tactical:
+		return A_TacticalParts.Get();
+	break;
+	}
+	return nullptr;
+}
 
 //
 //

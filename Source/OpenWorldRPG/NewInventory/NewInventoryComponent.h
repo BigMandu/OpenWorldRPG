@@ -62,7 +62,7 @@ public:
 	void AddItemAtIndex(UItemStorageObject* StorageObj, UNewItemObject* ItemObj, int32 Index);
 	bool TryAddItem(UItemStorageObject* StorageObj, FItemSetting ItemSetting, UNewItemObject* Obj = nullptr, bool bWantToGenerateRandomCount = false);
 	bool RemoveItem(UItemStorageObject* StorageObj, UNewItemObject* ItemObj);
-	UNewItemObject* CreateObject(FItemSetting ItemStruct, bool& bIsCreated);
+	//UNewItemObject* CreateObject(FItemSetting ItemStruct, bool& bIsCreated);
 
 	bool AddItemCount(UNewItemObject* DroppedItemObj, UNewItemObject* OnItemObj);
 	void RemoveItemCount(UNewItemObject* RemoveItemObj, int32 RemoveCount);

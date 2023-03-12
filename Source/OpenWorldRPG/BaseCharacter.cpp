@@ -34,6 +34,8 @@
 #include "OpenWorldRPG/Item/Equipment.h"
 #include "OpenWorldRPG/Item/Weapon.h"
 #include "OpenWorldRPG/Item/BaseGrenade.h"
+#include "OpenWorldRPG/Item/CoreUsableItem.h"
+
 
 
 
@@ -129,27 +131,24 @@ void ABaseCharacter::PostInitializeComponents()
 
 	/* 사운드는 TP Animation을 기준으로 출력한다. */ //AnimInstance의 StepSound_Notify에서 호출.
 	TPAnimInstance->StepSound.AddUObject(this, &ABaseCharacter::StepSound);
+	TPAnimInstance->ThrowDelegate.AddUObject(this,&ABaseCharacter::DetachThrowingObject);
+
 	TPAnimInstance->WeaponTypeNumber = 0;
 	
 
 	SetTeamType(TeamType);
 	SettingStorage();
 
-	//if (bHasSpawnItems)
-	//{
-	//	SpawnItems();
-	//}
-
-	//if (bHasSpawnEquipments)
-	//{
-	//	SpawnEquipments();
-	//}
-
 }
 
 void ABaseCharacter::SetTeamType(ETeamType Team)
 {
 	TeamType = Team;
+}
+
+void ABaseCharacter::SetAimMode(EAimMode Mode)
+{
+
 }
 
 void ABaseCharacter::SettingStorage()
@@ -204,6 +203,14 @@ void ABaseCharacter::ApplyFallingDamage(FHitResult& _FallHit)
 void ABaseCharacter::SetCharacterStatus(ECharacterStatus Type)
 {
 	ChracterStatus = Type;
+
+	/*Aim mode인 경우 아래를 수행 않고 바로 return한다.
+	* SetAimmode에서 별도로 이동속도를 제한 하기 때문이다.
+	* 이를 하지 않으면 StatManageComp의 Stamina가 변하는 타임마다 이 함수를 호출하기에
+	* 무조건 변하게 되어, Aim mode시에 풀리는 경우가 있다.
+	* */
+	if (AimMode == EAimMode::EAM_Aim) return;
+
 	switch (ChracterStatus)
 	{
 	case ECharacterStatus::EPS_Normal:
@@ -273,6 +280,19 @@ void ABaseCharacter::UseItem(class AActor* Item)
 	if (Item)
 	{
 		//Item->Use(this);
+	}
+}
+
+void ABaseCharacter::DetachThrowingObject()
+{
+	if (HoldingItem.IsValid())
+	{
+		ABaseGrenade* Grenade = Cast<ABaseGrenade>(HoldingItem);
+		UE_LOG(LogTemp, Warning, TEXT("ABaseCharacter::DetachThrowingObject, receive animnotify"));
+		if(Grenade)
+		{
+			Grenade->DetectThrow(this);
+		}
 	}
 }
 
@@ -495,6 +515,7 @@ bool ABaseCharacter::ChangeWeapon(int32 index)
 {
 	//for BTService_DecideWhatToDo.
 	bool bSuccessChangeWeapon = false;
+
 	if(TPAnimInstance == nullptr) return false;
 		
 	switch (index)
@@ -507,30 +528,34 @@ bool ABaseCharacter::ChangeWeapon(int32 index)
 		// 현재 장착하고 있는 무기가 Primary와 다를경우에만 변경. 일치하면 똑같은걸 장착할 필요가 없음.
 		if (PrimaryWeapon && (PrimaryWeapon != EquippedWeapon))
 		{
+			//detach and destroy when holding item.
+			DetachCoreUsableItem();
 			if(EquippedWeapon)
 			{
 				EquippedWeapon->GunAttachToSubSocket(this);
 			}
 			PrimaryWeapon->GunAttachToMesh(this);
-				
+			
 			TPAnimInstance->WeaponTypeNumber = 1;
-			//FPAnimInstance->WeaponTypeNumber = 1;
-			EquippedWeapon = PrimaryWeapon;
+			EquippedWeapon = PrimaryWeapon;	
+
 			bSuccessChangeWeapon = true;
 		}
 		break;
 	case 2:
 		if (SubWeapon && (SubWeapon != EquippedWeapon))
 		{
+			//detach and destroy when holding item.
+			DetachCoreUsableItem();
 			if (EquippedWeapon)
 			{
 				EquippedWeapon->GunAttachToSubSocket(this);
 			}
 			SubWeapon->GunAttachToMesh(this);
 			TPAnimInstance->WeaponTypeNumber = 1;
-				
-			//FPAnimInstance->WeaponTypeNumber = 1;
+
 			EquippedWeapon = SubWeapon;
+
 			bSuccessChangeWeapon = true;
 		}
 		break;
@@ -552,9 +577,9 @@ bool ABaseCharacter::ChangeWeapon(int32 index)
 	}
 	if (bSuccessChangeWeapon)
 	{
-		if (EquippedGrenade.IsValid())
+		if (HoldingItem.IsValid())
 		{
-			EquippedGrenade->Destroy();
+			HoldingItem->Destroy();
 		}
 	}
 	
@@ -574,8 +599,29 @@ void ABaseCharacter::ChangePistolWeapon()
 	ChangeWeapon(3);
 }
 
+void ABaseCharacter::SetHoldingItem(AItem* WantToHolding)
+{	
+	HoldingItem = WantToHolding;
+	if(WantToHolding != nullptr)
+	{
+		HoldingItem->ItemUseEnd.AddDynamic(this, &ABaseCharacter::StopUseItemAnim);
+	}
+	
+}
 
 
+void ABaseCharacter::PlayUseItemAnim(AItem* Item)
+{
+	if (Item)
+	{	
+		PlayAnimMontage(Item->ItemSetting.DataAsset->TPS_UseAnimMontage);
+	}
+}
+
+void ABaseCharacter::StopUseItemAnim()
+{
+	GetMesh()->GetAnimInstance()->Montage_Stop(0.f,nullptr);
+}
 
 FTransform ABaseCharacter::LeftHandik()
 {
@@ -588,6 +634,16 @@ FTransform ABaseCharacter::LeftHandik()
 
 	return Transform;
 }
+
+void ABaseCharacter::DetachCoreUsableItem()
+{
+	if(HoldingItem.IsValid())
+	{
+		ACoreUsableItem* CoreItem = Cast<ACoreUsableItem>(HoldingItem);
+		CoreItem->Use(this,CoreItem->ItemObj);
+	}
+}
+
 
 
 void ABaseCharacter::SpeakSound(USoundCue* Sound)
@@ -709,6 +765,7 @@ float ABaseCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageE
 void ABaseCharacter::Die()
 {
 	AEnemyAIController* AICon = Cast<AEnemyAIController>(GetController());
+	AMainController* PCon = Cast<AMainController>(GetController());
 	if(AICon)
 	{
 		//AICon->UnPossess();
@@ -737,6 +794,11 @@ void ABaseCharacter::Die()
 			bIsDie = true;
 		}
 	}
+	else if(PCon)
+	{
+		PCon->Die();
+	}
+
 }
 
 /* Perception */
@@ -831,3 +893,4 @@ void ABaseCharacter::UnsetOutline()
 {
 	GetMesh()->SetRenderCustomDepth(false);
 }
+

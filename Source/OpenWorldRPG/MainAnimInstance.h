@@ -8,6 +8,9 @@
 
 
 DECLARE_MULTICAST_DELEGATE(FStepSoundDelegate);
+//DECLARE_MULTICAST_DELEGATE_OneParam(FThrowDelegate,ABaseCharacter*);
+DECLARE_MULTICAST_DELEGATE(FThrowDelegate);
+//DECLARE_MULTICAST_DELEGATE(FStartADS);
 
 /**
  * 
@@ -25,6 +28,8 @@ private:
 public:
 
 	FStepSoundDelegate StepSound;
+	FThrowDelegate ThrowDelegate;
+	//FStartADS StartADS;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement)
 	float MovementSpeed;
@@ -38,8 +43,15 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement)
 	float Yaw;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement)
 	bool bIsinAir;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement)
+	bool bIsJumpkeyDown;
+
+	/* fix Clipping wall */
+	bool bBeginHighReady;
+	bool bEndHighReady;
 
 	class APawn* Pawn;
 
@@ -56,9 +68,6 @@ public:
 	FVector LeftHandLocation;
 
 
-	/* fix Clipping wall */
-	bool bBeginHighReady;
-	bool bEndHighReady;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = BoneMove)
 	FRotator TP_HighReadyRotator_Left;
@@ -69,7 +78,11 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = BoneMove)
 	FRotator FP_HighReadyRotator;
 
-	 
+
+
+	///////////////////////////////////////////////////////////////
+	/************************   Functions    *********************/
+	/////////////////////////////////////////////////////////////// 
 
 	virtual void NativeInitializeAnimation() override;
 
@@ -79,9 +92,18 @@ public:
 	UFUNCTION()
 	void AnimNotify_StepSound();
 
+	UFUNCTION()
+	void AnimNotify_throw();
+
+	/*UFUNCTION()
+	void AnimNotify_ADS();*/
+
 	void SetHandIK();
 
 	void SetHighReady();
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, meta = (BlueprintThreadSafe))
+	bool IsReadyToThrow();
 
 	/*UFUNCTION()
 	void BeginHighReady();

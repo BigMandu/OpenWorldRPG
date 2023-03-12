@@ -28,7 +28,7 @@ public:
 	//class UNewItemObject* WeaponObj;
 
 	UPROPERTY(meta = (bindWidget))
-	UImage* WeaponImage;
+	class UImage* WeaponImage;
 
 	UPROPERTY(meta=(bindWidget))
 	class UEquipmentSlot* MuzzleSlot;

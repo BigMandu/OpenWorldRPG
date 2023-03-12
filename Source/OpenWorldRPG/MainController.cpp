@@ -8,7 +8,10 @@
 #include "Blueprint/UserWidget.h"
 #include "OpenWorldRPG/NewInventory/Widget/NewInventory.h"
 #include "OpenWorldRPG/UI/QuickSlotWidget.h"
+#include "OpenWorldRPG/UI/CompassWidget.h"
+
 #include "OpenWorldRPG/MainHud.h"
+#include "OpenWorldRPG/Vehicles/NiceCar.h"
 
 
 
@@ -65,6 +68,24 @@ void AMainController::ControlInteractText(bool bIsInteract)
 	}
 }
 
+void AMainController::ControlCoreUsableWidget(bool bIsTPSMode)
+{
+	//TPS mode인 경우 
+	if (bIsTPSMode)
+	{
+		bIsCompassWidgetVisible = true;
+		MainHud->CompassWidget->SetVisibility(ESlateVisibility::Visible);
+	}
+	else
+	{
+		bIsCompassWidgetVisible = false;
+		MainHud->CompassWidget->SetVisibility(ESlateVisibility::Collapsed);
+	}
+
+	//for MainHUd::Show/HideOtherUI func
+	MainHud->SettingIsCompassWidgetVisible(bIsCompassWidgetVisible);
+}
+
 void AMainController::SetInputAndFocus(bool bIsShow)
 {
 	if (bIsShow) //Set To UI Mode
@@ -92,6 +113,97 @@ void AMainController::SetInputAndFocus(bool bIsShow)
 		bIsInteractLootBox = false;
 		bIsInteractCharacterLoot = false;
 	}
+}
+
+void AMainController::Die()
+{
+	if (WDeathWidget == nullptr)
+	{
+		return;
+	}
+
+	DeathWidget = CreateWidget<UUserWidget>(this,WDeathWidget);
+	if (DeathWidget)
+	{
+		DeathWidget->AddToViewport();
+	}
+}
+
+PRAGMA_DISABLE_DEPRECATION_WARNINGS
+void AMainController::Respawn()
+{
+	if (Main)
+	{
+		Main->Destroy();
+	}
+
+	//SpawnLocation
+	FVector RespawnLoc = FVector(0.f);
+	if (Car.IsValid())
+	{
+		//Car의 SeatSocketName으로
+		RespawnLoc = Car->GetMesh()->GetSocketLocation(Car->SeatSocketName);
+
+	}
+
+	FActorSpawnParameters SpawnParms;
+	SpawnParms.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	Main = GetWorld()->SpawnActor<AMainCharacter>(AMainCharacter::StaticClass(), RespawnLoc, FRotator::ZeroRotator, SpawnParms);
+	Possess(Main);
+}
+PRAGMA_ENABLE_DEPRECATION_WARNINGS
+
+/*********** Vehicle ***********/
+void AMainController::ToggleCar(ANiceCar* vCar, FVector OutPos)
+{
+	bool bNewState = !bIsinCar;
+	if (bNewState != bIsinCar)
+	{		
+		switch (bIsinCar)
+		{
+		case true:
+			//Get out car
+			Main->bDisableInteractionLineTrace = false;
+			GetOuttheCar(OutPos);
+			break;
+		case false:
+			//Get in car			
+			Main->bDisableInteractionLineTrace = true;
+			GetIntheCar(vCar);
+			break;
+		}
+	}
+}
+
+void AMainController::GetIntheCar(ANiceCar* vCar)
+{
+	if (vCar)
+	{
+		Car = vCar;
+		bIsinCar = true;
+		FAttachmentTransformRules Rules(EAttachmentRule::SnapToTarget,false);
+		Main->GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		//Main->SetActorEnableCollision(false);
+		Main->AttachToActor(vCar,Rules,vCar->SeatSocketName);
+		this->Possess(vCar);
+
+	}
+}
+
+void AMainController::GetOuttheCar(FVector OutPos)//AVehicle* Car)
+{
+	bIsinCar = false;
+	this->Possess(Main);
+	
+	Main->DetachFromActor(FDetachmentTransformRules(EDetachmentRule::KeepWorld, false));
+	this->SetControlRotation(FRotator::ZeroRotator);
+
+	Main->SetActorLocation(OutPos);
+	Main->SetActorRotation(FRotator::ZeroRotator);
+	Main->GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	
+	
 }
 
 //void AMainController::UseQuickSlotItem(EQuickSlotNumber QuickSlotNum)

@@ -6,7 +6,7 @@
 //#include "MainCharacter.h"
 //#include "MainController.h"
 //#include "Animation/AnimNode_SequencePlayer.h"
-//#include "Item/Weapon.h"
+#include "Item/BaseGrenade.h"
 #include "GameFramework/CharacterMovementComponent.h"
 //#include "BoneControllers/AnimNode_ModifyBone.h"
 //#include "Engine/SkeletalMeshSocket.h"
@@ -19,6 +19,7 @@ void UMainAnimInstance::NativeInitializeAnimation()
 		if (Pawn)
 		{
 			Player = Cast<ABaseCharacter>(Pawn);
+			
 		}
 	}
 }
@@ -77,6 +78,19 @@ void UMainAnimInstance::UpdateAnimationProperties()
 	}
 }
 
+bool UMainAnimInstance::IsReadyToThrow()
+{
+	if (Player->HoldingItem.IsValid())
+	{
+		ABaseGrenade* Grenade = Cast<ABaseGrenade>(Player->HoldingItem);
+		if (Grenade)
+		{
+			return Grenade->bReadyToThrow;		
+		}
+	}
+	return false;
+}
+
 void UMainAnimInstance::SetHandIK()
 {
 	//여기서는 LeftHandLocation만 세팅해주고
@@ -99,6 +113,18 @@ void UMainAnimInstance::AnimNotify_StepSound()
 	FBoneReference Bone("")
 	ModBone.BoneToModify = Bone.BoneName*/
 }
+
+void UMainAnimInstance::AnimNotify_throw()
+{
+	UE_LOG(LogTemp,Warning,TEXT("UMainAnimInstance::AnimNotify_throw, broadcast"));
+	ThrowDelegate.Broadcast();
+}
+//
+//void UMainAnimInstance::AnimNotify_ADS()
+//{
+//	UE_LOG(LogTemp, Warning, TEXT("UMainAnimInstance::AnimNotify_ADS"));
+//	StartADS.Broadcast();
+//}
 
 /*
 void UMainAnimInstance::BeginHighReady()

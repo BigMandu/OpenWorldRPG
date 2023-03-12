@@ -19,6 +19,11 @@ public:
 	/***** Mesh ******/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Mesh")
 	UStaticMesh* Mesh;
+
+	//Optional Static Mesh, if needed
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Mesh")
+	UStaticMesh* Mesh_Optional;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Mesh")
 	USkeletalMesh* SKMesh;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Mesh")
@@ -62,7 +67,22 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Item | Info")
 	EAmmoType AmmoType;
 
+	/***** Hand Attach Transform ******/
+	UPROPERTY(EditAnywhere, Category = "Item | Hand")
+	bool bIsNeedToAttachHandBeforeUse;
+	UPROPERTY(EditAnywhere, Category = "Item | Hand")
+	FTransform TPS_HandAttachTransform;
+		UPROPERTY(EditAnywhere, Category = "Item | Hand")
+	FTransform FPS_HandAttachTransform;
 
+	/****** Using AnimMontage *****/
+	UPROPERTY(EditAnywhere, Category = "Item | Animation")
+	bool bIsNeedLooping;
+	UPROPERTY(EditAnywhere, Category = "Item | Animation")
+	class UAnimMontage* FPS_UseAnimMontage;
+
+	UPROPERTY(EditAnywhere, Category = "Item | Animation")
+	class UAnimMontage* TPS_UseAnimMontage;
 
 	/**** Stackable ****/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Stack")

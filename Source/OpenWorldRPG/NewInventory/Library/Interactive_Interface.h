@@ -30,6 +30,5 @@ public:
 	virtual void SetOutline() = 0;
 	virtual void UnsetOutline() = 0;
 
-
 	FOnInteract OnInteract;
 };

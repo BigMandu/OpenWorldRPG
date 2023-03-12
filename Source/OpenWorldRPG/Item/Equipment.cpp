@@ -164,25 +164,25 @@ void AEquipment::ReInitialize(UNewItemObject* Obj)
 }
 
 //부모 클래스에서 Beginplay시 한번만 사용됨.
-UNewItemObject* AEquipment::GetDefaultItemObj()
-{
-	UNewItemObject* Obj = Super::GetDefaultItemObj();
-
-	/*if(Obj && bHasStorage && EquipInventoryComp)
-	{
-		Obj->SetItemInvComp(EquipInventoryComp);
-	}*/
-	if (CPDA && CPDA->bHasStorage)
-	{
-		//Obj->bHasStorage = ItemSetting.DataAsset->bHasStorage;
-		//ItemSetting.DataAsset->bHasStorage;
-		/*Obj->GridTileSize = GridTileSize;
-		Obj->WEquipGridWidget = WEquipGridWidget;
-		Obj->ObjInvComp->Rows = Rows;
-		Obj->ObjInvComp->Columns = Columns;*/
-	}
-	return Obj;
-}
+//UNewItemObject* AEquipment::GetDefaultItemObj()
+//{
+//	UNewItemObject* Obj = Super::GetDefaultItemObj();
+//
+//	/*if(Obj && bHasStorage && EquipInventoryComp)
+//	{
+//		Obj->SetItemInvComp(EquipInventoryComp);
+//	}*/
+//	if (CPDA && CPDA->bHasStorage)
+//	{
+//		//Obj->bHasStorage = ItemSetting.DataAsset->bHasStorage;
+//		//ItemSetting.DataAsset->bHasStorage;
+//		/*Obj->GridTileSize = GridTileSize;
+//		Obj->WEquipGridWidget = WEquipGridWidget;
+//		Obj->ObjInvComp->Rows = Rows;
+//		Obj->ObjInvComp->Columns = Columns;*/
+//	}
+//	return Obj;
+//}
 
 void AEquipment::SetOwningPlayer(AActor* Actor)
 {
@@ -260,7 +260,7 @@ bool AEquipment::Equip(AActor* Actor, ERifleSlot RifleSlot)
 	UE_LOG(LogTemp, Warning, TEXT("AEquipment::Equip func called"));
 	ABaseCharacter* BChar = Cast<ABaseCharacter>(Actor);
 	bool bReturn = false;
-	UNewItemObject* BeforeEquippedObj = nullptr;
+	//UNewItemObject* BeforeEquippedObj = nullptr;
 
 	if (BChar)
 	{

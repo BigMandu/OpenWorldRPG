@@ -46,21 +46,36 @@ public:
 
 
 	FItemSetting ItemInfo;
-
 	FIntPoint ItemRotateSize;
 	EEquipmentType EquipmentType;
 	EInteractType InteractType;
 
+
+	//EquipComp, InvenComp에서 사용한다. (편하게 하기 위함...)
 	AItem* item;
-	UMaterialInterface* icon;
-	UMaterialInterface* iconRotated;
+	AEquipment* Equipment;
+
+
+	int32 TopLeftIndex;
+	UItemStorageObject* MotherStorage;
+	UEquipmentComponent* MotherEquipComp;
+	class UWeaponPDA* OwnerWeaponPDA;
+	
+	UEquipmentSlot* SettedSlot;
+
+	ERifleSlot RifleAssign;
+	TWeakObjectPtr<class UWeaponPartsManagerObject> WeaponPartsManager;
+
+	//for Weapon
+	int32 AmmoLeftInMag = 0;
+
+	/* boolean value */
 
 	bool bCanRotated;
-	
-	
+
 	bool bTempRotate = false;
 	bool bRotated = false;
-	
+
 	bool bCanEquip;
 	bool bIsDestoryed;
 	bool bIsRegQuickSlot;
@@ -71,22 +86,26 @@ public:
 	//Use at NewInventoryGrid, EquipmentSlot, NewInventory
 	bool bIsDragging;
 
-	int32 TopLeftIndex;
+	/** for CoreUsableItem.
+	* this class is Undeleted item. e.g Compass, Map.
+	* when true, if using this item again then detach from actor.
+	* when false, if using this item then attach to actor.
+	*/
+	bool bIsUsing = false;
 
-	FText itemName;
-	FText itemDesc;
 
-	AEquipment* Equipment;
 
-	UItemStorageObject* MotherStorage;
-	UEquipmentComponent* MotherEquipComp;
-	class UWeaponPDA* OwnerWeaponPDA;
 
-	TWeakObjectPtr<class UWeaponPartsManagerObject> WeaponPartsManager;
-	//class UWeaponPartsWidget* MotherWeaponPartsWidget;
-	UEquipmentSlot* SettedSlot;
 
-	ERifleSlot RifleAssign;
+
+
+
+	////////////////////////////////////////////////////////////
+	/************************** Func **************************/
+	////////////////////////////////////////////////////////////
+
+
+
 
 	//GridWidget에서 On-Drop시에 Rotate값을 확정한다. (TempRotate값을 Rotate값으로 넣어주기만 한다.)
 	void SetItemRotate();
@@ -117,6 +136,8 @@ public:
 
 	void UseItem(UWorld* World);
 	
+	FORCEINLINE void SetAmmoLeftInMag(int32 AmmoCnt) { AmmoLeftInMag = AmmoCnt; }
+	FORCEINLINE int32 GetAmmoLeftInMag() { return AmmoLeftInMag; }
 
 	
 };

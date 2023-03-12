@@ -3,6 +3,7 @@
 
 #include "ContainerWidget.h"
 #include "Blueprint/UserWidget.h"
+#include "OpenWorldRPG/Vehicles/NiceCar.h"
 #include "OpenWorldRPG/Item/Item.h"
 #include "OpenWorldRPG/Item/Container.h"
 #include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
@@ -19,6 +20,7 @@ bool UContainerWidget::Initialize()
 
 void UContainerWidget::InitContainerWidget(AActor* actor)
 {
+	ANiceCar* VehicleType = Cast<ANiceCar>(actor);
 	Container = Cast<AContainer>(actor);
 	if (Container)
 	{
@@ -27,5 +29,10 @@ void UContainerWidget::InitContainerWidget(AActor* actor)
 
 		//ContainerGridwidget->GridInitialize(Container->ContainerInventoryComp, Container->ContainerInventoryComp->TileSize);
 
+	}
+	else if (VehicleType)
+	{
+		ContainerGridwidget->StorageObj = VehicleType->StorageObj;
+		ContainerGridwidget->GridInit();
 	}
 }

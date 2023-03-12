@@ -48,6 +48,7 @@ UENUM()
 enum class EItemType : uint8
 {
 	EIT_NONE		UMETA(DisplayName = "NONE_Type"),
+	EIT_Usable		UMETA(DisplayName = "Usable_Type"),
 	EIT_Food		UMETA(DisplayName = "Food_Type"),
 	EIT_Medical		UMETA(DisplayName = "Medical_Type"),
 	EIT_Scrap		UMETA(DisplayName = "Scrap_Type"),

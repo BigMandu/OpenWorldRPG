@@ -15,6 +15,8 @@ class OPENWORLDRPG_API UMainHud : public UUserWidget
 	GENERATED_BODY()
 public:
 	class AMainController* MainCon;
+	
+	bool bIsCompassWidgetVisible = false;
 	bool bIsInventoryWindowShow = false;
 
 	UPROPERTY(meta = (BindWidget))
@@ -26,6 +28,10 @@ public:
 	class UWeaponStatusWidget* WeaponStatus;
 	UPROPERTY(meta = (BindWidget))
 	class UQuickSlotWidget* QuickSlot;
+
+	UPROPERTY(meta = (BindWidget))
+	class UCompassWidget* CompassWidget;
+
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets | Interact")
 	TSubclassOf<UUserWidget> WInteractText;
@@ -54,6 +60,10 @@ public:
 	void ShowInteractText();
 	void HideInteractText();
 
+	void ShowCompassWidget();
+	void HideCompassWidget();
+
+	void SettingIsCompassWidgetVisible(bool bIsVisible);
 	
 
 };

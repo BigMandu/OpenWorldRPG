@@ -55,10 +55,21 @@ enum class ECharacterStatus : uint8
 	EPS_MAX			UMETA(DisplayName = "DefaultsMAX")
 };
 
+UENUM(BlueprintType)
+enum class EAimMode : uint8
+{
+	EAM_Aim				UMETA(DisplayName = "Aim"),
+	EAM_NotAim			UMETA(DisplayName = "NotAim"),
+
+	EAM_MAX				UMETA(DisplayName = "DefaultMAX")
+};
+
 UCLASS()
 class OPENWORLDRPG_API ABaseCharacter : public ACharacter, public IAISightTargetInterface, public IInteractive_Interface
 {
 	GENERATED_BODY()
+
+	
 
 public:
 	// Sets default values for this character's properties
@@ -72,6 +83,11 @@ public:
 	/* Socket Name */
 	const FName HeadSocketName = FName("headsocket");
 	const FName GripSocketName = FName("WeaponGrip");
+	//Item을 잡을 LeftHand Socket
+
+	const FName LeftHandGripSocketName = FName("handLeftGripPos");
+
+	//Weapon을 잡을 LeftHand의 Position (Weapon's socket)
 	const FName WeaponLeftHandSocketName = FName("LeftHandPos");
 
 	/* Enums */
@@ -81,6 +97,8 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enums")
 	ETeamType TeamType;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Enums")
+	EAimMode AimMode;
 
 
 	bool bIsDie;
@@ -114,10 +132,8 @@ public:
 	FHitResult FallHit;
 	float FallingHighestZ;
 
-
+	TWeakObjectPtr<class AItem> HoldingItem;
 	/* Weapon */
-	TWeakObjectPtr<class ABaseGrenade> EquippedGrenade;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item | Weapon")
 	AWeapon* EquippedWeapon;
 
@@ -224,6 +240,7 @@ public:
 	void SetCharacterStatus(ECharacterStatus Type);
 	void SetTeamType(ETeamType Team);
 	FORCEINLINE ETeamType GetTeamType() { return TeamType; }
+	virtual void SetAimMode(EAimMode Mode);
 
 	///**** Spawn items *******/
 	//void SpawnItems();
@@ -250,7 +267,7 @@ public:
 	/* Change Weapon Firing Mode*/
 	void ChangeSafetyLever();
 
-	virtual bool ChangeWeapon(int32 index);
+	virtual bool ChangeWeapon(int32 index);	
 
 	/* Weapon Ammo */
 	bool CheckAmmo();
@@ -277,6 +294,18 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FTransform LeftHandik();
 
+	void SetHoldingItem(AItem* WantToHolding);
+
+	//called from AnimMontage Notify (UMainAnim)
+	UFUNCTION()
+	void DetachThrowingObject();//ABaseCharacter* Actor);
+
+	virtual void PlayUseItemAnim(AItem* Item);
+	UFUNCTION()
+	virtual void StopUseItemAnim();
+
+	void DetachCoreUsableItem();
+
 	void StepSound();
 	void SpeakSound(USoundCue* Sound);
 
@@ -300,7 +329,6 @@ public:
 	virtual void Interaction(AActor* Actor) override;
 	virtual void SetOutline() override;
 	virtual void UnsetOutline() override;
-
 	/********** Perception ********/
 	virtual bool CanBeSeenFrom(const FVector& ObserverLocation, FVector& OutSeenLocation, int32& NumberOfLoSChecksPerformed, float& OutSightStrength, const AActor* IgnoreActor, const bool* bWasVisible, int32* UserData) const;
 

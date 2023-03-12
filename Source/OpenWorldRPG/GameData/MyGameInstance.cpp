@@ -15,8 +15,9 @@ UMyGameInstance::UMyGameInstance()
 	//DataTable'/Game/GameData/CraftRecipeTable.CraftRecipeTable'
 	FString CraftRecipeTablePath = TEXT("/Game/GameData/CraftRecipeTable.CraftRecipeTable");
 	static ConstructorHelpers::FObjectFinder<UDataTable> DT_CraftRecipe(*CraftRecipeTablePath);
+
 	
-	//UDataTable* DT_StrLevelData = LoadObject<UDataTable>(this,StrLevelDataPath);
+	
 
 	if(DT_StrLevelData.Succeeded())
 	{ 
@@ -27,6 +28,9 @@ UMyGameInstance::UMyGameInstance()
 	{
 		CraftRecipeDataTable = DT_CraftRecipe.Object;
 	}
+	
+	
+
 }
 
 void UMyGameInstance::Init()

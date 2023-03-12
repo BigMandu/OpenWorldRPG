@@ -29,6 +29,10 @@ public:
 	TWeakObjectPtr<UNewItemObject> ScopeParts;
 	TWeakObjectPtr<UNewItemObject> TacticalParts;
 
+	TWeakObjectPtr<class AEquipment> A_MuzzleParts;
+	TWeakObjectPtr<AEquipment> A_ScopeParts;
+	TWeakObjectPtr<AEquipment> A_TacticalParts;
+
 private:
 	const FName MuzzleSocketName = TEXT("MuzzleParts");
 	const FName ScopeSocketName = TEXT("ScopeParts");
@@ -48,6 +52,7 @@ public:
 	void AddParts(UNewItemObject* Parts);
 	void RemoveParts(UNewItemObject* Parts);
 
+	AEquipment* GetWeaponParts(EWeaponPartsType PartsWantToGet);
 
 private:
 	/* Weapon이 Equip될 때(Spawn될때) 부착된 Parts들도 스폰한다.*/

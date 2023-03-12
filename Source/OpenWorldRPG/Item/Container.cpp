@@ -151,7 +151,6 @@ void AContainer::UnsetOutline()
 	Mesh->SetRenderCustomDepth(false);
 }
 
-
 /*
 void ALootBox::SelectAndStoreLootItem()
 {

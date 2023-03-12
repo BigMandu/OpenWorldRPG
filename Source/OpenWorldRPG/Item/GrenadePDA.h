@@ -25,7 +25,22 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Grenade | CommonStat")
 	float EffectRadius;
 
+	//Cascade Effect
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Grenade | FX")
+	class UParticleSystem* Ca_GrenadeEffect;
 
+	//Niagara Effect
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Grenade | FX")
+	class UNiagaraSystem* Ni_GrenadeEffect;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Grenade | FX")
+	class USoundCue* GrenadeEffectSound;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Grenade | Animation")
+	class UAnimMontage* ThrowingAnimMontage;
+
+	/*UPROPERTY(EditDefaultsOnly, Category = "Grenade | CommonStat")
+	TSubclassOf<class UDamageType> DmgType;*/
 
 	UPROPERTY(EditDefaultsOnly, Category = "Grenade | Fragmentation")
 	float Damage;
