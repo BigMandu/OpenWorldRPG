@@ -50,7 +50,7 @@ UNewItemObject* UCustomInventoryLibrary::CreateObject(FItemSetting ItemStruct, b
 
 }
 
-/*ItemObj¸¦ ÀÌ¿ëÇØ Item class¸¦ SpawnÇÑ´Ù.*/
+/*ItemObjë¥¼ ì´ìš©í•´ Item classë¥¼ Spawní•œë‹¤.*/
 AItem* UCustomInventoryLibrary::SpawnItem(UWorld* World, UNewItemObject* ItemObj)
 {
 	if (World && ItemObj)
@@ -81,7 +81,7 @@ AItem* UCustomInventoryLibrary::SpawnItem(UWorld* World, UNewItemObject* ItemObj
 	return nullptr;
 }
 
-/*ItemObj¸¦ ÀÌ¿ëÇØ Equipment Class¸¦ SpawnÇÑ´Ù*/
+/*ItemObjë¥¼ ì´ìš©í•´ Equipment Classë¥¼ Spawní•œë‹¤*/
 AEquipment* UCustomInventoryLibrary::SpawnEquipment(UWorld* World, UNewItemObject* ItemObj)//, AActor* Actor)
 {
 	//UE_LOG(LogTemp, Warning, TEXT("UCustomInventoryLibrary::SpawnEquipment"));
@@ -94,15 +94,15 @@ AEquipment* UCustomInventoryLibrary::SpawnEquipment(UWorld* World, UNewItemObjec
 		UCustomPDA* CPDA = Cast<UCustomPDA>(ItemObj->ItemInfo.DataAsset);
 		check(CPDA);
 
-		//WeaponÀÎ °æ¿ì WeaponInstant class·Î »ı¼ºÇØÁØ´Ù.
+		//Weaponì¸ ê²½ìš° WeaponInstant classë¡œ ìƒì„±í•´ì¤€ë‹¤.
 		UWeaponPDA* WeaponPDA = Cast<UWeaponPDA>(ItemObj->ItemInfo.DataAsset);
 		if (WeaponPDA)
 		{
 			Equipment = Cast<AWeapon_Instant>(World->SpawnActor<AActor>(AWeapon_Instant::StaticClass()));
-			if (ItemObj->WeaponPartsManager.IsValid())
+			/*if (ItemObj->WeaponPartsManager.IsValid())
 			{
 				Cast<AWeapon>(Equipment)->WeaponPartsManager = ItemObj->WeaponPartsManager.Get();
-			}
+			}*/
 		}
 		else
 		{
@@ -115,7 +115,7 @@ AEquipment* UCustomInventoryLibrary::SpawnEquipment(UWorld* World, UNewItemObjec
 			ItemObj->bIsDestoryed = false;
 			Equipment->ItemSetting = ItemObj->ItemInfo;
 			Equipment->SetMesh();
-			//Storage°¡ ÀÖÀ¸¸é Inventory¸¦ ³Ñ°ÜÁØ´Ù.
+			//Storageê°€ ìˆìœ¼ë©´ Inventoryë¥¼ ë„˜ê²¨ì¤€ë‹¤.
 			if (CPDA->bHasStorage)
 			{
 				UItemStorageObject* StorageObj = Cast<UItemStorageObject>(ItemObj);
@@ -160,7 +160,7 @@ ABaseGrenade* UCustomInventoryLibrary::SpawnGrenade(UWorld* World, UNewItemObjec
 
 
 
-/*PDA¸¦ ÀÌ¿ëÇØ Item class¸¦ SpawnÇÑ´Ù.*/
+/*PDAë¥¼ ì´ìš©í•´ Item classë¥¼ Spawní•œë‹¤.*/
 AItem* UCustomInventoryLibrary::SpawnItem(UWorld* World, UBasePDA* ItemDA)
 {
 	AItem* ReturnItem = nullptr;
@@ -185,14 +185,14 @@ AItem* UCustomInventoryLibrary::SpawnItem(UWorld* World, UBasePDA* ItemDA)
 	return ReturnItem;
 }
 
-/*PDA¸¦ ÀÌ¿ëÇØ Equipment Class¸¦ SpawnÇÑ´Ù */
+/*PDAë¥¼ ì´ìš©í•´ Equipment Classë¥¼ Spawní•œë‹¤ */
 AEquipment* UCustomInventoryLibrary::SpawnEquipment(UWorld* World, UCustomPDA* EquipDA)
 {
 	if (World && EquipDA)
 	{
 		AEquipment* Equipment = nullptr;
 
-		//WeaponÀÎ °æ¿ì WeaponInstant·Î »ı¼ºÇØÁØ´Ù.
+		//Weaponì¸ ê²½ìš° WeaponInstantë¡œ ìƒì„±í•´ì¤€ë‹¤.
 
 		UCustomPDA* T_CPDA = Cast<UCustomPDA>(EquipDA);
 		UCustomPDA* CPDA = T_CPDA? T_CPDA : nullptr;
@@ -223,7 +223,7 @@ AEquipment* UCustomInventoryLibrary::SpawnEquipment(UWorld* World, UCustomPDA* E
 
 
 
-//ItemÀÇ Typeº°·Î °³¼ö¸¦ ·£´ı ÁöÁ¤ÇÑ´Ù.
+//Itemì˜ Typeë³„ë¡œ ê°œìˆ˜ë¥¼ ëœë¤ ì§€ì •í•œë‹¤.
 void UCustomInventoryLibrary::GenerateRandomCount(UNewItemObject* ItemObj)
 {
 	//UE_LOG(LogTemp, Warning, TEXT("CustomInvLib::GenerateRandomCount"));
@@ -252,14 +252,14 @@ void UCustomInventoryLibrary::GenerateRandomCount(UNewItemObject* ItemObj)
 }
 
 
-//bRenderInMainPass¸¦ false·Î ÇÏ°ÔµÇ¸é RenderingÀº µÇÁö ¾ÊÁö¸¸, Shadow´Â ·»´õ¸µ µÈ´Ù.
-// ÀÌ°É »ç¿ëÇÏ·Á¸é Mesh°¡ ShowµÇ¾î¾ß ÇÑ´Ù. SetHiddenInGameÀ» True·Î ÇÏ¸é ¾ÈµÊ.
+//bRenderInMainPassë¥¼ falseë¡œ í•˜ê²Œë˜ë©´ Renderingì€ ë˜ì§€ ì•Šì§€ë§Œ, ShadowëŠ” ë Œë”ë§ ëœë‹¤.
+// ì´ê±¸ ì‚¬ìš©í•˜ë ¤ë©´ Meshê°€ Showë˜ì–´ì•¼ í•œë‹¤. SetHiddenInGameì„ Trueë¡œ í•˜ë©´ ì•ˆë¨.
 
-/* WeaponÀ» Á¦¿ÜÇÑ ÀåÂøÁßÀÎ ¸ğµç Equipment¸¦ HideÇÑ´Ù. */
+/* Weaponì„ ì œì™¸í•œ ì¥ì°©ì¤‘ì¸ ëª¨ë“  Equipmentë¥¼ Hideí•œë‹¤. */
 void UCustomInventoryLibrary::HideAllEquipment(UEquipmentComponent* EComp)
 {
 	UCustomPDA* CPDA;
-	/* ÀåÂøÇÑ Àåºñ ¸ğµÎ HIdeÇÏ±â */
+	/* ì¥ì°©í•œ ì¥ë¹„ ëª¨ë‘ HIdeí•˜ê¸° */
 	for (auto Equipped : EComp->EquipmentItems)
 	{
 		if (Equipped && Equipped->Equipment)
@@ -278,7 +278,7 @@ void UCustomInventoryLibrary::HideAllEquipment(UEquipmentComponent* EComp)
 }
 
 
-/* ÀåÂøÁßÀÎ ¸ğµç Equipment¸¦ show ÇÑ´Ù.*/
+/* ì¥ì°©ì¤‘ì¸ ëª¨ë“  Equipmentë¥¼ show í•œë‹¤.*/
 void UCustomInventoryLibrary::ShowAllEquipment(UEquipmentComponent* EComp)
 {
 	for (auto Equipped : EComp->EquipmentItems)
@@ -292,8 +292,30 @@ void UCustomInventoryLibrary::ShowAllEquipment(UEquipmentComponent* EComp)
 }
 
 
+/**ì´ í•¨ìˆ˜ê°€ í˜¸ì¶œ ë˜ëŠ” ê²½ìš°
+ * 1. Weaponì„ í•´ì œí•˜ì—¬(Destory) Inventoryì— ë„£ì„ ë•Œ
+ * 2. Weaponì„ Equipí•  ë•Œ
+ * 
+ */
+void UCustomInventoryLibrary::SetWeaponPartsManager(AWeapon* Weapon, UNewItemObject* Obj)
+{
+    //Objì— WPMì´ ìˆëŠ” ê²½ìš° actorì˜ WPMì— ë„£ì–´ì¤€ë‹¤.
+    if (Obj->WeaponPartsManager.IsValid())
+    {
+        Weapon->WeaponPartsManager = Obj->WeaponPartsManager;
+    }
+    //Weaponì—ë§Œ WPMì´ ìˆëŠ” ê²½ìš° (Weaponì´ ë§¨ ì²˜ìŒìœ¼ë¡œ worldì— Spawnëœ ìƒíƒœ)
+    else if (Weapon->WeaponPartsManager.IsValid() && Obj->WeaponPartsManager.IsValid() == false)
+    {
+        Obj->WeaponPartsManager = Weapon->WeaponPartsManager;
+    }
+    
+}
+
+
+
 /////////////////////////////////////////////////////////////////////////
-/**********************   ÀÌÇÏ »ç¿ëÇÏÁö ¾Ê´Â ÇÔ¼öµé **********************/
+/**********************   ì´í•˜ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ” í•¨ìˆ˜ë“¤ **********************/
 /////////////////////////////////////////////////////////////////////////
 
 
@@ -302,12 +324,12 @@ void UCustomInventoryLibrary::BackToItem(UNewItemObject* ItemObj)
 	UE_LOG(LogTemp, Warning, TEXT("UCustomInventoryLibrary::BackToItem"));
 	if (ItemObj)
 	{
-		//ItemObj°¡ ¿ø·¡ ÀÖ´ø MotherContainer¸¦ °¡Á®¿Í
+		//ItemObjê°€ ì›ë˜ ìˆë˜ MotherContainerë¥¼ ê°€ì ¸ì™€
 		if (ItemObj->GetMotherStorage() != nullptr)
 		{
 			//UNewInventoryGrid* GridInv = ItemObj->GetMotherContainer();
 			UNewInventoryGrid* GridInv = nullptr;// = ItemObj->GetMotherContainer();
-			//¿ø·¡ ÀÖ´ø Mothercontainer¿¡ ³Ö´Â´Ù.
+			//ì›ë˜ ìˆë˜ Mothercontainerì— ë„£ëŠ”ë‹¤.
 			if (GridInv->GetInventoryComp() != nullptr)
 			{
 				if (GridInv->GetInventoryComp()->IsAvailableSpace(ItemObj, ItemObj->TopLeftIndex))
@@ -320,7 +342,7 @@ void UCustomInventoryLibrary::BackToItem(UNewItemObject* ItemObj)
 				}
 			}
 		}
-		//Mothercontainer¿¡ ÀÖÁö ¾Ê°í, ÀåÂøÁßÀÌ¾ú´ø Àåºñ¶ó¸é
+		//Mothercontainerì— ìˆì§€ ì•Šê³ , ì¥ì°©ì¤‘ì´ì—ˆë˜ ì¥ë¹„ë¼ë©´
 		/*else if (ItemObj->GetMotherEquipSlot() != nullptr)
 		{
 			ItemObj->GetMotherEquipSlot()->TrySlotEquip(ItemObj);
@@ -352,7 +374,7 @@ void UCustomInventoryLibrary::DirectInToInventory(UNewItemObject* ItemObj, ABase
 				}
 			}
 		}
-		//Mothercontainer¿¡ ÀÖÁö ¾Ê°í, ÀåÂøÁßÀÌ¾ú´ø Àåºñ¶ó¸é
+		//Mothercontainerì— ìˆì§€ ì•Šê³ , ì¥ì°©ì¤‘ì´ì—ˆë˜ ì¥ë¹„ë¼ë©´
 		//else if (ItemObj->GetMotherEquipSlot() != nullptr)
 		{
 			if (BChar)

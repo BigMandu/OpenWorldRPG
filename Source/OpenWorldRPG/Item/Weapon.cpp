@@ -23,7 +23,7 @@
 #include "Particles/ParticleSystemComponent.h"
 #include "Curves/CurveFloat.h"
 #include "Math/UnrealMathUtility.h"
-#include "DrawDebugHelpers.h" //µğ¹ö±ë¿ë
+#include "DrawDebugHelpers.h" //ë””ë²„ê¹…ìš©
 //#include "Components/SphereComponent.h"
 #include "Components/CapsuleComponent.h"
 
@@ -75,7 +75,8 @@ void AWeapon::BeginPlay()
 {
 	Super::BeginPlay();
 
-	CheckWeaponPartsManager();
+    CheckWeaponPartsManager();
+    UpdateWeaponParts();
 }
 
 bool AWeapon::StepEquip(AActor* Char, ERifleSlot RifleSlot)
@@ -83,7 +84,7 @@ bool AWeapon::StepEquip(AActor* Char, ERifleSlot RifleSlot)
 	ABaseCharacter* BChar = Cast<ABaseCharacter>(Char);
 	check(BChar)
 
-	//ÁöÁ¤ÇÑ °ªÀ» ½±°Ô »ç¿ëÇÏ±â À§ÇØ CastÇØµĞ´Ù.
+	//ì§€ì •í•œ ê°’ì„ ì‰½ê²Œ ì‚¬ìš©í•˜ê¸° ìœ„í•´ Castí•´ë‘”ë‹¤.
 	WeaponDataAsset = Cast<UWeaponPDA>(ItemSetting.DataAsset);
 	check(WeaponDataAsset)
 
@@ -94,21 +95,21 @@ bool AWeapon::StepEquip(AActor* Char, ERifleSlot RifleSlot)
 	{
 		if (WeaponDataAsset->EquipmentType == EEquipmentType::EET_Rifle)
 		{
-			/* 1,2,3À» ´­·¶À»¶§ Quick SwapÇÏ±â À§ÇØ RifleÀ» ÁöÁ¤ÇÑ´Ù */
-			if (RifleSlot == ERifleSlot::ERS_MAX) //ÁöÁ¤µÈ SlotÀÌ ¾øÀ»¶§
+			/* 1,2,3ì„ ëˆŒë €ì„ë•Œ Quick Swapí•˜ê¸° ìœ„í•´ Rifleì„ ì§€ì •í•œë‹¤ */
+			if (RifleSlot == ERifleSlot::ERS_MAX) //ì§€ì •ëœ Slotì´ ì—†ì„ë•Œ
 			{
-				if (BChar->PrimaryWeapon) //ÀÌ¹Ì ÁÖ¹«±â°¡ ÀÖÀ¸¸é
+				if (BChar->PrimaryWeapon) //ì´ë¯¸ ì£¼ë¬´ê¸°ê°€ ìˆìœ¼ë©´
 				{
 					BChar->SetWeaponAssign(this,ERifleSlot::ERS_Sub);
 					//SettingRifleAssign(BChar, ERifleSlot::ERS_Sub);
 				}
-				else //ÁÖ¹«±â°¡ ¾øÀ¸¸é
+				else //ì£¼ë¬´ê¸°ê°€ ì—†ìœ¼ë©´
 				{
 					BChar->SetWeaponAssign(this, ERifleSlot::ERS_Primary);
 					//SettingRifleAssign(BChar, ERifleSlot::ERS_Primary);
 				}
 			}
-			//Drag&DropÀ¸·Î EquipÀ» ÁøÇàÇßÀ»¶©, ¾Æ·¡ ºĞ±â·Î ºüÁø´Ù.
+			//Drag&Dropìœ¼ë¡œ Equipì„ ì§„í–‰í–ˆì„ë•, ì•„ë˜ ë¶„ê¸°ë¡œ ë¹ ì§„ë‹¤.
 			else
 			{
 				//RifleAssign = RifleSlot;
@@ -123,7 +124,7 @@ bool AWeapon::StepEquip(AActor* Char, ERifleSlot RifleSlot)
 		}
 	}
 
-	//µé°í ÀÖ´Â ¹«±â°¡ ¾øÀ» °æ¿ì Áö±İ WeaponÀ» µéµµ·Ï ÇÑ´Ù.
+	//ë“¤ê³  ìˆëŠ” ë¬´ê¸°ê°€ ì—†ì„ ê²½ìš° ì§€ê¸ˆ Weaponì„ ë“¤ë„ë¡ í•œë‹¤.
 	if (BChar->EquippedWeapon == nullptr)
 	{
 		if (WeaponDataAsset->EquipmentType == EEquipmentType::EET_Rifle)
@@ -142,27 +143,28 @@ bool AWeapon::StepEquip(AActor* Char, ERifleSlot RifleSlot)
 			BChar->ChangeWeapon(3);
 		}
 	}
-	//µé°íÀÖ´Â ¹«±â°¡ ÀÖ´Â °æ¿ì, Áö±İ WeaponÀ» SubSocketÀ¸·Î ¿Å±ä´Ù.
+	//ë“¤ê³ ìˆëŠ” ë¬´ê¸°ê°€ ìˆëŠ” ê²½ìš°, ì§€ê¸ˆ Weaponì„ SubSocketìœ¼ë¡œ ì˜®ê¸´ë‹¤.
 	else
 	{
 		GunAttachToSubSocket(BChar);
 	}
 	
-	//Fire½Ã °è»êÀ» ÆíÈ÷ ÇÏ±â À§ÇØ °ªÀ» ¹Ì¸® ¼¼ÆÃ ÇÑ´Ù.
+	//Fireì‹œ ê³„ì‚°ì„ í¸íˆ í•˜ê¸° ìœ„í•´ ê°’ì„ ë¯¸ë¦¬ ì„¸íŒ… í•œë‹¤.
 	WeaponDataAsset->WeaponStat.FireRatePerSec = WeaponDataAsset->WeaponStat.FireRatePerMin / 60;
 	WeaponDataAsset->WeaponStat.SecondPerBullet = 1 / WeaponDataAsset->WeaponStat.FireRatePerSec; //0.06
 	
 	
-	//¸ğµç ¼¼ÆÃÀÌ ³¡³ª°í AddEquipment¸¦ È£ÃâÇÏ±â À§ÇØ ³ªÁß¿¡ È£ÃâÇß´Ù.
+	//ëª¨ë“  ì„¸íŒ…ì´ ëë‚˜ê³  AddEquipmentë¥¼ í˜¸ì¶œí•˜ê¸° ìœ„í•´ ë‚˜ì¤‘ì— í˜¸ì¶œí–ˆë‹¤.
 	Super::StepEquip(Char);
 
-	/* ¾Æ·¡´Â AddEquipment ÀÌÈÄ¿¡ ÁøÇà ÇØ¾ßÇÒ ÇÔ¼öµéÀ» È£Ãâ..
-	* ¾Æ·¡ÇÔ¼öµéÀº ItemObj°¡ ÇÊ¿äÇÔ.
+	/* ì•„ë˜ëŠ” AddEquipment ì´í›„ì— ì§„í–‰ í•´ì•¼í•  í•¨ìˆ˜ë“¤ì„ í˜¸ì¶œ..
+	* ì•„ë˜í•¨ìˆ˜ë“¤ì€ ItemObjê°€ í•„ìš”í•¨.
 	*/
+    UCustomInventoryLibrary::SetWeaponPartsManager(this,this->ItemObj);
 	UpdateWeaponParts();
 
-	/**ÀåÂø Á÷ÈÄ Ammo WidgetÀ» updateÇÏ±â À§ÇØ
-	 * CheckAmmo·Î objÀÇ AmmoInMag º¯¼ö¸¦ ºÒ·¯¿À°í broadcast¸¦ ÇÑ´Ù.
+	/**ì¥ì°© ì§í›„ Ammo Widgetì„ updateí•˜ê¸° ìœ„í•´
+	 * CheckAmmoë¡œ objì˜ AmmoInMag ë³€ìˆ˜ë¥¼ ë¶ˆëŸ¬ì˜¤ê³  broadcastë¥¼ í•œë‹¤.
 	 */
 	if (OwningPlayer)
 	{
@@ -176,7 +178,7 @@ bool AWeapon::StepEquip(AActor* Char, ERifleSlot RifleSlot)
 
 
 /*
-*  WeaponÀ» WeaponGrip Socket¿¡ ÀåÂøÇÑ´Ù.
+*  Weaponì„ WeaponGrip Socketì— ì¥ì°©í•œë‹¤.
 */
 void AWeapon::GunAttachToMesh(AActor* Actor)
 {
@@ -187,7 +189,7 @@ void AWeapon::GunAttachToMesh(AActor* Actor)
 	FTransform AttachTransform;
 	
 
-	// 1, 3ÀÎÄª º¯°æ½Ã weapon attach¸¦ º¯°æÇÑ´Ù. (Main¿¡¸¸ Àû¿ë)
+	// 1, 3ì¸ì¹­ ë³€ê²½ì‹œ weapon attachë¥¼ ë³€ê²½í•œë‹¤. (Mainì—ë§Œ ì ìš©)
 	if (Main)
 	{
 		const USkeletalMeshSocket* TPSocket = Main->GetMesh()->GetSocketByName("WeaponGrip");
@@ -225,7 +227,7 @@ void AWeapon::GunAttachToMesh(AActor* Actor)
 		}
 	}
 
-	//BChar¸¸ nullÀÌ ¾Æ´Ñ°æ¿ì -> AI¿¡¸¸ ÇØ´ç
+	//BCharë§Œ nullì´ ì•„ë‹Œê²½ìš° -> AIì—ë§Œ í•´ë‹¹
 	if (BChar && Main == nullptr)
 	{
 		const USkeletalMeshSocket* WeaponSocket = BChar->GetMesh()->GetSocketByName("WeaponGrip");
@@ -248,7 +250,7 @@ void AWeapon::GunAttachToMesh(AActor* Actor)
 
 
 /*
-* WeaponGripÀÌ ¾Æ´Ñ AttachSocket¿¡ ÇØ´ç WeaponÀ» ºÎÂø ½ÃÅ²´Ù.
+* WeaponGripì´ ì•„ë‹Œ AttachSocketì— í•´ë‹¹ Weaponì„ ë¶€ì°© ì‹œí‚¨ë‹¤.
 */
 void AWeapon::GunAttachToSubSocket(AActor* Actor)
 {
@@ -297,8 +299,8 @@ FTransform AWeapon::GetSightSocketTransform()
 {
 	//if have any sight device. return that location.
 
-	//SocketÀÇ À§Ä¡¸¦ ¾ò±â Àü¿¡, WeaponÀÇ À§Ä¡¸¦ °­Á¦ÇÑ´Ù.
-	//Animation¿¡ ÀÇÇØ AttachµÈ WeaponÀÇ À§Ä¡°¡ ¹Ù²î¹Ç·Î °­Á¦ÇÏ¿© SocketÀÇ ÀÏ°ü¼º ÀÖ´Â À§Ä¡¸¦ ¸®ÅÏÇÏ±â À§ÇÔ.
+	//Socketì˜ ìœ„ì¹˜ë¥¼ ì–»ê¸° ì „ì—, Weaponì˜ ìœ„ì¹˜ë¥¼ ê°•ì œí•œë‹¤.
+	//Animationì— ì˜í•´ Attachëœ Weaponì˜ ìœ„ì¹˜ê°€ ë°”ë€Œë¯€ë¡œ ê°•ì œí•˜ì—¬ Socketì˜ ì¼ê´€ì„± ìˆëŠ” ìœ„ì¹˜ë¥¼ ë¦¬í„´í•˜ê¸° ìœ„í•¨.
 	//SetActorRelativeTransform(WeaponDataAsset->FPMeshAttachTransform);
 
 	FTransform ReturnTransform;
@@ -325,32 +327,25 @@ FTransform AWeapon::GetSightSocketTransform()
 	return ReturnTransform;
 }
 
+//ë¬´ì¡°ê±´ ìƒì„±í•œë‹¤.
 void AWeapon::CheckWeaponPartsManager()
 {
-	if(ItemObj)
-	{
-		if (WeaponPartsManager == nullptr && ItemObj->WeaponPartsManager.IsValid())
-		{
-			WeaponPartsManager = ItemObj->WeaponPartsManager.Get();
-		}
-		
-	}
-	
-	//À§ ÄÚµå°¡ ½ÇÆĞÇßÀ» °æ¿ì. WeponPartsManager¸¦ »ı¼ºÇÑ´Ù.
-	if(WeaponPartsManager == nullptr)
-	{
-		WeaponPartsManager = NewObject<UWeaponPartsManagerObject>();	
-	}
-
-	WeaponPartsManager->OwnerWeapon = this;
-
-	WeaponPartsManager->OnChangeParts.AddDynamic(this, &AWeapon::UpdateWeaponParts);
+    if(WeaponPartsManager.IsValid() == false)
+    {
+        WeaponPartsManager = NewObject<UWeaponPartsManagerObject>();
+        WeaponPartsManager->SetOwnerWeapon(this);
+        WeaponPartsManager->OnChangeParts.AddDynamic(this, &AWeapon::UpdateWeaponParts);
+    }
 	
 }
 
 void AWeapon::UpdateWeaponParts()
 {
-	if(WeaponPartsManager)
+    if(ItemObj && ItemObj->WeaponPartsManager.IsValid())
+    {
+        ItemObj->WeaponPartsManager->UpdateParts(GetWorld(),this);
+    }
+    else
 	{
 		WeaponPartsManager->UpdateParts(GetWorld(), this);
 	}
@@ -394,12 +389,12 @@ void AWeapon::Remove()
 	}
 
 	OwningPlayer = nullptr;
-	if(WeaponPartsManager)
+	if(WeaponPartsManager.IsValid())
 	{
 		WeaponPartsManager->DestroyAllAttachParts(this);
 	}
 	
-	//Destory ÇÔ¼ö·Î AttachµÈ°Ô Destory¾ÈµÇ¸é È£Ãâ ÇØ¾ßµÊ.
+	//Destory í•¨ìˆ˜ë¡œ Attachëœê²Œ Destoryì•ˆë˜ë©´ í˜¸ì¶œ í•´ì•¼ë¨.
 
 	Destroy();
 
@@ -492,7 +487,7 @@ void AWeapon::TempNewWeaponState()
 
 	if (bLMBDown)
 	{
-		if (CanFire())//¹ß»ç¸¦ ÇÒ ¼ö ÀÖ´Ù¸é, FiringÀ¸·Î »óÅÂ¸¦ º¯°æÇÑ´Ù.
+		if (CanFire())//ë°œì‚¬ë¥¼ í•  ìˆ˜ ìˆë‹¤ë©´, Firingìœ¼ë¡œ ìƒíƒœë¥¼ ë³€ê²½í•œë‹¤.
 		{
 #if WeaponDEBUG
 			UE_LOG(LogTemp, Warning, TEXT("TempState -> Firing"));
@@ -501,17 +496,17 @@ void AWeapon::TempNewWeaponState()
 		}
 	}
 	
-	//ÀÌ ÀÓ½ÃÀúÀåÇÑ State¸¦ SettingÇÏ±â À§ÇØ SetWeaponStateÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
+	//ì´ ì„ì‹œì €ì¥í•œ Stateë¥¼ Settingí•˜ê¸° ìœ„í•´ SetWeaponStateí•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
 	SetWeaponState(State);
 }
 
 void AWeapon::SetWeaponState(EWeaponState NewState)
 {
 	//UE_LOG(LogTemp, Warning, TEXT("AWeapon::SetWeaponState"));
-	//±âÁ¸¿¡ ¹ß»çÁßÀÌ¾ú°í, ´õÀÌ»ó LMB¸¦ ´©¸£Áö ¾Ê´Â´Ù¸é
+	//ê¸°ì¡´ì— ë°œì‚¬ì¤‘ì´ì—ˆê³ , ë”ì´ìƒ LMBë¥¼ ëˆ„ë¥´ì§€ ì•ŠëŠ”ë‹¤ë©´
 	if (CurrentWeaponState == EWeaponState::EWS_Firing && NewState != EWeaponState::EWS_Firing)
 	{
-		// Á¡»ç¸é ³¡³»µµ ÁöÁ¤µÈ ¸î¹ß ÀÌ»ó ¾È½úÀ¸¸é »ç°İµÇµµ·Ï ÇÔ.
+		// ì ì‚¬ë©´ ëë‚´ë„ ì§€ì •ëœ ëª‡ë°œ ì´ìƒ ì•ˆìˆìœ¼ë©´ ì‚¬ê²©ë˜ë„ë¡ í•¨.
 		bool bCanEndFire = true;
 		if (WeaponFiringMode == EWeaponFiringMode::EWFM_Burst)
 		{
@@ -523,8 +518,8 @@ void AWeapon::SetWeaponState(EWeaponState NewState)
 		}
 
 
-		//»ç°İÀÌ Áß´ÜµÇ¾î¾ß ÇÒ¶§ EndFiringÈ£Ãâ 
-		 //Á¡»çÀÏ¶§´Â ³ÀµĞ´Ù-> Check FiringÇÔ¼ö¿¡¼­ FiringÀ» È£ÃâÇÏµµ·Ï ÇÔ.
+		//ì‚¬ê²©ì´ ì¤‘ë‹¨ë˜ì–´ì•¼ í• ë•Œ EndFiringí˜¸ì¶œ 
+		 //ì ì‚¬ì¼ë•ŒëŠ” ëƒ…ë‘”ë‹¤-> Check Firingí•¨ìˆ˜ì—ì„œ Firingì„ í˜¸ì¶œí•˜ë„ë¡ í•¨.
 		if (bCanEndFire)
 		{
 #if WeaponDEBUG
@@ -536,14 +531,14 @@ void AWeapon::SetWeaponState(EWeaponState NewState)
 		}
 		
 	}
-	//±âÁ¸¿¡ ¹ß»çÇÏÁö ¾Ê¾Ò°í, LMB¸¦ ´­·¶´Ù¸é
+	//ê¸°ì¡´ì— ë°œì‚¬í•˜ì§€ ì•Šì•˜ê³ , LMBë¥¼ ëˆŒë €ë‹¤ë©´
 	else if (CurrentWeaponState != EWeaponState::EWS_Firing && NewState == EWeaponState::EWS_Firing)
 	{
 
 #if WeaponDEBUG
 		UE_LOG(LogTemp, Warning, TEXT("SetWeponState: Start Firing Call ControlFiring func"));
 #endif			
-		//»ç°İÀ» ½ÃÀÛÇÑ´Ù.
+		//ì‚¬ê²©ì„ ì‹œì‘í•œë‹¤.
 		CurrentWeaponState = NewState;
 		ControlFiring();	
 	}
@@ -551,13 +546,13 @@ void AWeapon::SetWeaponState(EWeaponState NewState)
 
 
 	/*
-	* ½ò ¼ö ÀÖ´Â Á¶°Ç
-	* 1. Á¶Á¤°£ ¾ÈÀüÀÌ ¾Æ´Ï¾î¾ßÇÑ´Ù.
-	* 2. ÀåÀüÁß, »ç°İÁßÀÌ ¾Æ´Ï¾î¾ß ÇÑ´Ù.
-	* 3. Åº¾àÀÌ ÇÑ¹ßÀÌ»ó ÀÖ¾î¾ß ÇÑ´Ù.
+	* ì  ìˆ˜ ìˆëŠ” ì¡°ê±´
+	* 1. ì¡°ì •ê°„ ì•ˆì „ì´ ì•„ë‹ˆì–´ì•¼í•œë‹¤.
+	* 2. ì¥ì „ì¤‘, ì‚¬ê²©ì¤‘ì´ ì•„ë‹ˆì–´ì•¼ í•œë‹¤.
+	* 3. íƒ„ì•½ì´ í•œë°œì´ìƒ ìˆì–´ì•¼ í•œë‹¤.
 	*
-	* 4. ÀåÂøÁßÀÌ ¾Æ´Ï¾î¾ß ÇÑ´Ù. //¹Ì±¸Çö.
-	* 5. ½ºÇÁ¸°Æ® ÁßÀÌ ¾Æ´Ï¾î¾ß ÇÑ´Ù. //¹Ì±¸Çö
+	* 4. ì¥ì°©ì¤‘ì´ ì•„ë‹ˆì–´ì•¼ í•œë‹¤. //ë¯¸êµ¬í˜„.
+	* 5. ìŠ¤í”„ë¦°íŠ¸ ì¤‘ì´ ì•„ë‹ˆì–´ì•¼ í•œë‹¤. //ë¯¸êµ¬í˜„
 	*/
 bool AWeapon::CanFire()
 {
@@ -577,7 +572,7 @@ bool AWeapon::CanFire()
 				}
 				else
 				{
-					//Æ½Æ½ ÇÏ´Â Sound Ãß°¡ÇÏ±â.
+					//í‹±í‹± í•˜ëŠ” Sound ì¶”ê°€í•˜ê¸°.
 				}
 			}
 		}
@@ -599,7 +594,7 @@ bool AWeapon::CheckAmmo()
 
 	if (AmmoLeftInMag <= 0)
 	{	
-		// -1ÀÌÇÏ·Î ³»·Á°¥ÀÏÀº ¾øÁö¸¸ ¹æÁö¿ëÀ¸·Î.
+		// -1ì´í•˜ë¡œ ë‚´ë ¤ê°ˆì¼ì€ ì—†ì§€ë§Œ ë°©ì§€ìš©ìœ¼ë¡œ.
 		AmmoLeftInMag = 0;
 		return false;
 	}
@@ -625,10 +620,10 @@ void AWeapon::Reload()
 	CntAmmoSameType = 0;
 	if(bHasAmmo)
 	{
-		//Current ÀÜÅº¿¡ ÀåÀü °¡´ÉÇÑ Åº¾àÀ» ´õÇÑ´Ù.
+		//Current ì”íƒ„ì— ì¥ì „ ê°€ëŠ¥í•œ íƒ„ì•½ì„ ë”í•œë‹¤.
 		AmmoLeftInMag += OwningPlayer->GetNumberofCanReload();
 
-		//ÀÜ¿© ammo¸¦ ¾÷µ¥ÀÌÆ® ÇÑ´Ù.
+		//ì”ì—¬ ammoë¥¼ ì—…ë°ì´íŠ¸ í•œë‹¤.
 		CntAmmoSameType = OwningPlayer->GetTotalNumberofSameTypeAmmo();
 		if (ItemObj)
 		{
@@ -638,7 +633,7 @@ void AWeapon::Reload()
 	}
 	else
 	{
-		//Ammo°¡ ¾ø´Ù¸é reload ½ÇÆĞ.
+		//Ammoê°€ ì—†ë‹¤ë©´ reload ì‹¤íŒ¨.
 	}
 
 	OwningPlayer->OnGetAmmo.Broadcast(this);
@@ -660,12 +655,12 @@ bool AWeapon::CanEndFire()
 }
 
 
-   /* FiringMode¿¡ µû¶ó Delay¸¦ Áà¾ßÇÔ.
-	* semiautoÀÎ °æ¿ì toggle¹æ½ÄÀ¸·Î.
-	* burstÀÎ °æ¿ì 3¹ß »ç°İ
-	* FullautoÀÎ °æ¿ì ¿¬¼Ó»ç°İ
+   /* FiringModeì— ë”°ë¼ Delayë¥¼ ì¤˜ì•¼í•¨.
+	* semiautoì¸ ê²½ìš° toggleë°©ì‹ìœ¼ë¡œ.
+	* burstì¸ ê²½ìš° 3ë°œ ì‚¬ê²©
+	* Fullautoì¸ ê²½ìš° ì—°ì†ì‚¬ê²©
 	*
-	* ¿©±â¼­ timerÃ¼Å©¸¦ ÇÑ¹ø ÇØÁÖ°í ÀÌÈÄ¿¡ È£ÃâµÇ´Â ÇÔ¼ö¸¦ ¶Ç µÎ°³·Î ³ª´²¼­ ÇÔ.
+	* ì—¬ê¸°ì„œ timerì²´í¬ë¥¼ í•œë²ˆ í•´ì£¼ê³  ì´í›„ì— í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜ë¥¼ ë˜ ë‘ê°œë¡œ ë‚˜ëˆ ì„œ í•¨.
 	*/
 void AWeapon::StartFire()
 {
@@ -674,9 +669,9 @@ void AWeapon::StartFire()
 	{
 		bLMBDown = true;
 		/*
-		¼¦À» ¶§·ÈÀ»¶§ ±âÁ¸¿¡ ShotÀ»¶§¸®°í ÀÖ¾ú´ÂÁö, idling»óÅÂ¿´´ÂÁö Ã¼Å©ÇØ¾ßÇÔ.
-		¼¦À» ¶§¸®°í ÀÖ´Â ÁßÀÌ¾úÀ¸¸é °è¼ÓÇØ¼­ °ø°İ ÇÔ¼ö È£Ãâ(ÀÌ°Å¸»°í ´Ù¸¥ ÇÔ¼ö)
-		¾Æ´Ï¸é, °ø°İÀ» ¸ØÃá ÇÔ¼öÈ£ÃâÇØ¾ßÇÔ.(¹Ø ÇÔ¼ö ¸»°í ´Ù¸¥°Å)
+		ìƒ·ì„ ë•Œë ¸ì„ë•Œ ê¸°ì¡´ì— Shotì„ë•Œë¦¬ê³  ìˆì—ˆëŠ”ì§€, idlingìƒíƒœì˜€ëŠ”ì§€ ì²´í¬í•´ì•¼í•¨.
+		ìƒ·ì„ ë•Œë¦¬ê³  ìˆëŠ” ì¤‘ì´ì—ˆìœ¼ë©´ ê³„ì†í•´ì„œ ê³µê²© í•¨ìˆ˜ í˜¸ì¶œ(ì´ê±°ë§ê³  ë‹¤ë¥¸ í•¨ìˆ˜)
+		ì•„ë‹ˆë©´, ê³µê²©ì„ ë©ˆì¶˜ í•¨ìˆ˜í˜¸ì¶œí•´ì•¼í•¨.(ë°‘ í•¨ìˆ˜ ë§ê³  ë‹¤ë¥¸ê±°)
 		*/
 
 		TempNewWeaponState();
@@ -694,24 +689,24 @@ void AWeapon::StopFire()
 
 void AWeapon::ControlFiring()
 {
-	/* SetWeaponState¿¡¼­ È£ÃâµÈ´Ù.
+	/* SetWeaponStateì—ì„œ í˜¸ì¶œëœë‹¤.
 	* 
-	* Timer¸¦ ÅëÇØ FiringÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
-	* TimerÀÇ ½Ã°£Àº
-	* (¸¶Áö¸· ¹ß»ç ½Ã°£Àº ¹ß»çÇÒ¶§ÀÇ ¿ùµå Å¸ÀÓ)
-	* ¸¶Áö¸· ¹ß»ç½Ã°£ + ¹ß»ç°£°İ Å¸ÀÓ = ¹ß»ç °¡´É ½Ã°£ ÀÌ µÈ´Ù.
-	* ±×·³, ÀÌ ¹ß»ç °¡´É½Ã°£ÀÌ ¿ùµå Å¸ÀÓº¸´Ù Å©¸é ¹ß»ç¸¦ ÇÒ ¼ö ¾ø´Ù.
-	* ´ÙÀ½ ¹ß»ç ½Ã°£Àº
-	* ÀÌ ¹ß»ç°¡´É½Ã°£¿¡ ¿ùµåÅ¸ÀÓÀ» »©¸é ±¸ÇØÁø´Ù.
+	* Timerë¥¼ í†µí•´ Firingí•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
+	* Timerì˜ ì‹œê°„ì€
+	* (ë§ˆì§€ë§‰ ë°œì‚¬ ì‹œê°„ì€ ë°œì‚¬í• ë•Œì˜ ì›”ë“œ íƒ€ì„)
+	* ë§ˆì§€ë§‰ ë°œì‚¬ì‹œê°„ + ë°œì‚¬ê°„ê²© íƒ€ì„ = ë°œì‚¬ ê°€ëŠ¥ ì‹œê°„ ì´ ëœë‹¤.
+	* ê·¸ëŸ¼, ì´ ë°œì‚¬ ê°€ëŠ¥ì‹œê°„ì´ ì›”ë“œ íƒ€ì„ë³´ë‹¤ í¬ë©´ ë°œì‚¬ë¥¼ í•  ìˆ˜ ì—†ë‹¤.
+	* ë‹¤ìŒ ë°œì‚¬ ì‹œê°„ì€
+	* ì´ ë°œì‚¬ê°€ëŠ¥ì‹œê°„ì— ì›”ë“œíƒ€ì„ì„ ë¹¼ë©´ êµ¬í•´ì§„ë‹¤.
 	* 
-	* ¿¹¸¦ µé¾î, 1ÃÊ¿¡ ½î°í 2ÃÊÀÇ °£°İÀ» °¡Áø´Ù¸é
-	* 3ÃÊÀÇ ¿ùµåÅ¸ÀÓ¿¡ ½ò ¼ö ÀÖ´Ù.
-	* 3ÃÊ¶§ ½ò ¾¥ ÀÖ´Âµ¥ ÇöÀçÀÇ ¿ùµåÅ¸ÀÓÀÌ 2ÃÊ¶ó¸é ½ò ¼ö ¾ø´Ù.
+	* ì˜ˆë¥¼ ë“¤ì–´, 1ì´ˆì— ì˜ê³  2ì´ˆì˜ ê°„ê²©ì„ ê°€ì§„ë‹¤ë©´
+	* 3ì´ˆì˜ ì›”ë“œíƒ€ì„ì— ì  ìˆ˜ ìˆë‹¤.
+	* 3ì´ˆë•Œ ì  ì‘¤ ìˆëŠ”ë° í˜„ì¬ì˜ ì›”ë“œíƒ€ì„ì´ 2ì´ˆë¼ë©´ ì  ìˆ˜ ì—†ë‹¤.
 	* 
-	* ´ÙÀ½ ¹ß»ç½Ã°£µµ¿¹¸¦ µé¸é
-	* 3ÃÊ¶§ ½ò ¾¥ÀÖ´Âµ¥, ÇöÀç ¿ùµåÅ¸ÀÓÀÎ 2ÃÊ¸¦ »©¸é
-	* 1ÃÊ°¡ ³²´Âµ¥. 1ÃÊÈÄ¿¡ 3ÃÊ°¡ µÇ¾î ½ò ¾¥ ÀÖ´Ù.
-	* ÀÌ¸¦ ½ÄÀ¸·Î ³ªÅ¸³»¸é µÈ´Ù.	
+	* ë‹¤ìŒ ë°œì‚¬ì‹œê°„ë„ì˜ˆë¥¼ ë“¤ë©´
+	* 3ì´ˆë•Œ ì  ì‘¤ìˆëŠ”ë°, í˜„ì¬ ì›”ë“œíƒ€ì„ì¸ 2ì´ˆë¥¼ ë¹¼ë©´
+	* 1ì´ˆê°€ ë‚¨ëŠ”ë°. 1ì´ˆí›„ì— 3ì´ˆê°€ ë˜ì–´ ì  ì‘¤ ìˆë‹¤.
+	* ì´ë¥¼ ì‹ìœ¼ë¡œ ë‚˜íƒ€ë‚´ë©´ ëœë‹¤.	
 	*/
 
 #if WeaponDEBUG
@@ -720,27 +715,27 @@ void AWeapon::ControlFiring()
 	
 	float WorldTime = GetWorld()->GetTimeSeconds();
 	
-	// Á¡»ç ¸ğµåÀÏ¶§´Â °­Á¦·Î ½Ã°£À» ´õ Ãß°¡ÇÑ´Ù. 
-	// EnumÀ» ½áµµ µÇÁö¸¸ if¹®ÀÌ ³Ê¹« ±æ¾îÁ®¼­ booleanº¯¼ö¸¦ ÇÏ³ª Ãß°¡ÇÑ°Å´Ù.
+	// ì ì‚¬ ëª¨ë“œì¼ë•ŒëŠ” ê°•ì œë¡œ ì‹œê°„ì„ ë” ì¶”ê°€í•œë‹¤. 
+	// Enumì„ ì¨ë„ ë˜ì§€ë§Œ ifë¬¸ì´ ë„ˆë¬´ ê¸¸ì–´ì ¸ì„œ booleanë³€ìˆ˜ë¥¼ í•˜ë‚˜ ì¶”ê°€í•œê±°ë‹¤.
 	bool bIsBurstmode = false;
 	if (WeaponFiringMode == EWeaponFiringMode::EWFM_Burst)
 	{
 		bIsBurstmode = true;
 	}
 
-	//¸¶Áö¸· ¹ß»ç½Ã°£°ú ÃÑÀÇ SPB (¹ß»ç´ç ÇÊ¿äÇÑ ÃÊ)¸¦ ´õÇÑ °ªÀÌ worldTimeº¸´Ù Å©´Ù¸é
-	// ¾ÆÁ÷ ¹ß»ç ÇÒ ¼ö ¾øÀ¸¹Ç·Î ¹ß»ç°¡´É ½Ã°£À» ±¸ÇÑ´Ù.
+	//ë§ˆì§€ë§‰ ë°œì‚¬ì‹œê°„ê³¼ ì´ì˜ SPB (ë°œì‚¬ë‹¹ í•„ìš”í•œ ì´ˆ)ë¥¼ ë”í•œ ê°’ì´ worldTimeë³´ë‹¤ í¬ë‹¤ë©´
+	// ì•„ì§ ë°œì‚¬ í•  ìˆ˜ ì—†ìœ¼ë¯€ë¡œ ë°œì‚¬ê°€ëŠ¥ ì‹œê°„ì„ êµ¬í•œë‹¤.
 
-	//Á¡»ç¸ğµå¸é ¹ß»ç °¡´É ½Ã°£À» ´ÊÃá Á¶°ÇÀ¸·Î °Ë»çÇÑ´Ù.
+	//ì ì‚¬ëª¨ë“œë©´ ë°œì‚¬ ê°€ëŠ¥ ì‹œê°„ì„ ëŠ¦ì¶˜ ì¡°ê±´ìœ¼ë¡œ ê²€ì‚¬í•œë‹¤.
 	if((bIsBurstmode && LastFireTime > 0 && LastFireTime + WeaponDataAsset->WeaponStat.SecondPerBullet *4 >WorldTime) ||
 		(LastFireTime > 0 && LastFireTime + WeaponDataAsset->WeaponStat.SecondPerBullet > WorldTime))
 	{
-		//¹ß»ç °¡´É½Ã°£À» ±¸ÇÑ´Ù. 
+		//ë°œì‚¬ ê°€ëŠ¥ì‹œê°„ì„ êµ¬í•œë‹¤. 
 		float RemainingTime = 0.f;// = LastFireTime + WeaponStat.SecondPerBullet - WorldTime;
 
 		if (bIsBurstmode) 
 		{
-			//Á¡»ç ¸ğµå¸é SecondPerBullet¿¡ 4¸¦ °öÇÑ °ª.
+			//ì ì‚¬ ëª¨ë“œë©´ SecondPerBulletì— 4ë¥¼ ê³±í•œ ê°’.
 			RemainingTime = (LastFireTime + WeaponDataAsset->WeaponStat.SecondPerBullet * 4) - WorldTime;
 		}
 		GetWorldTimerManager().SetTimer(FiringTimer, this, &AWeapon::Firing, RemainingTime, false);
@@ -748,7 +743,7 @@ void AWeapon::ControlFiring()
 	}
 	else
 	{
-		//¹ß»ç°¡ °¡´ÉÇÏ´Ù¸é ¹Ù·Î È£ÃâÇÑ´Ù.
+		//ë°œì‚¬ê°€ ê°€ëŠ¥í•˜ë‹¤ë©´ ë°”ë¡œ í˜¸ì¶œí•œë‹¤.
 		Firing();
 	}
 	
@@ -756,10 +751,10 @@ void AWeapon::ControlFiring()
 
 void AWeapon::Firing()
 {
-	/* ControlFiring, ReFiring¿¡¼­ È£ÃâµÊ. */
+	/* ControlFiring, ReFiringì—ì„œ í˜¸ì¶œë¨. */
 	/*
-		ammo Ã¼Å©, FireCount Áõ°¡, ÇÔ¼ö ³¡¿¡ Timer±â·Ï (¸¶Áö¸· ¹ß»ç ½Ã°£ ±â·Ï¿ë)
-		°è¼ÓÇØ¼­ »ç°İÁßÀÌ¶ó¸é ReFiringÇÔ¼ö È£Ãâ
+		ammo ì²´í¬, FireCount ì¦ê°€, í•¨ìˆ˜ ëì— Timerê¸°ë¡ (ë§ˆì§€ë§‰ ë°œì‚¬ ì‹œê°„ ê¸°ë¡ìš©)
+		ê³„ì†í•´ì„œ ì‚¬ê²©ì¤‘ì´ë¼ë©´ ReFiringí•¨ìˆ˜ í˜¸ì¶œ
 	*/
 
 #if WeaponDEBUG
@@ -779,7 +774,7 @@ void AWeapon::Firing()
 		}
 	}
 
-	/* Ã¹ ¹ß»ç¸é ControlRotation°ªÀ» ÀúÀåÇÑ´Ù. -> »ç°İ Á¾·á½Ã ¿øº¹ÇÏ±â À§ÇÔ */
+	/* ì²« ë°œì‚¬ë©´ ControlRotationê°’ì„ ì €ì¥í•œë‹¤. -> ì‚¬ê²© ì¢…ë£Œì‹œ ì›ë³µí•˜ê¸° ìœ„í•¨ */
 	if (FireCount == 0)
 	{
 		StartFiringRotation = GetInstigatorController()->GetControlRotation();
@@ -791,12 +786,12 @@ void AWeapon::Firing()
 	if(Main)
 	{
 		//for player
-		New_BulletOut(); //Weapon Instant¿¡ ±¸ÇöÇÔ
+		New_BulletOut(); //Weapon Instantì— êµ¬í˜„í•¨
 	}
 	else
 	{
 		//for ai
-		AIBulletOut(); //Weapon Instant¿¡ ±¸ÇöÇÔ
+		AIBulletOut(); //Weapon Instantì— êµ¬í˜„í•¨
 	}
 
 
@@ -811,10 +806,10 @@ void AWeapon::Firing()
 	LastFireTime = GetWorld()->GetTimeSeconds();
 }
 
-//ReFiringÀ» ÇÒ ¼ö ÀÖ´ÂÁö È®ÀÎÇÏ´Â ÇÔ¼ö´Ù.
+//ReFiringì„ í•  ìˆ˜ ìˆëŠ”ì§€ í™•ì¸í•˜ëŠ” í•¨ìˆ˜ë‹¤.
 void AWeapon::ReFiring()
 {
-	//½ÇÁ¦·Î Ã¼Å©ÇÏ´Â ÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
+	//ì‹¤ì œë¡œ ì²´í¬í•˜ëŠ” í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
 	bool bCanReFire = CheckRefire();
 	if (bCanReFire)
 	{
@@ -828,7 +823,7 @@ void AWeapon::ReFiring()
 	
 }
 
-// FiringÀÌ ³¡³ª¸é °¢Á¾ º¯¼öµéÀ» ÃÊ±âÈ­ ½ÃÄÑÁØ´Ù.
+// Firingì´ ëë‚˜ë©´ ê°ì¢… ë³€ìˆ˜ë“¤ì„ ì´ˆê¸°í™” ì‹œì¼œì¤€ë‹¤.
 void AWeapon::EndFiring()
 {
 	//UE_LOG(LogTemp, Warning, TEXT("AWeapon::EndFiring"));
@@ -836,25 +831,25 @@ void AWeapon::EndFiring()
 	GetWorldTimerManager().ClearTimer(FiringTimer);
 	
 	FireCount = 0;
-	CurrentWeaponState = EWeaponState::EWS_Idle; //Burst mode¸¦ À§ÇÔ
+	CurrentWeaponState = EWeaponState::EWS_Idle; //Burst modeë¥¼ ìœ„í•¨
 	PreviousSpread = FVector::ZeroVector;
 
 	RecoilTime = 0.f;
 
-	// »ç°İÀ» ³¡³ÂÀ»¶§ Ã¹ »ç°İ ¿¡ÀÓÀ¸·Î µÇµ¹¾Æ ¿À´Â ±â´É ,,, test¸¦ À§ÇØ Àá½Ã ±â´ÉÀ» off.
+	// ì‚¬ê²©ì„ ëëƒˆì„ë•Œ ì²« ì‚¬ê²© ì—ì„ìœ¼ë¡œ ë˜ëŒì•„ ì˜¤ëŠ” ê¸°ëŠ¥ ,,, testë¥¼ ìœ„í•´ ì ì‹œ ê¸°ëŠ¥ì„ off.
 	//AimInitialize();
 }
 
-//Refire°¡ °¡´ÉÇÑÁö Ã¼Å©ÇÑ´Ù.
+//Refireê°€ ê°€ëŠ¥í•œì§€ ì²´í¬í•œë‹¤.
 bool AWeapon::CheckRefire()
 {
 	bool bFlag = false;
-	//°İ¹ßÀÌ °¡´ÉÇÑÁö ¿ì¼± Ã¼Å©ÇÏ°í
+	//ê²©ë°œì´ ê°€ëŠ¥í•œì§€ ìš°ì„  ì²´í¬í•˜ê³ 
 	if (CanFire())
 	{
 		if (CurrentWeaponState == EWeaponState::EWS_Firing)
 		{
-			//Burst¸ğµåÀÏ¶§´Â BurstRoundÀÌÇÏ·Î ½úÀ»¶§ refire°¡ °¡´ÉÇÏ´Ù.
+			//Burstëª¨ë“œì¼ë•ŒëŠ” BurstRoundì´í•˜ë¡œ ìˆì„ë•Œ refireê°€ ê°€ëŠ¥í•˜ë‹¤.
 			switch (WeaponFiringMode)
 			{
 			case EWeaponFiringMode::EWFM_Burst:
@@ -898,7 +893,7 @@ FVector AWeapon::GetAimLocation_TEST()
 }
 */
 
-// ÇÃ·¹ÀÌ¾îÀÇ ½ÃÁ¡°¢µµ (ºäÆ÷Æ®°¡ ¹Ù¶óº¸°í ÀÖ´Â È¸Àü°¢)¸¦ Vector°ªÀ¸·Î ±¸ÇÑ´Ù.
+// í”Œë ˆì´ì–´ì˜ ì‹œì ê°ë„ (ë·°í¬íŠ¸ê°€ ë°”ë¼ë³´ê³  ìˆëŠ” íšŒì „ê°)ë¥¼ Vectorê°’ìœ¼ë¡œ êµ¬í•œë‹¤.
 FTransform AWeapon::GetAimPosition()
 {
 	check(OwningPlayer)
@@ -919,7 +914,7 @@ FTransform AWeapon::GetAimPosition()
 	return ReturnAim;
 }
 
-/* À§ ÇÔ¼ö¿¡¼­ ±¸ÇÑ °¢°ú ½ºÅ¸Æ® ·ÎÄÉÀÌ¼ÇÀ» ³»Àû º¤ÅÍ ÇØÁà¼­ ÃÖÁ¾ Åº ½ÃÀÛ À§Ä¡¸¦ ±¸ÇÑ´Ù.*/
+/* ìœ„ í•¨ìˆ˜ì—ì„œ êµ¬í•œ ê°ê³¼ ìŠ¤íƒ€íŠ¸ ë¡œì¼€ì´ì…˜ì„ ë‚´ì  ë²¡í„° í•´ì¤˜ì„œ ìµœì¢… íƒ„ ì‹œì‘ ìœ„ì¹˜ë¥¼ êµ¬í•œë‹¤.*/
 FVector AWeapon::GetTraceStartLocation(FVector Dir)
 {
 	check(OwningPlayer)
@@ -928,8 +923,8 @@ FVector AWeapon::GetTraceStartLocation(FVector Dir)
 	FVector ReturnLocation;
 	FRotator Rot;
 
-	//ClippingWall ÇÔ¼ö°¡ ½ÇÇàµÇ¸é, Åº ½ÃÀÛ À§Ä¡¸¦ MuzzleÀÇ À§Ä¡·Î ¹Ù²Û´Ù.
-	//ÇÔ¼ö°¡ ½ÇÇàµÇÁö ¾ÊÀ¸¸é,  Åº½ÃÀÛ À§Ä¡´Â Actor¿Í(Actor-CamLo = ActorÀÇ ¿·À§Ä¡°¡ µÈ´Ù) DirÀÇ »çÀÌ°¢ÀÌ µÈ´Ù.
+	//ClippingWall í•¨ìˆ˜ê°€ ì‹¤í–‰ë˜ë©´, íƒ„ ì‹œì‘ ìœ„ì¹˜ë¥¼ Muzzleì˜ ìœ„ì¹˜ë¡œ ë°”ê¾¼ë‹¤.
+	//í•¨ìˆ˜ê°€ ì‹¤í–‰ë˜ì§€ ì•Šìœ¼ë©´,  íƒ„ì‹œì‘ ìœ„ì¹˜ëŠ” Actorì™€(Actor-CamLo = Actorì˜ ì˜†ìœ„ì¹˜ê°€ ëœë‹¤) Dirì˜ ì‚¬ì´ê°ì´ ëœë‹¤.
 	
 	//For debug
 	if (SKMesh->GetSocketByName(MuzzleFlashSocketName) == nullptr)
@@ -955,15 +950,15 @@ FVector AWeapon::GetTraceEndLocation(FVector StartVector, FVector Dir)
 {
 	FVector ReturnVec;
 
-	//ClippingWallÇÔ¼ö°¡ ½ÇÇàµÇ¸é ÅºÀÇ Á¾·á À§Ä¡´Â MuzzleÀÇ ¹æÇâ*°Å¸®°¡ µÇ¸ç
-	//ÇÔ¼ö°¡ ½ÇÇàµÇÁö ¾ÊÀ¸¸é, WorldAimPositionÀÌ µÈ´Ù.
+	//ClippingWallí•¨ìˆ˜ê°€ ì‹¤í–‰ë˜ë©´ íƒ„ì˜ ì¢…ë£Œ ìœ„ì¹˜ëŠ” Muzzleì˜ ë°©í–¥*ê±°ë¦¬ê°€ ë˜ë©°
+	//í•¨ìˆ˜ê°€ ì‹¤í–‰ë˜ì§€ ì•Šìœ¼ë©´, WorldAimPositionì´ ëœë‹¤.
 	if(bIsHighReady)
 	{
-		//Muzzle Flash Rotation°ªÀ¸·Î ÇÏ¸é Ã³À½Àº ÀßµÇ´Âµ¥  ½Ã°£ Áö³ª´Ù º¸¸é Rotation°ªÀÌ ÀÌ»óÇÏ°Ô µÇ´Âµí? ÀÚ²Ù º¯ÇÑ´Ù. -> ActorQuat Àı´ë ÃàÀ¸·Î º¯È¯ÇÔ.
+		//Muzzle Flash Rotationê°’ìœ¼ë¡œ í•˜ë©´ ì²˜ìŒì€ ì˜ë˜ëŠ”ë°  ì‹œê°„ ì§€ë‚˜ë‹¤ ë³´ë©´ Rotationê°’ì´ ì´ìƒí•˜ê²Œ ë˜ëŠ”ë“¯? ìê¾¸ ë³€í•œë‹¤. -> ActorQuat ì ˆëŒ€ ì¶•ìœ¼ë¡œ ë³€í™˜í•¨.
 		//FRotator MuzzleRotation = SKMesh->GetSocketRotation(MuzzleFlashSocketName);
 		//ReturnVec = StartVector +  MuzzleRotation.Vector() * WeaponDataAsset->WeaponStat.WeaponRange;
 		 
-		//ÀÌ Actor MeshÀÇ Àü¹æ ÃàÀ» °¡Á®¿Â´Ù.
+		//ì´ Actor Meshì˜ ì „ë°© ì¶•ì„ ê°€ì ¸ì˜¨ë‹¤.
 		ReturnVec = StartVector + this->GetActorQuat().GetAxisY() * WeaponDataAsset->WeaponStat.WeaponRange;
 		
 	}
@@ -980,7 +975,7 @@ FHitResult AWeapon::BulletTrace(FVector StartTrace, FVector EndTrace)
 {
 	FHitResult Hit;
 
-	FCollisionQueryParams params(NAME_None, true, GetInstigator()); //Instigator¸¦ IgnoreActor·Î ÇÏ¸éµÈ´Ù.
+	FCollisionQueryParams params(NAME_None, true, GetInstigator()); //Instigatorë¥¼ IgnoreActorë¡œ í•˜ë©´ëœë‹¤.
 
 	GetWorld()->LineTraceSingleByChannel(Hit, StartTrace, EndTrace, COLLISION_WEAPON_INST, params);
 
@@ -989,16 +984,16 @@ FHitResult AWeapon::BulletTrace(FVector StartTrace, FVector EndTrace)
 	return Hit;
 }
 
-/* »ç¿îµå¿Í ÃÑ±¸ ÀÌÆåÆ® */
+/* ì‚¬ìš´ë“œì™€ ì´êµ¬ ì´í™íŠ¸ */
 void AWeapon::WeaponFX()
 {
-	//»ç¿îµå
+	//ì‚¬ìš´ë“œ
 	if (WeaponDataAsset->FireSound)
 	{
 		UGameplayStatics::SpawnSoundAttached(WeaponDataAsset->FireSound, OwningPlayer->GetRootComponent());
 	}
 
-	//ÃÑ±¸ ÀÌÆåÆ®
+	//ì´êµ¬ ì´í™íŠ¸
 	if (WeaponDataAsset->FireMuzzleEffect)
 	{
 		const USkeletalMeshSocket* MuzzleSocket = SKMesh->GetSocketByName(MuzzleFlashSocketName);
@@ -1012,7 +1007,7 @@ void AWeapon::WeaponFX()
 		}
 	}
 
-	//Animatoin Àç»ı.
+	//Animatoin ì¬ìƒ.
 	//PlayWeaponAnimAndCamShake(FireAnimaton);
 }
 
@@ -1045,7 +1040,7 @@ void AWeapon::AimInitialize()
 	//UE_LOG(LogTemp, Warning, TEXT("Save End Firing Location And Init"));
 	EndFiringRotation = GetInstigatorController()->GetControlRotation();
 
-	//fireÁß ¸¶¿ì½º ÀÔ·ÂÀÌ °¨ÁöµÇ¸é AimInitÀ» ´Ü¼øÈ÷ ¾Æ·¡·Î ³»¸®°Ô ÇÑ´Ù.
+	//fireì¤‘ ë§ˆìš°ìŠ¤ ì…ë ¥ì´ ê°ì§€ë˜ë©´ AimInitì„ ë‹¨ìˆœíˆ ì•„ë˜ë¡œ ë‚´ë¦¬ê²Œ í•œë‹¤.
 	if (bDetectLookInput)
 	{
 		bDetectLookInput = false;
@@ -1058,7 +1053,7 @@ void AWeapon::AimInitialize()
 	GetWorldTimerManager().SetTimer(AimInitHandle, [=] {
 		
 		Time += GetWorld()->GetDeltaSeconds();
-		AlphaTime = Time / 0.8f; // : Time/µÇµ¹¾Æ¿À´Â ½Ã°£  (½ºÅİ)
+		AlphaTime = Time / 0.8f; // : Time/ë˜ëŒì•„ì˜¤ëŠ” ì‹œê°„  (ìŠ¤í…Ÿ)
 
 		//FRotator LerpAimRotation = FMath::RInterpTo(EndFiringRotation, StartFiringRotation, GetWorld()->GetDeltaSeconds(), 20.f);
 		FRotator LerpAimRotation = FMath::Lerp(EndFiringRotation, StartFiringRotation, AlphaTime);
@@ -1079,7 +1074,7 @@ void AWeapon::UpdateAim()
 	{
 		WorldAimPosition = Hit.Location;
 
-		//FPS½ÃÁ¡¿¡¼­ Trace¸¦ °°Àº°÷¿¡ ÇÑ¹ø ´õ ½÷¼­ ¸ÂÀ¸¸é ¸ÂÀº À§Ä¡·Î AimPos¸¦ ¿Å±ä´Ù.
+		//FPSì‹œì ì—ì„œ Traceë¥¼ ê°™ì€ê³³ì— í•œë²ˆ ë” ì´ì„œ ë§ìœ¼ë©´ ë§ì€ ìœ„ì¹˜ë¡œ AimPosë¥¼ ì˜®ê¸´ë‹¤.
 		FHitResult WeaponHit = BulletTrace(MainCon->Main->CameraFPS->GetComponentLocation(), Hit.Location);
 		if (WeaponHit.bBlockingHit)
 		{
@@ -1112,10 +1107,10 @@ void AWeapon::WeaponClipping()
 		CurrentMeshRightHand = MainCon->Main->GetMesh()->GetSocketLocation("hand_r");
 	}
 
-	//LienTraceÀÇ ±æÀÌ´Â Weapon¿¡ ºÎÂøµÈ CapsuleComp±æÀÌ
+	//LienTraceì˜ ê¸¸ì´ëŠ” Weaponì— ë¶€ì°©ëœ CapsuleCompê¸¸ì´
 	float Length = CapsuleComp->GetScaledCapsuleHalfHeight() * 4;
 
-	//¹æÇâº¤ÅÍ´Â AimPositionÀ¸·Î ÇÑ´Ù.
+	//ë°©í–¥ë²¡í„°ëŠ” AimPositionìœ¼ë¡œ í•œë‹¤.
 	FVector EndLo = CurrentMeshRightHand + GetAimPosition().GetRotation().GetForwardVector() * Length;
 	TArray<AActor*> IgnoreActorList;
 	IgnoreActorList.Add(GetInstigator());
@@ -1123,12 +1118,12 @@ void AWeapon::WeaponClipping()
 
 	ETraceTypeQuery TTQ = UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_GameTraceChannel2);
 
-	//¿À¸¥ÂÊ ¼Õ¿¡¼­ AimÀÌ ÇâÇÏ´Â ¹æÇâÀ¸·Î WeaponÀÇ Capsule±æÀÌ¸¸Å­ LineTrace¸¦ ½ğ´Ù.
+	//ì˜¤ë¥¸ìª½ ì†ì—ì„œ Aimì´ í–¥í•˜ëŠ” ë°©í–¥ìœ¼ë¡œ Weaponì˜ Capsuleê¸¸ì´ë§Œí¼ LineTraceë¥¼ ìœë‹¤.
 	UKismetSystemLibrary::SphereTraceSingle(GetWorld(), CurrentMeshRightHand, EndLo, 5.f, TTQ, false,
 		IgnoreActorList, EDrawDebugTrace::None, Hit, true);
 	
-	//ÀÌ Line Trace°¡ HitµÇ¸é ¾Õ¿¡ ¹«¾ğ°¡ Àå¾Ö¹°ÀÌ ÀÖ´Ù´Â ¶æÀÌ°í,
-	//WeaponÀÇ RollÀ» ¼öÁ¤ÇØ À§ÂÊÀ¸·Î È¸Àü½ÃÅ²´Ù. 'HighReadyÇüÅÂ·Î'
+	//ì´ Line Traceê°€ Hitë˜ë©´ ì•ì— ë¬´ì–¸ê°€ ì¥ì• ë¬¼ì´ ìˆë‹¤ëŠ” ëœ»ì´ê³ ,
+	//Weaponì˜ Rollì„ ìˆ˜ì •í•´ ìœ„ìª½ìœ¼ë¡œ íšŒì „ì‹œí‚¨ë‹¤. 'HighReadyí˜•íƒœë¡œ'
 	if(Hit.bBlockingHit)
 	{
 		FVector CurVec = CurrentMeshAttachTransform.GetTranslation();
@@ -1136,12 +1131,12 @@ void AWeapon::WeaponClipping()
 		
 		FRotator CurRot = CurrentMeshAttachTransform.GetRotation().Rotator();
 
-		//Why Roll?? -> Skeleton¿¡¼­ ¹«±â¸¦ ³Ö°í À§·Î µ¹¸®´Ï Roll°ª¸¸ ¹Ù²¸¼­ Roll·Î ÇÑ°ÅÀÓ.
-		// Hit.Distance / LengthÇÏ°ÔµÇ¸é 0ºÎÅÍ 1ÀÌ ³ª¿À´Âµ¥.
-		// Hit.Distance == Length -> 1ÀÌµÊ. Áï, 1ÀÏ¶§´Â 0ÀÌµÇ°í 0ÀÏ¶§´Â 90µµ°¡ µÇ¾î¾ßÇÔ.
-		// ¶§¹®¿¡ 90À» °öÇß°í, 90À» °Á °öÇØ¹ö¸®¸é 1ÀÏ¶§ 90ÀÌ µÇ¹ö¸². ±×¸®°í ¾îÂ÷ÇÇ °¢µµ°¡ -90ÀÌ µÇ¾ß À§·Î ¿Ã¶ó°¡´Ï
-		// 0*90 = 0, 0.5*90 = 45, 1*90 = 90ÀÌ¶ó °Á -90À» »©¹ö·ÈÀ½,
-		// ÃÖÁ¾°ªÀº 0ÀÏ¶§ -90, 0.5ÀÏ¶§ -45, 1ÀÏ¶§ 0ÀÌ ³ª¿È.
+		//Why Roll?? -> Skeletonì—ì„œ ë¬´ê¸°ë¥¼ ë„£ê³  ìœ„ë¡œ ëŒë¦¬ë‹ˆ Rollê°’ë§Œ ë°”ê»´ì„œ Rollë¡œ í•œê±°ì„.
+		// Hit.Distance / Lengthí•˜ê²Œë˜ë©´ 0ë¶€í„° 1ì´ ë‚˜ì˜¤ëŠ”ë°.
+		// Hit.Distance == Length -> 1ì´ë¨. ì¦‰, 1ì¼ë•ŒëŠ” 0ì´ë˜ê³  0ì¼ë•ŒëŠ” 90ë„ê°€ ë˜ì–´ì•¼í•¨.
+		// ë•Œë¬¸ì— 90ì„ ê³±í–ˆê³ , 90ì„ ê± ê³±í•´ë²„ë¦¬ë©´ 1ì¼ë•Œ 90ì´ ë˜ë²„ë¦¼. ê·¸ë¦¬ê³  ì–´ì°¨í”¼ ê°ë„ê°€ -90ì´ ë˜ì•¼ ìœ„ë¡œ ì˜¬ë¼ê°€ë‹ˆ
+		// 0*90 = 0, 0.5*90 = 45, 1*90 = 90ì´ë¼ ê± -90ì„ ë¹¼ë²„ë ¸ìŒ,
+		// ìµœì¢…ê°’ì€ 0ì¼ë•Œ -90, 0.5ì¼ë•Œ -45, 1ì¼ë•Œ 0ì´ ë‚˜ì˜´.
 		FRotator CalcRot = FRotator(CurRot.Pitch, CurRot.Yaw, (CurRot.Roll + (Hit.Distance / Length)*90.f) - 90.f);
 		//UE_LOG(LogTemp, Warning, TEXT("Calc Rot ; %s"), *CalcRot.ToString());
 
@@ -1174,15 +1169,15 @@ void AWeapon::OnCollisionBegin(UPrimitiveComponent* OverlappedComponent, AActor*
 		
 		if(Main->TPAnimInstance->bBeginHighReady == false)
 		{
-			//Weaponclass¿¡ ÀÖ´Â bIsHighReady´Â AnimInstance¿¡¼­ ¿ÏÀüÈ÷ ³»·Á¿ÔÀ»¶§ false¸¦ ½ÃÄÑÁÖµµ·Ï ÇÏÀÚ.
+			//Weaponclassì— ìˆëŠ” bIsHighReadyëŠ” AnimInstanceì—ì„œ ì™„ì „íˆ ë‚´ë ¤ì™”ì„ë•Œ falseë¥¼ ì‹œì¼œì£¼ë„ë¡ í•˜ì.
 			bIsHighReady = true;
 			//Main->TPAnimInstance->bBeginHighReady = true;
 			//Main->FPAnimInstance->bBeginHighReady = true;
 
 			// New Fix Clipping wall
-			//Tick¿¡¼­ Sphere Line Trace¸¦ ½î´Âµ¥, distance¿Í radius´Â ¼³Á¤ °¡´ÉÇÔ.(ÃÑ¸¶´Ù ´Ù¸¦¼ö ÀÖÀ¸´Ï..)
-			//hitÀÌ ÀÖ´Ù¸é, Original Transform¿¡¼­ Location°ª  - (0.f,0.f, Curve.evaluate(hit.distance / distance)
-			//ÀÌ·¸°Ô ÇØ¼­ ³ª¿Â°ªÀ» NewTransform.locationÀ¸·Î ÁöÁ¤ÇØÁÖ¸é µÈ´Ù.
+			//Tickì—ì„œ Sphere Line Traceë¥¼ ì˜ëŠ”ë°, distanceì™€ radiusëŠ” ì„¤ì • ê°€ëŠ¥í•¨.(ì´ë§ˆë‹¤ ë‹¤ë¥¼ìˆ˜ ìˆìœ¼ë‹ˆ..)
+			//hitì´ ìˆë‹¤ë©´, Original Transformì—ì„œ Locationê°’  - (0.f,0.f, Curve.evaluate(hit.distance / distance)
+			//ì´ë ‡ê²Œ í•´ì„œ ë‚˜ì˜¨ê°’ì„ NewTransform.locationìœ¼ë¡œ ì§€ì •í•´ì£¼ë©´ ëœë‹¤.
 			
 
 

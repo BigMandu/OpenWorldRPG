@@ -25,35 +25,42 @@ public:
 
 	static UNewItemObject* CreateObject(FItemSetting ItemStruct, bool& bIsCreated);
 
-	/*ItemObj¸¦ ÀÌ¿ëÇØ Item class¸¦ SpawnÇÑ´Ù.*/
+	/*ItemObjë¥¼ ì´ìš©í•´ Item classë¥¼ Spawní•œë‹¤.*/
 	static AItem* SpawnItem(UWorld* World, UNewItemObject* ItemObj);
 
-	/*ItemObj¸¦ ÀÌ¿ëÇØ Equipment Class¸¦ SpawnÇÑ´Ù*/
+	/*ItemObjë¥¼ ì´ìš©í•´ Equipment Classë¥¼ Spawní•œë‹¤*/
 	static AEquipment* SpawnEquipment(UWorld* World, UNewItemObject* ItemObj);
 	
-	/*ItemObj¸¦ ÀÌ¿ëÇØ Equipment Class¸¦ SpawnÇÑ´Ù*/
+	/*ItemObjë¥¼ ì´ìš©í•´ Equipment Classë¥¼ Spawní•œë‹¤*/
 	static ABaseGrenade* SpawnGrenade(UWorld* World, UNewItemObject* ItemObj);
 
 
-	/*PDA¸¦ ÀÌ¿ëÇØ Item class¸¦ SpawnÇÑ´Ù.*/
+	/*PDAë¥¼ ì´ìš©í•´ Item classë¥¼ Spawní•œë‹¤.*/
 	static AItem* SpawnItem(UWorld* World, UBasePDA* ItemDA);
 
-	/*PDA¸¦ ÀÌ¿ëÇØ Equipment Class¸¦ SpawnÇÑ´Ù */
+	/*PDAë¥¼ ì´ìš©í•´ Equipment Classë¥¼ Spawní•œë‹¤ */
 	static AEquipment* SpawnEquipment(UWorld* World, UCustomPDA* EquipDA);
 
 
 	/*  */
 	static void GenerateRandomCount(UNewItemObject* ItemObj);
 
-	/* WeaponÀ» Á¦¿ÜÇÑ ÀåÂøÁßÀÎ ¸ğµç Equipment¸¦ HideÇÑ´Ù.*/
+	/* Weaponì„ ì œì™¸í•œ ì¥ì°©ì¤‘ì¸ ëª¨ë“  Equipmentë¥¼ Hideí•œë‹¤.*/
 	static void HideAllEquipment(UEquipmentComponent* EComp);
 
-	/* ÀåÂøÁßÀÎ ¸ğµç Equipment¸¦ ShowÇÑ´Ù.*/
+	/* ì¥ì°©ì¤‘ì¸ ëª¨ë“  Equipmentë¥¼ Showí•œë‹¤.*/
 	static void ShowAllEquipment(UEquipmentComponent* EComp);
 
+    /** Weaponí˜•íƒœì˜ Itemì´ ì¶”ê°€ë˜ê±°ë‚˜, ì¥ì°©ë ë•Œ
+     * ê¸°ì¡´ Actorì—ì„œ ìƒì„±ë˜ê³  ê´€ë¦¬ë˜ë˜ WPMì„ Objì— ë„£ì–´ì¤˜ì„œ ê°±ì‹ í•´ì¤€ë‹¤.
+     * @Weapon - ì¥ì°©í•˜ê±°ë‚˜ Inventoryì— ì¶”ê°€ë  Weapon Actor
+     * @Obj - ì¥ì°©í•˜ê±°ë‚˜ Inventoryì— ì¶”ê°€ë ë•Œ ìƒì„±ë˜ëŠ” Object
+     */
+    
+    static void SetWeaponPartsManager(AWeapon* Weapon, UNewItemObject* Obj);
 
 
-	/// ÀÌÇÏ »ç¿ëÇÏÁö ¾Ê´Â ÇÔ¼öµé
+	/// ì´í•˜ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ” í•¨ìˆ˜ë“¤
 	static void BackToItem(UNewItemObject* ItemObj);
 	static void DirectInToInventory(UNewItemObject* ItemObj, ABaseCharacter* BChar);
 };

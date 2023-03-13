@@ -7,6 +7,21 @@
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
 #include "OpenWorldRPG/NewInventory/Library/CustomInventoryLibrary.h"
 
+void UWeaponPartsManagerObject::SetOwnerWeapon(AWeapon* Weapon)
+{
+    OwnerWeapon = Weapon;
+}
+
+AWeapon* UWeaponPartsManagerObject::GetOwnerWeapon()
+{
+    AWeapon* ReturnWeap = nullptr;
+    if (OwnerWeapon.IsValid())
+    {
+        ReturnWeap = OwnerWeapon.Get();
+    }
+
+    return ReturnWeap;
+}
 
 void UWeaponPartsManagerObject::AddParts(UNewItemObject* Parts)
 {	
@@ -42,16 +57,16 @@ void UWeaponPartsManagerObject::AddParts(UNewItemObject* Parts)
 			break;
 		}
 
-		//Ãß°¡ÇÒ ¼ö ÀÖ´Ù¸é, ±âÁ¸¿¡ Á¸ÀçÇß´ø°÷¿¡¼­ removeÇÑµÚ ÀÌ ManagerObj¸¦ Ãß°¡½ÃÅ²´Ù.
+		//ì¶”ê°€í•  ìˆ˜ ìžˆë‹¤ë©´, ê¸°ì¡´ì— ì¡´ìž¬í–ˆë˜ê³³ì—ì„œ removeí•œë’¤ ì´ ManagerObjë¥¼ ì¶”ê°€ì‹œí‚¨ë‹¤.
 		if (bIsSuccess)
 		{
 			DeleteLink(Parts);
 			Parts->WeaponPartsManager = this;
 		}
 	}
-	/**WeaponPartsWidget, Weapon¿¡¼­ BindµÈ´Ù
-	 * WeaponPartsWidgetÀÇ WidgetÀ» updateÇÏ°í
-	 * Weapon¿¡¼­ ÀÌ classÀÇ ÇÔ¼öÀÎ partsUpdate¸¦ È£ÃâÇÑ´Ù.
+	/**WeaponPartsWidget, Weaponì—ì„œ Bindëœë‹¤
+	 * WeaponPartsWidgetì˜ Widgetì„ updateí•˜ê³ 
+	 * Weaponì—ì„œ ì´ classì˜ í•¨ìˆ˜ì¸ partsUpdateë¥¼ í˜¸ì¶œí•œë‹¤.
 	 */
 	OnChangeParts.Broadcast();
 }
@@ -118,20 +133,21 @@ void UWeaponPartsManagerObject::DeleteLink(UNewItemObject* PartsObj)
 
 
 
-/*WeaponPDAÀÇ °¢ Parts´Â nullptr¶Ç´Â data¸¦ °®°í ÀÖÀ» ¼ö ÀÖ´Ù.
+/*WeaponPDAì˜ ê° PartsëŠ” nullptrë˜ëŠ” dataë¥¼ ê°–ê³  ìžˆì„ ìˆ˜ ìžˆë‹¤.
 * 
-* ÀÌ UpdateParts ÇÔ¼ö´Â WeaponPDAÀÇ PartsµéÀÌ nullÀÌ³ª Data¸¦ ¹Þ¾ÒÀ»¶§ ¸¶´Ù È£ÃâµÈ´Ù.
-* µû¶ó¼­, ÀÌ ÇÔ¼ö°¡ È£Ãâ µÉ ¶§¸¶´Ù
-* ¸ðµç partsµéÀ» Remove½ÃÅ°°í SpawnÇØ¼­ Attach½ÃÄÑ¾ß ÇÑ´Ù.
+* ì´ UpdateParts í•¨ìˆ˜ëŠ” WeaponPDAì˜ Partsë“¤ì´ nullì´ë‚˜ Dataë¥¼ ë°›ì•˜ì„ë•Œ ë§ˆë‹¤ í˜¸ì¶œëœë‹¤.
+* ë”°ë¼ì„œ, ì´ í•¨ìˆ˜ê°€ í˜¸ì¶œ ë  ë•Œë§ˆë‹¤
+* ëª¨ë“  partsë“¤ì„ Removeì‹œí‚¤ê³  Spawní•´ì„œ Attachì‹œì¼œì•¼ í•œë‹¤.
 * */
 void UWeaponPartsManagerObject::UpdateParts(UWorld* World, AWeapon* VarWeapon)
 {
 	//if(VarWeapon == nullptr) return;
-	if(OwnerWeapon == nullptr) return;
+	if(OwnerWeapon.IsValid() == false) return;
+    if(OwnerWeapon != VarWeapon) return;
 	//OwnerWeapon = VarWeapon;
 
 	if (OwnerWeapon->WeaponDataAsset == nullptr) return;
-	DestroyAllAttachParts(OwnerWeapon);
+	DestroyAllAttachParts(OwnerWeapon.Get());
 
 	for (EWeaponPartsType PartsType : TEnumRange<EWeaponPartsType>())
 	{
@@ -139,22 +155,21 @@ void UWeaponPartsManagerObject::UpdateParts(UWorld* World, AWeapon* VarWeapon)
 		 switch(PartsType)
 		 {
 		 case EWeaponPartsType::EWPT_Muzzle:
-			if (OwnerWeapon && MuzzleParts.IsValid())// OwnerWeapon->WeaponDataAsset->MuzzleParts.IsValid())
+			if (OwnerWeapon.IsValid() && MuzzleParts.IsValid())
 			{				
-				//Parts = OwnerWeapon->WeaponDataAsset->MuzzleParts.Get();
 				Parts = MuzzleParts.Get();
-				SpawnAndAttachParts(World, Parts, EWeaponPartsType::EWPT_Muzzle);//  OwnerWeapon);
+				SpawnAndAttachParts(World, Parts, EWeaponPartsType::EWPT_Muzzle);
 			}
 			break;
 		 case EWeaponPartsType::EWPT_Scope:
-			 if (OwnerWeapon && ScopeParts.IsValid())
+			 if (OwnerWeapon.IsValid() && ScopeParts.IsValid())
 			 {
 				 Parts = ScopeParts.Get();
 				 SpawnAndAttachParts(World, Parts, EWeaponPartsType::EWPT_Scope);
 			 }
 			break;
 		 case EWeaponPartsType::EWPT_Tactical:
-			 if (OwnerWeapon && OwnerWeapon->WeaponDataAsset->MuzzleParts.IsValid())
+			 if (OwnerWeapon.IsValid() && OwnerWeapon->WeaponDataAsset->MuzzleParts.IsValid())
 			 {
 				 Parts = OwnerWeapon->WeaponDataAsset->TacticalParts.Get();
 				 SpawnAndAttachParts(World, Parts, EWeaponPartsType::EWPT_Tactical);
@@ -162,10 +177,6 @@ void UWeaponPartsManagerObject::UpdateParts(UWorld* World, AWeapon* VarWeapon)
 		  	break;
 		 }
 	}
-
-	/*SpawnAndAttachParts(World, OwnerWeapon->WeaponDataAsset->MuzzleParts, OwnerWeapon);
-	SpawnAndAttachParts(World, OwnerWeapon->WeaponDataAsset->TacticalParts, OwnerWeapon);
-	SpawnAndAttachParts(World, OwnerWeapon->WeaponDataAsset->ScopeParts, OwnerWeapon);*/
 
 }
 
@@ -222,7 +233,7 @@ void UWeaponPartsManagerObject::SpawnAndAttachParts(UWorld* World, UNewItemObjec
 
 void UWeaponPartsManagerObject::DestroyAllAttachParts(AWeapon* VarWeapon)
 {
-	if (OwnerWeapon)
+	if (OwnerWeapon.IsValid())
 	{
 		TArray<AActor*> AttachedParts;
 		OwnerWeapon->GetAttachedActors(AttachedParts);

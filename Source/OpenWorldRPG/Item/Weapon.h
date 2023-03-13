@@ -30,19 +30,19 @@ class UWeaponPDA;
 class UItemStorageObject;
 
 
-//´Ü¹ß, Á¡»ç, ¿¬»ç¸¦ ±¸ºĞ
+//ë‹¨ë°œ, ì ì‚¬, ì—°ì‚¬ë¥¼ êµ¬ë¶„
 UENUM(BlueprintType)
 enum class EWeaponFiringMode : uint8
 {
-	EWFM_Safe		UMETA(DisplayName = "Safe"),	//¾ÈÀü
-	EWFM_SemiAuto	UMETA(DisplayName = "SemiAuto"),//´Ü¹ß
-	EWFM_Burst		UMETA(DisplayName = "Burst"),	//Á¡»ç
-	EWFM_FullAuto	UMETA(DisplayName = "FullAuto"),//¿¬¹ß
+	EWFM_Safe		UMETA(DisplayName = "Safe"),	//ì•ˆì „
+	EWFM_SemiAuto	UMETA(DisplayName = "SemiAuto"),//ë‹¨ë°œ
+	EWFM_Burst		UMETA(DisplayName = "Burst"),	//ì ì‚¬
+	EWFM_FullAuto	UMETA(DisplayName = "FullAuto"),//ì—°ë°œ
 
 	EWFM_MAX		UMETA(DisplayName = "DefaultMAX")
 };
 
-//WeaponÀÇ »óÅÂ
+//Weaponì˜ ìƒíƒœ
 UENUM(BlueprintType)
 enum class EWeaponState : uint8
 {
@@ -74,32 +74,32 @@ protected:
 
 	FTimerHandle FiringTimer;
 
-	//WeaponClippingÀ» À§ÇØ Hand¿Í MuzzleÀÇ Relative°ª.
+	//WeaponClippingì„ ìœ„í•´ Handì™€ Muzzleì˜ Relativeê°’.
 	FTransform MuzzleRelative;
 
 	FVector WorldAimPosition;
 	//FVector WeaponMuzzleLocation;
 
-	//¾Æ·¡ 3°³ÀÇ FTransformÀº PDA·Î ¿Å±è.
-	//FPMeshÀÇ WeaponGrip ¼ÒÄÏ¿¡ ºÙÀÏ WeaponÀÇ Transform°ª.
+	//ì•„ë˜ 3ê°œì˜ FTransformì€ PDAë¡œ ì˜®ê¹€.
+	//FPMeshì˜ WeaponGrip ì†Œì¼“ì— ë¶™ì¼ Weaponì˜ Transformê°’.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")
 	FTransform FPMeshAttachTransform;
 
-	//TPMesh¿¡ WeaponÀ» AttachÇÒ ¼ÒÄÏÀÇ Transform°ª.
+	//TPMeshì— Weaponì„ Attachí•  ì†Œì¼“ì˜ Transformê°’.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")
 	FTransform PrimaryWeaponAttachTransform;
 
-	//TPMesh¿¡ WeaponÀ» AttachÇÒ ¼ÒÄÏÀÇ Transform°ª.
+	//TPMeshì— Weaponì„ Attachí•  ì†Œì¼“ì˜ Transformê°’.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")
 	FTransform SubWeaponAttachTransform;
 
 
 
-	/* Aim Initialize¿¡¼­ »ç¿ë */
+	/* Aim Initializeì—ì„œ ì‚¬ìš© */
 	FRotator StartFiringRotation;
 	FRotator EndFiringRotation;
 
-	float RecoilTime; //Curve float¿¡¼­ »ç¿ë.
+	float RecoilTime; //Curve floatì—ì„œ ì‚¬ìš©.
 	float Time;
 
 	FVector PreviousSpread;
@@ -116,12 +116,11 @@ public:
 	//FOnEndHighReady OnEndHighReady;
 
 
-	//StepEquip¶§ ´ëÀÔÇÑ´Ù.
-	//ÁöÁ¤ÇÑ °ªÀ» ½±°Ô »ç¿ëÇÏ±â À§ÇØ CastÇØµĞ´Ù.
+	//StepEquipë•Œ ëŒ€ì…í•œë‹¤.
+	//ì§€ì •í•œ ê°’ì„ ì‰½ê²Œ ì‚¬ìš©í•˜ê¸° ìœ„í•´ Castí•´ë‘”ë‹¤.
 	UWeaponPDA* WeaponDataAsset;
 
-	UPROPERTY()
-	class UWeaponPartsManagerObject* WeaponPartsManager;
+	TWeakObjectPtr<class UWeaponPartsManagerObject> WeaponPartsManager;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UCapsuleComponent* CapsuleComp;
@@ -133,9 +132,9 @@ public:
 	bool bLMBDown;
 
 	bool bIsFiring;
-	bool bIsAiming; //Main¿¡¼­ °ªÀ» ´Ü¼øÈ÷ ³Ö¾îÁÖ±â¸¸ ÇÑ´Ù.
+	bool bIsAiming; //Mainì—ì„œ ê°’ì„ ë‹¨ìˆœíˆ ë„£ì–´ì£¼ê¸°ë§Œ í•œë‹¤.
 
-	//ClippingÀ» ÇÏ°íÀÖÀ»¶§ AimÀ» ¸·°í, BulletOutÀÇ Trace¸¦ ¼öÁ¤ÇÏ±â À§ÇÑ boolean
+	//Clippingì„ í•˜ê³ ìˆì„ë•Œ Aimì„ ë§‰ê³ , BulletOutì˜ Traceë¥¼ ìˆ˜ì •í•˜ê¸° ìœ„í•œ boolean
 	bool bIsHighReady;
 
 	float AlphaTime;
@@ -143,7 +142,7 @@ public:
 
 
 
-	/* FPS Aim¸ğµå ÀÏ¶§ À§Ä¡°ª ÀúÀå -> PDA¿¡ ÀúÀåÇÔ.*/
+	/* FPS Aimëª¨ë“œ ì¼ë•Œ ìœ„ì¹˜ê°’ ì €ì¥ -> PDAì— ì €ì¥í•¨.*/
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon | Transform")
 	FTransform CharFPMeshTransform;
 	
@@ -151,7 +150,7 @@ public:
 	FTransform WeapSKMeshTransform;
 
 
-	//Primary, SubÀ» ÁöÁ¤ÇÑ´Ù.
+	//Primary, Subì„ ì§€ì •í•œë‹¤.
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	ERifleSlot RifleAssign;
 
@@ -167,13 +166,13 @@ public:
 
 
 	/********* Ammo *********/
-	//¼Ò¸ğÇÑ Åº °³¼ö
+	//ì†Œëª¨í•œ íƒ„ ê°œìˆ˜
 	int32 ConsumeAmmoCnt = 0;
 
-	//ÅºÃ¢¿¡ ³²Àº Åº¾àÀÇ °³¼ö
+	//íƒ„ì°½ì— ë‚¨ì€ íƒ„ì•½ì˜ ê°œìˆ˜
 	int32 AmmoLeftInMag = 0;
 
-	//Inv¿¡ ³²Àº °°Àº Å¸ÀÔ Åº¾àÀÇ ÃÑ °³¼ö forWeaponStatusWidget.
+	//Invì— ë‚¨ì€ ê°™ì€ íƒ€ì… íƒ„ì•½ì˜ ì´ ê°œìˆ˜ forWeaponStatusWidget.
 	int32 CntAmmoSameType = 0;
 
 	//////////////////////////////////

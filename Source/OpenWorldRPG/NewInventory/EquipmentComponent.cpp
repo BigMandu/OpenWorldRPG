@@ -38,12 +38,12 @@ bool UEquipmentComponent::AddEquipment(AEquipment* Equip)
 	/*
 	if (Equip)
 	{
-		//if (Equip->OwningInventory != nullptr) //ÀÎº¥Åä¸®¿¡ ÀÖ´ø WeaponÀÌ¸é,
+		//if (Equip->OwningInventory != nullptr) //ì¸ë²¤í† ë¦¬ì— ìˆë˜ Weaponì´ë©´,
 		//{
-		//	Equip->OwningInventory->RemoveItem(Cast<AItem>(this)); //ÀÎº¥Åä¸®¿¡¼­ Áö¿öÁØ´Ù.
+		//	Equip->OwningInventory->RemoveItem(Cast<AItem>(this)); //ì¸ë²¤í† ë¦¬ì—ì„œ ì§€ì›Œì¤€ë‹¤.
 		//}
 
-		// µ¿ÀÏÇÑ EquipÀÌ ÀÌ¹Ì ÀÖ´ÂÁö È®ÀÎÇÑ´Ù. SwapÀÏ¶§ AddEquipÀ» ÇÏ±â ¶§¹®¿¡
+		// ë™ì¼í•œ Equipì´ ì´ë¯¸ ìˆëŠ”ì§€ í™•ì¸í•œë‹¤. Swapì¼ë•Œ AddEquipì„ í•˜ê¸° ë•Œë¬¸ì—
 		for(auto& EquippedItem : EquipmentItems)
 		{
 			if(EquippedItem == Equip)
@@ -53,14 +53,14 @@ bool UEquipmentComponent::AddEquipment(AEquipment* Equip)
 			}
 		}
 
-		// µ¿ÀÏ EquipÀÌ ¾ø´Ù¸é Ãß°¡½ÃÅ²´Ù. 
+		// ë™ì¼ Equipì´ ì—†ë‹¤ë©´ ì¶”ê°€ì‹œí‚¨ë‹¤. 
 		if (bAlreadyHave == false)
 		{
 			Equip->OwningEquipment = this;
 			EquipmentItems.Add(Equip);
-			Equip->SKMesh->SetHiddenInGame(false); //ÀÓ½Ã·Î ÇØµĞ°ÍÀÓ.
+			Equip->SKMesh->SetHiddenInGame(false); //ì„ì‹œë¡œ í•´ë‘”ê²ƒì„.
 
-			//Backpack, VestÀÇ ÀåÂø ¿©ºÎ¸¦ È®ÀÎÇÑ´Ù.
+			//Backpack, Vestì˜ ì¥ì°© ì—¬ë¶€ë¥¼ í™•ì¸í•œë‹¤.
 			if(Equip->EquipmentType == EEquipmentType::EET_Backpack)
 			{
 				bHasBackpack = true;
@@ -71,7 +71,7 @@ bool UEquipmentComponent::AddEquipment(AEquipment* Equip)
 			}
 			bReturn = true;
 		}
-		//EquipWidget::RefreshEquipWidget°ú bind½ÃÅ´.
+		//EquipWidget::RefreshEquipWidgetê³¼ bindì‹œí‚´.
 		OnEquipmentUpdated.Broadcast();
 
 		UE_LOG(LogTemp, Warning, TEXT("EquipComp : AddSuccess"));
@@ -87,9 +87,9 @@ bool UEquipmentComponent::RemoveEquipment(AEquipment* Equip)
 	if (Equip)
 	{
 		/*
-		* EquipSlot::Ondrop¿¡¼­ ±âÁ¸ SpawnActorÀÇ ·çÆ¾ÀÌ º¯°æµÊ¿¡ µû¶ó
-		* RemoveSingle½Ã¿¡ °°Áö ¾Ê°Ô µÊ.
-		* µû¶ó¼­ remove¸¦ º¯°æÇØ¾ßµÊ.
+		* EquipSlot::Ondropì—ì„œ ê¸°ì¡´ SpawnActorì˜ ë£¨í‹´ì´ ë³€ê²½ë¨ì— ë”°ë¼
+		* RemoveSingleì‹œì— ê°™ì§€ ì•Šê²Œ ë¨.
+		* ë”°ë¼ì„œ removeë¥¼ ë³€ê²½í•´ì•¼ë¨.
 		*/
 		//if (Equip->EquipmentType == EEquipmentType::EET_Backpack)
 		{
@@ -104,8 +104,8 @@ bool UEquipmentComponent::RemoveEquipment(AEquipment* Equip)
 		AEquipment* InnerEquipment = GetEquippedWeaponSameType(Equip->EquipmentType);
 		if (InnerEquipment)
 		{
-			//ÀÌ¸§À» ºñ±³ÇØ¼­ °°Àº ÀÌ¸§À» °®°íÀÖ´Â °´Ã¼¸¦ EquipmentItems Array¿¡¼­ »èÁ¦ÇÏ°í
-			// Equip Object¸¦ DestoryÇØÁØ´Ù.
+			//ì´ë¦„ì„ ë¹„êµí•´ì„œ ê°™ì€ ì´ë¦„ì„ ê°–ê³ ìˆëŠ” ê°ì²´ë¥¼ EquipmentItems Arrayì—ì„œ ì‚­ì œí•˜ê³ 
+			// Equip Objectë¥¼ Destoryí•´ì¤€ë‹¤.
 			//if (InnerEquipment->ItemName.EqualTo(Equip->ItemName))
 			{
 				EquipmentItems.RemoveSingle(InnerEquipment);
@@ -136,8 +136,8 @@ AEquipment* UEquipmentComponent::GetEquippedWeaponSameType(EEquipmentType EquipT
 		AEquipment* Equipped = Cast<AEquipment>(EquipItem);
 		if (Equipped)
 		{
-			//RifleÀÎ °æ¿ì¿¡ RiffleAssignÀ» º¸°í °¡Á®¿Â´Ù.
-			//Rifle Å¸ÀÔÀÎ °æ¿ì Primary Rifle, Sub Rifle ÀÌ·¸°Ô ÁöÁ¤µÇ¾î ÀÖÀ» ¼ö ÀÖ±â ¶§¹®ÀÓ.
+			//Rifleì¸ ê²½ìš°ì— RiffleAssignì„ ë³´ê³  ê°€ì ¸ì˜¨ë‹¤.
+			//Rifle íƒ€ì…ì¸ ê²½ìš° Primary Rifle, Sub Rifle ì´ë ‡ê²Œ ì§€ì •ë˜ì–´ ìˆì„ ìˆ˜ ìˆê¸° ë•Œë¬¸ì„.
 			if ((EquipType == EEquipmentType::EET_Rifle || (Equip != nullptr && Equip->EquipmentType == EEquipmentType::EET_Rifle)
 				&& RifleSlot != ERifleSlot::ERS_MAX))
 			{
@@ -152,7 +152,7 @@ AEquipment* UEquipmentComponent::GetEquippedWeaponSameType(EEquipmentType EquipT
 			}
 			else
 			{
-				//World¿¡ ½ºÆùµÈ EquipmentÀÎ °æ¿ì ¿©±æ »ç¿ëÇÑ´Ù.
+				//Worldì— ìŠ¤í°ëœ Equipmentì¸ ê²½ìš° ì—¬ê¸¸ ì‚¬ìš©í•œë‹¤.
 				if (Equip != nullptr && EquipType == EEquipmentType::EET_MAX)
 				{
 					if (Equipped->EquipmentType == Equip->EquipmentType)
@@ -160,7 +160,7 @@ AEquipment* UEquipmentComponent::GetEquippedWeaponSameType(EEquipmentType EquipT
 						return Equipped;
 					}
 				}
-				else //Equip¾øÀÌ EquipTypeÀ¸·Î¸¸ ³Ñ°ÜÁáÀ»¶§
+				else //Equipì—†ì´ EquipTypeìœ¼ë¡œë§Œ ë„˜ê²¨ì¤¬ì„ë•Œ
 				{
 					if (Equipped->EquipmentType == EquipType)
 					{
@@ -219,12 +219,12 @@ bool UEquipmentComponent::AddEquipment(FItemSetting ItemSetting, AEquipment* Wan
 
 	UNewItemObject* EquipObj = nullptr;
 
-	//EquipÀÇ ItemObj°¡ ¾ø´Ù¸é »ı¼ºÇØÁØ´Ù.
+	//Equipì˜ ItemObjê°€ ì—†ë‹¤ë©´ ìƒì„±í•´ì¤€ë‹¤.
 	if (WantToEquip->ItemObj == nullptr)
 	{
 		EquipObj = UCustomInventoryLibrary::CreateObject(ItemSetting, bCreated); //CreateObject(ItemSetting, bCreated);
 		if (bCreated == false) return false;
-		//»ı¼ºÇÑ°É ÇÒ´çÇÑ´Ù.
+		//ìƒì„±í•œê±¸ í• ë‹¹í•œë‹¤.
 		WantToEquip->ItemObj = EquipObj;
 	}
 	else
@@ -248,22 +248,22 @@ bool UEquipmentComponent::AddEquipment(FItemSetting ItemSetting, AEquipment* Wan
 			EquipObj->MotherEquipComp = nullptr;
 		}
 
-		//ÀåÂøÇÒ¶§´Â ¹«Á¶°Ç ItemRotate¸¦ false½ÃÅ²´Ù.
+		//ì¥ì°©í• ë•ŒëŠ” ë¬´ì¡°ê±´ ItemRotateë¥¼ falseì‹œí‚¨ë‹¤.
 		EquipObj->bTempRotate = false;
 		EquipObj->bRotated = false;
 
 		EquipObj->Equipment = WantToEquip;
 		EquipObj->MotherEquipComp = this;
 
-		//RifleTypeÀÌ¸é RifleAssignÀ» ´ëÀÔÇØÁØ´Ù. //for QuickSlot & EquipWidget
+		//RifleTypeì´ë©´ RifleAssignì„ ëŒ€ì…í•´ì¤€ë‹¤. //for QuickSlot & EquipWidget
 		if (CPDA->EquipmentType == EEquipmentType::EET_Rifle || CPDA->EquipmentType == EEquipmentType::EET_Pistol)
 		{	
 			EquipObj->RifleAssign = Cast<AWeapon>(WantToEquip)->RifleAssign;
-			SetWeaponPartsManager(WantToEquip, EquipObj);
+			//SetWeaponPartsManager(WantToEquip, EquipObj);
 			OnWeaponSetSlot.Broadcast(EquipObj);
 		}
 		
-		//Backpack, VestÀÇ ÀåÂø ¿©ºÎ¸¦ È®ÀÎÇÑ´Ù., Enum Range iter¸¦ À§ÇØ Obj¸¦ ÀúÀåÇØµĞ´Ù.
+		//Backpack, Vestì˜ ì¥ì°© ì—¬ë¶€ë¥¼ í™•ì¸í•œë‹¤., Enum Range iterë¥¼ ìœ„í•´ Objë¥¼ ì €ì¥í•´ë‘”ë‹¤.
 		if(CPDA->EquipmentType == EEquipmentType::EET_Backpack)
 		{
 			BackpackObj = EquipObj;
@@ -278,7 +278,7 @@ bool UEquipmentComponent::AddEquipment(FItemSetting ItemSetting, AEquipment* Wan
 		bReturn = true;
 		
 
-		//EquipWidget::RefreshEquipWidget°ú bind½ÃÄ×À½.
+		//EquipWidget::RefreshEquipWidgetê³¼ bindì‹œì¼°ìŒ.
 		OnEquipmentUpdated.Broadcast();
 		UE_LOG(LogTemp, Warning, TEXT("EquipComp : AddSuccess"));
 
@@ -290,9 +290,9 @@ bool UEquipmentComponent::RemoveEquipment(UNewItemObject* EquipObj)
 {
 	if (EquipObj)
 	{
-		/* EquipSlot::Ondrop¿¡¼­ ±âÁ¸ SpawnActorÀÇ ·çÆ¾ÀÌ º¯°æµÊ¿¡ µû¶ó
-		 * RemoveSingle½Ã¿¡ °°Áö ¾Ê°Ô µÊ.
-		 * µû¶ó¼­ remove¸¦ º¯°æÇØ¾ßµÊ.
+		/* EquipSlot::Ondropì—ì„œ ê¸°ì¡´ SpawnActorì˜ ë£¨í‹´ì´ ë³€ê²½ë¨ì— ë”°ë¼
+		 * RemoveSingleì‹œì— ê°™ì§€ ì•Šê²Œ ë¨.
+		 * ë”°ë¼ì„œ removeë¥¼ ë³€ê²½í•´ì•¼ë¨.
 		 */
 
 		UCustomPDA* OuterCPDA = Cast<UCustomPDA>(EquipObj->ItemInfo.DataAsset);
@@ -301,12 +301,12 @@ bool UEquipmentComponent::RemoveEquipment(UNewItemObject* EquipObj)
 		if (InnerEquipment)
 		{
 			UCustomPDA* InnerCPDA = Cast<UCustomPDA>(InnerEquipment->ItemInfo.DataAsset);
-			//ÀÌ¸§À» ºñ±³ÇØ¼­ °°Àº ÀÌ¸§À» °®°íÀÖ´Â °´Ã¼¸¦ EquipmentItems Array¿¡¼­ »èÁ¦ÇÏ°í
-			// Equip Object¸¦ DestoryÇØÁØ´Ù.
+			//ì´ë¦„ì„ ë¹„êµí•´ì„œ ê°™ì€ ì´ë¦„ì„ ê°–ê³ ìˆëŠ” ê°ì²´ë¥¼ EquipmentItems Arrayì—ì„œ ì‚­ì œí•˜ê³ 
+			// Equip Objectë¥¼ Destoryí•´ì¤€ë‹¤.
 
 			if (InnerCPDA->ItemName.EqualTo(OuterCPDA->ItemName))
 			{
-				//BackPack,VestÀÇ °æ¿ì SetÇÑ Obj¸¦ ³¯·ÁÁØ´Ù.
+				//BackPack,Vestì˜ ê²½ìš° Setí•œ Objë¥¼ ë‚ ë ¤ì¤€ë‹¤.
 				if (InnerCPDA->EquipmentType == EEquipmentType::EET_Backpack)
 				{
 					BackpackObj = nullptr;			
@@ -331,7 +331,7 @@ bool UEquipmentComponent::RemoveEquipment(UNewItemObject* EquipObj)
 					EquipObj->RemoveLinkSlot();				
 				}
 
-				//Weapon::Remove¿¡¼­ OwningPlayer¸¦ »ç¿ëÇÏ±â ¶§¹®¿¡ ¼ø¼­´Â ÀÌ·¸°Ô ÇÑ´Ù.
+				//Weapon::Removeì—ì„œ OwningPlayerë¥¼ ì‚¬ìš©í•˜ê¸° ë•Œë¬¸ì— ìˆœì„œëŠ” ì´ë ‡ê²Œ í•œë‹¤.
 				EquipObj->Equipment->Remove();
 				/*EquipObj->Equipment->OwningPlayer = nullptr;
 				EquipObj->Equipment->Destroy();*/
@@ -345,7 +345,7 @@ bool UEquipmentComponent::RemoveEquipment(UNewItemObject* EquipObj)
 	return false;
 }
 
-/* EqiupType ¶Ç´Â Obj¿Í °°Àº TypeÀÇ EquipObj¸¦ ¸®ÅÏÇÑ´Ù.
+/* EqiupType ë˜ëŠ” Objì™€ ê°™ì€ Typeì˜ EquipObjë¥¼ ë¦¬í„´í•œë‹¤.
 */
 UNewItemObject* UEquipmentComponent::GetEquippedWeaponSameType(EEquipmentType EquipType, UNewItemObject* Object, ERifleSlot RifleSlot)
 {
@@ -359,8 +359,8 @@ UNewItemObject* UEquipmentComponent::GetEquippedWeaponSameType(EEquipmentType Eq
 			if(!CPDA || !ObjCPDA) continue;
 
 
-			//RifleÀÎ °æ¿ì¿¡ RiffleAssignÀ» º¸°í °¡Á®¿Â´Ù. ¶Ç´Â ItemSettingÀÇ TypeÀÌ RifleÀÌ¸é¼­ Rifle SlotÀÌ ÁöÁ¤µÈ °æ¿ì.
-			//Rifle Å¸ÀÔÀÎ °æ¿ì Primary Rifle, Sub Rifle ÀÌ·¸°Ô ÁöÁ¤µÇ¾î ÀÖÀ» ¼ö ÀÖ±â ¶§¹®ÀÓ.
+			//Rifleì¸ ê²½ìš°ì— RiffleAssignì„ ë³´ê³  ê°€ì ¸ì˜¨ë‹¤. ë˜ëŠ” ItemSettingì˜ Typeì´ Rifleì´ë©´ì„œ Rifle Slotì´ ì§€ì •ëœ ê²½ìš°.
+			//Rifle íƒ€ì…ì¸ ê²½ìš° Primary Rifle, Sub Rifle ì´ë ‡ê²Œ ì§€ì •ë˜ì–´ ìˆì„ ìˆ˜ ìˆê¸° ë•Œë¬¸ì„.
 			if (EquipType == EEquipmentType::EET_Rifle)
 			{
 				
@@ -383,7 +383,7 @@ UNewItemObject* UEquipmentComponent::GetEquippedWeaponSameType(EEquipmentType Eq
 			}
 			else
 			{
-				//World¿¡ ½ºÆùµÈ EquipmentÀÎ °æ¿ì ¿©±æ »ç¿ëÇÑ´Ù.
+				//Worldì— ìŠ¤í°ëœ Equipmentì¸ ê²½ìš° ì—¬ê¸¸ ì‚¬ìš©í•œë‹¤.
 				if (EquipType == EEquipmentType::EET_MAX && CPDA)
 				{
 					if (Object != nullptr && CPDA->EquipmentType == ObjCPDA->EquipmentType)
@@ -391,7 +391,7 @@ UNewItemObject* UEquipmentComponent::GetEquippedWeaponSameType(EEquipmentType Eq
 						return Equipped;
 					}
 				}
-				else //Equip¾øÀÌ EquipTypeÀ¸·Î¸¸ ³Ñ°ÜÁáÀ»¶§
+				else //Equipì—†ì´ EquipTypeìœ¼ë¡œë§Œ ë„˜ê²¨ì¤¬ì„ë•Œ
 				{
 					if (CPDA->EquipmentType == EquipType)
 					{
@@ -416,17 +416,17 @@ bool UEquipmentComponent::IsSameTypeExist(AEquipment* Equip, ERifleSlot RifleSlo
 			UCustomPDA* Var_CPDA = Cast<UCustomPDA>(Equip->ItemSetting.DataAsset);
 			UCustomPDA* Inner_CPDA = Cast<UCustomPDA>(Equipped->ItemInfo.DataAsset);
 
-			//ÀåÂøÇÏ·Á´Â EquipTypeÀÌ WeaponÀÌ°í ÀåÂøµÈ TypeÀÌ WeaponÀÎ °æ¿ì ¼­·Î ºñ±³ÇÑ´Ù.
+			//ì¥ì°©í•˜ë ¤ëŠ” EquipTypeì´ Weaponì´ê³  ì¥ì°©ëœ Typeì´ Weaponì¸ ê²½ìš° ì„œë¡œ ë¹„êµí•œë‹¤.
 			if (Inner_CPDA->EquipmentType == EEquipmentType::EET_Rifle && Var_CPDA->EquipmentType == EEquipmentType::EET_Rifle)
 			{
 
-				//Rifle SlotÀÌ ÁöÁ¤µÇÁö ¾ÊÀº °æ¿ì (WorldSpawn »óÅÂ) Ä«¿îÆ® ÇÑ´Ù.
-				//Rifle TypeÀº 2°³±îÁö Çã¿ëµÈ´Ù.
+				//Rifle Slotì´ ì§€ì •ë˜ì§€ ì•Šì€ ê²½ìš° (WorldSpawn ìƒíƒœ) ì¹´ìš´íŠ¸ í•œë‹¤.
+				//Rifle Typeì€ 2ê°œê¹Œì§€ í—ˆìš©ëœë‹¤.
 				if (RifleSlot == ERifleSlot::ERS_MAX)
 				{
 					RifleCnt++;
 				}
-				//Rifle SlotÀÌ ÁöÁ¤µÈ °æ¿ì RifleÀÌ ÁöÁ¤µÈ ½½·Ô¿¡ ÇØ´çÇÏ´Â°Ô ÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
+				//Rifle Slotì´ ì§€ì •ëœ ê²½ìš° Rifleì´ ì§€ì •ëœ ìŠ¬ë¡¯ì— í•´ë‹¹í•˜ëŠ”ê²Œ ìˆëŠ”ì§€ í™•ì¸í•œë‹¤.
 				else
 				{
 					if (Equipped->RifleAssign == RifleSlot)
@@ -435,18 +435,18 @@ bool UEquipmentComponent::IsSameTypeExist(AEquipment* Equip, ERifleSlot RifleSlo
 					}
 				}
 			}
-			else if(Inner_CPDA->EquipmentType == Var_CPDA->EquipmentType) //ÆÄ¶ó¹ÌÅÍ WeaponÀÇ TypeÀÌ ÀÌ¹Ì ÀÖÀ¸¸é true
+			else if(Inner_CPDA->EquipmentType == Var_CPDA->EquipmentType) //íŒŒë¼ë¯¸í„° Weaponì˜ Typeì´ ì´ë¯¸ ìˆìœ¼ë©´ true
 			{
 				return true;
 			}
 
-			if (RifleCnt >= 2) //RifleTypeÀÇ ¹«±â°¡ 2°³ÀÌ»óÀÏ °æ¿ì true
+			if (RifleCnt >= 2) //RifleTypeì˜ ë¬´ê¸°ê°€ 2ê°œì´ìƒì¼ ê²½ìš° true
 			{
 				return true;
 			}
 		}
 	}
-	//¾øÀ¸¸é false¸®ÅÏ
+	//ì—†ìœ¼ë©´ falseë¦¬í„´
 	return false;
 }
 
@@ -455,21 +455,21 @@ bool UEquipmentComponent::IsSameTypeExist(AEquipment* Equip, ERifleSlot RifleSlo
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//Weapon¿¡
-void UEquipmentComponent::SetWeaponPartsManager(AEquipment* WantToEquip, UNewItemObject* WeaponObj)
-{
-	if (UWeaponPDA* WeaponPDA = Cast<UWeaponPDA>(WeaponObj->ItemInfo.DataAsset))
-	{
-		if (WeaponObj->WeaponPartsManager.IsValid() == false)
-		{
-			if (UWeaponPartsManagerObject* WeapWPM = Cast<AWeapon>(WantToEquip)->WeaponPartsManager)
-			{
-				WeaponObj->WeaponPartsManager = WeapWPM;
-			}
-			else
-			{
-				WeaponObj->WeaponPartsManager = NewObject<UWeaponPartsManagerObject>(UWeaponPartsManagerObject::StaticClass());
-			}
-		}
-	}	
-}
+//Weaponì— ìˆëŠ” WPMì„ Objì˜ WPMì— ëŒ€ì…í•´ì„œ ê°±ì‹ í•´ì¤€ë‹¤.
+//void UEquipmentComponent::SetWeaponPartsManager(AEquipment* WantToEquip, UNewItemObject* WeaponObj)
+//{
+//	if (UWeaponPDA* WeaponPDA = Cast<UWeaponPDA>(WeaponObj->ItemInfo.DataAsset))
+//	{
+//		if (WeaponObj->WeaponPartsManager.IsValid() == false)
+//		{
+//			if (UWeaponPartsManagerObject* WeapWPM = Cast<AWeapon>(WantToEquip)->WeaponPartsManager)
+//			{
+//				WeaponObj->WeaponPartsManager = WeapWPM;
+//			}
+//			else
+//			{
+//				WeaponObj->WeaponPartsManager = NewObject<UWeaponPartsManagerObject>(UWeaponPartsManagerObject::StaticClass());
+//			}
+//		}
+//	}	
+//}

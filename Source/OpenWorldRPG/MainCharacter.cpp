@@ -39,26 +39,26 @@
 
 #include "Components/CapsuleComponent.h"
 
-#include "DrawDebugHelpers.h" //µğ¹ö±ë¿ë
+#include "DrawDebugHelpers.h" //ë””ë²„ê¹…ìš©
 
 
 // Sets default values
 AMainCharacter::AMainCharacter() : Super()
 {
-	GetCharacterMovement()->bOrientRotationToMovement = true; //¿òÁ÷ÀÎ ¹æÇâ = ÁøÇà¹æÇâÀ¸·Î ¼³Á¤
+	GetCharacterMovement()->bOrientRotationToMovement = true; //ì›€ì§ì¸ ë°©í–¥ = ì§„í–‰ë°©í–¥ìœ¼ë¡œ ì„¤ì •
 	/********** Input ***********/
 	bDisableInput = false;
 
-	bCrouchToggle = true; //¿õÅ©¸®±â Å° ToggleÀ» true·Î ±âº»¼¼ÆÃ ÇÑ´Ù.
-	bWalkToggle = true; //°È±â Å° ToggleÀ» true·Î ¼¼ÆÃÇÑ´Ù.
-	bAimToggle = true; //Á¶ÁØÅ°¸¦ toggel true¼¼ÆÃ.
+	bCrouchToggle = true; //ì›…í¬ë¦¬ê¸° í‚¤ Toggleì„ trueë¡œ ê¸°ë³¸ì„¸íŒ… í•œë‹¤.
+	bWalkToggle = true; //ê±·ê¸° í‚¤ Toggleì„ trueë¡œ ì„¸íŒ…í•œë‹¤.
+	bAimToggle = true; //ì¡°ì¤€í‚¤ë¥¼ toggel trueì„¸íŒ….
 
 	bIsAim = false;
 	bTabKeyDown = false;
 	bIsLookInput = false;
-	ActiveInteractDistance = 200.f; //»óÈ£ÀÛ¿ë ¾ÆÀÌÅÛÀÌ Ç¥½ÃµÇ´Â ÃÖ´ë°Å¸®.
+	ActiveInteractDistance = 200.f; //ìƒí˜¸ì‘ìš© ì•„ì´í…œì´ í‘œì‹œë˜ëŠ” ìµœëŒ€ê±°ë¦¬.
 
-	/* Ä«¸Ş¶ó °ü·Ã */
+	/* ì¹´ë©”ë¼ ê´€ë ¨ */
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
 
@@ -73,7 +73,7 @@ AMainCharacter::AMainCharacter() : Super()
 	bUseControllerRotationRoll = false;
 	bUseControllerRotationYaw = true;
 
-	CameraTPS->SetRelativeLocation(TPSCam_Rel_Location); //3ÀÎÄª Ä«¸Ş¶ó¸¦ »ìÂ¦ ¿ìÃøÀ¸·Î Ä¡¿ìÁö°Ô ÇÑ´Ù.
+	CameraTPS->SetRelativeLocation(TPSCam_Rel_Location); //3ì¸ì¹­ ì¹´ë©”ë¼ë¥¼ ì‚´ì§ ìš°ì¸¡ìœ¼ë¡œ ì¹˜ìš°ì§€ê²Œ í•œë‹¤.
 
 	BaseTurnRate = 45.f;
 	BaseLookupRate = 45.f;
@@ -103,20 +103,20 @@ void AMainCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	/* PlayerÀÇ AnimInstance¸¦ ºÒ·¯¿Â´Ù. */
+	/* Playerì˜ AnimInstanceë¥¼ ë¶ˆëŸ¬ì˜¨ë‹¤. */
 	//TPAnimInstance = Cast<UMainAnimInstance>(GetMesh()->GetAnimInstance()); 
 	FPAnimInstance = Cast<UMainAnimInstance>(FPMesh->GetAnimInstance());
 
 	if (FPAnimInstance)//TPAnimInstance && FPAnimInstance)
 	{
-		/* »ç¿îµå´Â TP AnimationÀ» ±âÁØÀ¸·Î Ãâ·ÂÇÑ´Ù. */ //AnimInstanceÀÇ StepSound_Notify¿¡¼­ È£Ãâ.
+		/* ì‚¬ìš´ë“œëŠ” TP Animationì„ ê¸°ì¤€ìœ¼ë¡œ ì¶œë ¥í•œë‹¤. */ //AnimInstanceì˜ StepSound_Notifyì—ì„œ í˜¸ì¶œ.
 		//TPAnimInstance->StepSound.AddUObject(this, &AMainCharacter::StepSound); 
 		//TPAnimInstance->WeaponTypeNumber = 0;
 		FPAnimInstance->WeaponTypeNumber = 0;
 		//FPAnimInstance->StartADS.AddUFunction(this,FName("GetADSPosition"));
 	}
 	
-	//ShadowMeshÀÇ AnimInstance¸¦ ³Ö¾îÁØ´Ù.
+	//ShadowMeshì˜ AnimInstanceë¥¼ ë„£ì–´ì¤€ë‹¤.
 	ShadowMesh->SetAnimInstanceClass(GetMesh()->GetAnimClass());
 	
 	ShadowMesh->SetOnlyOwnerSee(true);
@@ -141,7 +141,7 @@ void AMainCharacter::PostInitializeComponents()
 
 	
 
-	/* FPS Aim°ü·Ã ±âº» ¼³Á¤ °ª ÀúÀå*/
+	/* FPS Aimê´€ë ¨ ê¸°ë³¸ ì„¤ì • ê°’ ì €ì¥*/
 	BaseCamTPSfov = CameraTPS->FieldOfView;
 	BaseCamFPSfov = CameraFPS->FieldOfView;
 	BaseFPMeshTransform = FPMesh->GetRelativeTransform();
@@ -176,14 +176,14 @@ void AMainCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	/********** ÃÊ±â ¼¼ÆÃ ************/
-	SetCameraMode(ECameraMode::ECM_TPS); //ÃÊ±â Ä«¸Ş¶ó ¸ğµå´Â 3ÀÎÄª ¸ğµå·Î.
+	/********** ì´ˆê¸° ì„¸íŒ… ************/
+	SetCameraMode(ECameraMode::ECM_TPS); //ì´ˆê¸° ì¹´ë©”ë¼ ëª¨ë“œëŠ” 3ì¸ì¹­ ëª¨ë“œë¡œ.
 	SetAimMode(EAimMode::EAM_NotAim);
 
 	MainController = Cast<AMainController>(GetController());
 
 
-	/****** Main HudÀÇ Widget°ú Event Bind ********/
+	/****** Main Hudì˜ Widgetê³¼ Event Bind ********/
 	UMainHud* MainHud = Cast<UMainHud>(MainController->MainHud);
 	if (MainHud)
 	{
@@ -213,7 +213,7 @@ void AMainCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
-	//bIsLookInput ¼¼ÆÃ (Aim InitÀ» À§ÇÑ°Í.)
+	//bIsLookInput ì„¸íŒ… (Aim Initì„ ìœ„í•œê²ƒ.)
 	float turnvalue = GetInputAxisValue("Turn");
 	float lookvalue = GetInputAxisValue("LookUp");
 	if (turnvalue == 0.f && lookvalue == 0.f)
@@ -231,16 +231,16 @@ void AMainCharacter::Tick(float DeltaTime)
 		InteractionLineTrace();
 	}
 
-	/* WeaponÀÇ AimInitializeÇÔ¼ö¿¡¼­ »ç¿ëÇÏ´Â Timer ÇØÁ¦¿ë */
+	/* Weaponì˜ AimInitializeí•¨ìˆ˜ì—ì„œ ì‚¬ìš©í•˜ëŠ” Timer í•´ì œìš© */
 	if (EquippedWeapon)
 	{
-		//Å¸ÀÌ¸Ó°¡ ÀÛµ¿ÁßÀÌ°í
+		//íƒ€ì´ë¨¸ê°€ ì‘ë™ì¤‘ì´ê³ 
 		if (GetWorldTimerManager().IsTimerActive(EquippedWeapon->AimInitHandle))
 		{
-			//aimÀ» µ¹¸®°Å³ª, AlphaTimeÀÌ 1ÃÊ°¡ ³Ñ¾î°¡°Å³ª, ½î´Â ÁßÀÌ¶ó¸é
+			//aimì„ ëŒë¦¬ê±°ë‚˜, AlphaTimeì´ 1ì´ˆê°€ ë„˜ì–´ê°€ê±°ë‚˜, ì˜ëŠ” ì¤‘ì´ë¼ë©´
 			if (bIsLookInput || EquippedWeapon->AlphaTime >= 1.f || EquippedWeapon->bIsFiring)
 			{
-				//¿¡ÀÓ ÃÊ±âÈ­ Å¸ÀÌ¸Ó¸¦ ÃÊ±âÈ­ ½ÃÅ²´Ù.
+				//ì—ì„ ì´ˆê¸°í™” íƒ€ì´ë¨¸ë¥¼ ì´ˆê¸°í™” ì‹œí‚¨ë‹¤.
 				UE_LOG(LogTemp, Warning, TEXT("MainChar:: Clear AimInit Timer"));
 				GetWorldTimerManager().ClearTimer(EquippedWeapon->AimInitHandle);
 			}
@@ -322,7 +322,7 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 void AMainCharacter::InteractionLineTrace()
 {
-	/* »óÈ£ÀÛ¿ë Line Trace º¯°æ . ver2  ¾Æ·¡ ÄÚµå¸¦ GetPlayerViewPointÇÔ¼ö¸¦ ÀÌ¿ëÇØ °£·«È­ ½ÃÄ×´Ù. */
+	/* ìƒí˜¸ì‘ìš© Line Trace ë³€ê²½ . ver2  ì•„ë˜ ì½”ë“œë¥¼ GetPlayerViewPointí•¨ìˆ˜ë¥¼ ì´ìš©í•´ ê°„ëµí™” ì‹œì¼°ë‹¤. */
 	FRotator Rot;
 	MainController->GetPlayerViewPoint(Interact_LineTrace_StartLocation, Rot);
 	switch (CameraMode)
@@ -331,10 +331,10 @@ void AMainCharacter::InteractionLineTrace()
 		Interact_LineTrace_EndLocation = Interact_LineTrace_StartLocation + Rot.Vector() * 500.f;
 		break;
 	case ECameraMode::ECM_TPS:
-		Interact_LineTrace_EndLocation = Interact_LineTrace_StartLocation + Rot.Vector() * (MAXCameraLength + 800.f); //Ä«¸Ş¶óBoom±æÀÌº¸´Ù ´õ±æ°Ô ³¡³ª¾ßÇÑ´Ù.
+		Interact_LineTrace_EndLocation = Interact_LineTrace_StartLocation + Rot.Vector() * (MAXCameraLength + 800.f); //ì¹´ë©”ë¼Boomê¸¸ì´ë³´ë‹¤ ë”ê¸¸ê²Œ ëë‚˜ì•¼í•œë‹¤.
 	}
 
-	/* Ä«¸Ş¶ó ¸ğµå¿¡ µû¸¥ »óÈ£ÀÛ¿ë LineTrace º¯°æ. ver 1 --> ver 2·Î ±³Ã¼.*/
+	/* ì¹´ë©”ë¼ ëª¨ë“œì— ë”°ë¥¸ ìƒí˜¸ì‘ìš© LineTrace ë³€ê²½. ver 1 --> ver 2ë¡œ êµì²´.*/
 	/*
 	switch (CameraMode)
 	{
@@ -345,8 +345,8 @@ void AMainCharacter::InteractionLineTrace()
 		break;
 	case ECameraMode::ECM_TPS:
 	{
-		Interact_LineTrace_StartLocation = CameraTPS->GetComponentLocation(); //TPSÄ«¸Ş¶ó¸¦ ±âÁØÀ¸·Î Trace¸¦ ½ÃÀÛÇÑ´Ù.
-		Interact_LineTrace_EndLocation = Interact_LineTrace_StartLocation + CameraTPS->GetComponentRotation().Vector() * (MAXCameraLength + 800.f); //Ä«¸Ş¶óBoom±æÀÌº¸´Ù ´õ±æ°Ô ³¡³ª¾ßÇÑ´Ù.
+		Interact_LineTrace_StartLocation = CameraTPS->GetComponentLocation(); //TPSì¹´ë©”ë¼ë¥¼ ê¸°ì¤€ìœ¼ë¡œ Traceë¥¼ ì‹œì‘í•œë‹¤.
+		Interact_LineTrace_EndLocation = Interact_LineTrace_StartLocation + CameraTPS->GetComponentRotation().Vector() * (MAXCameraLength + 800.f); //ì¹´ë©”ë¼Boomê¸¸ì´ë³´ë‹¤ ë”ê¸¸ê²Œ ëë‚˜ì•¼í•œë‹¤.
 		break;
 	}
 	default:
@@ -355,36 +355,36 @@ void AMainCharacter::InteractionLineTrace()
 	*/
 
 
-	/* »óÈ£ÀÛ¿ë ÅØ½ºÆ®¸¦ ¶ç¿ò */
-	/* Static FHitResult¸¦ ¸®ÅÏ¹Ş¾Æ¼­ Interface º¯È¯, ¼º°øÇÏ¸é Outline°ú TEXT¸¦ ¶ç¿ò.*/
+	/* ìƒí˜¸ì‘ìš© í…ìŠ¤íŠ¸ë¥¼ ë„ì›€ */
+	/* Static FHitResultë¥¼ ë¦¬í„´ë°›ì•„ì„œ Interface ë³€í™˜, ì„±ê³µí•˜ë©´ Outlineê³¼ TEXTë¥¼ ë„ì›€.*/
 	AActor* HitActor = InteractableLineTrace(Interact_LineTrace_StartLocation, Interact_LineTrace_EndLocation).GetActor();
 
 	//AInteractable* HitInteractActor = Cast<AInteractable>(HitActor);
 	IInteractive_Interface* HitInteractActor = Cast<IInteractive_Interface>(HitActor);
 	if (HitInteractActor)// && HitInteractActor->bCanNotInteractable == false)
 	{
-		if (InteractActor) //ÀÌ¹Ì InteractActor°¡ ÀÖ°í
+		if (InteractActor) //ì´ë¯¸ InteractActorê°€ ìˆê³ 
 		{
-			if (InteractActor != HitActor)//HitInteractActor) //Áö±İ º¸°í ÀÖ´Â Actor¿Í InteractActor°¡ ´Ù¸£¸é
+			if (InteractActor != HitActor)//HitInteractActor) //ì§€ê¸ˆ ë³´ê³  ìˆëŠ” Actorì™€ InteractActorê°€ ë‹¤ë¥´ë©´
 			{
-				UnsetInteractActor(); //InteractActor¸¦ UnsetÇØÁØ´Ù.
+				UnsetInteractActor(); //InteractActorë¥¼ Unsetí•´ì¤€ë‹¤.
 			}
 			else
 			{
-				//°Å¸®¿¡ µû¶ó InteractText°¡ ¾÷µ¥ÀÌÆ® µÇ±â ¶§¹®¿¡ Ãß°¡ ÇØÁØ´Ù.
+				//ê±°ë¦¬ì— ë”°ë¼ InteractTextê°€ ì—…ë°ì´íŠ¸ ë˜ê¸° ë•Œë¬¸ì— ì¶”ê°€ í•´ì¤€ë‹¤.
 				SetInteractActor(HitActor);//HitInteractActor);
 			}
 		}
-		else //InteractActor°¡ ¾øÀ» °æ¿ì
+		else //InteractActorê°€ ì—†ì„ ê²½ìš°
 		{
-			SetInteractActor(HitActor);//HitInteractActor); //InteractableÀÎ °æ¿ì SetÀ» ÇØÁØ´Ù.
+			SetInteractActor(HitActor);//HitInteractActor); //Interactableì¸ ê²½ìš° Setì„ í•´ì¤€ë‹¤.
 		}
 	}
 	else
 	{
 		UnsetInteractActor();
 	}
-	//InteractActor°¡ ´Ù¸¦°æ¿ì UnsetInteractActor È£ÃâÇÏÀÚ. (OutlineÀÌ ¾È¾ø¾îÁö´Â ¹ö±×°¡ ÀÖÀ½.) -> ÇØ°áÇÔ.
+	//InteractActorê°€ ë‹¤ë¥¼ê²½ìš° UnsetInteractActor í˜¸ì¶œí•˜ì. (Outlineì´ ì•ˆì—†ì–´ì§€ëŠ” ë²„ê·¸ê°€ ìˆìŒ.) -> í•´ê²°í•¨.
 }
 
 
@@ -394,8 +394,8 @@ void AMainCharacter::FPSAimLocationAdjust()
 	{
 		if (bIsAim)
 		{
-			//°¢ ÃÑ¸¶´Ù FPMeshÀÇ ¿Ã¹Ù¸¥ À§Ä¡¿¡ ºÎÂøÇÏ±â À§ÇØ
-			//Weapon Class¿¡ Transform º¯¼ö¸¦ ¸¸µé¾îÁá´Ù.
+			//ê° ì´ë§ˆë‹¤ FPMeshì˜ ì˜¬ë°”ë¥¸ ìœ„ì¹˜ì— ë¶€ì°©í•˜ê¸° ìœ„í•´
+			//Weapon Classì— Transform ë³€ìˆ˜ë¥¼ ë§Œë“¤ì–´ì¤¬ë‹¤.
 			const FTransform NewFPMeshTransform = EquippedWeapon->CharFPMeshTransform;
 			const FTransform NewWeaponTransform = EquippedWeapon->WeapSKMeshTransform;
 			CameraFPS->SetFieldOfView(70.f);
@@ -412,7 +412,7 @@ void AMainCharacter::FPSAimLocationAdjust()
 }
 
 
-//ÇÃ·¹ÀÌ¾î ½ÃÁ¡ »óÅÂ -> VKeyDN
+//í”Œë ˆì´ì–´ ì‹œì  ìƒíƒœ -> VKeyDN
 void AMainCharacter::SetCameraMode(ECameraMode Type)
 {
 	CameraMode = Type;
@@ -422,15 +422,15 @@ void AMainCharacter::SetCameraMode(ECameraMode Type)
 		CameraTPS->Activate();
 		CameraFPS->Deactivate();
 
-		/* È¸Àü½Ã Ä«¸Ş¶ó¿¡¸¸ ¿µÇâ °¡µµ·Ï ¼³Á¤ */
+		/* íšŒì „ì‹œ ì¹´ë©”ë¼ì—ë§Œ ì˜í–¥ ê°€ë„ë¡ ì„¤ì • */
 		bUseControllerRotationPitch = false;
 		bUseControllerRotationRoll = false;
 		bUseControllerRotationYaw = true;
 		GetCharacterMovement()->bOrientRotationToMovement = false;
 
-		/* Character Mesh ¼³Á¤ */
-		FPMesh->SetHiddenInGame(true);  //1ÀÎÄª Mesh ¼û±è
-		//GetMesh()->SetHiddenInGame(false); //3ÀÎÄª Mesh ¾È¼û±è
+		/* Character Mesh ì„¤ì • */
+		FPMesh->SetHiddenInGame(true);  //1ì¸ì¹­ Mesh ìˆ¨ê¹€
+		//GetMesh()->SetHiddenInGame(false); //3ì¸ì¹­ Mesh ì•ˆìˆ¨ê¹€
 		GetMesh()->SetCastShadow(true);
 		GetMesh()->UnHideBoneByName(FName("spine_01")); //spine_02
 		ShadowMesh->SetHiddenInGame(true);
@@ -451,19 +451,19 @@ void AMainCharacter::SetCameraMode(ECameraMode Type)
 
 		bUseControllerRotationPitch = false;
 		bUseControllerRotationRoll = false;
-		//Ä«¸Ş¶óÀÇ YawÈ¸Àü¿¡ µû¶ó Ä³¸¯ÅÍÀÇ Yaw Mesh°¡ È¸ÀüÇÏµµ·Ï ÇÑ´Ù. ±×·¡¾ß µŞ°ÉÀ½, ÁÂ¿ì °Ô°ÉÀ½ÀÌ °¡´ÉÇÏ´Ù.
+		//ì¹´ë©”ë¼ì˜ YawíšŒì „ì— ë”°ë¼ ìºë¦­í„°ì˜ Yaw Meshê°€ íšŒì „í•˜ë„ë¡ í•œë‹¤. ê·¸ë˜ì•¼ ë’·ê±¸ìŒ, ì¢Œìš° ê²Œê±¸ìŒì´ ê°€ëŠ¥í•˜ë‹¤.
 		bUseControllerRotationYaw = true;
 
 		GetCharacterMovement()->bOrientRotationToMovement = false;
 
-		/*  Character Mesh ¼³Á¤ */
+		/*  Character Mesh ì„¤ì • */
 		FPMesh->SetHiddenInGame(false);
 		GetMesh()->HideBoneByName(FName("spine_01"), EPhysBodyOp::PBO_None);
 		ShadowMesh->SetHiddenInGame(false);
 		GetMesh()->SetCastShadow(false);
 
-		//bRenderInMainPass¸¦ false·Î ÇÏ°ÔµÇ¸é RenderingÀº µÇÁö ¾ÊÁö¸¸, Shadow´Â ·»´õ¸µ µÈ´Ù.
-		// ÀÌ°É »ç¿ëÇÏ·Á¸é Mesh°¡ ShowµÇ¾î¾ß ÇÑ´Ù. SetHiddenInGameÀ» True·Î ÇÏ¸é ¾ÈµÊ.	
+		//bRenderInMainPassë¥¼ falseë¡œ í•˜ê²Œë˜ë©´ Renderingì€ ë˜ì§€ ì•Šì§€ë§Œ, ShadowëŠ” ë Œë”ë§ ëœë‹¤.
+		// ì´ê±¸ ì‚¬ìš©í•˜ë ¤ë©´ Meshê°€ Showë˜ì–´ì•¼ í•œë‹¤. SetHiddenInGameì„ Trueë¡œ í•˜ë©´ ì•ˆë¨.	
 		//GetMesh()->SetRenderInMainPass(false);
 
 		if (bIsUsingCompass)
@@ -471,13 +471,13 @@ void AMainCharacter::SetCameraMode(ECameraMode Type)
 			MainController->ControlCoreUsableWidget(false);
 		}
 
-		//ÀåÂøÁßÀÎ Àåºñ¸¦ ¸ğµÎ hideÇÑ´Ù.
+		//ì¥ì°©ì¤‘ì¸ ì¥ë¹„ë¥¼ ëª¨ë‘ hideí•œë‹¤.
 		UCustomInventoryLibrary::HideAllEquipment(Equipment);
 
 	break;
 	}
 
-	/* ÀåÂø ¹«±â Mesh¿¡ ºÎÂø */
+	/* ì¥ì°© ë¬´ê¸° Meshì— ë¶€ì°© */
 	if (EquippedWeapon)
 	{
 		EquippedWeapon->GunAttachToMesh(this);
@@ -505,8 +505,8 @@ void AMainCharacter::SetAimMode(EAimMode Mode)
 		{
 			if (CameraMode == ECameraMode::ECM_TPS)
 			{
-				//TPS¸ğµå + Aim»óÅÂÀÏ¶§´Â Ä«¸Ş¶ó¸¦ »ìÂ¦ ¾ÕÀ¸·Î ¶¯°ÜÁØ´Ù.
-				//ÇöÀç SpringArmÀÇ ±æÀÌ¸¦ ÀúÀåÇÑ´Ù.
+				//TPSëª¨ë“œ + Aimìƒíƒœì¼ë•ŒëŠ” ì¹´ë©”ë¼ë¥¼ ì‚´ì§ ì•ìœ¼ë¡œ ë•¡ê²¨ì¤€ë‹¤.
+				//í˜„ì¬ SpringArmì˜ ê¸¸ì´ë¥¼ ì €ì¥í•œë‹¤.
 				/*BeforeCameraLength = CameraBoom->TargetArmLength;
 				CameraBoom->TargetArmLength = MINCameraLength + 20.f;
 				CameraTPS->SetRelativeLocation(TPSCam_Aim_Rel_Location);
@@ -520,7 +520,7 @@ void AMainCharacter::SetAimMode(EAimMode Mode)
 			}
 			else if (CameraMode == ECameraMode::ECM_FPS)
 			{
-				//idle anim¿¡ ÀÇÇØ SocketÀÇ WorldTF°ªÀÌ Æ²¾îÁö´Â°É ¹æÁöÇÏ±â À§ÇØ Á¤ÁöAnimÀ» Àç»ıÇÑ´Ù.
+				//idle animì— ì˜í•´ Socketì˜ WorldTFê°’ì´ í‹€ì–´ì§€ëŠ”ê±¸ ë°©ì§€í•˜ê¸° ìœ„í•´ ì •ì§€Animì„ ì¬ìƒí•œë‹¤.
 				if (EquippedWeapon->WeaponDataAsset->Animaton.FPS_ADS_Anim)
 				{
 					//below is using Blend.
@@ -544,7 +544,7 @@ void AMainCharacter::SetAimMode(EAimMode Mode)
 
 			if (CameraMode == ECameraMode::ECM_TPS)
 			{
-				//¶¯±ä Ä«¸Ş¶ó¸¦ ´Ù½Ã ¿øº¹ ½ÃÅ²´Ù.
+				//ë•¡ê¸´ ì¹´ë©”ë¼ë¥¼ ë‹¤ì‹œ ì›ë³µ ì‹œí‚¨ë‹¤.
 				/*float CurrentLength = CameraBoom->TargetArmLength;
 				float CameraLength = FMath::FInterpTo(CurrentLength, BeforeCameraLength, GetWorld()->GetDeltaSeconds(), 15.f);*/
 				/*CameraBoom->TargetArmLength = BeforeCameraLength;
@@ -596,12 +596,12 @@ void AMainCharacter::FPSADS()
 
 		FTransform LerpPos = UKismetMathLibrary::TLerp(OriginPos, ADSPos, ADSAlphaTime);
 
-		//FPMesh¸¦ ÇØ´ç Offset¸¸Å­ ÀÌµ¿, CameraÀÇ Áß¾Ó¿¡ ¿Àµµ·Ï ÇÑ´Ù.
+		//FPMeshë¥¼ í•´ë‹¹ Offsetë§Œí¼ ì´ë™, Cameraì˜ ì¤‘ì•™ì— ì˜¤ë„ë¡ í•œë‹¤.
 		FPMesh->SetRelativeTransform(LerpPos);//OffsetWithoutX);
 
 		},GetWorld()->GetDeltaSeconds(), true);
 
-	//¸ğµç ¼¼ÆÃÀÌ ³¡³ª¸é AnimMontage¸¦ ÇØÁ¦ÇØ¼­ Locomotion AnimÀ» ÀÌ¾î³ª°¡µµ·Ï ÇÑ´Ù.
+	//ëª¨ë“  ì„¸íŒ…ì´ ëë‚˜ë©´ AnimMontageë¥¼ í•´ì œí•´ì„œ Locomotion Animì„ ì´ì–´ë‚˜ê°€ë„ë¡ í•œë‹¤.
 	FPAnimInstance->StopAllMontages(0.f);
 	
 	//CameraFPS->SetWorldTransform(SightTransform);
@@ -637,12 +637,12 @@ FTransform AMainCharacter::GetFpsAdsPosition()
 
 	FTransform FPMeshWorld = FPMesh->GetComponentTransform();
 	
-	//EquippedWeapon¿¡¼­ SightSocketÀ» GetÇÏ´Â ÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
+	//EquippedWeaponì—ì„œ SightSocketì„ Getí•˜ëŠ” í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
 	FTransform SightTransform = EquippedWeapon->GetSightSocketTransform();
 
 
-	//SightSocket¿¡¼­  FPMeshÀÇ Relative TransformÀ» ±¸ÇÑ´Ù.
-	//ÀÌ·¸°Ô ±¸ÇÑ OffsetÀ» MeshÀÇ Transform¿¡ Àû¿ëÇÑ´Ù.
+	//SightSocketì—ì„œ  FPMeshì˜ Relative Transformì„ êµ¬í•œë‹¤.
+	//ì´ë ‡ê²Œ êµ¬í•œ Offsetì„ Meshì˜ Transformì— ì ìš©í•œë‹¤.
 
 	/**explain Make Relative Transform
 	 * Example: ChildOffset = MakeRelativeTransform(Child.GetActorTransform(), Parent.GetActorTransform())
@@ -650,8 +650,8 @@ FTransform AMainCharacter::GetFpsAdsPosition()
 	 */
 	FTransform Offset = FPMeshWorld.GetRelativeTransform(SightTransform);//.Inverse();
 
-	// WeaponÀÇ ClippingÀ» À§ÇÑ Trace¸¦ FPMeshÀÏ¶§ Aim, NotAimÀ» º¸¿ÏÇÏ±â À§ÇØ AimÀÏ¶§ Mesh¸¦ ¾ÕÀ¸·Î Á» ³ª°¡°Ô ÇÑ´Ù.
-	// (±âÁ¸ Aim¶§´Â FPMesh°¡ µÚ·Î µé¾î°¡¹ö·Á Clipping¹®Á¦°¡ ¾ÈÀÏ¾î ³µÀ½.)
+	// Weaponì˜ Clippingì„ ìœ„í•œ Traceë¥¼ FPMeshì¼ë•Œ Aim, NotAimì„ ë³´ì™„í•˜ê¸° ìœ„í•´ Aimì¼ë•Œ Meshë¥¼ ì•ìœ¼ë¡œ ì¢€ ë‚˜ê°€ê²Œ í•œë‹¤.
+	// (ê¸°ì¡´ Aimë•ŒëŠ” FPMeshê°€ ë’¤ë¡œ ë“¤ì–´ê°€ë²„ë ¤ Clippingë¬¸ì œê°€ ì•ˆì¼ì–´ ë‚¬ìŒ.)
 	FTransform OffsetWithoutX = FTransform(Offset.GetRotation(), FVector(-10.f, Offset.GetTranslation().Y, Offset.GetTranslation().Z));
 
 	return OffsetWithoutX;
@@ -712,11 +712,11 @@ void AMainCharacter::LerpCamera(UCameraComponent * VarFPScam, float TargetFOV)
 
 
 
-/****************************** ÀÌµ¿, ½ÃÁ¡ °ü·Ã Å° ¹ÙÀÎµå ***************************/
+/****************************** ì´ë™, ì‹œì  ê´€ë ¨ í‚¤ ë°”ì¸ë“œ ***************************/
 
 void AMainCharacter::TurnAtRate(float Rate)
 {
-	//¸Å deltaÃÊ ¸¶´Ù base rate¸¸Å­ È¸Àü
+	//ë§¤ deltaì´ˆ ë§ˆë‹¤ base rateë§Œí¼ íšŒì „
 	AddControllerYawInput(Rate * BaseTurnRate * GetWorld()->GetDeltaSeconds());
 }
 
@@ -731,14 +731,14 @@ void AMainCharacter::MoveForward(float Value)
 	if (MainController != NULL && Value != 0.f)
 	{
 		bMoveForward = true;
-		//¾î´À¹æÇâÀ¸·Î °¥Áö Ã£°í
+		//ì–´ëŠë°©í–¥ìœ¼ë¡œ ê°ˆì§€ ì°¾ê³ 
 		FRotator Rotation = MainController->GetControlRotation();
 		FRotator YawRotation = FRotator(0.f, Rotation.Yaw, 0.f);
 
-		// forwardº¤ÅÍ¸¦ ±¸ÇÑ´Ù.
+		// forwardë²¡í„°ë¥¼ êµ¬í•œë‹¤.
 		FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 
-		//±× ¹æÇâÀ¸·Î value¸¸Å­ °£´Ù.
+		//ê·¸ ë°©í–¥ìœ¼ë¡œ valueë§Œí¼ ê°„ë‹¤.
 		AddMovementInput(Direction, Value);
 		/*UE_LOG(LogTemp, Warning, TEXT("my  ForVec = %s"), *Direction.ToString());
 		UE_LOG(LogTemp, Warning, TEXT("Actor::ForVec = %s"), *GetActorForwardVector().ToString());*/
@@ -754,7 +754,7 @@ void AMainCharacter::MoveRight(float Value)
 		FRotator Rotation = MainController->GetControlRotation();
 		FRotator YawRotation = FRotator(0.f, Rotation.Yaw, 0.f);
 
-		//right º¤ÅÍ
+		//right ë²¡í„°
 		FVector Direction = FRotationMatrix(Rotation).GetUnitAxis(EAxis::Y);
 
 		AddMovementInput(Direction, Value);
@@ -770,7 +770,7 @@ void AMainCharacter::Sprint()
 	bIsCrouched ==false && bDisableInput == false && GetCharacterMovement()->IsFalling() == false && bIsAim == false )
 	{
 		bSprintKeyDown = true;
-		//Up Timer ÃÊ±âÈ­
+		//Up Timer ì´ˆê¸°í™”
 		GetWorldTimerManager().ClearTimer(T_SprintKeyUp);
 		GetWorldTimerManager().SetTimer(T_SprintKeyDown,[&]
 		{
@@ -783,7 +783,7 @@ void AMainCharacter::UnSprint()
 	if (GetWorldTimerManager().IsTimerActive(T_SprintKeyUp) == false)
 	{
 		bSprintKeyDown = false;
-		//Down Timer ÃÊ±âÈ­
+		//Down Timer ì´ˆê¸°í™”
 		GetWorldTimerManager().ClearTimer(T_SprintKeyDown);
 
 		GetWorldTimerManager().SetTimer(T_SprintKeyUp, [&]
@@ -839,7 +839,7 @@ void AMainCharacter::MyCrouch()
 
 void AMainCharacter::MyUnCrouch()
 {
-	//Crouch¸¦ Toggle·Î »ç¿ëÇÏÁö ¾ÊÀ»¶§¸¸ Key Release  bindÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
+	//Crouchë¥¼ Toggleë¡œ ì‚¬ìš©í•˜ì§€ ì•Šì„ë•Œë§Œ Key Release  bindí•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
 	if (bDisableInput == false)
 	{
 		if (bCrouchToggle == false && bIsCrouched)
@@ -861,7 +861,7 @@ void AMainCharacter::Walk()
 			UE_LOG(LogTemp, Warning, TEXT("Walk:: UnWalk"));
 			//SetMainCharacterStatus(EPlayerStatus::EPS_Normal);
 			SetCharacterStatus(ECharacterStatus::EPS_Normal);
-			//bIsWalking = false; -> Set enumÇÔ¼ö¿¡¼­ º¯°æÇØÁá´Ù.
+			//bIsWalking = false; -> Set enumí•¨ìˆ˜ì—ì„œ ë³€ê²½í•´ì¤¬ë‹¤.
 			return;
 		}
 
@@ -894,7 +894,7 @@ void AMainCharacter::ScrollDN()
 {
 	if (bDisableInput == false)
 	{
-		//TPS¸ğµåÀÏ °æ¿ì¿¡¸¸ ½ºÅ©·Ñ ´Ù¿î, ¾÷ÀÌ °¡´ÉÇÏµµ·Ï (Ä«¸Ş¶ó ¸Ö°Ô , °¡±îÀÌ)
+		//TPSëª¨ë“œì¼ ê²½ìš°ì—ë§Œ ìŠ¤í¬ë¡¤ ë‹¤ìš´, ì—…ì´ ê°€ëŠ¥í•˜ë„ë¡ (ì¹´ë©”ë¼ ë©€ê²Œ , ê°€ê¹Œì´)
 		if (CameraMode == ECameraMode::ECM_TPS)
 		{
 			if (CameraBoom->TargetArmLength <= MINCameraLength)
@@ -929,7 +929,7 @@ void AMainCharacter::VKeyDN()
 		{
 		case ECameraMode::ECM_TPS:
 			SetCameraMode(ECameraMode::ECM_FPS);
-			//vkeydownÀ¸·Î ½ÃÁ¡À» º¯°æÇß´Ù¸é, ±âÁ¸Aimmode¸¦ ±×´ë·Î ³Ö¾î Fps/Tps¸¦ ´Ù½Ã ¼¼ÆÃÇÑ´Ù.
+			//vkeydownìœ¼ë¡œ ì‹œì ì„ ë³€ê²½í–ˆë‹¤ë©´, ê¸°ì¡´Aimmodeë¥¼ ê·¸ëŒ€ë¡œ ë„£ì–´ Fps/Tpsë¥¼ ë‹¤ì‹œ ì„¸íŒ…í•œë‹¤.
 			SetAimMode(AimMode);
 			break;
 		case ECameraMode::ECM_FPS:
@@ -944,7 +944,7 @@ void AMainCharacter::VKeyDN()
 }
 
 
-/************** Interactive & Inventory Key bind ÇÔ¼ö ***********/
+/************** Interactive & Inventory Key bind í•¨ìˆ˜ ***********/
 void AMainCharacter::LMBDown()
 {
 	if (bDisableInput == false)
@@ -1042,7 +1042,7 @@ void AMainCharacter::EKeyDown()
 	}
 }
 
-/*******************************  Vehicle °ü·Ã ************************************************/
+/*******************************  Vehicle ê´€ë ¨ ************************************************/
 
 //void AMainCharacter::ToggleCar()
 //{
@@ -1059,12 +1059,12 @@ void AMainCharacter::EKeyDown()
 //
 //}
 
-/*************************  Weapon, Item °ü·Ã ***************************************************/
+/*************************  Weapon, Item ê´€ë ¨ ***************************************************/
 void AMainCharacter::PlayUseItemAnim(AItem* Item)
 {
 	Super::PlayUseItemAnim(Item);
 	
-	//FPMeshÀÇ Animµµ Àç»ıÇÑ´Ù.
+	//FPMeshì˜ Animë„ ì¬ìƒí•œë‹¤.
 	FPAnimInstance->Montage_Play(Item->ItemSetting.DataAsset->FPS_UseAnimMontage);
 		
 }
@@ -1075,7 +1075,7 @@ void AMainCharacter::StopUseItemAnim()
 	FPAnimInstance->Montage_Stop(0.f,nullptr);
 }
 
-//CameraMode¿¡ µû¶ó HoldingItemÀ» Attach½ÃÅ²´Ù.
+//CameraModeì— ë”°ë¼ HoldingItemì„ Attachì‹œí‚¨ë‹¤.
 void AMainCharacter::ReAttachHoldingItem()
 {
 	if(HoldingItem.IsValid() == false) return;
@@ -1102,7 +1102,7 @@ void AMainCharacter::ReAttachHoldingItem()
 	{
 		if (HandSocket->AttachActor(HoldingItem.Get(), OnMesh))
 		{
-			//Mesh¿¡ AttachÇß´Ù¸é, ItemÀÇ RelativeÀ§Ä¡,È¸Àü°ªÀ» º¯°æÇÑ´Ù.
+			//Meshì— Attachí–ˆë‹¤ë©´, Itemì˜ Relativeìœ„ì¹˜,íšŒì „ê°’ì„ ë³€ê²½í•œë‹¤.
 			HoldingItem->SetActorRelativeTransform(RelativeTF);
 		}
 	}
@@ -1112,7 +1112,7 @@ bool AMainCharacter::ChangeWeapon(int32 index)
 {
 	Super::ChangeWeapon(index);
 	
-	//FPMode +Shadow MeshÀÇ AnimUpdate¸¦ À§ÇØ °»½ÅÇÑ´Ù.
+	//FPMode +Shadow Meshì˜ AnimUpdateë¥¼ ìœ„í•´ ê°±ì‹ í•œë‹¤.
 	UMainAnimInstance* ShadowAnim = Cast<UMainAnimInstance>(ShadowMesh->GetAnimInstance());
 	check(ShadowAnim);
 	switch (index)
@@ -1151,14 +1151,14 @@ bool AMainCharacter::ChangeWeapon(int32 index)
 	return true;
 }
 
-/*************************  Interaction °ü·Ã ***************************************************/
+/*************************  Interaction ê´€ë ¨ ***************************************************/
 
-/* StaticÀ» °¨ÁöÇØ¼­ FHitResult¸¦ ¸®ÅÏ */
+/* Staticì„ ê°ì§€í•´ì„œ FHitResultë¥¼ ë¦¬í„´ */
 FHitResult AMainCharacter::InteractableLineTrace(const FVector& StartLo, const FVector& EndLo)
 {
 	FHitResult Hit;
 	FCollisionQueryParams Params;
-	FCollisionShape Shape = FCollisionShape::MakeCapsule(10.f, 10.f); //»ìÂ¦ ³Ğ°Ô ÇØ¼­ Å½Áö°¡ ½±°Ô Çß´Ù.
+	FCollisionShape Shape = FCollisionShape::MakeCapsule(10.f, 10.f); //ì‚´ì§ ë„“ê²Œ í•´ì„œ íƒì§€ê°€ ì‰½ê²Œ í–ˆë‹¤.
 	Params.AddIgnoredActor(this);
 
 	if (EquippedWeapon)
@@ -1170,7 +1170,7 @@ FHitResult AMainCharacter::InteractableLineTrace(const FVector& StartLo, const F
 		Params.AddIgnoredActor(HoldingItem.Get());
 	}
 
-	//SweepSingle·Î º¯°æ, Ä¸½¶ÇüÅÂÀÇ ¸ğ¾çÀ¸·Î LineTrace.	
+	//SweepSingleë¡œ ë³€ê²½, ìº¡ìŠí˜•íƒœì˜ ëª¨ì–‘ìœ¼ë¡œ LineTrace.	
 	GetWorld()->SweepSingleByChannel(Hit, StartLo, EndLo, FQuat::Identity, ECollisionChannel::ECC_WorldStatic, Shape, Params); 
 	
 	/* debug */
@@ -1190,7 +1190,7 @@ void AMainCharacter::SetInteractActor(AActor* Actor)
 	{
 		InterfaceActor->SetOutline();
 
-		//InteractActorÀÇ Static MeshÀÇ À§Ä¡¸¦ ±âÁØÀ¸·Î °Å¸®¸¦ ±¸ÇÑ´Ù.
+		//InteractActorì˜ Static Meshì˜ ìœ„ì¹˜ë¥¼ ê¸°ì¤€ìœ¼ë¡œ ê±°ë¦¬ë¥¼ êµ¬í•œë‹¤.
 		if((GetActorLocation() - InteractActor->GetActorLocation()).Size() <= ActiveInteractDistance)
 		{
 			MainController->ControlInteractText(true);

@@ -69,9 +69,9 @@ void UWeaponPartsWidget::RefreshWidget()
 
 
 /**
- * RefreshWidgetÀÌ È£ÃâµÉ¶§ ¸¶´Ù WeaponPDA¿¡ ÀÖ´Â Parts Á¤º¸¸¦ Åä´ë·Î
- * WeaponPartsWidgetÀÇ °¢ SlotÀ» °»½ÅÇÑ´Ù.
- * PartsObj°¡ nullptr·Î ³Ñ¾î¿ÔÀ» °æ¿ì¿£ ClearChildrenÀ¸·Î »èÁ¦¸¸ ÇÏ°í ¸®ÅÏÇÑ´Ù.
+ * RefreshWidgetì´ í˜¸ì¶œë ë•Œ ë§ˆë‹¤ WeaponPDAì— ìžˆëŠ” Parts ì •ë³´ë¥¼ í† ëŒ€ë¡œ
+ * WeaponPartsWidgetì˜ ê° Slotì„ ê°±ì‹ í•œë‹¤.
+ * PartsObjê°€ nullptrë¡œ ë„˜ì–´ì™”ì„ ê²½ìš°ì—” ClearChildrenìœ¼ë¡œ ì‚­ì œë§Œ í•˜ê³  ë¦¬í„´í•œë‹¤.
  */
 void UWeaponPartsWidget::UpdatePartsSlotWidget(UEquipmentSlot* PartsSlot, UNewItemObject* PartsObj)
 {
@@ -98,7 +98,7 @@ void UWeaponPartsWidget::UpdatePartsSlotWidget(UEquipmentSlot* PartsSlot, UNewIt
 
 
 /************************************************************************/
-/*                      ¾Æ·¡´Â »èÁ¦ ¿¹Á¤                                 */
+/*                      ì•„ëž˜ëŠ” ì‚­ì œ ì˜ˆì •                                 */
 /************************************************************************/ 
   
  /*
@@ -176,7 +176,7 @@ void UWeaponPartsWidget::RemoveWeaponParts(UNewItemObject* PartsObj)
 */
 
 //OldVersion
-/* EquipmentSlot¿¡¼­ Data°¡ Insert, DeleteµÉ¶§ ¸¶´Ù È£ÃâµÈ´Ù. */
+/* EquipmentSlotì—ì„œ Dataê°€ Insert, Deleteë ë•Œ ë§ˆë‹¤ í˜¸ì¶œëœë‹¤. */
 /*
 void UWeaponPartsWidget::RefreshWidget()
 {
@@ -218,7 +218,7 @@ void UWeaponPartsWidget::RefreshWidget()
 			}
 		}
 
-		//LiveÇÑ, Spawned ItemÀÌ¸é WeaponClassÀÇ ÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
+		//Liveí•œ, Spawned Itemì´ë©´ WeaponClassì˜ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
 		if (WeaponObj->bIsDestoryed == false)
 		{
 			Cast<AWeapon>(WeaponObj->Equipment)->CheckWeaponParts();

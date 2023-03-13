@@ -17,13 +17,17 @@ UCLASS()
 class OPENWORLDRPG_API UWeaponPartsManagerObject : public UObject
 {
 	GENERATED_BODY()
+
+private:
+    TWeakObjectPtr<class AWeapon> OwnerWeapon;
+
 public:
 
-	//WeaponPartsWidget°ú Weapon class¿¡¼­ BindÇÑ´Ù. -> 2°³ ÇÔ¼ö¿Í bind
+	//WeaponPartsWidgetê³¼ Weapon classì—ì„œ Bindí•œë‹¤. -> 2ê°œ í•¨ìˆ˜ì™€ bind
 	FOnChangeParts OnChangeParts;
 
-	UPROPERTY()
-	class AWeapon* OwnerWeapon;
+	
+	
 	
 	TWeakObjectPtr<class UNewItemObject> MuzzleParts;
 	TWeakObjectPtr<UNewItemObject> ScopeParts;
@@ -39,13 +43,16 @@ private:
 	const FName TacticalSocketName = TEXT("TacticalParts");
 
 public:
-	
+
+    void SetOwnerWeapon(AWeapon* Weapon);
+    AWeapon* GetOwnerWeapon();
+
 	/*void SetParts(UNewItemObject* SetPartsObj);
 	void RemoveParts(UNewItemObject* RemovePartsObj);*/
 
 	void UpdateParts(UWorld* World, AWeapon* VarWeapon);
 
-	/* WeaponÀÌ InventoryGrid·Î µé¾î°¥¶§(Destroy µÉ¶§) °°ÀÌ È£ÃâÇØ PartsµéÀ» DestoryÇÑ´Ù. */
+	/* Weaponì´ InventoryGridë¡œ ë“¤ì–´ê°ˆë•Œ(Destroy ë ë•Œ) ê°™ì´ í˜¸ì¶œí•´ Partsë“¤ì„ Destoryí•œë‹¤. */
 	void DestroyAllAttachParts(AWeapon* VarWeapon);
 
 
@@ -55,7 +62,7 @@ public:
 	AEquipment* GetWeaponParts(EWeaponPartsType PartsWantToGet);
 
 private:
-	/* WeaponÀÌ EquipµÉ ¶§(SpawnµÉ¶§) ºÎÂøµÈ Partsµéµµ ½ºÆùÇÑ´Ù.*/
+	/* Weaponì´ Equipë  ë•Œ(Spawnë ë•Œ) ë¶€ì°©ëœ Partsë“¤ë„ ìŠ¤í°í•œë‹¤.*/
 	void SpawnAndAttachParts(UWorld* World, UNewItemObject* PartsObj, EWeaponPartsType VarPartsType);//AWeapon* VarWeapon);
 	
 	void DeleteLink(UNewItemObject* PartsObj);
