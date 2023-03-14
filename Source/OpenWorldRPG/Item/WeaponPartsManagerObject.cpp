@@ -57,7 +57,7 @@ void UWeaponPartsManagerObject::AddParts(UNewItemObject* Parts)
 			break;
 		}
 
-		//추가할 수 있다면, 기존에 존재했던곳에서 remove한뒤 이 ManagerObj를 추가시킨다.
+		//추가할 수 있다면, 기존에 존재했던곳에서 remove한뒤 이 ManagerObj를 추가한다.
 		if ( bIsSuccess )
 		{
 			DeleteLink(Parts);
@@ -133,7 +133,8 @@ void UWeaponPartsManagerObject::DeleteLink(UNewItemObject* PartsObj)
 
 
 
-/*WeaponPDA의 각 Parts는 nullptr또는 data를 갖고 있을 수 있다.
+
+/*WeaponPDA의 각 파츠는 null또는 data를 갖고이 ㅆ을 수 있다.
 *
 * 이 UpdateParts 함수는 WeaponPDA의 Parts들이 null이나 Data를 받았을때 마다 호출된다.
 * 따라서, 이 함수가 호출 될 때마다
