@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -23,7 +23,7 @@ private:
 
 public:
 
-	//WeaponPartsWidget怨?Weapon class?? Bind??? -> 2媛 ?⑥? bind
+	//WeaponPartsWidget과 Weapon class에서 Bind한다. -> 2개 함수와 bind
 	FOnChangeParts OnChangeParts;
 
 	
@@ -52,7 +52,7 @@ public:
 
 	void UpdateParts(UWorld* World, AWeapon* VarWeapon);
 
-	/* Weapon??InventoryGrid濡 ?ㅼ닿??(Destroy ??) 媛???몄???Parts?ㅼ Destory??? */
+	/* Weapon이 InventoryGrid로 들어갈때(Destroy 될때) 같이 호출해 Parts들을 Destory한다. */
 	void DestroyAllAttachParts(AWeapon* VarWeapon);
 
 
@@ -62,7 +62,7 @@ public:
 	AEquipment* GetWeaponParts(EWeaponPartsType PartsWantToGet);
 
 private:
-	/* Weapon??Equip? ?(Spawn??) 遺李⑸ Parts?ㅻ ?ㅽ고??*/
+	/* Weapon이 Equip될 때(Spawn될때) 부착된 Parts들도 스폰한다.*/
 	void SpawnAndAttachParts(UWorld* World, UNewItemObject* PartsObj, EWeaponPartsType VarPartsType);//AWeapon* VarWeapon);
 	
 	void DeleteLink(UNewItemObject* PartsObj);

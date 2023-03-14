@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -25,42 +25,42 @@ public:
 
 	static UNewItemObject* CreateObject(FItemSetting ItemStruct, bool& bIsCreated);
 
-	/*ItemObj瑜??댁⑺?Item class瑜?Spawn???*/
+	/*ItemObj를 이용해 Item class를 Spawn한다.*/
 	static AItem* SpawnItem(UWorld* World, UNewItemObject* ItemObj);
 
-	/*ItemObj瑜??댁⑺?Equipment Class瑜?Spawn???/
+	/*ItemObj를 이용해 Equipment Class를 Spawn한다*/
 	static AEquipment* SpawnEquipment(UWorld* World, UNewItemObject* ItemObj);
 	
-	/*ItemObj瑜??댁⑺?Equipment Class瑜?Spawn???/
+	/*ItemObj를 이용해 Equipment Class를 Spawn한다*/
 	static ABaseGrenade* SpawnGrenade(UWorld* World, UNewItemObject* ItemObj);
 
 
-	/*PDA瑜??댁⑺?Item class瑜?Spawn???*/
+	/*PDA를 이용해 Item class를 Spawn한다.*/
 	static AItem* SpawnItem(UWorld* World, UBasePDA* ItemDA);
 
-	/*PDA瑜??댁⑺?Equipment Class瑜?Spawn???*/
+	/*PDA를 이용해 Equipment Class를 Spawn한다 */
 	static AEquipment* SpawnEquipment(UWorld* World, UCustomPDA* EquipDA);
 
 
 	/*  */
 	static void GenerateRandomCount(UNewItemObject* ItemObj);
 
-	/* Weapon? ??명 ?μ갑以??紐⑤ Equipment瑜?Hide???*/
+	/* Weapon을 제외한 장착중인 모든 Equipment를 Hide한다.*/
 	static void HideAllEquipment(UEquipmentComponent* EComp);
 
-	/* ?μ갑以??紐⑤ Equipment瑜?Show???*/
+	/* 장착중인 모든 Equipment를 Show한다.*/
 	static void ShowAllEquipment(UEquipmentComponent* EComp);
 
-    /** Weapon??? Item??異媛?嫄곕, ?μ갑??
-     * 湲곗〈 Actor?? ??깅怨 愿由щ? WPM? Obj? ?ｌ댁?? 媛깆?댁???
-     * @Weapon - ?μ갑?嫄곕 Inventory? 異媛? Weapon Actor
-     * @Obj - ?μ갑?嫄곕 Inventory? 異媛?? ??깅? Object
+    /** Weapon형태의 Item이 추가되거나, 장착될때
+     * 기존 Actor에서 생성되고 관리되던 WPM을 Obj에 넣어줘서 갱신해준다.
+     * @Weapon - 장착하거나 Inventory에 추가될 Weapon Actor
+     * @Obj - 장착하거나 Inventory에 추가될때 생성되는 Object
      */
     
     static void SetWeaponPartsManager(AWeapon* Weapon, UNewItemObject* Obj);
 
 
-	/// ?댄 ?ъ⑺吏 ?? ?⑥??
+	/// 이하 사용하지 않는 함수들
 	static void BackToItem(UNewItemObject* ItemObj);
 	static void DirectInToInventory(UNewItemObject* ItemObj, ABaseCharacter* BChar);
 };

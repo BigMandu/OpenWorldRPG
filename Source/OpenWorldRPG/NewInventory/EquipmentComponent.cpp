@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "OpenWorldRPG/NewInventory/EquipmentComponent.h"
@@ -25,25 +25,24 @@ UEquipmentComponent::UEquipmentComponent()
 // Called when the game starts
 void UEquipmentComponent::BeginPlay()
 {
-	Super::BeginPlay();	
+	Super::BeginPlay();
 }
 
 bool UEquipmentComponent::AddEquipment(AEquipment* Equip)
 {
-	
+
 	UE_LOG(LogTemp, Warning, TEXT("EquipComp : AddEquip"));
 	bool bAlreadyHave = false;
 	bool bReturn = false;
-	
+
 	/*
 	if (Equip)
 	{
-		//if (Equip->OwningInventory != nullptr) //?紐源?醫?????? Weapon???,
+		//if (Equip->OwningInventory != nullptr) //인벤토리에 있던 Weapon이면,
 		//{
-		//	Equip->OwningInventory->RemoveItem(Cast<AItem>(this)); //?紐源?醫??癒苑 筌??????
+		//	Equip->OwningInventory->RemoveItem(Cast<AItem>(this)); //인벤토리에서 지워준다.
 		//}
-
-		// ?????Equip????? ???筌? ?類ㅼ???. Swap??곕르 AddEquip????由???揆??
+		// 동일한 Equip이 이미 있는지 확인한다. Swap일때 AddEquip을 하기 때문에
 		for(auto& EquippedItem : EquipmentItems)
 		{
 			if(EquippedItem == Equip)
@@ -52,15 +51,13 @@ bool UEquipmentComponent::AddEquipment(AEquipment* Equip)
 				break;
 			}
 		}
-
-		// ????Equip????용筌??곕떽???沅?? 
+		// 동일 Equip이 없다면 추가시킨다.
 		if (bAlreadyHave == false)
 		{
 			Equip->OwningEquipment = this;
 			EquipmentItems.Add(Equip);
-			Equip->SKMesh->SetHiddenInGame(false); //?袁⑸嚥???紐?猿??
-
-			//Backpack, Vest???關媛 ??????類ㅼ???.
+			Equip->SKMesh->SetHiddenInGame(false); //임시로 해둔것임.
+			//Backpack, Vest의 장착 여부를 확인한다.
 			if(Equip->EquipmentType == EEquipmentType::EET_Backpack)
 			{
 				bHasBackpack = true;
@@ -71,11 +68,9 @@ bool UEquipmentComponent::AddEquipment(AEquipment* Equip)
 			}
 			bReturn = true;
 		}
-		//EquipWidget::RefreshEquipWidget??bind??沅?
+		//EquipWidget::RefreshEquipWidget과 bind시킴.
 		OnEquipmentUpdated.Broadcast();
-
 		UE_LOG(LogTemp, Warning, TEXT("EquipComp : AddSuccess"));
-
 	}*/
 	return bReturn;
 }
@@ -84,12 +79,12 @@ bool UEquipmentComponent::AddEquipment(AEquipment* Equip)
 
 bool UEquipmentComponent::RemoveEquipment(AEquipment* Equip)
 {
-	if (Equip)
+	if ( Equip )
 	{
 		/*
-		* EquipSlot::Ondrop?癒苑 疫꿸?? SpawnActor???룐???癰?野?留???怨??
-		* RemoveSingle??肉 揶?? ??苡???
-		* ?怨???remove??癰?野?鍮??곕?.
+		* EquipSlot::Ondrop에서 기존 SpawnActor의 루틴이 변경됨에 따라
+		* RemoveSingle시에 같지 않게 됨.
+		* 따라서 remove를 변경해야됨.
 		*/
 		//if (Equip->EquipmentType == EEquipmentType::EET_Backpack)
 		{
@@ -104,19 +99,16 @@ bool UEquipmentComponent::RemoveEquipment(AEquipment* Equip)
 		AEquipment* InnerEquipment = GetEquippedWeaponSameType(Equip->EquipmentType);
 		if (InnerEquipment)
 		{
-			//??已???袁㏉??苑 揶?? ??已??揶戮???? 揶?밴???EquipmentItems Array?癒苑 ???????
-			// Equip Object??Destory?????
+			//이름을 비교해서 같은 이름을 갖고있는 객체를 EquipmentItems Array에서 삭제하고
+			// Equip Object를 Destory해준다.
 			//if (InnerEquipment->ItemName.EqualTo(Equip->ItemName))
 			{
 				EquipmentItems.RemoveSingle(InnerEquipment);
-
 				Equip->OwningPlayer = nullptr;
 				InnerEquipment->OwningPlayer = nullptr;
 				Equip->Destroy();
 				InnerEquipment->Destroy();
-
 				OnEquipmentUpdated.Broadcast();
-
 				return true;
 			}
 		}*/
@@ -130,14 +122,13 @@ bool UEquipmentComponent::RemoveEquipment(AEquipment* Equip)
 /*
 AEquipment* UEquipmentComponent::GetEquippedWeaponSameType(EEquipmentType EquipType, AEquipment* Equip, ERifleSlot RifleSlot)
 {
-
 	for (auto& EquipItem : EquipmentItems)
 	{
 		AEquipment* Equipped = Cast<AEquipment>(EquipItem);
 		if (Equipped)
 		{
-			//Rifle??野????RiffleAssign??癰?욱?揶??紐???
-			//Rifle ??????野???Primary Rifle, Sub Rifle ???野?筌??類ｋ┷??????????由???揆??
+			//Rifle인 경우에 RiffleAssign을 보고 가져온다.
+			//Rifle 타입인 경우 Primary Rifle, Sub Rifle 이렇게 지정되어 있을 수 있기 때문임.
 			if ((EquipType == EEquipmentType::EET_Rifle || (Equip != nullptr && Equip->EquipmentType == EEquipmentType::EET_Rifle)
 				&& RifleSlot != ERifleSlot::ERS_MAX))
 			{
@@ -152,7 +143,7 @@ AEquipment* UEquipmentComponent::GetEquippedWeaponSameType(EEquipmentType EquipT
 			}
 			else
 			{
-				//World????쎈？??Equipment??野?????留 ??????.
+				//World에 스폰된 Equipment인 경우 여길 사용한다.
 				if (Equip != nullptr && EquipType == EEquipmentType::EET_MAX)
 				{
 					if (Equipped->EquipmentType == Equip->EquipmentType)
@@ -160,7 +151,7 @@ AEquipment* UEquipmentComponent::GetEquippedWeaponSameType(EEquipmentType EquipT
 						return Equipped;
 					}
 				}
-				else //Equip??? EquipType??곗?筌???爰쇌빳????
+				else //Equip없이 EquipType으로만 넘겨줬을때
 				{
 					if (Equipped->EquipmentType == EquipType)
 					{
@@ -200,7 +191,7 @@ bool UEquipmentComponent::SwapEquipment(AEquipment* Before, AEquipment* Next)
 
 UNewItemObject* UEquipmentComponent::GetEquipStorage(EEquipmentType Type)
 {
-	switch (Type)
+	switch ( Type )
 	{
 	case EEquipmentType::EET_Backpack:
 		return BackpackObj;
@@ -219,56 +210,56 @@ bool UEquipmentComponent::AddEquipment(FItemSetting ItemSetting, AEquipment* Wan
 
 	UNewItemObject* EquipObj = nullptr;
 
-	//Equip??ItemObj揶? ??용筌???밴쉐?????
-	if (WantToEquip->ItemObj == nullptr)
+	//Equip의 ItemObj가 없다면 생성해준다.
+	if ( WantToEquip->ItemObj == nullptr )
 	{
 		EquipObj = UCustomInventoryLibrary::CreateObject(ItemSetting, bCreated); //CreateObject(ItemSetting, bCreated);
-		if (bCreated == false) return false;
-		//??밴쉐??援??醫????.
+		if ( bCreated == false ) return false;
+		//생성한걸 할당한다.
 		WantToEquip->ItemObj = EquipObj;
 	}
 	else
 	{
 		EquipObj = WantToEquip->ItemObj;
 	}
-	
+
 	UCustomPDA* CPDA = Cast<UCustomPDA>(EquipObj->ItemInfo.DataAsset);
 
-	if (EquipObj && CPDA)
-	{		
+	if ( EquipObj && CPDA )
+	{
 		//Equip->OwningEquipment = this;
-		if (EquipObj->MotherStorage)
+		if ( EquipObj->MotherStorage )
 		{
 			EquipObj->MotherStorage->RemoveItem(EquipObj);
 			EquipObj->MotherStorage = nullptr;
 		}
-		else if (EquipObj->MotherEquipComp)
+		else if ( EquipObj->MotherEquipComp )
 		{
 			EquipObj->MotherEquipComp->RemoveEquipment(EquipObj);
 			EquipObj->MotherEquipComp = nullptr;
 		}
 
-		//?關媛?醫釉???얜?椰?ItemRotate??false??沅??
+		//장착할때는 무조건 ItemRotate를 false시킨다.
 		EquipObj->bTempRotate = false;
 		EquipObj->bRotated = false;
 
 		EquipObj->Equipment = WantToEquip;
 		EquipObj->MotherEquipComp = this;
 
-		//RifleType??? RifleAssign??????鍮餓Β?? //for QuickSlot & EquipWidget
-		if (CPDA->EquipmentType == EEquipmentType::EET_Rifle || CPDA->EquipmentType == EEquipmentType::EET_Pistol)
-		{	
+		//RifleType이면 RifleAssign을 대입해준다. //for QuickSlot & EquipWidget
+		if ( CPDA->EquipmentType == EEquipmentType::EET_Rifle || CPDA->EquipmentType == EEquipmentType::EET_Pistol )
+		{
 			EquipObj->RifleAssign = Cast<AWeapon>(WantToEquip)->RifleAssign;
 			//SetWeaponPartsManager(WantToEquip, EquipObj);
 			OnWeaponSetSlot.Broadcast(EquipObj);
 		}
-		
-		//Backpack, Vest???關媛 ??????類ㅼ???., Enum Range iter???袁る? Obj?????館鍮?遺얜.
-		if(CPDA->EquipmentType == EEquipmentType::EET_Backpack)
+
+		//Backpack, Vest의 장착 여부를 확인한다., Enum Range iter를 위해 Obj를 저장해둔다.
+		if ( CPDA->EquipmentType == EEquipmentType::EET_Backpack )
 		{
 			BackpackObj = EquipObj;
 		}
-		else if(CPDA->EquipmentType == EEquipmentType::EET_Vest)
+		else if ( CPDA->EquipmentType == EEquipmentType::EET_Vest )
 		{
 			VestObj = EquipObj;
 		}
@@ -276,9 +267,9 @@ bool UEquipmentComponent::AddEquipment(FItemSetting ItemSetting, AEquipment* Wan
 		EquipmentItems.Add(EquipObj);
 
 		bReturn = true;
-		
 
-		//EquipWidget::RefreshEquipWidget??bind?????
+
+		//EquipWidget::RefreshEquipWidget과 bind시켰음.
 		OnEquipmentUpdated.Broadcast();
 		UE_LOG(LogTemp, Warning, TEXT("EquipComp : AddSuccess"));
 
@@ -288,50 +279,50 @@ bool UEquipmentComponent::AddEquipment(FItemSetting ItemSetting, AEquipment* Wan
 
 bool UEquipmentComponent::RemoveEquipment(UNewItemObject* EquipObj)
 {
-	if (EquipObj)
+	if ( EquipObj )
 	{
-		/* EquipSlot::Ondrop?癒苑 疫꿸?? SpawnActor???룐???癰?野?留???怨??
-		 * RemoveSingle??肉 揶?? ??苡???
-		 * ?怨???remove??癰?野?鍮??곕?.
+		/* EquipSlot::Ondrop에서 기존 SpawnActor의 루틴이 변경됨에 따라
+		 * RemoveSingle시에 같지 않게 됨.
+		 * 따라서 remove를 변경해야됨.
 		 */
 
 		UCustomPDA* OuterCPDA = Cast<UCustomPDA>(EquipObj->ItemInfo.DataAsset);
 		UNewItemObject* InnerEquipment = GetEquippedWeaponSameType(OuterCPDA->EquipmentType, EquipObj);// ->ItemInfo);
 
-		if (InnerEquipment)
+		if ( InnerEquipment )
 		{
 			UCustomPDA* InnerCPDA = Cast<UCustomPDA>(InnerEquipment->ItemInfo.DataAsset);
-			//??已???袁㏉??苑 揶?? ??已??揶戮???? 揶?밴???EquipmentItems Array?癒苑 ???????
-			// Equip Object??Destory?????
+			//이름을 비교해서 같은 이름을 갖고있는 객체를 EquipmentItems Array에서 삭제하고
+			// Equip Object를 Destory해준다.
 
-			if (InnerCPDA->ItemName.EqualTo(OuterCPDA->ItemName))
+			if ( InnerCPDA->ItemName.EqualTo(OuterCPDA->ItemName) )
 			{
-				//BackPack,Vest??野???Set??Obj???醫?餓Β??
-				if (InnerCPDA->EquipmentType == EEquipmentType::EET_Backpack)
+				//BackPack,Vest의 경우 Set한 Obj를 날려준다.
+				if ( InnerCPDA->EquipmentType == EEquipmentType::EET_Backpack )
 				{
-					BackpackObj = nullptr;			
+					BackpackObj = nullptr;
 				}
-				else if (InnerCPDA->EquipmentType == EEquipmentType::EET_Vest)
+				else if ( InnerCPDA->EquipmentType == EEquipmentType::EET_Vest )
 				{
 					VestObj = nullptr;
 				}
 
 				//for QuickSlot
-				if (InnerCPDA->EquipmentType == EEquipmentType::EET_Rifle || InnerCPDA->EquipmentType == EEquipmentType::EET_Pistol)
+				if ( InnerCPDA->EquipmentType == EEquipmentType::EET_Rifle || InnerCPDA->EquipmentType == EEquipmentType::EET_Pistol )
 				{
 					OnWeaponRemoveSlot.Broadcast(EquipObj->RifleAssign);
 					EquipObj->RifleAssign = ERifleSlot::ERS_MAX;
-					
+
 				}
 
 				EquipmentItems.RemoveSingle(InnerEquipment);
 
-				if (EquipObj->SettedSlot)
+				if ( EquipObj->SettedSlot )
 				{
-					EquipObj->RemoveLinkSlot();				
+					EquipObj->RemoveLinkSlot();
 				}
 
-				//Weapon::Remove?癒苑 OwningPlayer???????由???揆????苑?????野????.
+				//Weapon::Remove에서 OwningPlayer를 사용하기 때문에 순서는 이렇게 한다.
 				EquipObj->Equipment->Remove();
 				/*EquipObj->Equipment->OwningPlayer = nullptr;
 				EquipObj->Equipment->Destroy();*/
@@ -345,55 +336,55 @@ bool UEquipmentComponent::RemoveEquipment(UNewItemObject* EquipObj)
 	return false;
 }
 
-/* EqiupType ?癒? Obj?? 揶?? Type??EquipObj???귐苑???.
+/* EqiupType 또는 Obj와 같은 Type의 EquipObj를 리턴한다.
 */
 UNewItemObject* UEquipmentComponent::GetEquippedWeaponSameType(EEquipmentType EquipType, UNewItemObject* Object, ERifleSlot RifleSlot)
 {
-	for (auto& Equipped : EquipmentItems)
+	for ( auto& Equipped : EquipmentItems )
 	{
-		if (Equipped)
+		if ( Equipped )
 		{
 			UCustomPDA* CPDA = Cast<UCustomPDA>(Equipped->ItemInfo.DataAsset);
 			UCustomPDA* ObjCPDA = Cast<UCustomPDA>(Object->ItemInfo.DataAsset);
-			
-			if(!CPDA || !ObjCPDA) continue;
+
+			if ( !CPDA || !ObjCPDA ) continue;
 
 
-			//Rifle??野????RiffleAssign??癰?욱?揶??紐??? ?癒? ItemSetting??Type??Rifle?????Rifle Slot??筌??類ｋ? 野???
-			//Rifle ??????野???Primary Rifle, Sub Rifle ???野?筌??類ｋ┷??????????由???揆??
-			if (EquipType == EEquipmentType::EET_Rifle)
+			//Rifle인 경우에 RiffleAssign을 보고 가져온다. 또는 ItemSetting의 Type이 Rifle이면서 Rifle Slot이 지정된 경우.
+			//Rifle 타입인 경우 Primary Rifle, Sub Rifle 이렇게 지정되어 있을 수 있기 때문임.
+			if ( EquipType == EEquipmentType::EET_Rifle )
 			{
-				
-				if (CPDA && CPDA->EquipmentType != EEquipmentType::EET_Rifle) continue;
 
-				if (Object != nullptr && ObjCPDA && ObjCPDA->EquipmentType == EEquipmentType::EET_Rifle)
+				if ( CPDA && CPDA->EquipmentType != EEquipmentType::EET_Rifle ) continue;
+
+				if ( Object != nullptr && ObjCPDA && ObjCPDA->EquipmentType == EEquipmentType::EET_Rifle )
 				{
-					if (Equipped->RifleAssign == Object->RifleAssign)
+					if ( Equipped->RifleAssign == Object->RifleAssign )
 					{
 						return Equipped;
 					}
 				}
-				else if(RifleSlot != ERifleSlot::ERS_MAX)
+				else if ( RifleSlot != ERifleSlot::ERS_MAX )
 				{
-					if (Equipped->RifleAssign == RifleSlot)
+					if ( Equipped->RifleAssign == RifleSlot )
 					{
 						return Equipped;
 					}
-				}				
+				}
 			}
 			else
 			{
-				//World????쎈？??Equipment??野?????留 ??????.
-				if (EquipType == EEquipmentType::EET_MAX && CPDA)
+				//World에 스폰된 Equipment인 경우 여길 사용한다.
+				if ( EquipType == EEquipmentType::EET_MAX && CPDA )
 				{
-					if (Object != nullptr && CPDA->EquipmentType == ObjCPDA->EquipmentType)
+					if ( Object != nullptr && CPDA->EquipmentType == ObjCPDA->EquipmentType )
 					{
 						return Equipped;
 					}
 				}
-				else //Equip??? EquipType??곗?筌???爰쇌빳????
+				else //Equip없이 EquipType으로만 넘겨줬을때
 				{
-					if (CPDA->EquipmentType == EquipType)
+					if ( CPDA->EquipmentType == EquipType )
 					{
 						return Equipped;
 					}
@@ -406,48 +397,47 @@ UNewItemObject* UEquipmentComponent::GetEquippedWeaponSameType(EEquipmentType Eq
 
 bool UEquipmentComponent::IsSameTypeExist(AEquipment* Equip, ERifleSlot RifleSlot)
 {
-	
+
 	int32 RifleCnt = 0;
 
-	for (auto& Equipped : EquipmentItems)
+	for ( auto& Equipped : EquipmentItems )
 	{
-		if (Equipped)
+		if ( Equipped )
 		{
 			UCustomPDA* Var_CPDA = Cast<UCustomPDA>(Equip->ItemSetting.DataAsset);
 			UCustomPDA* Inner_CPDA = Cast<UCustomPDA>(Equipped->ItemInfo.DataAsset);
 
-			//?關媛?????EquipType??Weapon??욱??關媛??Type??Weapon??野?????以 ?袁㏉???.
-			if (Inner_CPDA->EquipmentType == EEquipmentType::EET_Rifle && Var_CPDA->EquipmentType == EEquipmentType::EET_Rifle)
+			//장착하려는 EquipType이 Weapon이고 장착된 Type이 Weapon인 경우 서로 비교한다.
+			if ( Inner_CPDA->EquipmentType == EEquipmentType::EET_Rifle && Var_CPDA->EquipmentType == EEquipmentType::EET_Rifle )
 			{
 
-				//Rifle Slot??筌??類ｋ┷筌? ??? 野???(WorldSpawn ?怨밴묶) 燁삳??????.
-				//Rifle Type?? 2揶??댐?? ??????.
-				if (RifleSlot == ERifleSlot::ERS_MAX)
+				//Rifle Slot이 지정되지 않은 경우 (WorldSpawn 상태) 카운트 한다.
+				//Rifle Type은 2개까지 허용된다.
+				if ( RifleSlot == ERifleSlot::ERS_MAX )
 				{
 					RifleCnt++;
 				}
-				//Rifle Slot??筌??類ｋ? 野???Rifle??筌??類ｋ? ???????????野????筌? ?類ㅼ???.
+				//Rifle Slot이 지정된 경우 Rifle이 지정된 슬롯에 해당하는게 있는지 확인한다.
 				else
 				{
-					if (Equipped->RifleAssign == RifleSlot)
+					if ( Equipped->RifleAssign == RifleSlot )
 					{
 						return true;
 					}
 				}
 			}
-			else if(Inner_CPDA->EquipmentType == Var_CPDA->EquipmentType) //???よ?紐
-苑?Weapon??Type????? ???筌?true
+			else if ( Inner_CPDA->EquipmentType == Var_CPDA->EquipmentType ) //파라미터 Weapon의 Type이 이미 있으면 true
 			{
 				return true;
 			}
 
-			if (RifleCnt >= 2) //RifleType???얜용┛揶? 2揶???怨몄?野???true
+			if ( RifleCnt >= 2 ) //RifleType의 무기가 2개이상일 경우 true
 			{
 				return true;
 			}
 		}
 	}
-	//???筌?false?귐苑?
+	//없으면 false리턴
 	return false;
 }
 
@@ -456,7 +446,7 @@ bool UEquipmentComponent::IsSameTypeExist(AEquipment* Equip, ERifleSlot RifleSlo
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//Weapon????? WPM??Obj??WPM??????鍮??揶源??????
+//Weapon에 있는 WPM을 Obj의 WPM에 대입해서 갱신해준다.
 //void UEquipmentComponent::SetWeaponPartsManager(AEquipment* WantToEquip, UNewItemObject* WeaponObj)
 //{
 //	if (UWeaponPDA* WeaponPDA = Cast<UWeaponPDA>(WeaponObj->ItemInfo.DataAsset))

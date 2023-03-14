@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "MainCharacter.h"
@@ -39,32 +39,26 @@
 
 #include "Components/CapsuleComponent.h"
 
-#include "DrawDebugHelpers.h" //?踰源
-??
+#include "DrawDebugHelpers.h" //디버깅용
 
 
 // Sets default values
 AMainCharacter::AMainCharacter() : Super()
 {
-	GetCharacterMovement()->bOrientRotationToMovement = true; //?吏??諛⑺?= 吏?諛⑺μ쇰? ?ㅼ
+	GetCharacterMovement()->bOrientRotationToMovement = true; //움직인 방향 = 진행방향으로 설정
 	/********** Input ***********/
 	bDisableInput = false;
 
-	bCrouchToggle = true; //?
-?щ━湲???Toggle? true濡 湲곕낯?명
- ???
-	bWalkToggle = true; //嫄룰린 ??Toggle? true濡 ?명
-???
-	bAimToggle = true; //議곗??ㅻ? toggel true?명
-.
+	bCrouchToggle = true; //웅크리기 키 Toggle을 true로 기본세팅 한다.
+	bWalkToggle = true; //걷기 키 Toggle을 true로 세팅한다.
+	bAimToggle = true; //조준키를 toggel true세팅.
 
 	bIsAim = false;
 	bTabKeyDown = false;
 	bIsLookInput = false;
-	ActiveInteractDistance = 200.f; //??몄????댄
-?????? 理?嫄곕━.
+	ActiveInteractDistance = 200.f; //상호작용 아이템이 표시되는 최대거리.
 
-	/* 移대???愿??*/
+	/* 카메라 관련 */
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
 
@@ -79,7 +73,7 @@ AMainCharacter::AMainCharacter() : Super()
 	bUseControllerRotationRoll = false;
 	bUseControllerRotationYaw = true;
 
-	CameraTPS->SetRelativeLocation(TPSCam_Rel_Location); //3?몄묶 移대??쇰? ?댁? ?곗륫?쇰? 移?곗?寃 ???
+	CameraTPS->SetRelativeLocation(TPSCam_Rel_Location); //3인칭 카메라를 살짝 우측으로 치우지게 한다.
 
 	BaseTurnRate = 45.f;
 	BaseLookupRate = 45.f;
@@ -109,35 +103,35 @@ void AMainCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	/* Player? AnimInstance瑜?遺?ъ⑤? */
+	/* Player의 AnimInstance를 불러온다. */
 	//TPAnimInstance = Cast<UMainAnimInstance>(GetMesh()->GetAnimInstance()); 
 	FPAnimInstance = Cast<UMainAnimInstance>(FPMesh->GetAnimInstance());
 
-	if (FPAnimInstance)//TPAnimInstance && FPAnimInstance)
+	if ( FPAnimInstance )//TPAnimInstance && FPAnimInstance)
 	{
-		/* ?ъ대? TP Animation? 湲곗??쇰? 異?ν?? */ //AnimInstance? StepSound_Notify?? ?몄?.
+		/* 사운드는 TP Animation을 기준으로 출력한다. */ //AnimInstance의 StepSound_Notify에서 호출.
 		//TPAnimInstance->StepSound.AddUObject(this, &AMainCharacter::StepSound); 
 		//TPAnimInstance->WeaponTypeNumber = 0;
 		FPAnimInstance->WeaponTypeNumber = 0;
 		//FPAnimInstance->StartADS.AddUFunction(this,FName("GetADSPosition"));
 	}
-	
-	//ShadowMesh? AnimInstance瑜??ｌ댁???
+
+	//ShadowMesh의 AnimInstance를 넣어준다.
 	ShadowMesh->SetAnimInstanceClass(GetMesh()->GetAnimClass());
-	
+
 	ShadowMesh->SetOnlyOwnerSee(true);
 	ShadowMesh->SetRenderInMainPass(false);
 	ShadowMesh->SetHiddenInGame(true);
 
 	//ShadowMesh->SetOwnerNoSee(true);
 	//ShadowMesh->SetCastShadow(true);
-	
+
 	//ShadowMesh->SetHiddenInGame(true);
 	//ShadowMesh->SetCastHiddenShadow(true);
-	
-	
 
-	CameraFPS->SetRelativeLocation(FVector( 20.136719, -2.999939, 68.834351));
+
+
+	CameraFPS->SetRelativeLocation(FVector(20.136719, -2.999939, 68.834351));
 	FPMesh->SetRelativeLocation(FVector(-15.128922, -3.533375, -150.495850));
 
 	FPMeshOriginTransform = FPMesh->GetRelativeTransform();
@@ -145,14 +139,14 @@ void AMainCharacter::PostInitializeComponents()
 	FPMesh->SetCastShadow(false);
 	GetMesh()->SetCastShadow(false);
 
-	
 
-	/* FPS Aim愿??湲곕낯 ?ㅼ 媛 ???/
+
+	/* FPS Aim관련 기본 설정 값 저장*/
 	BaseCamTPSfov = CameraTPS->FieldOfView;
 	BaseCamFPSfov = CameraFPS->FieldOfView;
 	BaseFPMeshTransform = FPMesh->GetRelativeTransform();
 
-	
+
 	//GetCapsuleComponent()->SetCollisionProfileName(FName("MainChar"));
 	GetCapsuleComponent()->SetCollisionObjectType(ECollisionChannel::ECC_GameTraceChannel2);
 	//GetCapsuleComponent()->SetCollisionProfileName("MainChar");
@@ -163,18 +157,17 @@ void AMainCharacter::PostInitializeComponents()
 	FPLowerLegMesh->HideBoneByName(FName("upperarm_l"), EPhysBodyOp::PBO_None);
 	FPLowerLegMesh->HideBoneByName(FName("upperarm_r"), EPhysBodyOp::PBO_None);
 	FPLowerLegMesh->SetHiddenInGame(true);
-
 	FPLowerLegMesh->SetCastShadow(false);
 	FPLowerLegMesh->SetOnlyOwnerSee(true);
 	FPLowerLegMesh->SetReceivesDecals(false);*/
 
 
-	CompassBeginUse.AddDynamic(this,&AMainCharacter::CompassStart);
-	CompassEndUse.AddDynamic(this,&AMainCharacter::CompassStop);
+	CompassBeginUse.AddDynamic(this, &AMainCharacter::CompassStart);
+	CompassEndUse.AddDynamic(this, &AMainCharacter::CompassStop);
 
 
-	
-	
+
+
 }
 
 // Called when the game starts or when spawned
@@ -182,32 +175,31 @@ void AMainCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	/********** 珥湲??명
- ************/
-	SetCameraMode(ECameraMode::ECM_TPS); //珥湲?移대???紐⑤? 3?몄묶 紐⑤濡.
+	/********** 초기 세팅 ************/
+	SetCameraMode(ECameraMode::ECM_TPS); //초기 카메라 모드는 3인칭 모드로.
 	SetAimMode(EAimMode::EAM_NotAim);
 
 	MainController = Cast<AMainController>(GetController());
 
 
-	/****** Main Hud? Widget怨?Event Bind ********/
+	/****** Main Hud의 Widget과 Event Bind ********/
 	UMainHud* MainHud = Cast<UMainHud>(MainController->MainHud);
-	if (MainHud)
+	if ( MainHud )
 	{
 
-		if(StatManagementComponent)
+		if ( StatManagementComponent )
 		{
 			MainHud->ResourceWidget->BindStatManager(StatManagementComponent);
 			MainHud->NewInventoryWidget->ResourceStatusWidget->BindStatManager(StatManagementComponent);
 		}
-		
-		
-		if (MainHud->WeaponStatus)
+
+
+		if ( MainHud->WeaponStatus )
 		{
 			MainHud->WeaponStatus->BindWeaponWidget(this);
 		}
 
-		if (MainHud->QuickSlot)
+		if ( MainHud->QuickSlot )
 		{
 			MainHud->QuickSlot->BindSlotWidget(this);
 		}
@@ -219,12 +211,11 @@ void AMainCharacter::BeginPlay()
 void AMainCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	
-	//bIsLookInput ?명
- (Aim Init? ??寃.)
+
+	//bIsLookInput 세팅 (Aim Init을 위한것.)
 	float turnvalue = GetInputAxisValue("Turn");
 	float lookvalue = GetInputAxisValue("LookUp");
-	if (turnvalue == 0.f && lookvalue == 0.f)
+	if ( turnvalue == 0.f && lookvalue == 0.f )
 	{
 		bIsLookInput = false;
 	}
@@ -234,32 +225,32 @@ void AMainCharacter::Tick(float DeltaTime)
 	}
 
 	//this bool toggle at MainController, when GetIn/Out of the car.
-	if(bDisableInteractionLineTrace == false)
+	if ( bDisableInteractionLineTrace == false )
 	{
 		InteractionLineTrace();
 	}
 
-	/* Weapon? AimInitialize?⑥?? ?ъ⑺? Timer ?댁??*/
-	if (EquippedWeapon)
+	/* Weapon의 AimInitialize함수에서 사용하는 Timer 해제용 */
+	if ( EquippedWeapon )
 	{
-		//??대㉧媛 ??以?닿?
-		if (GetWorldTimerManager().IsTimerActive(EquippedWeapon->AimInitHandle))
+		//타이머가 작동중이고
+		if ( GetWorldTimerManager().IsTimerActive(EquippedWeapon->AimInitHandle) )
 		{
-			//aim? ?由ш굅?, AlphaTime??1珥媛 ??닿?嫄곕, ?? 以?대쇰㈃
-			if (bIsLookInput || EquippedWeapon->AlphaTime >= 1.f || EquippedWeapon->bIsFiring)
+			//aim을 돌리거나, AlphaTime이 1초가 넘어가거나, 쏘는 중이라면
+			if ( bIsLookInput || EquippedWeapon->AlphaTime >= 1.f || EquippedWeapon->bIsFiring )
 			{
-				//?? 珥湲고 ??대㉧瑜?珥湲고 ??⑤?
+				//에임 초기화 타이머를 초기화 시킨다.
 				UE_LOG(LogTemp, Warning, TEXT("MainChar:: Clear AimInit Timer"));
 				GetWorldTimerManager().ClearTimer(EquippedWeapon->AimInitHandle);
 			}
 		}
-		if (EquippedWeapon->RecoilAlphaTime >= 1.f)
+		if ( EquippedWeapon->RecoilAlphaTime >= 1.f )
 		{
 			GetWorldTimerManager().ClearTimer(EquippedWeapon->RecoilHandle);
-		}	
+		}
 	}
-	
-	
+
+
 }
 
 // Called to bind functionality to input
@@ -288,7 +279,7 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &AMainCharacter::MyJump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &AMainCharacter::MyStopJumping);
-	
+
 	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &AMainCharacter::MyCrouch);
 	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &AMainCharacter::MyUnCrouch);
 
@@ -313,7 +304,7 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAction("ScrollDN", IE_Pressed, this, &AMainCharacter::ScrollDN);
 	PlayerInputComponent->BindAction("ScrollUP", IE_Pressed, this, &AMainCharacter::ScrollUP);
 
-	
+
 	/******** Weapon Quick Swap ***********/
 	PlayerInputComponent->BindAction("Primary", IE_Pressed, this, &ABaseCharacter::ChangePrimaryWeapon);
 	PlayerInputComponent->BindAction("Sub", IE_Pressed, this, &ABaseCharacter::ChangeSubWeapon);
@@ -330,31 +321,30 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 void AMainCharacter::InteractionLineTrace()
 {
-	/* ??몄??Line Trace 蹂寃?. ver2  ?? 肄?瑜?GetPlayerViewPoint?⑥瑜??댁⑺?媛?듯 ?耳곕? */
+	/* 상호작용 Line Trace 변경 . ver2  아래 코드를 GetPlayerViewPoint함수를 이용해 간략화 시켰다. */
 	FRotator Rot;
 	MainController->GetPlayerViewPoint(Interact_LineTrace_StartLocation, Rot);
-	switch (CameraMode)
+	switch ( CameraMode )
 	{
 	case ECameraMode::ECM_FPS:
 		Interact_LineTrace_EndLocation = Interact_LineTrace_StartLocation + Rot.Vector() * 500.f;
 		break;
 	case ECameraMode::ECM_TPS:
-		Interact_LineTrace_EndLocation = Interact_LineTrace_StartLocation + Rot.Vector() * (MAXCameraLength + 800.f); //移대???oom湲몄대낫???湲멸? ???쇳??
+		Interact_LineTrace_EndLocation = Interact_LineTrace_StartLocation + Rot.Vector() * ( MAXCameraLength + 800.f ); //카메라Boom길이보다 더길게 끝나야한다.
 	}
 
-	/* 移대???紐⑤? ?곕Ⅸ ??몄??LineTrace 蹂寃? ver 1 --> ver 2濡 援泥?*/
+	/* 카메라 모드에 따른 상호작용 LineTrace 변경. ver 1 --> ver 2로 교체.*/
 	/*
 	switch (CameraMode)
 	{
 	case ECameraMode::ECM_FPS:
 		Interact_LineTrace_StartLocation = CameraFPS->GetComponentLocation();
 		Interact_LineTrace_EndLocation = Interact_LineTrace_StartLocation + CameraFPS->GetComponentRotation().Vector() * 500.f;
-
 		break;
 	case ECameraMode::ECM_TPS:
 	{
-		Interact_LineTrace_StartLocation = CameraTPS->GetComponentLocation(); //TPS移대??쇰? 湲곗??쇰? Trace瑜??????
-		Interact_LineTrace_EndLocation = Interact_LineTrace_StartLocation + CameraTPS->GetComponentRotation().Vector() * (MAXCameraLength + 800.f); //移대???oom湲몄대낫???湲멸? ???쇳??
+		Interact_LineTrace_StartLocation = CameraTPS->GetComponentLocation(); //TPS카메라를 기준으로 Trace를 시작한다.
+		Interact_LineTrace_EndLocation = Interact_LineTrace_StartLocation + CameraTPS->GetComponentRotation().Vector() * (MAXCameraLength + 800.f); //카메라Boom길이보다 더길게 끝나야한다.
 		break;
 	}
 	default:
@@ -363,48 +353,47 @@ void AMainCharacter::InteractionLineTrace()
 	*/
 
 
-	/* ??몄????ㅽ몃? ?? */
-	/* Static FHitResult瑜?由ы대??? Interface 蹂?, ?깃났?硫?Outline怨?TEXT瑜???.*/
+	/* 상호작용 텍스트를 띄움 */
+	/* Static FHitResult를 리턴받아서 Interface 변환, 성공하면 Outline과 TEXT를 띄움.*/
 	AActor* HitActor = InteractableLineTrace(Interact_LineTrace_StartLocation, Interact_LineTrace_EndLocation).GetActor();
 
 	//AInteractable* HitInteractActor = Cast<AInteractable>(HitActor);
 	IInteractive_Interface* HitInteractActor = Cast<IInteractive_Interface>(HitActor);
-	if (HitInteractActor)// && HitInteractActor->bCanNotInteractable == false)
+	if ( HitInteractActor )// && HitInteractActor->bCanNotInteractable == false)
 	{
-		if (InteractActor) //?대?InteractActor媛 ?怨
+		if ( InteractActor ) //이미 InteractActor가 있고
 		{
-			if (InteractActor != HitActor)//HitInteractActor) //吏湲 蹂닿? ?? Actor? InteractActor媛 ?ㅻⅤ硫?
+			if ( InteractActor != HitActor )//HitInteractActor) //지금 보고 있는 Actor와 InteractActor가 다르면
 			{
-				UnsetInteractActor(); //InteractActor瑜?Unset?댁???
+				UnsetInteractActor(); //InteractActor를 Unset해준다.
 			}
 			else
 			{
-				//嫄곕━? ?곕?InteractText媛 ?
-?곗댄??湲??臾몄 異媛 ?댁???
+				//거리에 따라 InteractText가 업데이트 되기 때문에 추가 해준다.
 				SetInteractActor(HitActor);//HitInteractActor);
 			}
 		}
-		else //InteractActor媛 ?? 寃쎌?
+		else //InteractActor가 없을 경우
 		{
-			SetInteractActor(HitActor);//HitInteractActor); //Interactable??寃쎌?Set? ?댁???
+			SetInteractActor(HitActor);//HitInteractActor); //Interactable인 경우 Set을 해준다.
 		}
 	}
 	else
 	{
 		UnsetInteractActor();
 	}
-	//InteractActor媛 ?ㅻ?寃쎌?UnsetInteractActor ?몄???. (Outline?????댁?? 踰洹멸? ??.) -> ?닿껐??
+	//InteractActor가 다를경우 UnsetInteractActor 호출하자. (Outline이 안없어지는 버그가 있음.) -> 해결함.
 }
 
 
 void AMainCharacter::FPSAimLocationAdjust()
 {
-	if (CameraFPS)
+	if ( CameraFPS )
 	{
-		if (bIsAim)
+		if ( bIsAim )
 		{
-			//媛 珥留??FPMesh? ?щ?瑜??移? 遺李⑺湲????
-			//Weapon Class? Transform 蹂?瑜?留?ㅼ댁ㄼ??
+			//각 총마다 FPMesh의 올바른 위치에 부착하기 위해
+			//Weapon Class에 Transform 변수를 만들어줬다.
 			const FTransform NewFPMeshTransform = EquippedWeapon->CharFPMeshTransform;
 			const FTransform NewWeaponTransform = EquippedWeapon->WeapSKMeshTransform;
 			CameraFPS->SetFieldOfView(70.f);
@@ -421,38 +410,38 @@ void AMainCharacter::FPSAimLocationAdjust()
 }
 
 
-//???댁??? ?? -> VKeyDN
+//플레이어 시점 상태 -> VKeyDN
 void AMainCharacter::SetCameraMode(ECameraMode Type)
 {
 	CameraMode = Type;
-	switch (CameraMode)
+	switch ( CameraMode )
 	{
 	case ECameraMode::ECM_TPS:
 		CameraTPS->Activate();
 		CameraFPS->Deactivate();
 
-		/* ??? 移대??쇱留 ???媛?濡 ?ㅼ */
+		/* 회전시 카메라에만 영향 가도록 설정 */
 		bUseControllerRotationPitch = false;
 		bUseControllerRotationRoll = false;
 		bUseControllerRotationYaw = true;
 		GetCharacterMovement()->bOrientRotationToMovement = false;
 
-		/* Character Mesh ?ㅼ */
-		FPMesh->SetHiddenInGame(true);  //1?몄묶 Mesh ?④?
-		//GetMesh()->SetHiddenInGame(false); //3?몄묶 Mesh ??④?
+		/* Character Mesh 설정 */
+		FPMesh->SetHiddenInGame(true);  //1인칭 Mesh 숨김
+		//GetMesh()->SetHiddenInGame(false); //3인칭 Mesh 안숨김
 		GetMesh()->SetCastShadow(true);
 		GetMesh()->UnHideBoneByName(FName("spine_01")); //spine_02
 		ShadowMesh->SetHiddenInGame(true);
 
 
-		if (bIsUsingCompass)
+		if ( bIsUsingCompass )
 		{
 			MainController->ControlCoreUsableWidget(true);
 		}
 
 		UCustomInventoryLibrary::ShowAllEquipment(Equipment);
 
-	break;
+		break;
 
 	case ECameraMode::ECM_FPS:
 		CameraFPS->Activate();
@@ -460,44 +449,44 @@ void AMainCharacter::SetCameraMode(ECameraMode Type)
 
 		bUseControllerRotationPitch = false;
 		bUseControllerRotationRoll = false;
-		//移대??쇱 Yaw??? ?곕?罹由?곗 Yaw Mesh媛 ????濡 ??? 洹몃???룰구?, 醫??寃嫄몄??媛?ν??
+		//카메라의 Yaw회전에 따라 캐릭터의 Yaw Mesh가 회전하도록 한다. 그래야 뒷걸음, 좌우 게걸음이 가능하다.
 		bUseControllerRotationYaw = true;
 
 		GetCharacterMovement()->bOrientRotationToMovement = false;
 
-		/*  Character Mesh ?ㅼ */
+		/*  Character Mesh 설정 */
 		FPMesh->SetHiddenInGame(false);
 		GetMesh()->HideBoneByName(FName("spine_01"), EPhysBodyOp::PBO_None);
 		ShadowMesh->SetHiddenInGame(false);
 		GetMesh()->SetCastShadow(false);
 
-		//bRenderInMainPass瑜?false濡 ?寃?硫?Rendering? ?吏 ?吏留, Shadow? ??留 ???
-		// ?닿구 ?ъ⑺?ㅻ㈃ Mesh媛 Show??댁???? SetHiddenInGame? True濡 ?硫????	
+		//bRenderInMainPass를 false로 하게되면 Rendering은 되지 않지만, Shadow는 렌더링 된다.
+		// 이걸 사용하려면 Mesh가 Show되어야 한다. SetHiddenInGame을 True로 하면 안됨.	
 		//GetMesh()->SetRenderInMainPass(false);
 
-		if (bIsUsingCompass)
+		if ( bIsUsingCompass )
 		{
 			MainController->ControlCoreUsableWidget(false);
 		}
 
-		//?μ갑以???λ?瑜?紐⑤ hide???
+		//장착중인 장비를 모두 hide한다.
 		UCustomInventoryLibrary::HideAllEquipment(Equipment);
 
-	break;
+		break;
 	}
 
-	/* ?μ갑 臾닿린 Mesh? 遺李?*/
-	if (EquippedWeapon)
+	/* 장착 무기 Mesh에 부착 */
+	if ( EquippedWeapon )
 	{
 		EquippedWeapon->GunAttachToMesh(this);
 	}
-	else if (HoldingItem.IsValid())
+	else if ( HoldingItem.IsValid() )
 	{
 		ABaseGrenade* Grenade = Cast<ABaseGrenade>(HoldingItem);
-		if (Grenade)
+		if ( Grenade )
 		{
 			Grenade->AttachToHand(this, HoldingItem->ItemObj);
-		}		
+		}
 	}
 }
 
@@ -505,17 +494,17 @@ void AMainCharacter::SetCameraMode(ECameraMode Type)
 void AMainCharacter::SetAimMode(EAimMode Mode)
 {
 	AimMode = Mode;
-	if (EquippedWeapon)
+	if ( EquippedWeapon )
 	{
 
-		switch (AimMode)
+		switch ( AimMode )
 		{
 		case EAimMode::EAM_Aim:
 		{
-			if (CameraMode == ECameraMode::ECM_TPS)
+			if ( CameraMode == ECameraMode::ECM_TPS )
 			{
-				//TPS紐⑤ + Aim???쇰? 移대??쇰? ?댁? ??쇰? ?↔꺼以??
-				//???SpringArm? 湲몄대? ??ν??
+				//TPS모드 + Aim상태일때는 카메라를 살짝 앞으로 땡겨준다.
+				//현재 SpringArm의 길이를 저장한다.
 				/*BeforeCameraLength = CameraBoom->TargetArmLength;
 				CameraBoom->TargetArmLength = MINCameraLength + 20.f;
 				CameraTPS->SetRelativeLocation(TPSCam_Aim_Rel_Location);
@@ -525,12 +514,12 @@ void AMainCharacter::SetAimMode(EAimMode Mode)
 				bIsAim = true;
 				EquippedWeapon->bIsAiming = true;
 				GetCharacterMovement()->MaxWalkSpeed = MinWalkSpeed;
-				
+
 			}
-			else if (CameraMode == ECameraMode::ECM_FPS)
+			else if ( CameraMode == ECameraMode::ECM_FPS )
 			{
-				//idle anim? ???Socket? WorldTF媛????댁??嫄?諛⑹??湲?????吏Anim? ?ъ???
-				if (EquippedWeapon->WeaponDataAsset->Animaton.FPS_ADS_Anim)
+				//idle anim에 의해 Socket의 WorldTF값이 틀어지는걸 방지하기 위해 정지Anim을 재생한다.
+				if ( EquippedWeapon->WeaponDataAsset->Animaton.FPS_ADS_Anim )
 				{
 					//below is using Blend.
 					FPAnimInstance->Montage_Play(EquippedWeapon->WeaponDataAsset->Animaton.FPS_ADS_Anim, 1.f, EMontagePlayReturnType::MontageLength, 0.f, true);
@@ -543,7 +532,7 @@ void AMainCharacter::SetAimMode(EAimMode Mode)
 			break;
 
 
-			
+
 		}
 		case EAimMode::EAM_NotAim:
 		{
@@ -551,9 +540,9 @@ void AMainCharacter::SetAimMode(EAimMode Mode)
 			EquippedWeapon->bIsAiming = false;
 			GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
 
-			if (CameraMode == ECameraMode::ECM_TPS)
+			if ( CameraMode == ECameraMode::ECM_TPS )
 			{
-				//?↔릿 移대??쇰? ?ㅼ ?蹂???⑤?
+				//땡긴 카메라를 다시 원복 시킨다.
 				/*float CurrentLength = CameraBoom->TargetArmLength;
 				float CameraLength = FMath::FInterpTo(CurrentLength, BeforeCameraLength, GetWorld()->GetDeltaSeconds(), 15.f);*/
 				/*CameraBoom->TargetArmLength = BeforeCameraLength;
@@ -562,7 +551,7 @@ void AMainCharacter::SetAimMode(EAimMode Mode)
 				LerpCamera(CameraTPS, MAXCameraLength - 20.f, TPSCam_Rel_Location, BaseCamTPSfov);
 
 			}
-			else if (CameraMode == ECameraMode::ECM_FPS)
+			else if ( CameraMode == ECameraMode::ECM_FPS )
 			{
 				//FPAnimInstance->StopAllMontages(0.f);//Montage_Stop( (0.f);
 				FPSnotADS();
@@ -570,7 +559,7 @@ void AMainCharacter::SetAimMode(EAimMode Mode)
 				FPMesh->bPauseAnims = false;
 				//FPMesh->SetRelativeTransform(FPMeshOriginTransform);
 				//CameraFPS->FieldOfView = BaseCamFPSfov;
-				LerpCamera(CameraFPS,BaseCamFPSfov);
+				LerpCamera(CameraFPS, BaseCamFPSfov);
 			}
 			break;
 		}
@@ -585,7 +574,7 @@ void AMainCharacter::FPSADS()
 {
 	UE_LOG(LogTemp, Warning, TEXT("AMainCharacter::FPSADS called"));
 	FTransform ADSPos = GetFpsAdsPosition();
-	
+
 	bIsAim = true;
 	EquippedWeapon->bIsAiming = true;
 	GetCharacterMovement()->MaxWalkSpeed = MinWalkSpeed;
@@ -593,27 +582,26 @@ void AMainCharacter::FPSADS()
 	ADSTime = 0.f;
 	ADSAlphaTime = 0.f;
 
-	
-	GetWorldTimerManager().SetTimer(T_ADSTimerHandle, [=] {
+
+	GetWorldTimerManager().SetTimer(T_ADSTimerHandle, [ = ] {
 		FTransform OriginPos = FPMesh->GetRelativeTransform();
-		if (ADSAlphaTime >= 1.1f)
-		{
-			GetWorldTimerManager().ClearTimer(T_ADSTimerHandle);
-		}
-		ADSTime += GetWorld()->GetDeltaSeconds();
-		ADSAlphaTime = ADSTime/1.f;
+	if ( ADSAlphaTime >= 1.1f )
+	{
+		GetWorldTimerManager().ClearTimer(T_ADSTimerHandle);
+	}
+	ADSTime += GetWorld()->GetDeltaSeconds();
+	ADSAlphaTime = ADSTime / 1.f;
 
-		FTransform LerpPos = UKismetMathLibrary::TLerp(OriginPos, ADSPos, ADSAlphaTime);
+	FTransform LerpPos = UKismetMathLibrary::TLerp(OriginPos, ADSPos, ADSAlphaTime);
 
-		//FPMesh瑜??대?Offset留???대, Camera? 以?? ?ㅻ濡 ???
-		FPMesh->SetRelativeTransform(LerpPos);//OffsetWithoutX);
+	//FPMesh를 해당 Offset만큼 이동, Camera의 중앙에 오도록 한다.
+	FPMesh->SetRelativeTransform(LerpPos);//OffsetWithoutX);
 
-		},GetWorld()->GetDeltaSeconds(), true);
+		}, GetWorld()->GetDeltaSeconds(), true);
 
-	//紐⑤ ?명
-????硫?AnimMontage瑜??댁?댁 Locomotion Anim? ?댁대媛?濡 ???
+	//모든 세팅이 끝나면 AnimMontage를 해제해서 Locomotion Anim을 이어나가도록 한다.
 	FPAnimInstance->StopAllMontages(0.f);
-	
+
 	//CameraFPS->SetWorldTransform(SightTransform);
 }
 
@@ -623,9 +611,9 @@ void AMainCharacter::FPSnotADS()
 	ADSAlphaTime = 0.f;
 
 
-	GetWorldTimerManager().SetTimer(T_ADSTimerHandle, [=] {
-	FTransform CurrentFPPos = FPMesh->GetRelativeTransform();
-	if (ADSAlphaTime >= 1.1f)
+	GetWorldTimerManager().SetTimer(T_ADSTimerHandle, [ = ] {
+		FTransform CurrentFPPos = FPMesh->GetRelativeTransform();
+	if ( ADSAlphaTime >= 1.1f )
 	{
 		GetWorldTimerManager().ClearTimer(T_ADSTimerHandle);
 	}
@@ -634,25 +622,25 @@ void AMainCharacter::FPSnotADS()
 
 	FTransform LerpPos = UKismetMathLibrary::TLerp(CurrentFPPos, FPMeshOriginTransform, ADSAlphaTime);
 
-	
+
 	FPMesh->SetRelativeTransform(LerpPos);//OffsetWithoutX);
 
 	}, GetWorld()->GetDeltaSeconds(), true);
 }
 
 FTransform AMainCharacter::GetFpsAdsPosition()
-{	
-	
+{
+
 	UE_LOG(LogTemp, Warning, TEXT("AMainCharacter::GetADSPosition"));
 
 	FTransform FPMeshWorld = FPMesh->GetComponentTransform();
-	
-	//EquippedWeapon?? SightSocket? Get?? ?⑥瑜??몄????
+
+	//EquippedWeapon에서 SightSocket을 Get하는 함수를 호출한다.
 	FTransform SightTransform = EquippedWeapon->GetSightSocketTransform();
 
 
-	//SightSocket??  FPMesh? Relative Transform? 援ы??
-	//?대寃 援ы Offset? Mesh? Transform? ??⑺??
+	//SightSocket에서  FPMesh의 Relative Transform을 구한다.
+	//이렇게 구한 Offset을 Mesh의 Transform에 적용한다.
 
 	/**explain Make Relative Transform
 	 * Example: ChildOffset = MakeRelativeTransform(Child.GetActorTransform(), Parent.GetActorTransform())
@@ -660,8 +648,8 @@ FTransform AMainCharacter::GetFpsAdsPosition()
 	 */
 	FTransform Offset = FPMeshWorld.GetRelativeTransform(SightTransform);//.Inverse();
 
-	// Weapon? Clipping? ?? Trace瑜?FPMesh?쇰 Aim, NotAim? 蹂댁?湲????Aim?쇰 Mesh瑜???쇰? 醫 ?媛寃 ???
-	// (湲곗〈 Aim?? FPMesh媛 ?ㅻ? ?ㅼ닿?踰??Clipping臾몄媛 ??쇱??ъ.)
+	// Weapon의 Clipping을 위한 Trace를 FPMesh일때 Aim, NotAim을 보완하기 위해 Aim일때 Mesh를 앞으로 좀 나가게 한다.
+	// (기존 Aim때는 FPMesh가 뒤로 들어가버려 Clipping문제가 안일어 났음.)
 	FTransform OffsetWithoutX = FTransform(Offset.GetRotation(), FVector(-10.f, Offset.GetTranslation().Y, Offset.GetTranslation().Z));
 
 	return OffsetWithoutX;
@@ -673,10 +661,10 @@ void AMainCharacter::LerpCamera(UCameraComponent* VarTPScam, float TargetBoomLen
 	CamAlphaTime = 0.f;
 	GetWorldTimerManager().ClearTimer(T_CameraHandle);
 
-	GetWorldTimerManager().SetTimer(T_CameraHandle, [=] {
+	GetWorldTimerManager().SetTimer(T_CameraHandle, [ = ] {
 		FVector CamCurrentLo = VarTPScam->GetRelativeLocation();
-		float CamCurrentFOV = VarTPScam->FieldOfView;
-		float  BoomCurrentLen = CameraBoom->TargetArmLength;
+	float CamCurrentFOV = VarTPScam->FieldOfView;
+	float  BoomCurrentLen = CameraBoom->TargetArmLength;
 
 	CamTime += GetWorld()->GetDeltaSeconds();
 	CamAlphaTime = CamTime / 1.f;
@@ -684,12 +672,12 @@ void AMainCharacter::LerpCamera(UCameraComponent* VarTPScam, float TargetBoomLen
 	FVector SetCamLo = UKismetMathLibrary::VLerp(CamCurrentLo, TargetCamRelativeLocation, CamAlphaTime);
 	float SetFOV = UKismetMathLibrary::Lerp(CamCurrentFOV, TargetFOV, CamAlphaTime);
 	float SetBomLength = UKismetMathLibrary::Lerp(BoomCurrentLen, TargetBoomLength, CamAlphaTime);
-	
+
 	VarTPScam->SetRelativeLocation(SetCamLo);
 	VarTPScam->SetFieldOfView(SetFOV);
 	CameraBoom->TargetArmLength = SetBomLength;
 
-	if (CamAlphaTime >= 1.1f)
+	if ( CamAlphaTime >= 1.1f )
 	{
 		GetWorldTimerManager().ClearTimer(T_CameraHandle);
 	}
@@ -697,22 +685,22 @@ void AMainCharacter::LerpCamera(UCameraComponent* VarTPScam, float TargetBoomLen
 		}, GetWorld()->GetDeltaSeconds(), true);
 }
 
-void AMainCharacter::LerpCamera(UCameraComponent * VarFPScam, float TargetFOV)
+void AMainCharacter::LerpCamera(UCameraComponent* VarFPScam, float TargetFOV)
 {
 	CamTime = 0.f;
 	CamAlphaTime = 0.f;
 	GetWorldTimerManager().ClearTimer(T_CameraHandle);
 
-	GetWorldTimerManager().SetTimer(T_CameraHandle, [=] {
-	float CamCurrentFOV = VarFPScam->FieldOfView;
+	GetWorldTimerManager().SetTimer(T_CameraHandle, [ = ] {
+		float CamCurrentFOV = VarFPScam->FieldOfView;
 
 	CamTime += GetWorld()->GetDeltaSeconds();
-	CamAlphaTime = CamTime / 1.f;	
+	CamAlphaTime = CamTime / 1.f;
 	float SetFOV = UKismetMathLibrary::Lerp(CamCurrentFOV, TargetFOV, CamAlphaTime);
-		
+
 	VarFPScam->SetFieldOfView(SetFOV);
 
-	if (CamAlphaTime >= 1.1f)
+	if ( CamAlphaTime >= 1.1f )
 	{
 		GetWorldTimerManager().ClearTimer(T_CameraHandle);
 	}
@@ -722,11 +710,11 @@ void AMainCharacter::LerpCamera(UCameraComponent * VarFPScam, float TargetFOV)
 
 
 
-/****************************** ?대, ?? 愿????諛?몃 ***************************/
+/****************************** 이동, 시점 관련 키 바인드 ***************************/
 
 void AMainCharacter::TurnAtRate(float Rate)
 {
-	//留?delta珥 留??base rate留????
+	//매 delta초 마다 base rate만큼 회전
 	AddControllerYawInput(Rate * BaseTurnRate * GetWorld()->GetDeltaSeconds());
 }
 
@@ -738,17 +726,17 @@ void AMainCharacter::LookUpAtRate(float Rate)
 void AMainCharacter::MoveForward(float Value)
 {
 	bMoveForward = false;
-	if (MainController != NULL && Value != 0.f)
+	if ( MainController != NULL && Value != 0.f )
 	{
 		bMoveForward = true;
-		//?대諛⑺μ쇰? 媛吏 李얘?
+		//어느방향으로 갈지 찾고
 		FRotator Rotation = MainController->GetControlRotation();
 		FRotator YawRotation = FRotator(0.f, Rotation.Yaw, 0.f);
 
-		// forward踰≫곕? 援ы??
+		// forward벡터를 구한다.
 		FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 
-		//洹?諛⑺μ쇰? value留??媛??
+		//그 방향으로 value만큼 간다.
 		AddMovementInput(Direction, Value);
 		/*UE_LOG(LogTemp, Warning, TEXT("my  ForVec = %s"), *Direction.ToString());
 		UE_LOG(LogTemp, Warning, TEXT("Actor::ForVec = %s"), *GetActorForwardVector().ToString());*/
@@ -758,13 +746,13 @@ void AMainCharacter::MoveForward(float Value)
 void AMainCharacter::MoveRight(float Value)
 {
 	bMoveRight = false;
-	if (MainController != NULL && Value != 0.f)
+	if ( MainController != NULL && Value != 0.f )
 	{
 		bMoveRight = true;
 		FRotator Rotation = MainController->GetControlRotation();
 		FRotator YawRotation = FRotator(0.f, Rotation.Yaw, 0.f);
 
-		//right 踰≫?
+		//right 벡터
 		FVector Direction = FRotationMatrix(Rotation).GetUnitAxis(EAxis::Y);
 
 		AddMovementInput(Direction, Value);
@@ -776,29 +764,29 @@ void AMainCharacter::MoveRight(float Value)
 void AMainCharacter::Sprint()
 {
 	//FTimerHandle Timer;
-	if(GetWorldTimerManager().IsTimerActive(T_SprintKeyDown) == false &&
-	bIsCrouched ==false && bDisableInput == false && GetCharacterMovement()->IsFalling() == false && bIsAim == false )
+	if ( GetWorldTimerManager().IsTimerActive(T_SprintKeyDown) == false &&
+	bIsCrouched == false && bDisableInput == false && GetCharacterMovement()->IsFalling() == false && bIsAim == false )
 	{
 		bSprintKeyDown = true;
-		//Up Timer 珥湲고
+		//Up Timer 초기화
 		GetWorldTimerManager().ClearTimer(T_SprintKeyUp);
-		GetWorldTimerManager().SetTimer(T_SprintKeyDown,[&]
+		GetWorldTimerManager().SetTimer(T_SprintKeyDown, [ & ]
 		{
 			StatManagementComponent->StaminaManage(bSprintKeyDown);
-		},GetWorld()->GetDeltaSeconds(),true);
+		}, GetWorld()->GetDeltaSeconds(), true);
 	}
 }
 void AMainCharacter::UnSprint()
 {
-	if (GetWorldTimerManager().IsTimerActive(T_SprintKeyUp) == false)
+	if ( GetWorldTimerManager().IsTimerActive(T_SprintKeyUp) == false )
 	{
 		bSprintKeyDown = false;
-		//Down Timer 珥湲고
+		//Down Timer 초기화
 		GetWorldTimerManager().ClearTimer(T_SprintKeyDown);
 
-		GetWorldTimerManager().SetTimer(T_SprintKeyUp, [&]
+		GetWorldTimerManager().SetTimer(T_SprintKeyUp, [ & ]
 		{
-				StatManagementComponent->StaminaManage(bSprintKeyDown);
+			StatManagementComponent->StaminaManage(bSprintKeyDown);
 		}, GetWorld()->GetDeltaSeconds(), true);
 	}
 }
@@ -811,7 +799,7 @@ void AMainCharacter::ClearSprintUpTimer()
 
 void AMainCharacter::MyJump()
 {
-	if (bDisableInput == false)
+	if ( bDisableInput == false )
 	{
 		bIsJumpKeyDown = true;
 		Cast<UMainAnimInstance>(GetMesh()->GetAnimInstance())->bIsJumpkeyDown = true;
@@ -827,9 +815,9 @@ void AMainCharacter::MyStopJumping()
 
 void AMainCharacter::MyCrouch()
 {
-	if (bDisableInput == false)
+	if ( bDisableInput == false )
 	{
-		if (bCrouchToggle && bIsCrouched)
+		if ( bCrouchToggle && bIsCrouched )
 		{
 			Super::UnCrouch();
 			UE_LOG(LogTemp, Warning, TEXT("Crouch:: UnCrouch"));
@@ -837,7 +825,7 @@ void AMainCharacter::MyCrouch()
 			SetCharacterStatus(ECharacterStatus::EPS_Normal);
 		}
 
-		if (bIsCrouched == false)
+		if ( bIsCrouched == false )
 		{
 			Super::Crouch();
 			UE_LOG(LogTemp, Warning, TEXT("Crouch:: Crouch"));
@@ -849,10 +837,10 @@ void AMainCharacter::MyCrouch()
 
 void AMainCharacter::MyUnCrouch()
 {
-	//Crouch瑜?Toggle濡 ?ъ⑺吏 ???留 Key Release  bind?⑥瑜??몄????
-	if (bDisableInput == false)
+	//Crouch를 Toggle로 사용하지 않을때만 Key Release  bind함수를 호출한다.
+	if ( bDisableInput == false )
 	{
-		if (bCrouchToggle == false && bIsCrouched)
+		if ( bCrouchToggle == false && bIsCrouched )
 		{
 			Super::UnCrouch();
 			UE_LOG(LogTemp, Warning, TEXT("UnCrouch:: UnCrouch"));
@@ -864,18 +852,18 @@ void AMainCharacter::MyUnCrouch()
 
 void AMainCharacter::Walk()
 {
-	if (bDisableInput == false)
+	if ( bDisableInput == false )
 	{
-		if (bWalkToggle && bIsWalking && AimMode != EAimMode::EAM_Aim)
+		if ( bWalkToggle && bIsWalking && AimMode != EAimMode::EAM_Aim )
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Walk:: UnWalk"));
 			//SetMainCharacterStatus(EPlayerStatus::EPS_Normal);
 			SetCharacterStatus(ECharacterStatus::EPS_Normal);
-			//bIsWalking = false; -> Set enum?⑥?? 蹂寃쏀댁ㄼ??
+			//bIsWalking = false; -> Set enum함수에서 변경해줬다.
 			return;
 		}
 
-		if (bIsWalking == false && AimMode != EAimMode::EAM_Aim)
+		if ( bIsWalking == false && AimMode != EAimMode::EAM_Aim )
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Walk:: Walk"));
 			SetCharacterStatus(ECharacterStatus::EPS_Walk);
@@ -888,9 +876,9 @@ void AMainCharacter::Walk()
 
 void AMainCharacter::UnWalk()
 {
-	if (bDisableInput == false)
+	if ( bDisableInput == false )
 	{
-		if (bWalkToggle == false && bIsWalking == true && AimMode != EAimMode::EAM_Aim)
+		if ( bWalkToggle == false && bIsWalking == true && AimMode != EAimMode::EAM_Aim )
 		{
 			UE_LOG(LogTemp, Warning, TEXT("UnWalk:: UnWalk"));
 			SetCharacterStatus(ECharacterStatus::EPS_Normal);
@@ -902,13 +890,12 @@ void AMainCharacter::UnWalk()
 
 void AMainCharacter::ScrollDN()
 {
-	if (bDisableInput == false)
+	if ( bDisableInput == false )
 	{
-		//TPS紐⑤??寃쎌곗留 ?ㅽщ· ?ㅼ? ?
-??媛?ν?濡 (移대???硫寃 , 媛源??
-		if (CameraMode == ECameraMode::ECM_TPS)
+		//TPS모드일 경우에만 스크롤 다운, 업이 가능하도록 (카메라 멀게 , 가까이)
+		if ( CameraMode == ECameraMode::ECM_TPS )
 		{
-			if (CameraBoom->TargetArmLength <= MINCameraLength)
+			if ( CameraBoom->TargetArmLength <= MINCameraLength )
 			{
 				CameraBoom->TargetArmLength = MINCameraLength;
 			}
@@ -919,11 +906,11 @@ void AMainCharacter::ScrollDN()
 
 void AMainCharacter::ScrollUP()
 {
-	if (bDisableInput == false)
+	if ( bDisableInput == false )
 	{
-		if (CameraMode == ECameraMode::ECM_TPS)
+		if ( CameraMode == ECameraMode::ECM_TPS )
 		{
-			if (CameraBoom->TargetArmLength >= MAXCameraLength)
+			if ( CameraBoom->TargetArmLength >= MAXCameraLength )
 			{
 				CameraBoom->TargetArmLength = MAXCameraLength;
 			}
@@ -934,20 +921,19 @@ void AMainCharacter::ScrollUP()
 
 void AMainCharacter::VKeyDN()
 {
-	if (bDisableInput == false)
+	if ( bDisableInput == false )
 	{
-		switch (CameraMode)
+		switch ( CameraMode )
 		{
 		case ECameraMode::ECM_TPS:
 			SetCameraMode(ECameraMode::ECM_FPS);
-			//vkeydown?쇰? ??? 蹂寃쏀?ㅻ㈃, 湲곗〈Aimmode瑜?洹몃濡 ?ｌ?Fps/Tps瑜??ㅼ ?명
-???
+			//vkeydown으로 시점을 변경했다면, 기존Aimmode를 그대로 넣어 Fps/Tps를 다시 세팅한다.
 			SetAimMode(AimMode);
 			break;
 		case ECameraMode::ECM_FPS:
 			SetCameraMode(ECameraMode::ECM_TPS);
 			SetAimMode(AimMode);
-			
+
 			break;
 		}
 
@@ -956,19 +942,19 @@ void AMainCharacter::VKeyDN()
 }
 
 
-/************** Interactive & Inventory Key bind ?⑥ ***********/
+/************** Interactive & Inventory Key bind 함수 ***********/
 void AMainCharacter::LMBDown()
 {
-	if (bDisableInput == false)
+	if ( bDisableInput == false )
 	{
-		if (EquippedWeapon)
+		if ( EquippedWeapon )
 		{
 			EquippedWeapon->StartFire();
 		}
-		else if (HoldingItem.IsValid())
+		else if ( HoldingItem.IsValid() )
 		{
 			ABaseGrenade* Grenade = Cast<ABaseGrenade>(HoldingItem);
-			if(Grenade)
+			if ( Grenade )
 			{
 				Grenade->ReadyToThrow();
 			}
@@ -978,20 +964,20 @@ void AMainCharacter::LMBDown()
 
 void AMainCharacter::LMBUp()
 {
-	if (bDisableInput == false)
+	if ( bDisableInput == false )
 	{
-		if (EquippedWeapon)
+		if ( EquippedWeapon )
 		{
 			EquippedWeapon->StopFire();
 		}
-		else if (HoldingItem.IsValid())
+		else if ( HoldingItem.IsValid() )
 		{
 			ABaseGrenade* Grenade = Cast<ABaseGrenade>(HoldingItem);
-			if (Grenade)
+			if ( Grenade )
 			{
 				Grenade->ThrowGrenade(this);
 			}
-			
+
 		}
 	}
 }
@@ -1000,13 +986,13 @@ void AMainCharacter::LMBUp()
 
 void AMainCharacter::RMBDown()
 {
-	if (bDisableInput == false)
+	if ( bDisableInput == false )
 	{
-		if (EquippedWeapon != nullptr)
+		if ( EquippedWeapon != nullptr )
 		{
-			if (EquippedWeapon->bIsHighReady == false && bIsSprinting == false)
+			if ( EquippedWeapon->bIsHighReady == false && bIsSprinting == false )
 			{
-				if (bAimToggle && bIsAim)
+				if ( bAimToggle && bIsAim )
 				{
 					SetAimMode(EAimMode::EAM_NotAim);
 					UE_LOG(LogTemp, Warning, TEXT("Aim off"));
@@ -1023,11 +1009,11 @@ void AMainCharacter::RMBDown()
 
 void AMainCharacter::RMBUp()
 {
-	if (bDisableInput == false)
+	if ( bDisableInput == false )
 	{
-		if (EquippedWeapon != nullptr)
+		if ( EquippedWeapon != nullptr )
 		{
-			if (bAimToggle == false)
+			if ( bAimToggle == false )
 			{
 				SetAimMode(EAimMode::EAM_NotAim);
 				UE_LOG(LogTemp, Warning, TEXT("Aim off"));
@@ -1048,13 +1034,13 @@ void AMainCharacter::TabKeyDown()
 
 void AMainCharacter::EKeyDown()
 {
-	if (bDisableInput == false)
+	if ( bDisableInput == false )
 	{
 		Interactive();
 	}
 }
 
-/*******************************  Vehicle 愿??************************************************/
+/*******************************  Vehicle 관련 ************************************************/
 
 //void AMainCharacter::ToggleCar()
 //{
@@ -1071,32 +1057,32 @@ void AMainCharacter::EKeyDown()
 //
 //}
 
-/*************************  Weapon, Item 愿??***************************************************/
+/*************************  Weapon, Item 관련 ***************************************************/
 void AMainCharacter::PlayUseItemAnim(AItem* Item)
 {
 	Super::PlayUseItemAnim(Item);
-	
-	//FPMesh? Anim? ?ъ???
+
+	//FPMesh의 Anim도 재생한다.
 	FPAnimInstance->Montage_Play(Item->ItemSetting.DataAsset->FPS_UseAnimMontage);
-		
+
 }
 
 void AMainCharacter::StopUseItemAnim()
 {
 	Super::StopUseItemAnim();
-	FPAnimInstance->Montage_Stop(0.f,nullptr);
+	FPAnimInstance->Montage_Stop(0.f, nullptr);
 }
 
-//CameraMode? ?곕?HoldingItem? Attach??⑤?
+//CameraMode에 따라 HoldingItem을 Attach시킨다.
 void AMainCharacter::ReAttachHoldingItem()
 {
-	if(HoldingItem.IsValid() == false) return;
+	if ( HoldingItem.IsValid() == false ) return;
 
-	const USkeletalMeshSocket* HandSocket = nullptr; 
+	const USkeletalMeshSocket* HandSocket = nullptr;
 	FTransform RelativeTF;
 	USkeletalMeshComponent* OnMesh = nullptr;
 
-	if (CameraMode == ECameraMode::ECM_FPS)
+	if ( CameraMode == ECameraMode::ECM_FPS )
 	{
 		OnMesh = FPMesh;
 		HandSocket = FPMesh->GetSocketByName(LeftHandGripSocketName);
@@ -1108,13 +1094,13 @@ void AMainCharacter::ReAttachHoldingItem()
 		HandSocket = GetMesh()->GetSocketByName(LeftHandGripSocketName);
 		RelativeTF = HoldingItem->ItemSetting.DataAsset->TPS_HandAttachTransform;
 	}
-	
-	
-	if (HandSocket && OnMesh)
+
+
+	if ( HandSocket && OnMesh )
 	{
-		if (HandSocket->AttachActor(HoldingItem.Get(), OnMesh))
+		if ( HandSocket->AttachActor(HoldingItem.Get(), OnMesh) )
 		{
-			//Mesh? Attach??ㅻ㈃, Item? Relative?移,??媛? 蹂寃쏀??
+			//Mesh에 Attach했다면, Item의 Relative위치,회전값을 변경한다.
 			HoldingItem->SetActorRelativeTransform(RelativeTF);
 		}
 	}
@@ -1123,32 +1109,32 @@ void AMainCharacter::ReAttachHoldingItem()
 bool AMainCharacter::ChangeWeapon(int32 index)
 {
 	Super::ChangeWeapon(index);
-	
-	//FPMode +Shadow Mesh? AnimUpdate瑜????媛깆???
+
+	//FPMode +Shadow Mesh의 AnimUpdate를 위해 갱신한다.
 	UMainAnimInstance* ShadowAnim = Cast<UMainAnimInstance>(ShadowMesh->GetAnimInstance());
 	check(ShadowAnim);
-	switch (index)
+	switch ( index )
 	{
 	case 0:
 		FPAnimInstance->WeaponTypeNumber = 0;
 		ShadowAnim->WeaponTypeNumber = 0;
 		break;
 	case 1:
-		if (PrimaryWeapon)
-		{			
+		if ( PrimaryWeapon )
+		{
 			FPAnimInstance->WeaponTypeNumber = 1;
 			ShadowAnim->WeaponTypeNumber = 1;
 		}
 		break;
 	case 2:
-		if (SubWeapon)
-		{			
+		if ( SubWeapon )
+		{
 			FPAnimInstance->WeaponTypeNumber = 1;
 			ShadowAnim->WeaponTypeNumber = 1;
 		}
 		break;
 	case 3:
-		if (PistolWeapon)
+		if ( PistolWeapon )
 		{
 			FPAnimInstance->WeaponTypeNumber = 2;
 			ShadowAnim->WeaponTypeNumber = 2;
@@ -1163,28 +1149,28 @@ bool AMainCharacter::ChangeWeapon(int32 index)
 	return true;
 }
 
-/*************************  Interaction 愿??***************************************************/
+/*************************  Interaction 관련 ***************************************************/
 
-/* Static? 媛吏?댁 FHitResult瑜?由ы?*/
+/* Static을 감지해서 FHitResult를 리턴 */
 FHitResult AMainCharacter::InteractableLineTrace(const FVector& StartLo, const FVector& EndLo)
 {
 	FHitResult Hit;
 	FCollisionQueryParams Params;
-	FCollisionShape Shape = FCollisionShape::MakeCapsule(10.f, 10.f); //?댁? ?寃 ?댁 ?吏媛 ?쎄? ???
+	FCollisionShape Shape = FCollisionShape::MakeCapsule(10.f, 10.f); //살짝 넓게 해서 탐지가 쉽게 했다.
 	Params.AddIgnoredActor(this);
 
-	if (EquippedWeapon)
+	if ( EquippedWeapon )
 	{
 		Params.AddIgnoredActor(EquippedWeapon);
 	}
-	else if (HoldingItem.IsValid())
+	else if ( HoldingItem.IsValid() )
 	{
 		Params.AddIgnoredActor(HoldingItem.Get());
 	}
 
-	//SweepSingle濡 蹂寃? 罹≪??? 紐⑥?쇰? LineTrace.	
-	GetWorld()->SweepSingleByChannel(Hit, StartLo, EndLo, FQuat::Identity, ECollisionChannel::ECC_WorldStatic, Shape, Params); 
-	
+	//SweepSingle로 변경, 캡슐형태의 모양으로 LineTrace.	
+	GetWorld()->SweepSingleByChannel(Hit, StartLo, EndLo, FQuat::Identity, ECollisionChannel::ECC_WorldStatic, Shape, Params);
+
 	/* debug */
 	//DrawDebugLine(GetWorld(), StartLo, EndLo, FColor::Green, false, 2.f, (uint8)nullptr, 2.f);
 	//DrawDebugCapsule(GetWorld(), (StartLo+EndLo)/2, Shape.GetCapsuleHalfHeight(),Shape.GetCapsuleRadius(),FRotationMatrix::MakeFromZ(GetActorForwardVector()).ToQuat(), FColor::Green, false, 0.8f, (uint8)nullptr, 2.f);
@@ -1198,27 +1184,27 @@ void AMainCharacter::SetInteractActor(AActor* Actor)
 	InteractActor = Actor;
 
 	IInteractive_Interface* InterfaceActor = Cast<IInteractive_Interface>(InteractActor);
-	if (InterfaceActor)
+	if ( InterfaceActor )
 	{
 		InterfaceActor->SetOutline();
 
-		//InteractActor? Static Mesh? ?移瑜?湲곗??쇰? 嫄곕━瑜?援ы??
-		if((GetActorLocation() - InteractActor->GetActorLocation()).Size() <= ActiveInteractDistance)
+		//InteractActor의 Static Mesh의 위치를 기준으로 거리를 구한다.
+		if ( ( GetActorLocation() - InteractActor->GetActorLocation() ).Size() <= ActiveInteractDistance )
 		{
 			MainController->ControlInteractText(true);
 		}
 
 		/* debug */
 		//UE_LOG(LogTemp, Warning, TEXT("Main::InteractActor is Valid"));
-	}			
+	}
 }
 
 void AMainCharacter::UnsetInteractActor()
 {
-	if (InteractActor)
+	if ( InteractActor )
 	{
 		IInteractive_Interface* InterfaceActor = Cast<IInteractive_Interface>(InteractActor);
-		if(InterfaceActor)
+		if ( InterfaceActor )
 		{
 			InterfaceActor->UnsetOutline();
 		}
@@ -1231,57 +1217,57 @@ void AMainCharacter::UnsetInteractActor()
 
 void AMainCharacter::Interactive()
 {
-	if (InteractActor)
+	if ( InteractActor )
 	{
 		IInteractive_Interface* Interface = Cast<IInteractive_Interface>(InteractActor);
-		if (Interface)
+		if ( Interface )
 		{
 			//if Car, Increase the length of the Interaction LineTrace.
 			ANiceCar* MyCar = Cast<ANiceCar>(InteractActor);
-			if (MyCar)
+			if ( MyCar )
 			{
-				float size = (GetActorLocation() - InteractActor->GetActorLocation()).Size();
-				if (size <= 650.f)
+				float size = ( GetActorLocation() - InteractActor->GetActorLocation() ).Size();
+				if ( size <= 650.f )
 				{
 					Interface->Interaction(this);
 				}
 			}
-			else if ((GetActorLocation() - InteractActor->GetActorLocation()).Size() <= ActiveInteractDistance)
+			else if ( ( GetActorLocation() - InteractActor->GetActorLocation() ).Size() <= ActiveInteractDistance )
 			{
 				Interface->Interaction(this);
 			}
 		}
 	}
-	
+
 }
 
 /*Called from ACoreUsableItem class, bind function, bind at Beginplay*/
 void AMainCharacter::CompassStart()
 {
 	UMainHud* MainHud = Cast<UMainHud>(MainController->MainHud);
-	if (MainHud->CompassWidget)
+	if ( MainHud->CompassWidget )
 	{
 		//this bool for VkeyDown, hide/show CompassWidget
 		bIsUsingCompass = true;
-		
+
 		MainHud->CompassWidget->PrepareCompassUpdate();
-		if (CameraMode == ECameraMode::ECM_TPS)
+		if ( CameraMode == ECameraMode::ECM_TPS )
 		{
 			MainController->ControlCoreUsableWidget(true);
 		}
 
-		GetWorldTimerManager().SetTimer(T_CompassHandle, [=] {
+		GetWorldTimerManager().SetTimer(T_CompassHandle, [ = ] {
 			MainHud->CompassWidget->UpdateCompassPointer();
 			}, GetWorld()->DeltaTimeSeconds, true);
 	}
 }
-	
+
 void AMainCharacter::CompassStop()
 {
 	//this bool for vkey down
 	bIsUsingCompass = false;
 	MainController->ControlCoreUsableWidget(false);
-	if (GetWorldTimerManager().IsTimerActive(T_CompassHandle))
+	if ( GetWorldTimerManager().IsTimerActive(T_CompassHandle) )
 	{
 		GetWorldTimerManager().ClearTimer(T_CompassHandle);
 	}
