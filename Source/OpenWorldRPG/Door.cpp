@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Door.h"
@@ -128,7 +128,7 @@ void ADoor::OpenDoor(bool bNeedToReverse)
 		bool bHasRot = false;
 		bool bHasLo = false;
 
-		//CollisionBox´Â ¿òÁ÷ÀÌ¸é ¾ÈµÈ´Ù.
+		//CollisionBoxëŠ” ì›€ì§ì´ë©´ ì•ˆëœë‹¤.
 		collisionBox->SetWorldLocationAndRotation(CBInitLocation, CBInitRotation);
 
 		if(TargetRotation != FRotator(0.f))
@@ -157,7 +157,7 @@ void ADoor::OpenDoor(bool bNeedToReverse)
 
 		}
 
-		//ClearTimeÇÒ¼ö ÀÖ´ÂÁö °ËÁõ
+		//ClearTimeí• ìˆ˜ ìˆëŠ”ì§€ ê²€ì¦
 		bool bCanClearTime = CanClearTimer(bHasRot,bHasLo,bLocationReached,bRotationReached);
 
 		if (bCanClearTime)
@@ -193,7 +193,7 @@ void ADoor::CloseDoor()
 		bool bHasRot = false;
 		bool bHasLo = false;
 
-		//CollisionBox´Â ¿òÁ÷ÀÌ¸é ¾ÈµÈ´Ù.
+		//CollisionBoxëŠ” ì›€ì§ì´ë©´ ì•ˆëœë‹¤.
 		collisionBox->SetWorldLocationAndRotation(CBInitLocation,CBInitRotation);
 
 		if (TargetRotation != FRotator(0.f))
@@ -302,11 +302,11 @@ void ADoor::SettingPhysicsDoor()
 	FVector MeshRelativeLo = Mesh->GetRelativeLocation();
 
 
-	/**RefPos ÆÄ¶ó¹ÌÅÍ´Â Physics Constraint component°¡ ºÎÂøµÈ MeshÀÇ ÇöÀç À§Ä¡¸¦ ±âÁØÀ¸·Î ÇÏ¿©, ConstraintÀÇ »ó´ëÀû À§Ä¡¸¦ ÁöÁ¤ÇÑ´Ù.
-	* Frame1 : SetConstrainedComponents¿¡¼­ ÁöÁ¤ÇÑ ComponentÀÇ RootComponent ÁÂÇ¥¸¦ ±âÁØÀ¸·Î ÇÑ´Ù (Relative Location)
-	* Frame2 : SetConstrainedComponents¿¡¼­ ÁöÁ¤ÇÑ ComponentÀÇ WorldÁÂÇ¥¸¦ ±âÁØÀ¸·Î ÇÑ´Ù. (World Location)
+	/**RefPos íŒŒë¼ë¯¸í„°ëŠ” Physics Constraint componentê°€ ë¶€ì°©ëœ Meshì˜ í˜„ì¬ ìœ„ì¹˜ë¥¼ ê¸°ì¤€ìœ¼ë¡œ í•˜ì—¬, Constraintì˜ ìƒëŒ€ì  ìœ„ì¹˜ë¥¼ ì§€ì •í•œë‹¤.
+	* Frame1 : SetConstrainedComponentsì—ì„œ ì§€ì •í•œ Componentì˜ RootComponent ì¢Œí‘œë¥¼ ê¸°ì¤€ìœ¼ë¡œ í•œë‹¤ (Relative Location)
+	* Frame2 : SetConstrainedComponentsì—ì„œ ì§€ì •í•œ Componentì˜ Worldì¢Œí‘œë¥¼ ê¸°ì¤€ìœ¼ë¡œ í•œë‹¤. (World Location)
 	*
-	* Frame1, 2¸¦ ÀÌ¿ëÇØ ConstraintÀÇ »ó´ëÀû, Àı´ëÀû À§Ä¡¸¦ ±¸ÇØ ÁöÁ¤ÇÑ´Ù.
+	* Frame1, 2ë¥¼ ì´ìš©í•´ Constraintì˜ ìƒëŒ€ì , ì ˆëŒ€ì  ìœ„ì¹˜ë¥¼ êµ¬í•´ ì§€ì •í•œë‹¤.
 	*/
 	Topconstraint->SetConstraintReferencePosition(EConstraintFrame::Frame1, FVector(0.f, 0.f, MeshSize.Z));
 	Topconstraint->SetConstraintReferencePosition(EConstraintFrame::Frame2, TopCorner);
@@ -314,7 +314,7 @@ void ADoor::SettingPhysicsDoor()
 	Bottomconstraint->SetConstraintReferencePosition(EConstraintFrame::Frame2, MeshLocation);
 
 
-	//Angular motor¸¦ Àû¿ëÇÑ´Ù. ¾Æ·¡´Â ¼ø¼­¸¦ ÁöÄÑ¾ßÇÑ´Ù.
+	//Angular motorë¥¼ ì ìš©í•œë‹¤. ì•„ë˜ëŠ” ìˆœì„œë¥¼ ì§€ì¼œì•¼í•œë‹¤.
 	Topconstraint->SetAngularDriveMode(EAngularDriveMode::SLERP);
 	Topconstraint->SetOrientationDriveSLERP(true);
 	Topconstraint->SetAngularVelocityDriveSLERP(true);
@@ -333,19 +333,19 @@ void ADoor::SettingPhysicsDoor()
 }
 
 
-//if true, Door¸¦ InteractÇÑ Player´Â DoorÀÇ µÚ¿¡ À§Ä¡ÇÑ°Í.
+//if true, Doorë¥¼ Interactí•œ PlayerëŠ” Doorì˜ ë’¤ì— ìœ„ì¹˜í•œê²ƒ.
 bool ADoor::IsPlayerBehind(AActor* Actor)
 {
 	bool bReturn = false;
-	//¾ç¹æÇâ ¹®ÀÌ ¾Æ´Ï¸é ¹Ù·Î false¸¦ ¸®ÅÏÇØ ´Ü¹æÇâ ¹®ÀÓÀ» ¾Ë¸°´Ù.
+	//ì–‘ë°©í–¥ ë¬¸ì´ ì•„ë‹ˆë©´ ë°”ë¡œ falseë¥¼ ë¦¬í„´í•´ ë‹¨ë°©í–¥ ë¬¸ì„ì„ ì•Œë¦°ë‹¤.
 	if(bIsDuplexDoor == false) return bReturn;
 
 
-	//Door(this)ÀÇ LocationÀ» Player(Actor)ÀÇ Transform°´Ã¼¿¡ º¯È¯ÇÔ.
+	//Door(this)ì˜ Locationì„ Player(Actor)ì˜ Transformê°ì²´ì— ë³€í™˜í•¨.
 	float Direction = Actor->GetActorTransform().InverseTransformPosition(this->GetActorLocation()).Y;
 
-	//º¯È¯µÈ Y°ªÀÌ 1º¸´Ù Å©¸é ¾Õ, ÀÛÀ¸¸é µÚ 
-	//ÀÌ°Ô ¿ø·¡ X°ªÀÌ ¸Â´Âµ¥ ÈñÇÑÇÏ°Ô Y°ªÀÌ ±âÁØÀ¸·Î µÇ¹ö¸².¿ø·¡ YÇÏ¸é Right/LeftÀÎµ¥. ÀÌ»óÇÔ ¾ÏÆ° Á» ±×·³
+	//ë³€í™˜ëœ Yê°’ì´ 1ë³´ë‹¤ í¬ë©´ ì•, ì‘ìœ¼ë©´ ë’¤ 
+	//ì´ê²Œ ì›ë˜ Xê°’ì´ ë§ëŠ”ë° í¬í•œí•˜ê²Œ Yê°’ì´ ê¸°ì¤€ìœ¼ë¡œ ë˜ë²„ë¦¼.ì›ë˜ Yí•˜ë©´ Right/Leftì¸ë°. ì´ìƒí•¨ ì•”íŠ¼ ì¢€ ê·¸ëŸ¼
 	if (Direction >= 1.f)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("ADoor::IsPlayerBehind // Front!"));
@@ -362,7 +362,7 @@ bool ADoor::IsPlayerBehind(AActor* Actor)
 
 	//FVector ActorLoc = Actor->GetActorLocation();
 
-	////Door¿¡¼­ Actor·ÎÀÇ ¹æÇâ º¤ÅÍ
+	////Doorì—ì„œ Actorë¡œì˜ ë°©í–¥ ë²¡í„°
 	//FVector DirToActor = (ActorLoc - DoorFwdVec).GetSafeNormal();
 
 	//float DotResult = FVector::DotProduct(DoorFwdVec,DirToActor);

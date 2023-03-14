@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "OpenWorldRPG/NewInventory/Widget/NewItemwidget.h"
@@ -70,7 +70,7 @@ void UNewItemwidget::Refresh(bool bIsTempRotate)
 				Itemsize = ItemObj->GetItemSize();
 			}
 
-			//ItemÀÇ »çÀÌÁî¸¦ °¡Á®¿Í¼­ TileSize¸¸Å­ °öÇØ WidgetÀÇ »çÀÌÁî¸¦ °áÁ¤ÇÑ´Ù.
+			//Itemì˜ ì‚¬ì´ì¦ˆë¥¼ ê°€ì ¸ì™€ì„œ TileSizeë§Œí¼ ê³±í•´ Widgetì˜ ì‚¬ì´ì¦ˆë¥¼ ê²°ì •í•œë‹¤.
 			widgetsize = FVector2D(Itemsize.X * Tilesize, Itemsize.Y * Tilesize);
 			//UE_LOG(LogTemp, Warning, TEXT("UNewItemwidget::Refresh / TileSize : %f"), Tilesize);
 			//UE_LOG(LogTemp, Warning, TEXT("UNewItemwidget::Refresh / itemsize.x : %f, itemsize.y :f"), Itemsize.X, Itemsize.Y);
@@ -81,7 +81,7 @@ void UNewItemwidget::Refresh(bool bIsTempRotate)
 			BGBorder->SetBrushColor(NormalColor);
 
 
-			//±×¸²³Ö±â
+			//ê·¸ë¦¼ë„£ê¸°
 			UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(ItemIcon->Slot);
 			if (CanvasSlot)
 			{
@@ -89,7 +89,7 @@ void UNewItemwidget::Refresh(bool bIsTempRotate)
 				CanvasSlot->SetSize(widgetsize);
 				ItemIcon->SetBrush(GetIconImage(bIsTempRotate));
 			}
-			//Item °³¼ö ³Ö±â
+			//Item ê°œìˆ˜ ë„£ê¸°
 			if(ItemObj->ItemInfo.DataAsset->bCanStack)
 			{
 				const FString CountStr = FString::FromInt(ItemObj->ItemInfo.Count);
@@ -186,10 +186,10 @@ FReply UNewItemwidget::NativeOnMouseButtonDown(const FGeometry& InGeometry, cons
 	Super::NativeOnMouseButtonDown(InGeometry, InMouseEvent);
 	FEventReply Reply;
 
-	//±âÁ¸
+	//ê¸°ì¡´
 	//Reply = UWidgetBlueprintLibrary::DetectDragIfPressed(InMouseEvent, this, EKeys::LeftMouseButton);
 
-	//°³¼±, LeftButton, Right ButtonÀ» ±¸ºĞÇÏ±â À§ÇØ if¹®À¸·Î ºĞ±âÇÑ´Ù.
+	//ê°œì„ , LeftButton, Right Buttonì„ êµ¬ë¶„í•˜ê¸° ìœ„í•´ ifë¬¸ìœ¼ë¡œ ë¶„ê¸°í•œë‹¤.
 	if (InMouseEvent.IsMouseButtonDown(EKeys::LeftMouseButton))
 	{
 		Reply = UWidgetBlueprintLibrary::DetectDragIfPressed(InMouseEvent,this, EKeys::LeftMouseButton);
@@ -209,7 +209,7 @@ void UNewItemwidget::NativeOnDragDetected(const FGeometry& InGeometry, const FPo
 	
 	DDOper = Cast<UCustomDDOperation>(UWidgetBlueprintLibrary::CreateDragDropOperation(UCustomDDOperation::StaticClass()));
 	
-	//DragwidgetÀ» º¹Á¦ÇØ¼­ »õ·Î »ı¼ºÇØÁØ´Ù.
+	//Dragwidgetì„ ë³µì œí•´ì„œ ìƒˆë¡œ ìƒì„±í•´ì¤€ë‹¤.
 	UNewItemwidget* DragWidget = CreateWidget<UNewItemwidget>(GetWorld(), this->GetClass());//, FName(TEXT("DragWidget")));//Cast<UNewItemwidget>(CreateWidget<UUserWidget>(GetWorld(), this->GetClass()));
 	check(DragWidget)
 
@@ -219,8 +219,8 @@ void UNewItemwidget::NativeOnDragDetected(const FGeometry& InGeometry, const FPo
 	DragWidget->SetFocus();
 
 	//New Version
-	/* DragWidgetÀº Çö À§Á¬À» º¹Á¦ÇÑ°ÍÀ¸·Î ´ëÃ¼ÇÑ´Ù. 
-	*  Áï, OnDropÀÌ Á¤È®È÷ ¼öÇàµÇ¾î¾ß ÇØ´ç À§Á¬ÀÌ »èÁ¦µÈ´Ù.
+	/* DragWidgetì€ í˜„ ìœ„ì ¯ì„ ë³µì œí•œê²ƒìœ¼ë¡œ ëŒ€ì²´í•œë‹¤. 
+	*  ì¦‰, OnDropì´ ì •í™•íˆ ìˆ˜í–‰ë˜ì–´ì•¼ í•´ë‹¹ ìœ„ì ¯ì´ ì‚­ì œëœë‹¤.
 	*/
 	if (ItemObj && DDOper && DragWidget)
 	{
@@ -243,7 +243,7 @@ void UNewItemwidget::NativeOnDragDetected(const FGeometry& InGeometry, const FPo
 	if (ItemObj)
 	{
 		ItemObj->bIsDragging = true;
-		//EquipWidget || NewInventoryGrid¿¡¼­ BindÇÔ (AddÇÒ¶§)
+		//EquipWidget || NewInventoryGridì—ì„œ Bindí•¨ (Addí• ë•Œ)
 		OnRemoved.Broadcast(ItemObj);
 		
 		
@@ -254,7 +254,7 @@ void UNewItemwidget::NativeOnDragDetected(const FGeometry& InGeometry, const FPo
 		RemoveFromParent();
 
 
-		// Drop WidgetÀÌ ÀÖ´Ù¸é, Drop WidgetÀÇ »óÅÂ¸¦ º¯È¯ÇÏ±â À§ÇØ BroadCast¸¦ ÇÑ´Ù.
+		// Drop Widgetì´ ìˆë‹¤ë©´, Drop Widgetì˜ ìƒíƒœë¥¼ ë³€í™˜í•˜ê¸° ìœ„í•´ BroadCastë¥¼ í•œë‹¤.
 		//OnDragDetect.Broadcast(ItemObj);
 	}
 	*/
@@ -267,11 +267,11 @@ bool UNewItemwidget::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEv
 
 	UE_LOG(LogTemp, Warning, TEXT("NewItemWidget::OnDrop func called"));
 
-	/* °°Àº ItemÀÌ°í StackableÀÌ °¡´ÉÇÏ´Ù¸é, stackÇÑ´Ù.  */
+	/* ê°™ì€ Itemì´ê³  Stackableì´ ê°€ëŠ¥í•˜ë‹¤ë©´, stackí•œë‹¤.  */
 	 
 	
 	UCustomDDOperation* CusDDOper = Cast<UCustomDDOperation>(InOperation);
-	//DDOper°¡ ¾ø°Å³ª, °°Àº WidgetÀÌ¸é returnÇÑ´Ù.
+	//DDOperê°€ ì—†ê±°ë‚˜, ê°™ì€ Widgetì´ë©´ returní•œë‹¤.
 	 if(CusDDOper == nullptr) return false;
 	 if (ItemObj == CusDDOper->ItemObj) return false;
 
@@ -297,8 +297,8 @@ FReply UNewItemwidget::NativeOnMouseButtonDoubleClick(const FGeometry& InGeometr
 
 	if (InMouseEvent.IsMouseButtonDown(EKeys::LeftMouseButton))
 	{
-		/* EquipWidget, InvWidget¿¡¼­ doubleclick event bind, (½ÇÁ¦ bind´Â NewInventory class¿¡¼­ ÁøÇàÇÑ´Ù.) */
-		//InventoryGrid¿¡ BindµÈ event broadcastÇÏ±â.
+		/* EquipWidget, InvWidgetì—ì„œ doubleclick event bind, (ì‹¤ì œ bindëŠ” NewInventory classì—ì„œ ì§„í–‰í•œë‹¤.) */
+		//InventoryGridì— Bindëœ event broadcastí•˜ê¸°.
 		if (MotherContainer)
 		{
 			MotherContainer->OpenAdditionalWidget.Broadcast(ItemObj);

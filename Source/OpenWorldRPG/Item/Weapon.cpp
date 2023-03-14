@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Weapon.h"
@@ -23,7 +23,7 @@
 #include "Particles/ParticleSystemComponent.h"
 #include "Curves/CurveFloat.h"
 #include "Math/UnrealMathUtility.h"
-#include "DrawDebugHelpers.h" //디버깅용
+#include "DrawDebugHelpers.h" //?遺얠쒔繹???
 //#include "Components/SphereComponent.h"
 #include "Components/CapsuleComponent.h"
 
@@ -75,8 +75,8 @@ void AWeapon::BeginPlay()
 {
 	Super::BeginPlay();
 
-    CheckWeaponPartsManager();
-    UpdateWeaponParts();
+	CheckWeaponPartsManager();
+	UpdateWeaponParts();
 }
 
 bool AWeapon::StepEquip(AActor* Char, ERifleSlot RifleSlot)
@@ -84,7 +84,7 @@ bool AWeapon::StepEquip(AActor* Char, ERifleSlot RifleSlot)
 	ABaseCharacter* BChar = Cast<ABaseCharacter>(Char);
 	check(BChar)
 
-	//지정한 값을 쉽게 사용하기 위해 Cast해둔다.
+	//筌??類λ립 揶?????苡??????由??袁る? Cast??紐??
 	WeaponDataAsset = Cast<UWeaponPDA>(ItemSetting.DataAsset);
 	check(WeaponDataAsset)
 
@@ -95,21 +95,21 @@ bool AWeapon::StepEquip(AActor* Char, ERifleSlot RifleSlot)
 	{
 		if (WeaponDataAsset->EquipmentType == EEquipmentType::EET_Rifle)
 		{
-			/* 1,2,3을 눌렀을때 Quick Swap하기 위해 Rifle을 지정한다 */
-			if (RifleSlot == ERifleSlot::ERS_MAX) //지정된 Slot이 없을때
+			/* 1,2,3??????袁⑤르 Quick Swap??由??袁る? Rifle??筌??類λ립??*/
+			if (RifleSlot == ERifleSlot::ERS_MAX) //筌??類ｋ? Slot???????
 			{
-				if (BChar->PrimaryWeapon) //이미 주무기가 있으면
+				if (BChar->PrimaryWeapon) //??? 雅?겆€묾怨? ???筌?
 				{
 					BChar->SetWeaponAssign(this,ERifleSlot::ERS_Sub);
 					//SettingRifleAssign(BChar, ERifleSlot::ERS_Sub);
 				}
-				else //주무기가 없으면
+				else //雅?겆€묾怨? ???筌?
 				{
 					BChar->SetWeaponAssign(this, ERifleSlot::ERS_Primary);
 					//SettingRifleAssign(BChar, ERifleSlot::ERS_Primary);
 				}
 			}
-			//Drag&Drop으로 Equip을 진행했을땐, 아래 분기로 빠진다.
+			//Drag&Drop??곗? Equip??筌袁る????? ?袁⑥ ?브쑨由경에????彛??
 			else
 			{
 				//RifleAssign = RifleSlot;
@@ -124,7 +124,7 @@ bool AWeapon::StepEquip(AActor* Char, ERifleSlot RifleSlot)
 		}
 	}
 
-	//들고 있는 무기가 없을 경우 지금 Weapon을 들도록 한다.
+	//??블???? ?얜용┛揶? ????野???筌?疫?Weapon????삳?嚥????.
 	if (BChar->EquippedWeapon == nullptr)
 	{
 		if (WeaponDataAsset->EquipmentType == EEquipmentType::EET_Rifle)
@@ -143,28 +143,31 @@ bool AWeapon::StepEquip(AActor* Char, ERifleSlot RifleSlot)
 			BChar->ChangeWeapon(3);
 		}
 	}
-	//들고있는 무기가 있는 경우, 지금 Weapon을 SubSocket으로 옮긴다.
+	//??블??? ?얜용┛揶? ??? 野??? 筌?疫?Weapon??SubSocket??곗? ??由??
 	else
 	{
 		GunAttachToSubSocket(BChar);
 	}
 	
-	//Fire시 계산을 편히 하기 위해 값을 미리 세팅 한다.
+	//Fire???④쑴沅???紐
+????由??袁る? 揶???沃紐???紐
+?????.
 	WeaponDataAsset->WeaponStat.FireRatePerSec = WeaponDataAsset->WeaponStat.FireRatePerMin / 60;
 	WeaponDataAsset->WeaponStat.SecondPerBullet = 1 / WeaponDataAsset->WeaponStat.FireRatePerSec; //0.06
 	
 	
-	//모든 세팅이 끝나고 AddEquipment를 호출하기 위해 나중에 호출했다.
+	//筌?ㅻ??紐
+?????멸돌??AddEquipment???紐???由??袁る? ??夷???紐????.
 	Super::StepEquip(Char);
 
-	/* 아래는 AddEquipment 이후에 진행 해야할 함수들을 호출..
-	* 아래함수들은 ItemObj가 필요함.
+	/* ?袁⑥??AddEquipment ?????筌袁る???鍮????λ??쇱??紐??.
+	* ?袁⑥??λ??? ItemObj揶? ?袁⑹??
 	*/
-    UCustomInventoryLibrary::SetWeaponPartsManager(this,this->ItemObj);
+	UCustomInventoryLibrary::SetWeaponPartsManager(this,this->ItemObj);
 	UpdateWeaponParts();
 
-	/**장착 직후 Ammo Widget을 update하기 위해
-	 * CheckAmmo로 obj의 AmmoInMag 변수를 불러오고 broadcast를 한다.
+	/**?關媛?筌怨??Ammo Widget??update??由??袁る?
+	 * CheckAmmo嚥?obj??AmmoInMag 癰???? ?븍???블?broadcast?????.
 	 */
 	if (OwningPlayer)
 	{
@@ -178,7 +181,7 @@ bool AWeapon::StepEquip(AActor* Char, ERifleSlot RifleSlot)
 
 
 /*
-*  Weapon을 WeaponGrip Socket에 장착한다.
+*  Weapon??WeaponGrip Socket???關媛???.
 */
 void AWeapon::GunAttachToMesh(AActor* Actor)
 {
@@ -189,7 +192,7 @@ void AWeapon::GunAttachToMesh(AActor* Actor)
 	FTransform AttachTransform;
 	
 
-	// 1, 3인칭 변경시 weapon attach를 변경한다. (Main에만 적용)
+	// 1, 3?紐臾?癰?野???weapon attach??癰?野?釉?? (Main?癒? ?怨몄)
 	if (Main)
 	{
 		const USkeletalMeshSocket* TPSocket = Main->GetMesh()->GetSocketByName("WeaponGrip");
@@ -227,7 +230,7 @@ void AWeapon::GunAttachToMesh(AActor* Actor)
 		}
 	}
 
-	//BChar만 null이 아닌경우 -> AI에만 해당
+	//BChar筌?null???袁⑤뜹???-> AI?癒? ????
 	if (BChar && Main == nullptr)
 	{
 		const USkeletalMeshSocket* WeaponSocket = BChar->GetMesh()->GetSocketByName("WeaponGrip");
@@ -250,7 +253,7 @@ void AWeapon::GunAttachToMesh(AActor* Actor)
 
 
 /*
-* WeaponGrip이 아닌 AttachSocket에 해당 Weapon을 부착 시킨다.
+* WeaponGrip???袁⑤?AttachSocket??????Weapon???봔筌???沅??
 */
 void AWeapon::GunAttachToSubSocket(AActor* Actor)
 {
@@ -299,8 +302,8 @@ FTransform AWeapon::GetSightSocketTransform()
 {
 	//if have any sight device. return that location.
 
-	//Socket의 위치를 얻기 전에, Weapon의 위치를 강제한다.
-	//Animation에 의해 Attach된 Weapon의 위치가 바뀌므로 강제하여 Socket의 일관성 있는 위치를 리턴하기 위함.
+	//Socket???袁⑺????곕┛ ?袁⑸?, Weapon???袁⑺??揶類????.
+	//Animation????鍮 Attach??Weapon???袁⑺揶? 獄遺???嚥?揶類???肉?Socket?????????? ?袁⑺???귐苑??由??袁る맙.
 	//SetActorRelativeTransform(WeaponDataAsset->FPMeshAttachTransform);
 
 	FTransform ReturnTransform;
@@ -327,25 +330,25 @@ FTransform AWeapon::GetSightSocketTransform()
 	return ReturnTransform;
 }
 
-//무조건 생성한다.
+//?얜?椰???밴쉐???.
 void AWeapon::CheckWeaponPartsManager()
 {
-    if(WeaponPartsManager.IsValid() == false)
-    {
-        WeaponPartsManager = NewObject<UWeaponPartsManagerObject>();
-        WeaponPartsManager->SetOwnerWeapon(this);
-        WeaponPartsManager->OnChangeParts.AddDynamic(this, &AWeapon::UpdateWeaponParts);
-    }
+	if(WeaponPartsManager.IsValid() == false)
+	{
+		WeaponPartsManager = NewObject<UWeaponPartsManagerObject>();
+		WeaponPartsManager->SetOwnerWeapon(this);
+		WeaponPartsManager->OnChangeParts.AddDynamic(this, &AWeapon::UpdateWeaponParts);
+	}
 	
 }
 
 void AWeapon::UpdateWeaponParts()
 {
-    if(ItemObj && ItemObj->WeaponPartsManager.IsValid())
-    {
-        ItemObj->WeaponPartsManager->UpdateParts(GetWorld(),this);
-    }
-    else
+	if(ItemObj && ItemObj->WeaponPartsManager.IsValid())
+	{
+		ItemObj->WeaponPartsManager->UpdateParts(GetWorld(),this);
+	}
+	else
 	{
 		WeaponPartsManager->UpdateParts(GetWorld(), this);
 	}
@@ -394,7 +397,7 @@ void AWeapon::Remove()
 		WeaponPartsManager->DestroyAllAttachParts(this);
 	}
 	
-	//Destory 함수로 Attach된게 Destory안되면 호출 해야됨.
+	//Destory ??λ嚥?Attach??苡?Destory??由븝??紐????鍮??
 
 	Destroy();
 
@@ -487,7 +490,7 @@ void AWeapon::TempNewWeaponState()
 
 	if (bLMBDown)
 	{
-		if (CanFire())//발사를 할 수 있다면, Firing으로 상태를 변경한다.
+		if (CanFire())//獄?沅?????????筌? Firing??곗? ?怨밴묶??癰?野?釉??
 		{
 #if WeaponDEBUG
 			UE_LOG(LogTemp, Warning, TEXT("TempState -> Firing"));
@@ -496,17 +499,19 @@ void AWeapon::TempNewWeaponState()
 		}
 	}
 	
-	//이 임시저장한 State를 Setting하기 위해 SetWeaponState함수를 호출한다.
+	//???袁⑸???館釉?State??Setting??由??袁る? SetWeaponState??λ???紐????.
 	SetWeaponState(State);
 }
 
 void AWeapon::SetWeaponState(EWeaponState NewState)
 {
 	//UE_LOG(LogTemp, Warning, TEXT("AWeapon::SetWeaponState"));
-	//기존에 발사중이었고, 더이상 LMB를 누르지 않는다면
+	//疫꿸????獄?沅餓λ?????? ?遺우??LMB???袁ⓥ
+ㅿ?? ??
+???삠
 	if (CurrentWeaponState == EWeaponState::EWS_Firing && NewState != EWeaponState::EWS_Firing)
 	{
-		// 점사면 끝내도 지정된 몇발 이상 안쐈으면 사격되도록 함.
+		// ?癒??筌???멸땀??筌??類ｋ? 筌?而???湲???由??겹 ??爰??猷嚥???
 		bool bCanEndFire = true;
 		if (WeaponFiringMode == EWeaponFiringMode::EWFM_Burst)
 		{
@@ -518,8 +523,9 @@ void AWeapon::SetWeaponState(EWeaponState NewState)
 		}
 
 
-		//사격이 중단되어야 할때 EndFiring호출 
-		 //점사일때는 냅둔다-> Check Firing함수에서 Firing을 호출하도록 함.
+		//??爰??餓λ????堉???醫釉?EndFiring?紐??
+		 //?癒????곕르????
+紐??> Check Firing??λ?癒?? Firing???紐???猷嚥???
 		if (bCanEndFire)
 		{
 #if WeaponDEBUG
@@ -531,14 +537,14 @@ void AWeapon::SetWeaponState(EWeaponState NewState)
 		}
 		
 	}
-	//기존에 발사하지 않았고, LMB를 눌렀다면
+	//疫꿸????獄?沅??? ??釉?? LMB???????삠
 	else if (CurrentWeaponState != EWeaponState::EWS_Firing && NewState == EWeaponState::EWS_Firing)
 	{
 
 #if WeaponDEBUG
 		UE_LOG(LogTemp, Warning, TEXT("SetWeponState: Start Firing Call ControlFiring func"));
 #endif			
-		//사격을 시작한다.
+		//??爰????????.
 		CurrentWeaponState = NewState;
 		ControlFiring();	
 	}
@@ -546,13 +552,13 @@ void AWeapon::SetWeaponState(EWeaponState NewState)
 
 
 	/*
-	* 쏠 수 있는 조건
-	* 1. 조정간 안전이 아니어야한다.
-	* 2. 장전중, 사격중이 아니어야 한다.
-	* 3. 탄약이 한발이상 있어야 한다.
+	* ??????? 鈺곌?援?
+	* 1. 鈺곌??揶???????袁⑤??鍮???.
+	* 2. ?關?얌빳? ??爰썰빳臾? ?袁⑤??鍮 ???.
+	* 3. ?袁⑸?????而??湲???堉?????.
 	*
-	* 4. 장착중이 아니어야 한다. //미구현.
-	* 5. 스프린트 중이 아니어야 한다. //미구현
+	* 4. ?關媛餓λ?? ?袁⑤??鍮 ???. //沃硫???
+	* 5. ??쎈늄?깃???餓λ????袁⑤??鍮 ???. //沃硫???
 	*/
 bool AWeapon::CanFire()
 {
@@ -572,7 +578,7 @@ bool AWeapon::CanFire()
 				}
 				else
 				{
-					//틱틱 하는 Sound 추가하기.
+					//?源? ??? Sound ?곕떽???由?
 				}
 			}
 		}
@@ -594,7 +600,7 @@ bool AWeapon::CheckAmmo()
 
 	if (AmmoLeftInMag <= 0)
 	{	
-		// -1이하로 내려갈일은 없지만 방지용으로.
+		// -1??釉嚥?????????? ???筌?獄????뱀嚥?
 		AmmoLeftInMag = 0;
 		return false;
 	}
@@ -620,10 +626,11 @@ void AWeapon::Reload()
 	CntAmmoSameType = 0;
 	if(bHasAmmo)
 	{
-		//Current 잔탄에 장전 가능한 탄약을 더한다.
+		//Current ?酉源???關??揶??館釉??袁⑸????酉釉??
 		AmmoLeftInMag += OwningPlayer->GetNumberofCanReload();
 
-		//잔여 ammo를 업데이트 한다.
+		//?遺용연 ammo????
+???? ???.
 		CntAmmoSameType = OwningPlayer->GetTotalNumberofSameTypeAmmo();
 		if (ItemObj)
 		{
@@ -633,7 +640,7 @@ void AWeapon::Reload()
 	}
 	else
 	{
-		//Ammo가 없다면 reload 실패.
+		//Ammo揶? ??용筌?reload ??쎈?
 	}
 
 	OwningPlayer->OnGetAmmo.Broadcast(this);
@@ -655,12 +662,12 @@ bool AWeapon::CanEndFire()
 }
 
 
-   /* FiringMode에 따라 Delay를 줘야함.
-	* semiauto인 경우 toggle방식으로.
-	* burst인 경우 3발 사격
-	* Fullauto인 경우 연속사격
+   /* FiringMode???怨??Delay??餓μ鍮??
+	* semiauto??野???toggle獄????곗?.
+	* burst??野???3獄???爰?
+	* Fullauto??野????怨???爰?
 	*
-	* 여기서 timer체크를 한번 해주고 이후에 호출되는 함수를 또 두개로 나눠서 함.
+	* ??由??timer筌ｋ寃????苡???竊????????紐???? ??λ?????癒?뻣嚥????????
 	*/
 void AWeapon::StartFire()
 {
@@ -669,9 +676,11 @@ void AWeapon::StartFire()
 	{
 		bLMBDown = true;
 		/*
-		샷을 때렸을때 기존에 Shot을때리고 있었는지, idling상태였는지 체크해야함.
-		샷을 때리고 있는 중이었으면 계속해서 공격 함수 호출(이거말고 다른 함수)
-		아니면, 공격을 멈춘 함수호출해야함.(밑 함수 말고 다른거)
+		?猷뱀??????袁⑤르 疫꿸????Shot?袁⑤르?귐??????遺?, idling?怨밴묶???遺? 筌ｋ寃??鍮??
+		?猷뱀????????? 餓λ?????筌??④쑴???苑 ?⑤????λ ?紐????욧?筌癒????삘
+???λ)
+		?袁⑤뀐? ?⑤???筌?????λ?紐???鍮??(獄???λ 筌癒????삘
+ⓨ?
 		*/
 
 		TempNewWeaponState();
@@ -689,24 +698,24 @@ void AWeapon::StopFire()
 
 void AWeapon::ControlFiring()
 {
-	/* SetWeaponState에서 호출된다.
+	/* SetWeaponState?癒?? ?紐????.
 	* 
-	* Timer를 통해 Firing함수를 호출한다.
-	* Timer의 시간은
-	* (마지막 발사 시간은 발사할때의 월드 타임)
-	* 마지막 발사시간 + 발사간격 타임 = 발사 가능 시간 이 된다.
-	* 그럼, 이 발사 가능시간이 월드 타임보다 크면 발사를 할 수 없다.
-	* 다음 발사 시간은
-	* 이 발사가능시간에 월드타임을 빼면 구해진다.
+	* Timer?????? Firing??λ???紐????.
+	* Timer????而??
+	* (筌??筌?獄?沅???而?? 獄?沅?醫釉???遺얜굡 ????
+	* 筌??筌?獄?沅??而 + 獄?沅揶袁㏐봄 ????= 獄?沅?揶?????而 ?????.
+	* 域밸??? ??獄?沅?揶??關?揶袁⑹ ?遺얜굡 ???袁⑤??????獄?沅????????용.
+	* ??쇱?獄?沅???而??
+	* ??獄?沅揶??關?揶袁⑸? ?遺얜굡???袁⑹??????닌鍮筌袁??
 	* 
-	* 예를 들어, 1초에 쏘고 2초의 간격을 가진다면
-	* 3초의 월드타임에 쏠 수 있다.
-	* 3초때 쏠 쑤 있는데 현재의 월드타임이 2초라면 쏠 수 없다.
+	* ??? ??쇰선, 1?λ肉?????2?λ??揶袁㏐??揶?筌袁?筌?
+	* 3?λ???遺얜굡???袁⑸? ???????.
+	* 3?λ釉???????????袁⑹???遺얜굡???袁⑹ 2?λ?わ????????용.
 	* 
-	* 다음 발사시간도예를 들면
-	* 3초때 쏠 쑤있는데, 현재 월드타임인 2초를 빼면
-	* 1초가 남는데. 1초후에 3초가 되어 쏠 쑤 있다.
-	* 이를 식으로 나타내면 된다.	
+	* ??쇱?獄?沅??而?袁⑹????삠
+	* 3?λ釉?????쇱?遺얜? ?袁⑹??遺얜굡???袁⑹?2?λ? ????
+	* 1?λ? ??ㅻ?? 1?λ???3?λ? ??堉????????.
+	* ??? ??뱀嚥???????????.	
 	*/
 
 #if WeaponDEBUG
@@ -715,27 +724,29 @@ void AWeapon::ControlFiring()
 	
 	float WorldTime = GetWorld()->GetTimeSeconds();
 	
-	// 점사 모드일때는 강제로 시간을 더 추가한다. 
-	// Enum을 써도 되지만 if문이 너무 길어져서 boolean변수를 하나 추가한거다.
+	// ?癒?? 筌?ㅻ??곕르??揶類?ｆ에???而?????곕떽????. 
+	// Enum????ㅻ? ???筌?if?얜??????疫뀀?堉?紐苑 boolean癰???? ??援??곕떽???援
+??
 	bool bIsBurstmode = false;
 	if (WeaponFiringMode == EWeaponFiringMode::EWFM_Burst)
 	{
 		bIsBurstmode = true;
 	}
 
-	//마지막 발사시간과 총의 SPB (발사당 필요한 초)를 더한 값이 worldTime보다 크다면
-	// 아직 발사 할 수 없으므로 발사가능 시간을 구한다.
+	//筌??筌?獄?沅??而???μ??SPB (獄?沅???袁⑹???????酉釉?揶???worldTime癰??????筌?
+	// ?袁⑹
+ 獄?沅????????沃?嚥?獄?沅揶?????而???닌釉??
 
-	//점사모드면 발사 가능 시간을 늦춘 조건으로 검사한다.
+	//?癒??筌?ㅻ굡筌?獄?沅?揶?????而??????鈺곌?援??곗? 野???釉??
 	if((bIsBurstmode && LastFireTime > 0 && LastFireTime + WeaponDataAsset->WeaponStat.SecondPerBullet *4 >WorldTime) ||
 		(LastFireTime > 0 && LastFireTime + WeaponDataAsset->WeaponStat.SecondPerBullet > WorldTime))
 	{
-		//발사 가능시간을 구한다. 
+		//獄?沅?揶??關?揶袁⑹??닌釉?? 
 		float RemainingTime = 0.f;// = LastFireTime + WeaponStat.SecondPerBullet - WorldTime;
 
 		if (bIsBurstmode) 
 		{
-			//점사 모드면 SecondPerBullet에 4를 곱한 값.
+			//?癒?? 筌?ㅻ굡筌?SecondPerBullet??4???④?釉?揶?
 			RemainingTime = (LastFireTime + WeaponDataAsset->WeaponStat.SecondPerBullet * 4) - WorldTime;
 		}
 		GetWorldTimerManager().SetTimer(FiringTimer, this, &AWeapon::Firing, RemainingTime, false);
@@ -743,7 +754,7 @@ void AWeapon::ControlFiring()
 	}
 	else
 	{
-		//발사가 가능하다면 바로 호출한다.
+		//獄?沅揶? 揶??館釉??삠 獄遺얠??紐????.
 		Firing();
 	}
 	
@@ -751,10 +762,10 @@ void AWeapon::ControlFiring()
 
 void AWeapon::Firing()
 {
-	/* ControlFiring, ReFiring에서 호출됨. */
+	/* ControlFiring, ReFiring?癒?? ?紐??? */
 	/*
-		ammo 체크, FireCount 증가, 함수 끝에 Timer기록 (마지막 발사 시간 기록용)
-		계속해서 사격중이라면 ReFiring함수 호출
+		ammo 筌ｋ寃? FireCount 筌??, ??λ ??밸? Timer疫꿸?以?(筌??筌?獄?沅???而 疫꿸?以??
+		?④쑴???苑 ??爰썰빳臾???겹 ReFiring??λ ?紐??
 	*/
 
 #if WeaponDEBUG
@@ -774,7 +785,8 @@ void AWeapon::Firing()
 		}
 	}
 
-	/* 첫 발사면 ControlRotation값을 저장한다. -> 사격 종료시 원복하기 위함 */
+	/* 筌?獄?沅筌?ControlRotation揶??????館釉?? -> ??爰??ル
+利???癒???由??袁る맙 */
 	if (FireCount == 0)
 	{
 		StartFiringRotation = GetInstigatorController()->GetControlRotation();
@@ -786,12 +798,12 @@ void AWeapon::Firing()
 	if(Main)
 	{
 		//for player
-		New_BulletOut(); //Weapon Instant에 구현함
+		New_BulletOut(); //Weapon Instant???닌???
 	}
 	else
 	{
 		//for ai
-		AIBulletOut(); //Weapon Instant에 구현함
+		AIBulletOut(); //Weapon Instant???닌???
 	}
 
 
@@ -806,10 +818,10 @@ void AWeapon::Firing()
 	LastFireTime = GetWorld()->GetTimeSeconds();
 }
 
-//ReFiring을 할 수 있는지 확인하는 함수다.
+//ReFiring?????????筌? ?類ㅼ??? ??λ??
 void AWeapon::ReFiring()
 {
-	//실제로 체크하는 함수를 호출한다.
+	//??쇱ｆ?筌ｋ寃??? ??λ???紐????.
 	bool bCanReFire = CheckRefire();
 	if (bCanReFire)
 	{
@@ -823,7 +835,7 @@ void AWeapon::ReFiring()
 	
 }
 
-// Firing이 끝나면 각종 변수들을 초기화 시켜준다.
+// Firing????멸돌筌?揶怨몄?癰???諭???λ由?????餓Β??
 void AWeapon::EndFiring()
 {
 	//UE_LOG(LogTemp, Warning, TEXT("AWeapon::EndFiring"));
@@ -831,25 +843,25 @@ void AWeapon::EndFiring()
 	GetWorldTimerManager().ClearTimer(FiringTimer);
 	
 	FireCount = 0;
-	CurrentWeaponState = EWeaponState::EWS_Idle; //Burst mode를 위함
+	CurrentWeaponState = EWeaponState::EWS_Idle; //Burst mode???袁る맙
 	PreviousSpread = FVector::ZeroVector;
 
 	RecoilTime = 0.f;
 
-	// 사격을 끝냈을때 첫 사격 에임으로 되돌아 오는 기능 ,,, test를 위해 잠시 기능을 off.
+	// ??爰????멸??袁⑤르 筌???爰??癒???곗? ??猷????삳 疫꿸???,,, test???袁る? ?醫? 疫꿸????off.
 	//AimInitialize();
 }
 
-//Refire가 가능한지 체크한다.
+//Refire揶? 揶??館釉놂?? 筌ｋ寃???.
 bool AWeapon::CheckRefire()
 {
 	bool bFlag = false;
-	//격발이 가능한지 우선 체크하고
+	//野?몄??揶??館釉놂?? ?怨苑 筌ｋ寃????
 	if (CanFire())
 	{
 		if (CurrentWeaponState == EWeaponState::EWS_Firing)
 		{
-			//Burst모드일때는 BurstRound이하로 쐈을때 refire가 가능하다.
+			//Burst筌?ㅻ??곕르??BurstRound??釉嚥??????refire揶? 揶??館釉??
 			switch (WeaponFiringMode)
 			{
 			case EWeaponFiringMode::EWFM_Burst:
@@ -893,7 +905,8 @@ FVector AWeapon::GetAimLocation_TEST()
 }
 */
 
-// 플레이어의 시점각도 (뷰포트가 바라보고 있는 회전각)를 Vector값으로 구한다.
+// ???
+??堉?????揶怨룸?(?怨猷?硫? 獄遺?よ??욱???? ???얍???Vector揶??嚥??닌釉??
 FTransform AWeapon::GetAimPosition()
 {
 	check(OwningPlayer)
@@ -914,7 +927,7 @@ FTransform AWeapon::GetAimPosition()
 	return ReturnAim;
 }
 
-/* 위 함수에서 구한 각과 스타트 로케이션을 내적 벡터 해줘서 최종 탄 시작 위치를 구한다.*/
+/* ????λ?癒?? ?닌釉?揶怨???????嚥≪??????????甕겸リ???夷??筌ㅼ伊?????? ?袁⑺???닌釉??*/
 FVector AWeapon::GetTraceStartLocation(FVector Dir)
 {
 	check(OwningPlayer)
@@ -923,8 +936,8 @@ FVector AWeapon::GetTraceStartLocation(FVector Dir)
 	FVector ReturnLocation;
 	FRotator Rot;
 
-	//ClippingWall 함수가 실행되면, 탄 시작 위치를 Muzzle의 위치로 바꾼다.
-	//함수가 실행되지 않으면,  탄시작 위치는 Actor와(Actor-CamLo = Actor의 옆위치가 된다) Dir의 사이각이 된다.
+	//ClippingWall ??λ揶? ??쎈뻬???, ????? ?袁⑺??Muzzle???袁⑺嚥?獄遺???
+	//??λ揶? ??쎈뻬??? ???筌?  ?袁⑸???袁⑺??Actor??(Actor-CamLo = Actor?????燁살? ???) Dir?????揶怨몄 ???.
 	
 	//For debug
 	if (SKMesh->GetSocketByName(MuzzleFlashSocketName) == nullptr)
@@ -950,15 +963,16 @@ FVector AWeapon::GetTraceEndLocation(FVector StartVector, FVector Dir)
 {
 	FVector ReturnVec;
 
-	//ClippingWall함수가 실행되면 탄의 종료 위치는 Muzzle의 방향*거리가 되며
-	//함수가 실행되지 않으면, WorldAimPosition이 된다.
+	//ClippingWall??λ揶? ??쎈뻬??? ?袁⑹??ル
+利??袁⑺??Muzzle??獄?븍?椰怨?揶? ???
+	//??λ揶? ??쎈뻬??? ???筌? WorldAimPosition?????.
 	if(bIsHighReady)
 	{
-		//Muzzle Flash Rotation값으로 하면 처음은 잘되는데  시간 지나다 보면 Rotation값이 이상하게 되는듯? 자꾸 변한다. -> ActorQuat 절대 축으로 변환함.
+		//Muzzle Flash Rotation揶??嚥???? 筌ｌ??? ??由?遺얜? ??而 筌???? 癰???Rotation揶?????湲??苡?????? ?癒?? 癰????. -> ActorQuat ??? ?곕벡?嚥?癰???釉?
 		//FRotator MuzzleRotation = SKMesh->GetSocketRotation(MuzzleFlashSocketName);
 		//ReturnVec = StartVector +  MuzzleRotation.Vector() * WeaponDataAsset->WeaponStat.WeaponRange;
 		 
-		//이 Actor Mesh의 전방 축을 가져온다.
+		//??Actor Mesh???袁④? ?곕벡??揶??紐???
 		ReturnVec = StartVector + this->GetActorQuat().GetAxisY() * WeaponDataAsset->WeaponStat.WeaponRange;
 		
 	}
@@ -975,7 +989,7 @@ FHitResult AWeapon::BulletTrace(FVector StartTrace, FVector EndTrace)
 {
 	FHitResult Hit;
 
-	FCollisionQueryParams params(NAME_None, true, GetInstigator()); //Instigator를 IgnoreActor로 하면된다.
+	FCollisionQueryParams params(NAME_None, true, GetInstigator()); //Instigator??IgnoreActor嚥???????.
 
 	GetWorld()->LineTraceSingleByChannel(Hit, StartTrace, EndTrace, COLLISION_WEAPON_INST, params);
 
@@ -984,16 +998,16 @@ FHitResult AWeapon::BulletTrace(FVector StartTrace, FVector EndTrace)
 	return Hit;
 }
 
-/* 사운드와 총구 이펙트 */
+/* ?????? ?μ???????*/
 void AWeapon::WeaponFX()
 {
-	//사운드
+	//?????
 	if (WeaponDataAsset->FireSound)
 	{
 		UGameplayStatics::SpawnSoundAttached(WeaponDataAsset->FireSound, OwningPlayer->GetRootComponent());
 	}
 
-	//총구 이펙트
+	//?μ???????
 	if (WeaponDataAsset->FireMuzzleEffect)
 	{
 		const USkeletalMeshSocket* MuzzleSocket = SKMesh->GetSocketByName(MuzzleFlashSocketName);
@@ -1007,7 +1021,7 @@ void AWeapon::WeaponFX()
 		}
 	}
 
-	//Animatoin 재생.
+	//Animatoin ??源?
 	//PlayWeaponAnimAndCamShake(FireAnimaton);
 }
 
@@ -1040,7 +1054,8 @@ void AWeapon::AimInitialize()
 	//UE_LOG(LogTemp, Warning, TEXT("Save End Firing Location And Init"));
 	EndFiringRotation = GetInstigatorController()->GetControlRotation();
 
-	//fire중 마우스 입력이 감지되면 AimInit을 단순히 아래로 내리게 한다.
+	//fire餓?筌??????
+???揶癒???? AimInit????λ???袁⑥嚥????野????.
 	if (bDetectLookInput)
 	{
 		bDetectLookInput = false;
@@ -1053,7 +1068,7 @@ void AWeapon::AimInitialize()
 	GetWorldTimerManager().SetTimer(AimInitHandle, [=] {
 		
 		Time += GetWorld()->GetDeltaSeconds();
-		AlphaTime = Time / 0.8f; // : Time/되돌아오는 시간  (스텟)
+		AlphaTime = Time / 0.8f; // : Time/??猷?袁⑹????而  (??쎈?
 
 		//FRotator LerpAimRotation = FMath::RInterpTo(EndFiringRotation, StartFiringRotation, GetWorld()->GetDeltaSeconds(), 20.f);
 		FRotator LerpAimRotation = FMath::Lerp(EndFiringRotation, StartFiringRotation, AlphaTime);
@@ -1074,7 +1089,8 @@ void AWeapon::UpdateAim()
 	{
 		WorldAimPosition = Hit.Location;
 
-		//FPS시점에서 Trace를 같은곳에 한번 더 쏴서 맞으면 맞은 위치로 AimPos를 옮긴다.
+		//FPS????癒?? Trace??揶???⑤
+밸???苡?????苑 筌??筌?筌?? ?袁⑺嚥?AimPos????由??
 		FHitResult WeaponHit = BulletTrace(MainCon->Main->CameraFPS->GetComponentLocation(), Hit.Location);
 		if (WeaponHit.bBlockingHit)
 		{
@@ -1107,10 +1123,10 @@ void AWeapon::WeaponClipping()
 		CurrentMeshRightHand = MainCon->Main->GetMesh()->GetSocketLocation("hand_r");
 	}
 
-	//LienTrace의 길이는 Weapon에 부착된 CapsuleComp길이
+	//LienTrace??疫뀀????Weapon???봔筌△몃?CapsuleComp疫뀀???
 	float Length = CapsuleComp->GetScaledCapsuleHalfHeight() * 4;
 
-	//방향벡터는 AimPosition으로 한다.
+	//獄?븍?린?リ숲??AimPosition??곗? ???.
 	FVector EndLo = CurrentMeshRightHand + GetAimPosition().GetRotation().GetForwardVector() * Length;
 	TArray<AActor*> IgnoreActorList;
 	IgnoreActorList.Add(GetInstigator());
@@ -1118,12 +1134,13 @@ void AWeapon::WeaponClipping()
 
 	ETraceTypeQuery TTQ = UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_GameTraceChannel2);
 
-	//오른쪽 손에서 Aim이 향하는 방향으로 Weapon의 Capsule길이만큼 LineTrace를 쏜다.
+	//??삘
+⑨??癒????Aim???館釉??獄?븍??곗? Weapon??Capsule疫뀀??筌?곌껍 LineTrace?????.
 	UKismetSystemLibrary::SphereTraceSingle(GetWorld(), CurrentMeshRightHand, EndLo, 5.f, TTQ, false,
 		IgnoreActorList, EDrawDebugTrace::None, Hit, true);
 	
-	//이 Line Trace가 Hit되면 앞에 무언가 장애물이 있다는 뜻이고,
-	//Weapon의 Roll을 수정해 위쪽으로 회전시킨다. 'HighReady형태로'
+	//??Line Trace揶? Hit??? ??肉 ?얜堉드?? ?關釉룩?깆 ???????댁??
+	//Weapon??Roll????????袁⒲??곗? ?????沅?? 'HighReady?類κ묶嚥?
 	if(Hit.bBlockingHit)
 	{
 		FVector CurVec = CurrentMeshAttachTransform.GetTranslation();
@@ -1131,12 +1148,13 @@ void AWeapon::WeaponClipping()
 		
 		FRotator CurRot = CurrentMeshAttachTransform.GetRotation().Rotator();
 
-		//Why Roll?? -> Skeleton에서 무기를 넣고 위로 돌리니 Roll값만 바껴서 Roll로 한거임.
-		// Hit.Distance / Length하게되면 0부터 1이 나오는데.
-		// Hit.Distance == Length -> 1이됨. 즉, 1일때는 0이되고 0일때는 90도가 되어야함.
-		// 때문에 90을 곱했고, 90을 걍 곱해버리면 1일때 90이 되버림. 그리고 어차피 각도가 -90이 되야 위로 올라가니
-		// 0*90 = 0, 0.5*90 = 45, 1*90 = 90이라 걍 -90을 빼버렸음,
-		// 최종값은 0일때 -90, 0.5일때 -45, 1일때 0이 나옴.
+		//Why Roll?? -> Skeleton?癒?? ?얜용┛???節???袁⑥? ?????Roll揶?彛?獄遺쎈??Roll嚥???援
+??
+		// Hit.Distance / Length??苡??? 0?봔??1??????遺얜?
+		// Hit.Distance == Length -> 1??留? 筌? 1??곕르??0??由뷸?0??곕르??90?袁? ??堉??노맙.
+		// ?????90???④?六썸? 90??椰??④?鍮甕곌쑬?筌?1??곕르 90????苡?? 域밸??????媛??揶怨룸?揶? -90????鍮 ?袁⑥? ???ゅ????
+		// 0*90 = 0, 0.5*90 = 45, 1*90 = 90????椰?-90????곗?紐??
+		// 筌ㅼ伊揶誘? 0??곕르 -90, 0.5??곕르 -45, 1??곕르 0?????.
 		FRotator CalcRot = FRotator(CurRot.Pitch, CurRot.Yaw, (CurRot.Roll + (Hit.Distance / Length)*90.f) - 90.f);
 		//UE_LOG(LogTemp, Warning, TEXT("Calc Rot ; %s"), *CalcRot.ToString());
 
@@ -1169,15 +1187,15 @@ void AWeapon::OnCollisionBegin(UPrimitiveComponent* OverlappedComponent, AActor*
 		
 		if(Main->TPAnimInstance->bBeginHighReady == false)
 		{
-			//Weaponclass에 있는 bIsHighReady는 AnimInstance에서 완전히 내려왔을때 false를 시켜주도록 하자.
+			//Weaponclass????? bIsHighReady??AnimInstance?癒?? ?袁⑹??????遺우??false?????雅?곕?嚥????.
 			bIsHighReady = true;
 			//Main->TPAnimInstance->bBeginHighReady = true;
 			//Main->FPAnimInstance->bBeginHighReady = true;
 
 			// New Fix Clipping wall
-			//Tick에서 Sphere Line Trace를 쏘는데, distance와 radius는 설정 가능함.(총마다 다를수 있으니..)
-			//hit이 있다면, Original Transform에서 Location값  - (0.f,0.f, Curve.evaluate(hit.distance / distance)
-			//이렇게 해서 나온값을 NewTransform.location으로 지정해주면 된다.
+			//Tick?癒?? Sphere Line Trace??????? distance?? radius????쇱 揶??館釉?(?μ몄????????????.)
+			//hit?????筌? Original Transform?癒?? Location揶? - (0.f,0.f, Curve.evaluate(hit.distance / distance)
+			//???野???苑 ???⒴????NewTransform.location??곗? 筌??類λ?雅??????.
 			
 
 

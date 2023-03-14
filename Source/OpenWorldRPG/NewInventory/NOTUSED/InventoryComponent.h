@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -9,7 +9,7 @@
 class AActor;
 class AItem;
 
-//Inventory°¡ ¾÷µ¥ÀÌÆ® µÉ¶§¸¶´Ù ºí·çÇÁ¸°Æ®¿¡¼­ ui¸¦ ¾÷µ¥ÀÌÆ®¸¦ ÇÏ±â À§ÇØ delegate¸¦ ¸¸µé¾îÁØ´Ù.
+//Inventoryê°€ ì—…ë°ì´íŠ¸ ë ë•Œë§ˆë‹¤ ë¸”ë£¨í”„ë¦°íŠ¸ì—ì„œ uië¥¼ ì—…ë°ì´íŠ¸ë¥¼ í•˜ê¸° ìœ„í•´ delegateë¥¼ ë§Œë“¤ì–´ì¤€ë‹¤.
 //DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInventoryUpdated);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -22,7 +22,7 @@ public:
 	UInventoryComponent();
 
 	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite) //Instanced)
-	//TArray<TSubclassOf<class AItem>> DefaultItems; //°ÔÀÓ ½ÃÀÛ½Ã ÁÖ¾îÁö´Â itemµé
+	//TArray<TSubclassOf<class AItem>> DefaultItems; //ê²Œì„ ì‹œì‘ì‹œ ì£¼ì–´ì§€ëŠ” itemë“¤
 	
 	UPROPERTY(VisibleAnywhere, Category = Inventory)
 	int32 Capacity;
@@ -32,7 +32,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Items)
 	//TArray<AItem*> InventoryItems;
-	TArray<TSubclassOf<AItem>> InventoryItems; //inventory¿¡ ÀÖ´Â itemµé
+	TArray<TSubclassOf<AItem>> InventoryItems; //inventoryì— ìˆëŠ” itemë“¤
 
 protected:
 	// Called when the game starts

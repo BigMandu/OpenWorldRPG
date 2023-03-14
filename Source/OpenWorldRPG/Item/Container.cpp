@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Container.h"
@@ -35,7 +35,7 @@ AContainer::AContainer()
 	
 
 	//WidgetBlueprint'/Game/Inventory/WBP_LootBox.WBP_LootBox'
-	//À§Á¬ ÇÏµåÄÚµù
+	//ìœ„ì ¯ í•˜ë“œì½”ë”©
 	/*
 	WidgetBlueprint'/Game/Inventory/WBP_LootBox.WBP_LootBox'
 	static ConstructorHelpers::FObjectFinder<UUserWidget> TempLootBoxWidget(TEXT("WidgetBlueprint'/Game/Inventory/WBP_LootBox.WBP_LootBox_C'"));
@@ -71,7 +71,7 @@ void AContainer::BeginPlay()
 	Super::BeginPlay();
 	//MainCon = Cast<AMainController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 
-	//InventoryComponentÀÇ ÃÊ±âÈ­°¡ BeginPlay¿¡¼­ µÇ±â¶§¹®¿¡ ¿©±â´Ù Çß´Ù.
+	//InventoryComponentì˜ ì´ˆê¸°í™”ê°€ BeginPlayì—ì„œ ë˜ê¸°ë•Œë¬¸ì— ì—¬ê¸°ë‹¤ í–ˆë‹¤.
 	LootWidgetComp->WidgetType = EWidgetType::EWT_LootBox;
 
 	SettingStorage();
@@ -119,7 +119,7 @@ void AContainer::OpenContainer(AActor* Actor)
 
 	if (MainCon && MainChar)
 	{
-		//ÇØÁ¦´Â MainController::HideInventory¿¡¼­ ÇÔ.
+		//í•´ì œëŠ” MainController::HideInventoryì—ì„œ í•¨.
 		MainChar->InteractLootBox = this;
 
 		MainCon->bIsInteractLootBox = true;
@@ -137,7 +137,7 @@ void AContainer::ShowWidget(AMainController* MainCon)
 	UNewInventory* MainInventory = Cast<UNewInventory>(MainCon->MainHud->NewInventoryWidget);
 	if (MainInventory)
 	{
-		LootWidgetComp->CreateInteractionWidget(MainCon, this); //»õ·ÎÃß°¡
+		LootWidgetComp->CreateInteractionWidget(MainCon, this); //ìƒˆë¡œì¶”ê°€
 	}
 }
 

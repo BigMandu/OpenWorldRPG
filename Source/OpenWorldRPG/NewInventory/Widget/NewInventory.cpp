@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "OpenWorldRPG/NewInventory/Widget/NewInventory.h"
@@ -62,7 +62,7 @@ void UNewInventory::NativeConstruct()
 	CraftButton->OnClicked.AddDynamic(this, &UNewInventory::ChangeMainSwitchToCraft);
 }
 
-/* Navive Construct º¸´Ù ¸ÕÀú ½ÇÇàµÊ.*/
+/* Navive Construct ë³´ë‹¤ ë¨¼ì € ì‹¤í–‰ë¨.*/
 bool UNewInventory::Initialize()
 {
 	bool bResult = Super::Initialize();
@@ -125,7 +125,7 @@ bool UNewInventory::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEve
 
 
 
-		//Canvas¿¡ Ãß°¡ÇÏ¸é, DraggInventoryWindow¿¡¼­ RemoveFromParentÇÔ¼ö°¡ ¸ÔÁö ¾Ê¾Æ, AddToViewport·Î ´ëÃ¼Çß´Ù.
+		//Canvasì— ì¶”ê°€í•˜ë©´, DraggInventoryWindowì—ì„œ RemoveFromParentí•¨ìˆ˜ê°€ ë¨¹ì§€ ì•Šì•„, AddToViewportë¡œ ëŒ€ì²´í–ˆë‹¤.
 		// 
 		//UDraggInventoryWindow* StorageWindow = Cast<UDraggInventoryWindow>(AdditionalDaD->AdditionalWidget);
 		//UCanvasPanelSlot* CanvasSlot = MainCanvas->AddChildToCanvas(StorageWindow);
@@ -152,7 +152,7 @@ void UNewInventory::BindingOpenWidgetFunc(UNewItemObject* ItemObj)
 
 void UNewInventory::CreateAdditionalWidget(UNewItemObject* T_Obj)
 {
-	//ÀÌ¹Ì ÄÑÀÖ´Â WidgetÀÎÁö È®ÀÎÇÑ´Ù.
+	//ì´ë¯¸ ì¼œìˆëŠ” Widgetì¸ì§€ í™•ì¸í•œë‹¤.
 	if (CheckAlreadyOpened(T_Obj))
 	{
 		return;
@@ -185,7 +185,7 @@ void UNewInventory::CreateAdditionalWidget(UNewItemObject* T_Obj)
 	}
 			
 
-	//Áßº¹Á¦°Å¸¦ À§ÇØ widgetÀ» Array¿¡ ´ã´Â´Ù.
+	//ì¤‘ë³µì œê±°ë¥¼ ìœ„í•´ widgetì„ Arrayì— ë‹´ëŠ”ë‹¤.
 	OpenedWindowArray.Add(AdditionalWindow);
 	
 
@@ -203,8 +203,8 @@ bool UNewInventory::CheckAlreadyOpened(UNewItemObject* T_Obj)
 {
 	UItemStorageObject* StorageObj = Cast<UItemStorageObject>(T_Obj);
 
-		//ÀÌ¹Ì ÄÑÀÖ´Â WidgetÀÎÁö È®ÀÎÇÑ´Ù.
-		/* Array ºĞÇÒÀ» »ı°¢ÇØ ºÃÁö¸¸, ZOrder ¹®Á¦·Î ÀÎÇØ ÄÁÅ×ÀÌ³Ê¸¦ ÇÕÃÆ´Ù.
+		//ì´ë¯¸ ì¼œìˆëŠ” Widgetì¸ì§€ í™•ì¸í•œë‹¤.
+		/* Array ë¶„í• ì„ ìƒê°í•´ ë´¤ì§€ë§Œ, ZOrder ë¬¸ì œë¡œ ì¸í•´ ì»¨í…Œì´ë„ˆë¥¼ í•©ì³¤ë‹¤.
 		*/
 		for (UDraggInventoryWindow* OpenedWindow : OpenedWindowArray)
 		{
@@ -213,7 +213,7 @@ bool UNewInventory::CheckAlreadyOpened(UNewItemObject* T_Obj)
 				TArray<UWidget*> ChildWidget = OpenedWindow->ContentBorder->GetAllChildren();
 				for(auto Child : ChildWidget)
 				{
-					//StorageTypeÀÎ °æ¿ì
+					//StorageTypeì¸ ê²½ìš°
 					if (StorageObj)
 					{
 						UNewInventoryGrid* Gridwidget = Cast< UNewInventoryGrid>(Child);
@@ -226,7 +226,7 @@ bool UNewInventory::CheckAlreadyOpened(UNewItemObject* T_Obj)
 							continue;
 						}
 					}
-					// ±×¿Ü ³ª¸ÓÁö Type
+					// ê·¸ì™¸ ë‚˜ë¨¸ì§€ Type
 					else
 					{
 						if (UWeaponPartsWidget* PartsWidget = Cast<UWeaponPartsWidget>(Child))
@@ -254,7 +254,7 @@ UWidget* UNewInventory::CreateChildWidget(UDraggInventoryWindow* AdditionalWindo
 	
 	if (StorageObj)
 	{
-		//ÃÊ±âÈ­°¡ µÈÀû ¾ø´Â Storage¸é ÃÊ±âÈ­¸¦ ÇØÁØ´Ù.
+		//ì´ˆê¸°í™”ê°€ ëœì  ì—†ëŠ” Storageë©´ ì´ˆê¸°í™”ë¥¼ í•´ì¤€ë‹¤.
 		if (StorageObj->Inventory.IsValidIndex(0) == false)
 		{
 			UCustomPDA* CPDA = Cast<UCustomPDA>(StorageObj->ItemInfo.DataAsset);
@@ -268,7 +268,7 @@ UWidget* UNewInventory::CreateChildWidget(UDraggInventoryWindow* AdditionalWindo
 		GridWidget->GridInit();
 		ReturnSubWidget = GridWidget;
 
-		//°¡°¡°¡¹æÀ» À§ÇØ BindÇØÁØ´Ù.
+		//ê°€ê°€ê°€ë°©ì„ ìœ„í•´ Bindí•´ì¤€ë‹¤.
 		GridWidget->OpenAdditionalWidget.AddDynamic(this, &UNewInventory::BindingOpenWidgetFunc);
 	}
 	else
@@ -370,8 +370,8 @@ FReply UNewInventory::NativeOnMouseButtonDown(const FGeometry& InGeometry, const
 	return ReturnReply.NativeReply;
 }
 
-/** Inventory Ã¢À» ´İÀ»¶§ ¿­·ÁÀÖ´Â ¸ğµç AdditionalWidgetÀ» ´İ´Â´Ù.
-  * @ArrayNum - Tabkey Down¿¡¼­ ³Ñ°ÜÁØ´Ù. (OpendedWindowArray.Num() °ªÀÓ)
+/** Inventory ì°½ì„ ë‹«ì„ë•Œ ì—´ë ¤ìˆëŠ” ëª¨ë“  AdditionalWidgetì„ ë‹«ëŠ”ë‹¤.
+  * @ArrayNum - Tabkey Downì—ì„œ ë„˜ê²¨ì¤€ë‹¤. (OpendedWindowArray.Num() ê°’ì„)
   */
 void UNewInventory::CloseAllAdditionalWidget(int32 ArrayNum)
 {
@@ -387,7 +387,7 @@ void UNewInventory::CloseAllAdditionalWidget(int32 ArrayNum)
 	//}
 
 	//other version
-	//window°¡ nullptrÀÌ ¾Æ´Ï¸é »èÁ¦ÇÑ´Ù.
+	//windowê°€ nullptrì´ ì•„ë‹ˆë©´ ì‚­ì œí•œë‹¤.
 	OpenedWindowArray.RemoveAll([](UDraggInventoryWindow* AddedWindow)
 		{
 			AddedWindow->RemoveFromParent();

@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -76,11 +76,11 @@ public:
 	UPROPERTY(EditAnywhere, Category = "SpawnVolume | Settings")
 	ESpawnType SpawnType;
 
-	/* SpawnTypeÀÌ VolumeTypeÀÏ ¶§¸¸ ÀÛµ¿ÇÑ´Ù. // true - ¶¥¿¡ ºÙ¾î¼­ ½ºÆù, false - °øÁß¿¡¼­ ½ºÆù */
+	/* SpawnTypeì´ VolumeTypeì¼ ë•Œë§Œ ì‘ë™í•œë‹¤. // true - ë•…ì— ë¶™ì–´ì„œ ìŠ¤í°, false - ê³µì¤‘ì—ì„œ ìŠ¤í° */
 	UPROPERTY(EditAnywhere, Category = "SpawnVolume | Settings")
 	bool bOnGround;
 
-	/* SpawnTypeÀÌ VolumeTypeÀÏ ¶§, bOnGround°¡ trueÀÏ ¶§¸¸ ÀÛµ¿ÇÑ´Ù.// true - Ä³¸¯ÅÍ Å° ÀÌ»óÀ¸·Î´Â ½ºÆù x, false - Á¦ÇÑ¾øÀÌ ½ºÆù*/
+	/* SpawnTypeì´ VolumeTypeì¼ ë•Œ, bOnGroundê°€ trueì¼ ë•Œë§Œ ì‘ë™í•œë‹¤.// true - ìºë¦­í„° í‚¤ ì´ìƒìœ¼ë¡œëŠ” ìŠ¤í° x, false - ì œí•œì—†ì´ ìŠ¤í°*/
 	UPROPERTY(EditAnywhere, Category = "SpawnVolume | Settings", meta = (EditCondition = "bOnGround"))
 	bool bLimitZ;
 

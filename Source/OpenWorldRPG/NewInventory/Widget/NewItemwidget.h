@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -39,15 +39,15 @@ class OPENWORLDRPG_API UNewItemwidget : public UUserWidget
 	GENERATED_BODY()
 
 private:
-	//ÀüÃ¼ÀûÀÎ ÀÌ WidgetÀÇ »çÀÌÁî
+	//ì „ì²´ì ì¸ ì´ Widgetì˜ ì‚¬ì´ì¦ˆ
 	FVector2D widgetsize;
 
-	//°ËÀº»ö
+	//ê²€ì€ìƒ‰
 	const FLinearColor NormalColor = FLinearColor(0.0, 0.0, 0.0, 0.5);
-	//ºÓÀº»ö
+	//ë¶‰ì€ìƒ‰
 	const FLinearColor HoverColor = FLinearColor(0.5, 0.5, 0.5, 0.2);
 	
-	//HorverÇßÀ»¶§ ³ª¿À´Â Tooltip widget
+	//Horverí–ˆì„ë•Œ ë‚˜ì˜¤ëŠ” Tooltip widget
 	UTooltipWidget* Tooltip;
 
 
@@ -56,17 +56,17 @@ private:
 	
 public:
 
-	/* delegate, NewItemwidget::GetIconIamge,, NativeOnDragDetected ¿¡¼­ broad cast, 
-	* NewInventoryGrid::RefreshInventory¿¡¼­ NewInventoryGrid::OnItemRemove
-	* ¿Í bind½ÃÅ´.
-	* ItemÀ» »èÁ¦ÇßÀ»¶§ È£ÃâµÇµµ·Ï
+	/* delegate, NewItemwidget::GetIconIamge,, NativeOnDragDetected ì—ì„œ broad cast, 
+	* NewInventoryGrid::RefreshInventoryì—ì„œ NewInventoryGrid::OnItemRemove
+	* ì™€ bindì‹œí‚´.
+	* Itemì„ ì‚­ì œí–ˆì„ë•Œ í˜¸ì¶œë˜ë„ë¡
 	*/ 
 	FOnRemoved OnRemoved;
 	FOnDragDetect OnDragDetect;
 	
 	//UDragDropOperation* DDOper;
 
-	//Rotate¸¦ (OnKeyDown event) ÇÏ±â À§ÇØ DDOper¸¦ ÀúÀåÇØ³õ´Â´Ù.
+	//Rotateë¥¼ (OnKeyDown event) í•˜ê¸° ìœ„í•´ DDOperë¥¼ ì €ì¥í•´ë†“ëŠ”ë‹¤.
 	bool bIsDragWidget = false;
 	UCustomDDOperation* DDOper;
 
@@ -86,7 +86,7 @@ public:
 
 
 	class UEquipWidget* MotherEquipWidget;
-	/* GridWidget¿¡¼­ data¸¦ ³Ö¾îÁÜ*/
+	/* GridWidgetì—ì„œ dataë¥¼ ë„£ì–´ì¤Œ*/
 	UNewInventoryGrid* MotherContainer;
 	UNewItemObject* ItemObj;
 	float Tilesize;

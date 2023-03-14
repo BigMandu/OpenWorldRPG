@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+Ôªø// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "OpenWorldRPG/UI/ResourceStatusWidgetInInventory.h"
@@ -8,7 +8,7 @@ void UResourceStatusWidgetInInventory::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	//æ»«ÿµµµ .
+	//ÏïàÌï¥ÎèÑÎê®.
 }
 
 void UResourceStatusWidgetInInventory::BindStatManager(TWeakObjectPtr<UStatManagementComponent> StatWizardManager)

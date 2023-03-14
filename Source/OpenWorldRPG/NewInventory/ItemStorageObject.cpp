@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "OpenWorldRPG/NewInventory/ItemStorageObject.h"
@@ -14,7 +14,7 @@ FTile UItemStorageObject::IndexToTile(int32 index)
 	return tile;
 }
 
-/* gridÀÇ x,yÁÂÇ¥¸¦ index·Î ¹Ù²Û´Ù. */
+/* gridì˜ x,yì¢Œí‘œë¥¼ indexë¡œ ë°”ê¾¼ë‹¤. */
 int32 UItemStorageObject::TileToIndex(FTile tile)
 {
 	return tile.X + tile.Y * Columns;
@@ -42,11 +42,11 @@ UNewItemObject* UItemStorageObject::GetItemAtIndex(int32 index)
 
 bool UItemStorageObject::CheckValid(UNewItemObject* VarObj, int32 Varind)
 {
-	//Index°¡ 0 ¹Ì¸¸,
-	//Try AddÇÏ´Â Obj°¡ ÀÚ±â ÀÚ½Å,
-	//Try AddÇÏ´Â Obj°¡ ÀÚ½ÅÀ» ´ã°íÀÖ´Â Storage,
+	//Indexê°€ 0 ë¯¸ë§Œ,
+	//Try Addí•˜ëŠ” Objê°€ ìê¸° ìì‹ ,
+	//Try Addí•˜ëŠ” Objê°€ ìì‹ ì„ ë‹´ê³ ìˆëŠ” Storage,
 	
-	//À§¿¡¼­ ÇÏ³ª¶óµµ ÇØ´çÇÏ¸é AddÇÒ ¼ö ¾ø´Ù.
+	//ìœ„ì—ì„œ í•˜ë‚˜ë¼ë„ í•´ë‹¹í•˜ë©´ Addí•  ìˆ˜ ì—†ë‹¤.
 	if(Varind < 0 || this == VarObj || VarObj == MotherStorage)
 	{
 		return false;
@@ -58,9 +58,9 @@ bool UItemStorageObject::CheckValid(UNewItemObject* VarObj, int32 Varind)
 bool UItemStorageObject::IsAvailableSpace(UNewItemObject* ItemObj, int32 TLind)
 {
 	/*
-	InventoryÀÇ Top-LeftºÎÅÍ itemÀ» addÇÒ¶§
-	ÀÌ ItemÀÌ Â÷ÁöÇÒ Å¸ÀÏ¸¸Å­	(ÇØ´ç indexÀÇ Top-leftºÎÅÍ) ¸ğµç Inventory tileÀ»
-	loop µ¹¸é¼­ À¯È¿ÇÑ °ø°£ÀÌ ÀÖ´ÂÁö È®ÀÎÇÑ´Ù. ÀÌ¹Ì Â÷ÁöÇÏ°í ÀÖ´Ù¸é false, ¾ø´Ù¸é true¸¦ ¸®ÅÏ.
+	Inventoryì˜ Top-Leftë¶€í„° itemì„ addí• ë•Œ
+	ì´ Itemì´ ì°¨ì§€í•  íƒ€ì¼ë§Œí¼	(í•´ë‹¹ indexì˜ Top-leftë¶€í„°) ëª¨ë“  Inventory tileì„
+	loop ëŒë©´ì„œ ìœ íš¨í•œ ê³µê°„ì´ ìˆëŠ”ì§€ í™•ì¸í•œë‹¤. ì´ë¯¸ ì°¨ì§€í•˜ê³  ìˆë‹¤ë©´ false, ì—†ë‹¤ë©´ trueë¥¼ ë¦¬í„´.
 	*/
 
 	if (CheckValid(ItemObj, TLind) == false)
@@ -77,7 +77,7 @@ bool UItemStorageObject::IsAvailableSpace(UNewItemObject* ItemObj, int32 TLind)
 	int32 HorizontalMAX = tile.X + Itemsize.X - 1;
 	int32 VerticalMAX = tile.Y + Itemsize.Y - 1;
 
-	//¾ÆÀÌÅÛÀÇ Àı´ëÅ©±â°¡ InventoryÀÇ Çã¿ë¹üÀ§¸¦ ¹ş¾î³ª´ÂÁö È®ÀÎ.
+	//ì•„ì´í…œì˜ ì ˆëŒ€í¬ê¸°ê°€ Inventoryì˜ í—ˆìš©ë²”ìœ„ë¥¼ ë²—ì–´ë‚˜ëŠ”ì§€ í™•ì¸.
 	if (HorizontalMAX >= Columns || VerticalMAX >= Rows || HorizontalMAX < 0 || VerticalMAX < 0) return false;
 
 	for (int32 i = tile.X; i <= HorizontalMAX; ++i)
@@ -87,7 +87,7 @@ bool UItemStorageObject::IsAvailableSpace(UNewItemObject* ItemObj, int32 TLind)
 			checktile.X = i;
 			checktile.Y = j;
 
-			//¿©±â Ã¼Å©ÇÏ´Â ºÎºĞÀº  ÇÑ¹øÀÌ¶óµµ ½ÇÆĞÇÏ¸é °Á false¸®ÅÏÇÏ°Ô ÇÏ´Â°Å »ı°¢ÇØºÁ¾ßÇÔ.
+			//ì—¬ê¸° ì²´í¬í•˜ëŠ” ë¶€ë¶„ì€  í•œë²ˆì´ë¼ë„ ì‹¤íŒ¨í•˜ë©´ ê± falseë¦¬í„´í•˜ê²Œ í•˜ëŠ”ê±° ìƒê°í•´ë´ì•¼í•¨.
 			if ((checktile.X >= 0 && checktile.Y >= 0) && (checktile.X < Columns && checktile.Y < Rows))
 			{
 				int32 index = TileToIndex(checktile);
@@ -112,14 +112,14 @@ bool UItemStorageObject::TryAddItem(UNewItemObject* ItemObj, bool bWantToGenerat
 	{
 		bResult = TryAddItemStep(ItemObj);
 
-		/* ItemÃß°¡¿¡ ½ÇÆĞÇß°í ItemÀ» µ¹¸± ¼ö ÀÖ´Ù¸é */
+		/* Itemì¶”ê°€ì— ì‹¤íŒ¨í–ˆê³  Itemì„ ëŒë¦´ ìˆ˜ ìˆë‹¤ë©´ */
 		if (!bResult && ItemObj->ItemInfo.DataAsset->bCanRotate)
 		{
-			/* ItemÀ» µ¹¸®°í ´Ù½Ã Ãß°¡ÇÑ´Ù. */
+			/* Itemì„ ëŒë¦¬ê³  ë‹¤ì‹œ ì¶”ê°€í•œë‹¤. */
 			ItemObj->ItemRotate();
 			bResult = TryAddItemStep(ItemObj);
 
-			/* ±×·¡µµ ½ÇÆĞÇß´Ù¸é µ¹¸° itemÀ» ´Ù½Ã ¿øº¹ ½ÃÅ²´Ù.*/
+			/* ê·¸ë˜ë„ ì‹¤íŒ¨í–ˆë‹¤ë©´ ëŒë¦° itemì„ ë‹¤ì‹œ ì›ë³µ ì‹œí‚¨ë‹¤.*/
 			if (!bResult)
 			{
 				ItemObj->ItemRotate();
@@ -150,7 +150,7 @@ bool UItemStorageObject::TryAddItemStep(UNewItemObject* ItemObj)
 
 void UItemStorageObject::AddItemAtIndex(UNewItemObject* ItemObj, int32 Index)
 {
-	//AddÇÏ±â Àü¿¡, ÀÌÀü¿¡ MotherStorage°¡ ÀÖ´Ù¸é °Å±â¼­ Áö¿öÁØ´Ù.
+	//Addí•˜ê¸° ì „ì—, ì´ì „ì— MotherStorageê°€ ìˆë‹¤ë©´ ê±°ê¸°ì„œ ì§€ì›Œì¤€ë‹¤.
 	if (ItemObj->MotherStorage)
 	{
 		ItemObj->MotherStorage->RemoveItem(ItemObj);
@@ -166,7 +166,7 @@ void UItemStorageObject::AddItemAtIndex(UNewItemObject* ItemObj, int32 Index)
 		ItemObj->WeaponPartsManager->RemoveParts(ItemObj);
 	}
 	 
-	//ItemÀÌ È¸ÀüÇß´Ù¸é »èÁ¦ÈÄ Àû¿ëÇÑ´Ù.
+	//Itemì´ íšŒì „í–ˆë‹¤ë©´ ì‚­ì œí›„ ì ìš©í•œë‹¤.
 	ItemObj->SetItemRotate();
 
 	ItemObj->TopLeftIndex = Index;
@@ -202,7 +202,7 @@ void UItemStorageObject::AddItemAtIndex(UNewItemObject* ItemObj, int32 Index)
 
 
 	
-	/*	AddItemÀÌ ¼º°øÀûÀÌ¸é UNewInventoryGrid::RefreshInventory¸¦ È£ÃâÇÏ±â À§ÇØ broadcast¸¦ ¶§·ÁÁØ´Ù.
+	/*	AddItemì´ ì„±ê³µì ì´ë©´ UNewInventoryGrid::RefreshInventoryë¥¼ í˜¸ì¶œí•˜ê¸° ìœ„í•´ broadcastë¥¼ ë•Œë ¤ì¤€ë‹¤.
 	*/
 	OnInventoryAdd.Broadcast(ItemObj);
 }
@@ -240,12 +240,12 @@ bool UItemStorageObject::RemoveItem(UNewItemObject* ItemObj)
 const TMap<UNewItemObject*, FTile> UItemStorageObject::GetAllItems()
 {
 	/*
-* Item°ú, ÇØ´ç itemÀÇ Top-Left index¸¦ ´ãÀº MapÀ» ¸®ÅÏÇØÁØ´Ù.
-* Key°ªÀ» ItemObject·Î, Value¸¦ FTile·Î ÁöÁ¤Çß´Ù.
+* Itemê³¼, í•´ë‹¹ itemì˜ Top-Left indexë¥¼ ë‹´ì€ Mapì„ ë¦¬í„´í•´ì¤€ë‹¤.
+* Keyê°’ì„ ItemObjectë¡œ, Valueë¥¼ FTileë¡œ ì§€ì •í–ˆë‹¤.
 */
 	TMap<UNewItemObject*, FTile> InventoryStoredInfo;
 
-	//¿©±â InventoryItems¿¡ Garbage°ª µé¾î¿È 
+	//ì—¬ê¸° InventoryItemsì— Garbageê°’ ë“¤ì–´ì˜´ 
 	for (int32 index = 0; index < Inventory.Num(); ++index)
 	{
 		UNewItemObject* CurItemObj = Inventory[index];

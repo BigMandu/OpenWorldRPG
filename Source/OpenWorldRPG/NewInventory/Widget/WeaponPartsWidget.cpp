@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "OpenWorldRPG/NewInventory/Widget/WeaponPartsWidget.h"
@@ -69,9 +69,9 @@ void UWeaponPartsWidget::RefreshWidget()
 
 
 /**
- * RefreshWidget이 호출될때 마다 WeaponPDA에 있는 Parts 정보를 토대로
- * WeaponPartsWidget의 각 Slot을 갱신한다.
- * PartsObj가 nullptr로 넘어왔을 경우엔 ClearChildren으로 삭제만 하고 리턴한다.
+ * RefreshWidget???몄??? 留??WeaponPDA? ?? Parts ?蹂대? ??濡
+ * WeaponPartsWidget? 媛 Slot? 媛깆???
+ * PartsObj媛 nullptr濡 ??댁? 寃쎌곗 ClearChildren?쇰? ??留 ?怨 由ы댄??
  */
 void UWeaponPartsWidget::UpdatePartsSlotWidget(UEquipmentSlot* PartsSlot, UNewItemObject* PartsObj)
 {
@@ -98,7 +98,7 @@ void UWeaponPartsWidget::UpdatePartsSlotWidget(UEquipmentSlot* PartsSlot, UNewIt
 
 
 /************************************************************************/
-/*                      아래는 삭제 예정                                 */
+/*                      ??? ?? ??                                 */
 /************************************************************************/ 
   
  /*
@@ -176,7 +176,7 @@ void UWeaponPartsWidget::RemoveWeaponParts(UNewItemObject* PartsObj)
 */
 
 //OldVersion
-/* EquipmentSlot에서 Data가 Insert, Delete될때 마다 호출된다. */
+/* EquipmentSlot?? Data媛 Insert, Delete?? 留???몄???? */
 /*
 void UWeaponPartsWidget::RefreshWidget()
 {
@@ -218,7 +218,7 @@ void UWeaponPartsWidget::RefreshWidget()
 			}
 		}
 
-		//Live한, Spawned Item이면 WeaponClass의 함수를 호출한다.
+		//Live?, Spawned Item?대㈃ WeaponClass? ?⑥瑜??몄????
 		if (WeaponObj->bIsDestoryed == false)
 		{
 			Cast<AWeapon>(WeaponObj->Equipment)->CheckWeaponParts();

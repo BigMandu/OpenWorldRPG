@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 #pragma warning(disable : 4800)
 
 #include "Weapon_Instant.h"
@@ -11,7 +11,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Sound/SoundCue.h"
-#include "DrawDebugHelpers.h" //µğ¹ö±ë¿ë
+#include "DrawDebugHelpers.h" //ë””ë²„ê¹…ìš©
 
 
 AWeapon_Instant::AWeapon_Instant() : Super()
@@ -21,9 +21,9 @@ AWeapon_Instant::AWeapon_Instant() : Super()
 
 
 
-/* New_BulletOutÇÔ¼ö´Â ApplyRecoilÇÔ¼ö¿¡¼­ Weapon¿¡ Ãß°¡ÇÑ
- * CurveFloatÀ» ÀÌ¿ëÇØ ±×·ÁÁø Spread¸¦ TimeÀ» ±âÁØÀ¸·Î °¡Á®¿À´Â ¹æ½ÄÀÌ´Ù.
- * Ä«¿îÅÍ ½ºÆ®¶óÀÌÅ©ÀÇ Spread½Ã½ºÅÛ°ú À¯»çÇÏ´Ù.
+/* New_BulletOutí•¨ìˆ˜ëŠ” ApplyRecoilí•¨ìˆ˜ì—ì„œ Weaponì— ì¶”ê°€í•œ
+ * CurveFloatì„ ì´ìš©í•´ ê·¸ë ¤ì§„ Spreadë¥¼ Timeì„ ê¸°ì¤€ìœ¼ë¡œ ê°€ì ¸ì˜¤ëŠ” ë°©ì‹ì´ë‹¤.
+ * ì¹´ìš´í„° ìŠ¤íŠ¸ë¼ì´í¬ì˜ Spreadì‹œìŠ¤í…œê³¼ ìœ ì‚¬í•˜ë‹¤.
  */
 void AWeapon_Instant::New_BulletOut()
 {
@@ -32,8 +32,8 @@ void AWeapon_Instant::New_BulletOut()
 	FVector EndTrace = GetTraceEndLocation(StartTrace, AimPos.Rotator().Vector());
 	 
 	 	
-	//±×³É WorldAimPos¸¦ EndPoint·Î ÁöÁ¤ÇÒ°æ¿ì.
-	//°¡²û µü ¸Â¾Æ¶³¾îÁú¶§, HitÀÌ ¾È¸ÔÈ÷´Â °æ¿ì°¡ »ı°Ü °Å¸®¸¦ ´Ã·ÁÁØ´Ù.
+	//ê·¸ëƒ¥ WorldAimPosë¥¼ EndPointë¡œ ì§€ì •í• ê²½ìš°.
+	//ê°€ë” ë”± ë§ì•„ë–¨ì–´ì§ˆë•Œ, Hitì´ ì•ˆë¨¹íˆëŠ” ê²½ìš°ê°€ ìƒê²¨ ê±°ë¦¬ë¥¼ ëŠ˜ë ¤ì¤€ë‹¤.
 	//FHitResult Hit = BulletTrace(StartTrace, WorldAimPosition + AimPos.Rotator().Vector() * 30.f);
 	FHitResult Hit = BulletTrace(StartTrace, EndTrace);
 
@@ -46,27 +46,27 @@ void AWeapon_Instant::New_BulletOut()
 	}
 	GetWorldTimerManager().ClearTimer(RecoilHandle);
 
-	//¿©±â¼­, Burst¸ğµåÀÏ ¶§ µû·Î RecoilÀ» Àû¿ëÇÏ±â À§ÇØ ´Ù¸¥ ÇÔ¼ö¸¦ È£ÃâÇÏÀÚ.
-	//Burst¸ğµå´Â RandomÀ¸·Î Àû¿ëÇÏÀÚ.
+	//ì—¬ê¸°ì„œ, Burstëª¨ë“œì¼ ë•Œ ë”°ë¡œ Recoilì„ ì ìš©í•˜ê¸° ìœ„í•´ ë‹¤ë¥¸ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ì.
+	//Burstëª¨ë“œëŠ” Randomìœ¼ë¡œ ì ìš©í•˜ì.
 	ApplyRecoil();
 }
 
 
-//Old_BulletOutÀ» °¡Á®´Ù½è´Ù.
+//Old_BulletOutì„ ê°€ì ¸ë‹¤ì¼ë‹¤.
 void AWeapon_Instant::AIBulletOut()
 {
 	if(GetInstigatorController())
 	{
 		int32 Seed = FMath::Rand();
 		FRandomStream BulletRandomStream(Seed);
-		float LastSpread = 10.f + CurFiringSpread; //ÇÔ¼ö·Î »©¼­ AimBulletSpreadÃß°¡.
+		float LastSpread = 10.f + CurFiringSpread; //í•¨ìˆ˜ë¡œ ë¹¼ì„œ AimBulletSpreadì¶”ê°€.
 		float ConeHalfAngle = FMath::DegreesToRadians(LastSpread *0.5);
 
 
 		FVector Dir = GetInstigatorController()->GetControlRotation().Vector(); // = GetAimRotation();
 		FVector StartTrace = SKMesh->GetSocketLocation(MuzzleFlashSocketName); // GetTraceStartLocation(Dir);
 
-		// ÀÌ¾î¼­ »õ·ÎÃß°¡. (RandomStreamÀ» ÀÌ¿ëÇÑ Weapon Spread)  
+		// ì´ì–´ì„œ ìƒˆë¡œì¶”ê°€. (RandomStreamì„ ì´ìš©í•œ Weapon Spread)  
 
 		FVector ShootDir = BulletRandomStream.VRandCone(Dir, ConeHalfAngle*2, ConeHalfAngle);
 		DrawDebugCone(GetWorld(), StartTrace, Dir, 2000.f, ConeHalfAngle*2, ConeHalfAngle, 6, FColor::Blue, false, 2.f, (uint8)nullptr, 1.f);	//2000.f = WeaponStat.WeaponRange
@@ -81,24 +81,24 @@ void AWeapon_Instant::AIBulletOut()
 			DrawDebugPoint(GetWorld(), Hit.Location, 10.f, FColor::Green, false, 3.f);
 			CheckHit(Hit,Dir);
 		}
-		CurFiringSpread = (10.f < CurFiringSpread + 1.f) ? 10.f : CurFiringSpread + 1.f; //RandomStreamÀ» ÀÌ¿ëÇÑ Spread.
+		CurFiringSpread = (10.f < CurFiringSpread + 1.f) ? 10.f : CurFiringSpread + 1.f; //RandomStreamì„ ì´ìš©í•œ Spread.
 	}
 }
 
 
 
 
-/* Recoil_X¿Í Recoil_Y´Â Curve float ¿¡µğÅÍ¿¡ »ı¼ºÇØ³õÀ½.
- * rpmÀÌ 950¸é, rps´Â 15.8, 0.06ÃÊ´ç 1¹ß
+/* Recoil_Xì™€ Recoil_YëŠ” Curve float ì—ë””í„°ì— ìƒì„±í•´ë†“ìŒ.
+ * rpmì´ 950ë©´, rpsëŠ” 15.8, 0.06ì´ˆë‹¹ 1ë°œ
  */
 void AWeapon_Instant::ApplyRecoil()
 {
 
 	if (WeaponDataAsset->WeaponStat.Recoil_X && WeaponDataAsset->WeaponStat.Recoil_Y)
 	{
-		/* Recoil TimeÀº AWeapon::EndFiring¿¡¼­ 0À¸·Î ÃÊ±âÈ­ µÈ´Ù.
-		 * Recoil TimeÀ» ±âÁØÀ¸·Î Curve Float°ªÀ» °¡Á®¿Í Áö³­¹ø°ú, ´ÙÀ½¿¡ ½ò °ªÀ» °¡Á®¿Í
-		 * »ó½Â°ªÀ» ±¸ÇØ Àû¿ëÇÑ´Ù.
+		/* Recoil Timeì€ AWeapon::EndFiringì—ì„œ 0ìœ¼ë¡œ ì´ˆê¸°í™” ëœë‹¤.
+		 * Recoil Timeì„ ê¸°ì¤€ìœ¼ë¡œ Curve Floatê°’ì„ ê°€ì ¸ì™€ ì§€ë‚œë²ˆê³¼, ë‹¤ìŒì— ì  ê°’ì„ ê°€ì ¸ì™€
+		 * ìƒìŠ¹ê°’ì„ êµ¬í•´ ì ìš©í•œë‹¤.
 		 */
 		float LastRecoilTime = RecoilTime - WeaponDataAsset->WeaponStat.SecondPerBullet;
 		float LastRecoilValue_X = WeaponDataAsset->WeaponStat.Recoil_X->GetFloatValue(LastRecoilTime);
@@ -110,7 +110,7 @@ void AWeapon_Instant::ApplyRecoil()
 		PitchValue = (NextRecoilValue_X - LastRecoilValue_X);
 		YawValue = (NextRecoilValue_Y - LastRecoilValue_Y);
 
-		/* Á¶ÁØ À¯¹«¿¡ µû¶ó ¹İµ¿À» ÁØ´Ù. */
+		/* ì¡°ì¤€ ìœ ë¬´ì— ë”°ë¼ ë°˜ë™ì„ ì¤€ë‹¤. */
 		if (bIsAiming)
 		{
 			PitchValue *= WeaponDataAsset->WeaponStat.AimBulletSpread;
@@ -122,8 +122,8 @@ void AWeapon_Instant::ApplyRecoil()
 			YawValue *= WeaponDataAsset->WeaponStat.HipBulletSpread;
 		}
 
-		//ÃÊ¹İ ¹İµ¿À» ¾àÇÏ°Ô Áá±â¶§¹®¿¡ (Semiauto, Fullauto½Ã ÇÑ¹ß¾¿ ²÷¾î½ò¶§ º¸Á¤À» À§ÇÔ)
-		//Burst¸ğµåÀÏ¶§ ³Ê¹« »ç±â°¡ µÇ¹ö·Á °­Á¦·Î PitchValue¸¦ ´õ ÁØ´Ù.
+		//ì´ˆë°˜ ë°˜ë™ì„ ì•½í•˜ê²Œ ì¤¬ê¸°ë•Œë¬¸ì— (Semiauto, Fullautoì‹œ í•œë°œì”© ëŠì–´ì ë•Œ ë³´ì •ì„ ìœ„í•¨)
+		//Burstëª¨ë“œì¼ë•Œ ë„ˆë¬´ ì‚¬ê¸°ê°€ ë˜ë²„ë ¤ ê°•ì œë¡œ PitchValueë¥¼ ë” ì¤€ë‹¤.
 		if (WeaponFiringMode == EWeaponFiringMode::EWFM_Burst)
 		{
 			PitchValue *= 1.2f;
@@ -150,13 +150,13 @@ void AWeapon_Instant::ApplyRecoil()
 		/*GetInstigator()->AddControllerPitchInput(PitchValue);
 		GetInstigator()->AddControllerYawInput(YawValue);*/
 
-		//¸®ÄÚÀÏ Å¸ÀÓÀº 1¹ßÀ» ½ò¶§ÀÇ Å¸ÀÓ¸¸Å­¾¿ Áõ°¡ÇØ¾ßÇÑ´Ù.
+		//ë¦¬ì½”ì¼ íƒ€ì„ì€ 1ë°œì„ ì ë•Œì˜ íƒ€ì„ë§Œí¼ì”© ì¦ê°€í•´ì•¼í•œë‹¤.
 		RecoilTime = RecoilTime + WeaponDataAsset->WeaponStat.SecondPerBullet;
 		
 
 
 		//UE_LOG(LogTemp, Warning, TEXT("RecoilTime : %f"), RecoilTime);
-		if (RecoilTime > WeaponDataAsset->WeaponStat.SecondPerBullet * 30) //30À» ³ªÁß¿¡ ÅºÃ¢ ÃÖ´ë°³¼ö·Î ¹Ù²Ù¸éµÊ.
+		if (RecoilTime > WeaponDataAsset->WeaponStat.SecondPerBullet * 30) //30ì„ ë‚˜ì¤‘ì— íƒ„ì°½ ìµœëŒ€ê°œìˆ˜ë¡œ ë°”ê¾¸ë©´ë¨.
 		{
 			//UE_LOG(LogTemp, Warning, TEXT("RecoilTime max, set 0.5"));
 			RecoilTime = 0.3f;
@@ -200,7 +200,7 @@ void AWeapon_Instant::ApplyDamage(const FHitResult& Hit, const FVector Dir)
 	FPointDamageEvent PointDmgEvt;
 	PointDmgEvt.HitInfo = Hit;
 	PointDmgEvt.ShotDirection = Dir.GetSafeNormal();
-	PointDmgEvt.Damage = 90.f; //ÀÓ½Ã ¿ø·¡´Â WeaponDataAsset-> ÀÌ°Å ½á¾ßµÊ
+	PointDmgEvt.Damage = 90.f; //ì„ì‹œ ì›ë˜ëŠ” WeaponDataAsset-> ì´ê±° ì¨ì•¼ë¨
 		
 	Hit.GetActor()->TakeDamage(PointDmgEvt.Damage, PointDmgEvt, OwningPlayer->GetController(), this);
 	//TakeDamage(10.f, PointDmgEvent, OwningPlayer->GetInstigatorController(), this);
@@ -208,17 +208,17 @@ void AWeapon_Instant::ApplyDamage(const FHitResult& Hit, const FVector Dir)
 
 
 /*******************************************************************************************/
-//************************        ÀÌÇÏ´Â »ç¿ëÇÏÁö ¾Ê´Â ÇÔ¼öµé     ****************************/
+//************************        ì´í•˜ëŠ” ì‚¬ìš©í•˜ì§€ ì•ŠëŠ” í•¨ìˆ˜ë“¤     ****************************/
 /*******************************************************************************************/
 
 
 
 // Old_BulletOut 
-/* ÀÌ ÇÔ¼ö´Â ´õ ÀÌ»ó »ç¿ëÇÏÁö ¾Ê´Â´Ù. New_BulletOut ÇÔ¼ö¸¦ »ç¿ëÇÒ°Í.
+/* ì´ í•¨ìˆ˜ëŠ” ë” ì´ìƒ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤. New_BulletOut í•¨ìˆ˜ë¥¼ ì‚¬ìš©í• ê²ƒ.
  *
- * Random StreamÀ» ÀÌ¿ëÇÑ ¹æ¹ı°ú, Rand°ªÀ» ÀÌ¿ëÇÑ ¹æ¹ıÀ» »ç¿ëÇß´ø ÇÔ¼ö´Ù.
- * Random StreamÀº Spread¸¦ µû·Î ¿Ü¿ì°Å³ª ÀÍÈú ÇÊ¿ä ¾ø´Â ´Ü¼øÇÑ ¹İµ¿ÀÌ¸ç
- * Rand°ªÀ» ÀÌ¿ëÇÑ Spread´Â °³¹ßÀÚ°¡ ÀÇµµÇÑ ´ë·Î Spread¸¦ »Ñ·Á ÁÙ ¼ö ÀÖÁö¸¸, ÇÑ°è°¡ ÀÖ´Ù.
+ * Random Streamì„ ì´ìš©í•œ ë°©ë²•ê³¼, Randê°’ì„ ì´ìš©í•œ ë°©ë²•ì„ ì‚¬ìš©í–ˆë˜ í•¨ìˆ˜ë‹¤.
+ * Random Streamì€ Spreadë¥¼ ë”°ë¡œ ì™¸ìš°ê±°ë‚˜ ìµí í•„ìš” ì—†ëŠ” ë‹¨ìˆœí•œ ë°˜ë™ì´ë©°
+ * Randê°’ì„ ì´ìš©í•œ SpreadëŠ” ê°œë°œìê°€ ì˜ë„í•œ ëŒ€ë¡œ Spreadë¥¼ ë¿Œë ¤ ì¤„ ìˆ˜ ìˆì§€ë§Œ, í•œê³„ê°€ ìˆë‹¤.
  */
 
 /*
@@ -226,18 +226,18 @@ void AWeapon_Instant::Old_BulletOut()
 {
 	//UE_LOG(LogTemp, Warning, TEXT("Weap_Instant::BulletOut"));
 	
-	// Rondom Stream À» ÀÌ¿ëÇÑ Weapon Spread 
+	// Rondom Stream ì„ ì´ìš©í•œ Weapon Spread 
 	
 	////int32 Seed = FMath::Rand();
 	////FRandomStream BulletRandomStream(Seed);
-	////float LastSpread = BulletStat.HipBulletSpread + CurFiringSpread; //ÇÔ¼ö·Î »©¼­ AimBulletSpreadÃß°¡.
+	////float LastSpread = BulletStat.HipBulletSpread + CurFiringSpread; //í•¨ìˆ˜ë¡œ ë¹¼ì„œ AimBulletSpreadì¶”ê°€.
 	////float ConeHalfAngle = FMath::DegreesToRadians(LastSpread *0.5);
 	
 
 	FVector Dir;// = GetAimRotation();
 	FVector StartTrace = GetTraceStartLocation(Dir);
 
-	// ÀÌ¾î¼­ »õ·ÎÃß°¡. (RandomStreamÀ» ÀÌ¿ëÇÑ Weapon Spread)  
+	// ì´ì–´ì„œ ìƒˆë¡œì¶”ê°€. (RandomStreamì„ ì´ìš©í•œ Weapon Spread)  
 	
 	////FVector ShootDir = BulletRandomStream.VRandCone(Dir, ConeHalfAngle*2, ConeHalfAngle);
 	////DrawDebugCone(GetWorld(), StartTrace, Dir, WeaponStat.WeaponRange, ConeHalfAngle*2, ConeHalfAngle, 6, FColor::Green, false, 2.f, (uint8)nullptr, 4.f);	
@@ -257,20 +257,20 @@ void AWeapon_Instant::Old_BulletOut()
 	DrawDebugPoint(GetWorld(), Hit.Location, 10.f, FColor::Blue, false, 2.f);
 	CheckHit(Hit);
 
-	//CurFiringSpread = (10.f < CurFiringSpread + 1.f) ? 10.f : CurFiringSpread + 1.f; //RandomStreamÀ» ÀÌ¿ëÇÑ Spread.
+	//CurFiringSpread = (10.f < CurFiringSpread + 1.f) ? 10.f : CurFiringSpread + 1.f; //RandomStreamì„ ì´ìš©í•œ Spread.
 }
 */
 
 
-// BulletSpread ÇÔ¼öµµ »ç¿ëÇÏÁö ¾Ê´Â´Ù. Old_BulletOut¿¡¼­ »ç¿ë.
+// BulletSpread í•¨ìˆ˜ë„ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤. Old_BulletOutì—ì„œ ì‚¬ìš©.
 /*
 FVector AWeapon_Instant::BulletSpread(FVector Vec)
 {
-	// RandomÀ» ÀÌ¿ëÇÑ Weapon Spread 
+	// Randomì„ ì´ìš©í•œ Weapon Spread 
 	FVector TempVector = Vec;
 	AMainCharacter* Main = Cast<AMainCharacter>(OwningPlayer);
 	
-	// ÃÊÅºÀº ¹«Á¶°Ç ¿øÇÏ´Â ÁöÁ¡À¸·Î °¡°Ô ÇÑ´Ù.
+	// ì´ˆíƒ„ì€ ë¬´ì¡°ê±´ ì›í•˜ëŠ” ì§€ì ìœ¼ë¡œ ê°€ê²Œ í•œë‹¤.
 	if (Main)
 	{
 		if (FireCount > 0)
@@ -330,7 +330,7 @@ FVector AWeapon_Instant::BulletSpread(FVector Vec)
 */
 
 
-// CalcRecoilNApplyÇÔ¼öµµ »ç¿ëÇÏÁö ¾Ê´Â´Ù. Old Bullet Out¿¡¼­ »ç¿ë.
+// CalcRecoilNApplyí•¨ìˆ˜ë„ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ë‹¤. Old Bullet Outì—ì„œ ì‚¬ìš©.
 /*
 void AWeapon_Instant::CalcRecoilNApply(FVector *PreSpread, FVector *NexSpread)
 {
@@ -343,19 +343,19 @@ void AWeapon_Instant::CalcRecoilNApply(FVector *PreSpread, FVector *NexSpread)
 	//UE_LOG(LogTemp, Warning, TEXT("PreSpread : %s"), *(PreSpread->ToString()));
 	//UE_LOG(LogTemp, Warning, TEXT("NexSpread : %s"), *(NexSpread->ToString()));
 
-	// Left & Right °è»ê
+	// Left & Right ê³„ì‚°
 	FVector CrossVec = FVector::CrossProduct(*PreSpread - GetInstigator()->GetActorLocation(), *NexSpread - GetInstigator()->GetActorLocation());
 	float YawJudge = FVector::DotProduct(CrossVec.GetSafeNormal(), GetInstigator()->GetActorUpVector());
 	//DrawDebugLine(GetWorld(), GetActorLocation(), CrossVec, FColor::Green, false, 1.f, (uint8)nullptr, 2.f);
 
 
-	// Up & Down °è»ê
+	// Up & Down ê³„ì‚°
 	FVector PitchVector = FVector::CrossProduct(CrossVec - GetInstigator()->GetActorLocation(), GetInstigator()->GetActorUpVector());
 	float PitchJudge = FVector::DotProduct(PitchVector.GetSafeNormal(), GetInstigator()->GetActorForwardVector());
 	//DrawDebugLine(GetWorld(), GetActorLocation(), PitchVector, FColor::Green, false, 1.f, (uint8)nullptr, 2.f);
 	
 
-	// °¢µµ °è»ê 
+	// ê°ë„ ê³„ì‚° 
 	float VectorAngle = FVector::DotProduct(*PreSpread, *NexSpread);
 	float SizeValue = PreSpread->Size() * NexSpread->Size();
 	float PitchAngle = FMath::Acos(VectorAngle / SizeValue);

@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "OpenWorldRPG/AI/BT/BTService_DecideWhatToDo.h"
@@ -48,7 +48,7 @@ void UBTService_DecideWhatToDo::SetDecisionValue()//UBehaviorTreeComponent & Own
 		bOnlyDetectHearing = true;
 	}*/
 
-	/*ÀåÂøÁßÀÎ ¹«±â°¡ ¾ø´Â °æ¿ì */
+	/*ì¥ì°©ì¤‘ì¸ ë¬´ê¸°ê°€ ì—†ëŠ” ê²½ìš° */
 	if (AIChar->EquippedWeapon == nullptr)
 	{
 
@@ -57,7 +57,7 @@ void UBTService_DecideWhatToDo::SetDecisionValue()//UBehaviorTreeComponent & Own
 	}
 
 
-	/*¹«±â´Â ÀÖÀ¸³ª, ÅºÃ¢ÀÌ Æ¯Á¤ °¹¼ö ÀÌÇÏÀÎ °æ¿ì (1ÅºÃ¢ Àı¹İ ÀÌÇÏ)  ¶Ç´Â Ammo°¡ ¾Æ¿¹ ¾ø´Â °æ¿ì	*/
+	/*ë¬´ê¸°ëŠ” ìˆìœ¼ë‚˜, íƒ„ì°½ì´ íŠ¹ì • ê°¯ìˆ˜ ì´í•˜ì¸ ê²½ìš° (1íƒ„ì°½ ì ˆë°˜ ì´í•˜)  ë˜ëŠ” Ammoê°€ ì•„ì˜ˆ ì—†ëŠ” ê²½ìš°	*/
 	if (bNoWeapon == false)
 	{
 		int32 APM = AIChar->EquippedWeapon->WeaponDataAsset->WeaponStat.AmmoPerMag;
@@ -65,7 +65,7 @@ void UBTService_DecideWhatToDo::SetDecisionValue()//UBehaviorTreeComponent & Own
 		{
 			if (AIChar->GetTotalNumberofSameTypeAmmo() <= 0)
 			{
-				//´Ù¸¥ ¹«±â¿¡µµ ammo°¡ ¾øÀ¸¸é bNoAmmo¸¦ ¼¼ÆÃÇÑ´Ù.
+				//ë‹¤ë¥¸ ë¬´ê¸°ì—ë„ ammoê°€ ì—†ìœ¼ë©´ bNoAmmoë¥¼ ì„¸íŒ…í•œë‹¤.
 				if (HasOtherWeapon() == false && bNoAmmo != false)
 				{
 					BBComp->SetValueAsBool(AICon->bOutOfAmmoKey, true);
@@ -83,7 +83,7 @@ void UBTService_DecideWhatToDo::SetDecisionValue()//UBehaviorTreeComponent & Own
 
 
 
-	/* Ã¼·ÂÀÌ ÀÏÁ¤ ÀÌÇÏ(10 ÆÛ¼¾Æ® ÀÌÇÏ)ÀÎ °æ¿ì */
+	/* ì²´ë ¥ì´ ì¼ì • ì´í•˜(10 í¼ì„¼íŠ¸ ì´í•˜)ì¸ ê²½ìš° */
 	if (AIChar->StatManagementComponent->GetHealthRatio() <= 10.f)
 	{
 		BBComp->SetValueAsBool(AICon->bLowHPKey, true);
@@ -92,7 +92,7 @@ void UBTService_DecideWhatToDo::SetDecisionValue()//UBehaviorTreeComponent & Own
 
 
 
-	/* ±³ÀüÇÏ´ø ÁßÀÌ¾ú´ø °æ¿ì*/
+	/* êµì „í•˜ë˜ ì¤‘ì´ì—ˆë˜ ê²½ìš°*/
 	if (BBComp->GetValueAsBool(AICon->bCanAttackKey))
 	{
 		BBComp->SetValueAsBool(AICon->bWasEngageKey, true);
@@ -101,7 +101,7 @@ void UBTService_DecideWhatToDo::SetDecisionValue()//UBehaviorTreeComponent & Own
 	}
 
 
-	/* ÀÌ AI°¡ TargetÀÇ ½Ã¾ß ¾È¿¡ ÀÖ´Â °æ¿ì*/
+	/* ì´ AIê°€ Targetì˜ ì‹œì•¼ ì•ˆì— ìˆëŠ” ê²½ìš°*/
 	if (!BBComp->GetValueAsBool(AICon->bHearEnemyKey))
 	{
 		BBComp->SetValueAsBool(AICon->bInEnemyFOVKey, IsThisAIinTargetFOV());
@@ -120,19 +120,19 @@ void UBTService_DecideWhatToDo::GetDecisionValue()
 }
 
 
-//DecisionValue¸¦ Åä´ë·Î ºĞ±â¸¦ ÇÑ´Ù.
+//DecisionValueë¥¼ í† ëŒ€ë¡œ ë¶„ê¸°ë¥¼ í•œë‹¤.
 void UBTService_DecideWhatToDo::DecisionBranch()//UBehaviorTreeComponent& OwnerComp)
 {
 	// 
 	// 
-	//1. ±³Àü »ó°ü ¾øÀÌ Åº¾à, Ã¼·Â, ¹«±â  ¾ø´Â °æ¿ì -> µµÁÖ
-	//2. ±³ÀüÁß Åº¾à ¶Ç´Â Ã¼·ÂÀÌ ¶³¾îÁø°æ¿ì -> µµÁÖ
-	//3. (ÀÌ AI±âÁØ)EnemyCharÀÇ FovÀÌ³»¿¡ ÀÖ°í Åº¾à, Ã¼·Â, ¹«±â  ÃæºĞ ÀÖ´Â °æ¿ì -> ±³Àü
-	//4. (ÀÌ AI±âÁØ)EnemyCharÀÇ FovÀÌ³»¿¡ ¾ø°í Åº¾à, Ã¼·Â, ¹«±â  ÃæºĞ ÀÖ´Â °æ¿ì -> µÚ µ¹¾Æ°¡¼­ ±³Àü
+	//1. êµì „ ìƒê´€ ì—†ì´ íƒ„ì•½, ì²´ë ¥, ë¬´ê¸°  ì—†ëŠ” ê²½ìš° -> ë„ì£¼
+	//2. êµì „ì¤‘ íƒ„ì•½ ë˜ëŠ” ì²´ë ¥ì´ ë–¨ì–´ì§„ê²½ìš° -> ë„ì£¼
+	//3. (ì´ AIê¸°ì¤€)EnemyCharì˜ Fovì´ë‚´ì— ìˆê³  íƒ„ì•½, ì²´ë ¥, ë¬´ê¸°  ì¶©ë¶„ ìˆëŠ” ê²½ìš° -> êµì „
+	//4. (ì´ AIê¸°ì¤€)EnemyCharì˜ Fovì´ë‚´ì— ì—†ê³  íƒ„ì•½, ì²´ë ¥, ë¬´ê¸°  ì¶©ë¶„ ìˆëŠ” ê²½ìš° -> ë’¤ ëŒì•„ê°€ì„œ êµì „
 
 	
 	
-	// Åº¾à, ¹«±â°¡ ¾ø´Â °æ¿ì ¹«Á¶°Ç ±³ÀüÀ» ÇÇÇÏ°í LootingÀ» ÇÑ´Ù.
+	// íƒ„ì•½, ë¬´ê¸°ê°€ ì—†ëŠ” ê²½ìš° ë¬´ì¡°ê±´ êµì „ì„ í”¼í•˜ê³  Lootingì„ í•œë‹¤.
 	//BBComp->GetValueAsBool()
 	if (bNoAmmo || bNoWeapon)
 	{
@@ -146,8 +146,8 @@ void UBTService_DecideWhatToDo::DecisionBranch()//UBehaviorTreeComponent& OwnerC
 
 
 
-	/* ±³Àü ÁßÀÌ¾úÀ¸³ª, Ã¼·ÂÀÌ ÀÏÁ¤ ÀÌÇÏ°Å³ª Åº¾àÀÌ ÀÏÁ¤ °³¼ö ÀÌÇÏÀÎ °æ¿ì
-	*  -> ·£´ı°ªÀ¸·Î ±ÙÁ¢ ±³ÀüÀ» ÇÏ°Å³ª µµ¸Á°¡´Â°É °áÁ¤ÇÑ´Ù. */
+	/* êµì „ ì¤‘ì´ì—ˆìœ¼ë‚˜, ì²´ë ¥ì´ ì¼ì • ì´í•˜ê±°ë‚˜ íƒ„ì•½ì´ ì¼ì • ê°œìˆ˜ ì´í•˜ì¸ ê²½ìš°
+	*  -> ëœë¤ê°’ìœ¼ë¡œ ê·¼ì ‘ êµì „ì„ í•˜ê±°ë‚˜ ë„ë§ê°€ëŠ”ê±¸ ê²°ì •í•œë‹¤. */
 	if (bWasEngage)
 	{
 		if (!bNoAmmo && (bLowHP || bLowAmmo))
@@ -200,7 +200,7 @@ void UBTService_DecideWhatToDo::DecisionBranch()//UBehaviorTreeComponent& OwnerC
 ////////////////////////////////////////////////////////////////////////
 
 
-/* ÇöÀç ÀÌ AI°¡ Target (Player || Enemy AI)ÀÇ FOV³»¿¡ ÀÖ´ÂÁö¸¦ ¸®ÅÏÇÑ´Ù. */
+/* í˜„ì¬ ì´ AIê°€ Target (Player || Enemy AI)ì˜ FOVë‚´ì— ìˆëŠ”ì§€ë¥¼ ë¦¬í„´í•œë‹¤. */
 bool UBTService_DecideWhatToDo::IsThisAIinTargetFOV()//UBlackboardComponent* BBComp, AEnemyAIController* OwnerAICon, AEnemyCharacter* OwnerAI)
 {
 	bool bInFOV = false;
@@ -221,7 +221,7 @@ bool UBTService_DecideWhatToDo::IsThisAIinTargetFOV()//UBlackboardComponent* BBC
 	{
 		TargetLocation = EnemyAI->GetActorLocation();
 		TargetFowVec = EnemyAI->GetActorForwardVector();
-		//½Ã¾ß°¢ ºÒ·¯¿Í¾ßÇÔ.Perception ¤·¤·
+		//ì‹œì•¼ê° ë¶ˆëŸ¬ì™€ì•¼í•¨.Perception ã…‡ã…‡
 	}
 
 

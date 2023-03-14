@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "OpenWorldRPG/NewInventory/Widget/EquipmentSlot.h"
@@ -79,7 +79,7 @@ void UEquipmentSlot::PaintBGBorder(UNewItemObject* ItemObj)
 		bCanDrop = false;
 	}
 
-	//UE_LOG(LogTemp, Warning, TEXT("UEquipmentSlot bCanDrop = %d"), bCanDrop ? 1 : 0); //ÇÑÀÚ·Î ³ª¿È ¿ÖÀÌ·³?
+	//UE_LOG(LogTemp, Warning, TEXT("UEquipmentSlot bCanDrop = %d"), bCanDrop ? 1 : 0); //í•œìë¡œ ë‚˜ì˜´ ì™œì´ëŸ¼?
 }
 
 bool UEquipmentSlot::IsSupportedEquip(UNewItemObject* ItemObj)
@@ -89,7 +89,7 @@ bool UEquipmentSlot::IsSupportedEquip(UNewItemObject* ItemObj)
 	ABaseCharacter* TempChar = Cast<ABaseCharacter>(GetOwningPlayerPawn());
 	
 
-	//ÀåÂøÅÛÀÌ¸é¼­  ÀåÂøÅÛÀÇ Type°ú ÀÌ SlotÀÇ TypeÀÌ °°´Ù¸é true¸¦ ¸®ÅÏÇÑ´Ù.
+	//ì¥ì°©í…œì´ë©´ì„œ  ì¥ì°©í…œì˜ Typeê³¼ ì´ Slotì˜ Typeì´ ê°™ë‹¤ë©´ trueë¥¼ ë¦¬í„´í•œë‹¤.
 	UCustomPDA* CPDA = Cast<UCustomPDA>(ItemObj->ItemInfo.DataAsset);
 	
 	if(CPDA == nullptr) return false;
@@ -107,7 +107,7 @@ bool UEquipmentSlot::IsSupportedEquip(UNewItemObject* ItemObj)
 	else if (CPDA->InteractType == EInteractType::EIT_Equipment &&
 		CPDA->EquipmentType == SlotType)
 	{
-		//½½·ÔÀÌ °°À¸¸é ºñ¾îÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
+		//ìŠ¬ë¡¯ì´ ê°™ìœ¼ë©´ ë¹„ì–´ìˆëŠ”ì§€ í™•ì¸í•œë‹¤.
 		if (IsEmpty())
 		{
 			//UE_LOG(LogTemp,Warning,TEXT("EquipSlot::SupportedEquip / Empty"));
@@ -152,13 +152,13 @@ bool UEquipmentSlot::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEv
 		{
 			DDOper->ItemObj->bIsDragging = false;
 
-			//EquipSlotÀ¸·Î ÀÛµ¿ÇÒ ¶§
+			//EquipSlotìœ¼ë¡œ ì‘ë™í•  ë•Œ
 			if (bIsforWeaponParts == false)
 			{
 				bReturn = TrySlotEquip(DDOper->ItemObj);
 				//UE_LOG(LogTemp, Warning, TEXT("EquipSlot::OnDrop / TrySlotEquip func result is true. set link obj"));
 			}
-			//WeaponParts SlotÀ¸·Î ÀÛµ¿ÇÒ ¶§
+			//WeaponParts Slotìœ¼ë¡œ ì‘ë™í•  ë•Œ
 			else if( bIsforWeaponParts)
 			{
 				bReturn = TrySlotParts(DDOper->ItemObj);
@@ -172,9 +172,9 @@ bool UEquipmentSlot::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEv
 
 AEquipment* UEquipmentSlot::SpawnEquipment(UNewItemObject* Obj)
 {
-	//ItemÀÌ DestroyµÈ »óÅÂ¸é (InventoryGrid¿¡ ÀÖ¾ú´ø EquipmentµéÀÌ ÇØ´çµÊ)
-	//ItemÀ» SpawnÇÏ°í ±âÁ¸¿¡ ÀúÀåµÈ Á¤º¸¸¦  »õ·Î SpawnÇÑ item¿¡ ÀÌ°üÇÑ´Ù.
-	//´ëºÎºĞ bIsDestroyed¿¡ ºĞ±âµÊ. else¹®Àº °ÅÀÇ »ç¿ëµÇÁö ¾ÊÀ½
+	//Itemì´ Destroyëœ ìƒíƒœë©´ (InventoryGridì— ìˆì—ˆë˜ Equipmentë“¤ì´ í•´ë‹¹ë¨)
+	//Itemì„ Spawní•˜ê³  ê¸°ì¡´ì— ì €ì¥ëœ ì •ë³´ë¥¼  ìƒˆë¡œ Spawní•œ itemì— ì´ê´€í•œë‹¤.
+	//ëŒ€ë¶€ë¶„ bIsDestroyedì— ë¶„ê¸°ë¨. elseë¬¸ì€ ê±°ì˜ ì‚¬ìš©ë˜ì§€ ì•ŠìŒ
 	AEquipment* ReturnEquip = nullptr;
 
 	if (Obj->bIsDestoryed)
@@ -205,7 +205,7 @@ bool UEquipmentSlot::TrySlotEquip(UNewItemObject* Var_ItemObj)
 			UE_LOG(LogTemp, Warning, TEXT("EquipSlot::Correct Slot"));
 
 
-			//AI¿Í ÇÃ·¹ÀÌ¾î¸¦ ³ª´«´Ù.
+			//AIì™€ í”Œë ˆì´ì–´ë¥¼ ë‚˜ëˆˆë‹¤.
 			ABaseCharacter* BChar;
 			if (LootedChar_Owner != nullptr)
 			{
@@ -216,10 +216,10 @@ bool UEquipmentSlot::TrySlotEquip(UNewItemObject* Var_ItemObj)
 				BChar = Cast<ABaseCharacter>(GetOwningPlayerPawn());
 			}
 
-			////°°Àº EquipmentComp¸é ÀåÂøÀÌ ºÒ°¡´ÉÇÏµµ·Ï ÇÑ´Ù. (Weapon Swap ¹æÁö Â÷¿ø)
+			////ê°™ì€ EquipmentCompë©´ ì¥ì°©ì´ ë¶ˆê°€ëŠ¥í•˜ë„ë¡ í•œë‹¤. (Weapon Swap ë°©ì§€ ì°¨ì›)
 			//if(Var_ItemObj->MotherEquipComp == BChar->Equipment) return false;
 
-			//BChar°¡ Á¤»óÀÌ¸é ÀåÂøÀ» ½ÃµµÇÑ´Ù.
+			//BCharê°€ ì •ìƒì´ë©´ ì¥ì°©ì„ ì‹œë„í•œë‹¤.
 			if (BChar != nullptr)
 			{
 				AEquipment* Equipment = nullptr;
@@ -271,7 +271,7 @@ bool UEquipmentSlot::TrySlotParts(UNewItemObject* PartsObj)
 
 void UEquipmentSlot::RemoveParts(UNewItemObject* PartsObj)
 {
-	//this ÀÚÃ¼°¡ nullptr..
+	//this ìì²´ê°€ nullptr..
 	if(SettedObj == PartsObj)
 	{
 

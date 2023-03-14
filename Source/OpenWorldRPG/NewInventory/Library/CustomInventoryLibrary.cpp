@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "OpenWorldRPG/NewInventory/Library/CustomInventoryLibrary.h"
@@ -50,7 +50,7 @@ UNewItemObject* UCustomInventoryLibrary::CreateObject(FItemSetting ItemStruct, b
 
 }
 
-/*ItemObj를 이용해 Item class를 Spawn한다.*/
+/*ItemObj瑜??댁⑺?Item class瑜?Spawn???*/
 AItem* UCustomInventoryLibrary::SpawnItem(UWorld* World, UNewItemObject* ItemObj)
 {
 	if (World && ItemObj)
@@ -81,7 +81,7 @@ AItem* UCustomInventoryLibrary::SpawnItem(UWorld* World, UNewItemObject* ItemObj
 	return nullptr;
 }
 
-/*ItemObj를 이용해 Equipment Class를 Spawn한다*/
+/*ItemObj瑜??댁⑺?Equipment Class瑜?Spawn???/
 AEquipment* UCustomInventoryLibrary::SpawnEquipment(UWorld* World, UNewItemObject* ItemObj)//, AActor* Actor)
 {
 	//UE_LOG(LogTemp, Warning, TEXT("UCustomInventoryLibrary::SpawnEquipment"));
@@ -94,7 +94,7 @@ AEquipment* UCustomInventoryLibrary::SpawnEquipment(UWorld* World, UNewItemObjec
 		UCustomPDA* CPDA = Cast<UCustomPDA>(ItemObj->ItemInfo.DataAsset);
 		check(CPDA);
 
-		//Weapon인 경우 WeaponInstant class로 생성해준다.
+		//Weapon??寃쎌?WeaponInstant class濡 ??깊댁???
 		UWeaponPDA* WeaponPDA = Cast<UWeaponPDA>(ItemObj->ItemInfo.DataAsset);
 		if (WeaponPDA)
 		{
@@ -115,7 +115,7 @@ AEquipment* UCustomInventoryLibrary::SpawnEquipment(UWorld* World, UNewItemObjec
 			ItemObj->bIsDestoryed = false;
 			Equipment->ItemSetting = ItemObj->ItemInfo;
 			Equipment->SetMesh();
-			//Storage가 있으면 Inventory를 넘겨준다.
+			//Storage媛 ??쇰㈃ Inventory瑜??寃⑥???
 			if (CPDA->bHasStorage)
 			{
 				UItemStorageObject* StorageObj = Cast<UItemStorageObject>(ItemObj);
@@ -160,7 +160,7 @@ ABaseGrenade* UCustomInventoryLibrary::SpawnGrenade(UWorld* World, UNewItemObjec
 
 
 
-/*PDA를 이용해 Item class를 Spawn한다.*/
+/*PDA瑜??댁⑺?Item class瑜?Spawn???*/
 AItem* UCustomInventoryLibrary::SpawnItem(UWorld* World, UBasePDA* ItemDA)
 {
 	AItem* ReturnItem = nullptr;
@@ -185,14 +185,14 @@ AItem* UCustomInventoryLibrary::SpawnItem(UWorld* World, UBasePDA* ItemDA)
 	return ReturnItem;
 }
 
-/*PDA를 이용해 Equipment Class를 Spawn한다 */
+/*PDA瑜??댁⑺?Equipment Class瑜?Spawn???*/
 AEquipment* UCustomInventoryLibrary::SpawnEquipment(UWorld* World, UCustomPDA* EquipDA)
 {
 	if (World && EquipDA)
 	{
 		AEquipment* Equipment = nullptr;
 
-		//Weapon인 경우 WeaponInstant로 생성해준다.
+		//Weapon??寃쎌?WeaponInstant濡 ??깊댁???
 
 		UCustomPDA* T_CPDA = Cast<UCustomPDA>(EquipDA);
 		UCustomPDA* CPDA = T_CPDA? T_CPDA : nullptr;
@@ -223,7 +223,7 @@ AEquipment* UCustomInventoryLibrary::SpawnEquipment(UWorld* World, UCustomPDA* E
 
 
 
-//Item의 Type별로 개수를 랜덤 지정한다.
+//Item? Type蹂濡 媛?瑜????吏????
 void UCustomInventoryLibrary::GenerateRandomCount(UNewItemObject* ItemObj)
 {
 	//UE_LOG(LogTemp, Warning, TEXT("CustomInvLib::GenerateRandomCount"));
@@ -252,14 +252,14 @@ void UCustomInventoryLibrary::GenerateRandomCount(UNewItemObject* ItemObj)
 }
 
 
-//bRenderInMainPass를 false로 하게되면 Rendering은 되지 않지만, Shadow는 렌더링 된다.
-// 이걸 사용하려면 Mesh가 Show되어야 한다. SetHiddenInGame을 True로 하면 안됨.
+//bRenderInMainPass瑜?false濡 ?寃?硫?Rendering? ?吏 ?吏留, Shadow? ??留 ???
+// ?닿구 ?ъ⑺?ㅻ㈃ Mesh媛 Show??댁???? SetHiddenInGame? True濡 ?硫????
 
-/* Weapon을 제외한 장착중인 모든 Equipment를 Hide한다. */
+/* Weapon? ??명 ?μ갑以??紐⑤ Equipment瑜?Hide??? */
 void UCustomInventoryLibrary::HideAllEquipment(UEquipmentComponent* EComp)
 {
 	UCustomPDA* CPDA;
-	/* 장착한 장비 모두 HIde하기 */
+	/* ?μ갑? ?λ? 紐⑤ HIde?湲?*/
 	for (auto Equipped : EComp->EquipmentItems)
 	{
 		if (Equipped && Equipped->Equipment)
@@ -278,7 +278,7 @@ void UCustomInventoryLibrary::HideAllEquipment(UEquipmentComponent* EComp)
 }
 
 
-/* 장착중인 모든 Equipment를 show 한다.*/
+/* ?μ갑以??紐⑤ Equipment瑜?show ???*/
 void UCustomInventoryLibrary::ShowAllEquipment(UEquipmentComponent* EComp)
 {
 	for (auto Equipped : EComp->EquipmentItems)
@@ -292,30 +292,29 @@ void UCustomInventoryLibrary::ShowAllEquipment(UEquipmentComponent* EComp)
 }
 
 
-/**이 함수가 호출 되는 경우
- * 1. Weapon을 해제하여(Destory) Inventory에 넣을 때
- * 2. Weapon을 Equip할 때
+/**???⑥媛 ?몄? ?? 寃쎌? * 1. Weapon? ?댁???Destory) Inventory? ?ｌ ?
+ * 2. Weapon? Equip? ?
  * 
  */
 void UCustomInventoryLibrary::SetWeaponPartsManager(AWeapon* Weapon, UNewItemObject* Obj)
 {
-    //Obj에 WPM이 있는 경우 actor의 WPM에 넣어준다.
-    if (Obj->WeaponPartsManager.IsValid())
-    {
-        Weapon->WeaponPartsManager = Obj->WeaponPartsManager;
-    }
-    //Weapon에만 WPM이 있는 경우 (Weapon이 맨 처음으로 world에 Spawn된 상태)
-    else if (Weapon->WeaponPartsManager.IsValid() && Obj->WeaponPartsManager.IsValid() == false)
-    {
-        Obj->WeaponPartsManager = Weapon->WeaponPartsManager;
-    }
-    
+	//Obj? WPM???? 寃쎌?actor? WPM? ?ｌ댁???
+	if (Obj->WeaponPartsManager.IsValid())
+	{
+		Weapon->WeaponPartsManager = Obj->WeaponPartsManager;
+	}
+	//Weapon?留 WPM???? 寃쎌?(Weapon??留?泥??쇰? world? Spawn? ??)
+	else if (Weapon->WeaponPartsManager.IsValid() && Obj->WeaponPartsManager.IsValid() == false)
+	{
+		Obj->WeaponPartsManager = Weapon->WeaponPartsManager;
+	}
+	
 }
 
 
 
 /////////////////////////////////////////////////////////////////////////
-/**********************   이하 사용하지 않는 함수들 **********************/
+/**********************   ?댄 ?ъ⑺吏 ?? ?⑥??**********************/
 /////////////////////////////////////////////////////////////////////////
 
 
@@ -324,12 +323,12 @@ void UCustomInventoryLibrary::BackToItem(UNewItemObject* ItemObj)
 	UE_LOG(LogTemp, Warning, TEXT("UCustomInventoryLibrary::BackToItem"));
 	if (ItemObj)
 	{
-		//ItemObj가 원래 있던 MotherContainer를 가져와
+		//ItemObj媛 ?? ?? MotherContainer瑜?媛?몄
 		if (ItemObj->GetMotherStorage() != nullptr)
 		{
 			//UNewInventoryGrid* GridInv = ItemObj->GetMotherContainer();
 			UNewInventoryGrid* GridInv = nullptr;// = ItemObj->GetMotherContainer();
-			//원래 있던 Mothercontainer에 넣는다.
+			//?? ?? Mothercontainer? ?ｋ??
 			if (GridInv->GetInventoryComp() != nullptr)
 			{
 				if (GridInv->GetInventoryComp()->IsAvailableSpace(ItemObj, ItemObj->TopLeftIndex))
@@ -342,7 +341,7 @@ void UCustomInventoryLibrary::BackToItem(UNewItemObject* ItemObj)
 				}
 			}
 		}
-		//Mothercontainer에 있지 않고, 장착중이었던 장비라면
+		//Mothercontainer? ?吏 ?怨, ?μ갑以?댁? ?λ??쇰㈃
 		/*else if (ItemObj->GetMotherEquipSlot() != nullptr)
 		{
 			ItemObj->GetMotherEquipSlot()->TrySlotEquip(ItemObj);
@@ -374,7 +373,7 @@ void UCustomInventoryLibrary::DirectInToInventory(UNewItemObject* ItemObj, ABase
 				}
 			}
 		}
-		//Mothercontainer에 있지 않고, 장착중이었던 장비라면
+		//Mothercontainer? ?吏 ?怨, ?μ갑以?댁? ?λ??쇰㈃
 		//else if (ItemObj->GetMotherEquipSlot() != nullptr)
 		{
 			if (BChar)

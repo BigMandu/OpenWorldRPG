@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "OpenWorldRPG/AI/BT/BTTask_MoveToTarget.h"
@@ -9,7 +9,7 @@ UBTTask_MoveToTarget::UBTTask_MoveToTarget()
 {
 	NodeName = TEXT("MoveToTarget");
 
-	//¿ÏÀü °ãÄ¡Áö ¾Ê¾Æµµ Interact°¡´ÉÇÏµµ·Ï Acceptable Radius¸¦ Editor¿¡¼­ ¼³Á¤ÇÑ´Ù.
+	//ì™„ì „ ê²¹ì¹˜ì§€ ì•Šì•„ë„ Interactê°€ëŠ¥í•˜ë„ë¡ Acceptable Radiusë¥¼ Editorì—ì„œ ì„¤ì •í•œë‹¤.
 	//AcceptableRadius = 120.f;
 }
 

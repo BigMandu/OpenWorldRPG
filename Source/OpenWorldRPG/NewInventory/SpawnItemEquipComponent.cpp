@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "OpenWorldRPG/NewInventory/SpawnItemEquipComponent.h"
@@ -96,7 +96,7 @@ void USpawnItemEquipComponent::SpawnEquipments()
 			WantToEquip->SKMesh->SetSimulatePhysics(false);
 			WantToEquip->SKMesh->SetEnableGravity(false);
 
-			WantToEquip->Mesh->SetHiddenInGame(true); //Static Mesh¸¦ ¾Èº¸ÀÌ°Ô ÇÏ°í, CollisionÀ» ²ö´Ù.
+			WantToEquip->Mesh->SetHiddenInGame(true); //Static Meshë¥¼ ì•ˆë³´ì´ê²Œ í•˜ê³ , Collisionì„ ëˆë‹¤.
 			WantToEquip->Mesh->SetSimulatePhysics(false);
 			WantToEquip->Mesh->SetEnableGravity(false);
 			WantToEquip->Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -171,9 +171,9 @@ void USpawnItemEquipComponent::SpawnRandomItems()
 
 int32 USpawnItemEquipComponent::SpawnORNot(bool bIsMustSpawn, int32 returnIndex)
 {
-	//bIsMustSpawnÀÌ true¸é ¹Ù·Î ¸®ÅÏÇÏ°í ³¡³»°í
-	//¾Æ´Ï¸é ±×³É ·£´ýÀ» µ¹·Á¼­ ³ª¿Â °ªÀÇ Æò±Õ°ª ÀÌ»óÀÌ¸é SpawnÀ» ¸øÇÏµµ·Ï 0À» ¸®ÅÏÇÏ°í,
-	// Æò±Õ°ª ¾Æ·¡¸é spawnÀ» ÇÏµµ·Ï ÇÑ´Ù.
+	//bIsMustSpawnì´ trueë©´ ë°”ë¡œ ë¦¬í„´í•˜ê³  ëë‚´ê³ 
+	//ì•„ë‹ˆë©´ ê·¸ëƒ¥ ëžœë¤ì„ ëŒë ¤ì„œ ë‚˜ì˜¨ ê°’ì˜ í‰ê· ê°’ ì´ìƒì´ë©´ Spawnì„ ëª»í•˜ë„ë¡ 0ì„ ë¦¬í„´í•˜ê³ ,
+	// í‰ê· ê°’ ì•„ëž˜ë©´ spawnì„ í•˜ë„ë¡ í•œë‹¤.
 	if (bIsMustSpawn == false)
 	{
 		float SRandd = FMath::FRandRange(0.1f,RAND_MAX);
@@ -205,7 +205,7 @@ void USpawnItemEquipComponent::TryEquip(UCustomPDA* CPDA, ABaseCharacter* Char)
 	Equipment->SKMesh->SetSimulatePhysics(false);
 	Equipment->SKMesh->SetEnableGravity(false);
 
-	Equipment->Mesh->SetHiddenInGame(true); //Static Mesh¸¦ ¾Èº¸ÀÌ°Ô ÇÏ°í, CollisionÀ» ²ö´Ù.
+	Equipment->Mesh->SetHiddenInGame(true); //Static Meshë¥¼ ì•ˆë³´ì´ê²Œ í•˜ê³ , Collisionì„ ëˆë‹¤.
 	Equipment->Mesh->SetSimulatePhysics(false);
 	Equipment->Mesh->SetEnableGravity(false);
 	Equipment->Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);

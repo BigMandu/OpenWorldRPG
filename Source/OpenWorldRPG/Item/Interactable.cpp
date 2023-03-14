@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Interactable.h"
@@ -103,8 +103,8 @@ void AInteractable::Interaction(class AActor* Actor)
 {
 	//UE_LOG(LogTemp, Warning, TEXT("Interactive_Interface , Interaction function"));
 	
-	/* ÀÌ Interact°¡ ItemclassÀÏ °æ¿ì, Item -> AddToInventoryÀÌ·± ÇÔ¼ö¸¦ ¼±¾ğ, hide mesh, disable collisionÀÛ¾÷À» ÇØÁØ´Ù.
-	*  ±× ¿Ü¿¡ ´Ù¸¥ class, °ÔÀÓ³» ¹® »óÈ£ÀÛ¿ëÀÎ °æ¿ì À§Ä¡¸¦ ¼öÁ¤ÇØÁÖ°Å³ª ¤·¤· ÀÌ·±½ÄÀ¸·Î ºĞÇÒ.
+	/* ì´ Interactê°€ Itemclassì¼ ê²½ìš°, Item -> AddToInventoryì´ëŸ° í•¨ìˆ˜ë¥¼ ì„ ì–¸, hide mesh, disable collisionì‘ì—…ì„ í•´ì¤€ë‹¤.
+	*  ê·¸ ì™¸ì— ë‹¤ë¥¸ class, ê²Œì„ë‚´ ë¬¸ ìƒí˜¸ì‘ìš©ì¸ ê²½ìš° ìœ„ì¹˜ë¥¼ ìˆ˜ì •í•´ì£¼ê±°ë‚˜ ã…‡ã…‡ ì´ëŸ°ì‹ìœ¼ë¡œ ë¶„í• .
 	* 
 	*/
 	if (ItemSetting.DataAsset == nullptr) return;
@@ -117,22 +117,22 @@ void AInteractable::Interaction(class AActor* Actor)
 	{
 	case EInteractType::EIT_Item:
 	{
-		AItem* Item = Cast<AItem>(this); //ItemÅ¬·¡½º·Î Ä³½ºÆÃ
+		AItem* Item = Cast<AItem>(this); //Itemí´ë˜ìŠ¤ë¡œ ìºìŠ¤íŒ…
 		if (Item)
 		{
-			Item->Pickup(Actor); //PickupÁøÇà.
+			Item->Pickup(Actor); //Pickupì§„í–‰.
 		}
 		break;
 	}
 	case EInteractType::EIT_Equipment:
 	{
-		//WeaponÀ¸·Î cast, equipÇÔ¼ö È£Ãâ
+		//Weaponìœ¼ë¡œ cast, equipí•¨ìˆ˜ í˜¸ì¶œ
 		AEquipment* Equipment = Cast<AEquipment>(this);
 		if (Equipment)
 		{
 			if(Equipment->Equip(Actor, ERifleSlot::ERS_MAX) == false)
 			{	
-				//ÀåÂø¿¡ ½ÇÆĞÇßÀ¸¸é PickupÀ» ÁøÇàÇÑ´Ù.
+				//ì¥ì°©ì— ì‹¤íŒ¨í–ˆìœ¼ë©´ Pickupì„ ì§„í–‰í•œë‹¤.
 				Equipment->Pickup(Actor);
 			}
 		}

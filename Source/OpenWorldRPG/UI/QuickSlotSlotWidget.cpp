@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "OpenWorldRPG/UI/QuickSlotSlotWidget.h"
@@ -35,9 +35,9 @@ void UQuickSlotSlotWidget::SetWeaponQuickSlot(UNewItemObject* WantToSlot)
 	SlotBorder->AddChild(ItemWidget);
 }
 
-/**µî·Ï ¿©ºÎ¸¦ Ã¼Å©ÇÑ µÚ¿¡
-* µî·ÏÀ» ÁøÇàÇÑ´Ù.
-* QuickSlot Æ¯¼º»ó, µ¿ÀÏ ½½·Ô¿¡ µî·ÏÀ» ¿äÃ»ÇÏ¸é ±âÁ¸¿¡ ÀÖ´ø ItemÁ¤º¸´Â »èÁ¦ µÇµµ·Ï ÇÑ´Ù.
+/**ë“±ë¡ ì—¬ë¶€ë¥¼ ì²´í¬í•œ ë’¤ì—
+* ë“±ë¡ì„ ì§„í–‰í•œë‹¤.
+* QuickSlot íŠ¹ì„±ìƒ, ë™ì¼ ìŠ¬ë¡¯ì— ë“±ë¡ì„ ìš”ì²­í•˜ë©´ ê¸°ì¡´ì— ìˆë˜ Itemì •ë³´ëŠ” ì‚­ì œ ë˜ë„ë¡ í•œë‹¤.
 * 
 */
 void UQuickSlotSlotWidget::RegisterQuickSlot(UNewItemObject* WantToSlot)
@@ -63,7 +63,7 @@ void UQuickSlotSlotWidget::RegisterQuickSlot(UNewItemObject* WantToSlot)
 	}
 }
 
-//OnDrop½Ã¿¡ QuickSlotWidget¿¡¼­ µî·Ï process¸¦ ÁøÇàÇÑ´Ù.
+//OnDropì‹œì— QuickSlotWidgetì—ì„œ ë“±ë¡ processë¥¼ ì§„í–‰í•œë‹¤.
 bool UQuickSlotSlotWidget::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
 {
 	bool bReturn = Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);

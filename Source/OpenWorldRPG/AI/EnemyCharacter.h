@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -12,10 +12,10 @@ UENUM(BlueprintType)
 enum class EAIStatus : uint8
 {
 	EAS_Dead		UMETA(DisplayName = "Dead"),
-	EAS_Patrol		UMETA(DisplayName = "Patrol"),//Patrol »óÅÂ -> ÃÖÀú ÀÌµ¿¼Óµµ.
-	EAS_Normal		UMETA(DisplayName = "Normal"), //Peace»óÅÂ.
-	EAS_Scout		UMETA(DisplayName = "Scout"), //¹º°¡¸¦ µè°Å³ª, Player¸¦ ¼ö»öÁßÀÏ¶§ ->ÃÖÀú ÀÌµ¿¼Óµµ
-	EAS_Attack		UMETA(DisplayName = "Attack"), //Player°¡ ½Ã¾ß¿¡ º¸ÀÏ¶§
+	EAS_Patrol		UMETA(DisplayName = "Patrol"),//Patrol ìƒíƒœ -> ìµœì € ì´ë™ì†ë„.
+	EAS_Normal		UMETA(DisplayName = "Normal"), //Peaceìƒíƒœ.
+	EAS_Scout		UMETA(DisplayName = "Scout"), //ë­”ê°€ë¥¼ ë“£ê±°ë‚˜, Playerë¥¼ ìˆ˜ìƒ‰ì¤‘ì¼ë•Œ ->ìµœì € ì´ë™ì†ë„
+	EAS_Attack		UMETA(DisplayName = "Attack"), //Playerê°€ ì‹œì•¼ì— ë³´ì¼ë•Œ
 
 	EAS_MAX		UMETA(DisplayName = "DefaultMAX")
 };
@@ -30,7 +30,7 @@ public:
 	AEnemyCharacter();
 
 	UPROPERTY(EditDefaultsOnly, Category = AI)
-	class UBehaviorTree* BTAsset; //AIControllerÀÇ BTComp¿¡ ³Ö¾îÁÖ±â À§ÇÔ.
+	class UBehaviorTree* BTAsset; //AIControllerì˜ BTCompì— ë„£ì–´ì£¼ê¸° ìœ„í•¨.
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Enums")
 	EAIStatus AIStatus;
@@ -39,24 +39,24 @@ public:
 	bool bHasPatrolPoints;
 
 	UPROPERTY(EditAnywhere, Category = AI)
-	TArray<class ATargetPoint*> TargetPoints; //Á¤Âû ·çÆ®
+	TArray<class ATargetPoint*> TargetPoints; //ì •ì°° ë£¨íŠ¸
 
 	UPROPERTY(EditAnywhere, Category = AI)
-	float RandomPatrolRadius; //¹«ÀÛÀ§ Á¤Âû Æ÷ÀÎÆ®¸¦ ¾ò´Â ¹üÀ§(Origin Pos±âÁØ)
+	float RandomPatrolRadius; //ë¬´ì‘ìœ„ ì •ì°° í¬ì¸íŠ¸ë¥¼ ì–»ëŠ” ë²”ìœ„(Origin Posê¸°ì¤€)
 
 	UPROPERTY(EditAnywhere, Category = AI)
-	float PatrolAcceptableRadius; //Á¤Âû Æ÷ÀÎÆ®ÀÇ µµ´Ş Çã¿ë ¹üÀ§
+	float PatrolAcceptableRadius; //ì •ì°° í¬ì¸íŠ¸ì˜ ë„ë‹¬ í—ˆìš© ë²”ìœ„
 
 	UPROPERTY(EditAnywhere, Category = AI)
-	float SightMaxAge; //½Ã¾ß ½Äº°ÈÄ »ç¶óÁ³À»¶§ ÃÖ´ë ÀÎ³»?½Ã°£
+	float SightMaxAge; //ì‹œì•¼ ì‹ë³„í›„ ì‚¬ë¼ì¡Œì„ë•Œ ìµœëŒ€ ì¸ë‚´?ì‹œê°„
 
 	UPROPERTY(EditAnywhere, Category = AI)
-	float HearingMaxAge; //¼ÒÀ½ ½Äº°ÈÄ »ç¶óÁ³À»¶§ ÃÖ´ë ÀÎ³»?½Ã°£
+	float HearingMaxAge; //ì†ŒìŒ ì‹ë³„í›„ ì‚¬ë¼ì¡Œì„ë•Œ ìµœëŒ€ ì¸ë‚´?ì‹œê°„
 
 	UPROPERTY(EditAnywhere, Category = Combat)
-	float Range; // EnemyÀÇ »ç°Å¸® -> ¹«±âÀÇ Range·Î ±³Ã¼ ÇÒ ¿¹Á¤ÀÓ.
+	float Range; // Enemyì˜ ì‚¬ê±°ë¦¬ -> ë¬´ê¸°ì˜ Rangeë¡œ êµì²´ í•  ì˜ˆì •ì„.
 
-	/******* µğ¹ö±ë¿ë ********/
+	/******* ë””ë²„ê¹…ìš© ********/
 	UPROPERTY(VisibleAnywhere, Category = AI)
 	bool bSeePlayer;
 

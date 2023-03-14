@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -10,7 +10,7 @@
 #include "BaseCharacter.generated.h"
 
 
-//WeaponStatusWidget¿¡¼­ receiveÇÑ´Ù.
+//WeaponStatusWidgetì—ì„œ receiveí•œë‹¤.
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnChangeWeapon, AWeapon*, EquipWeapon);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGetAmmo, AWeapon*, EquipWeapon);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnChangeMode, AWeapon*, EquipWeapon);
@@ -83,11 +83,11 @@ public:
 	/* Socket Name */
 	const FName HeadSocketName = FName("headsocket");
 	const FName GripSocketName = FName("WeaponGrip");
-	//ItemÀ» ÀâÀ» LeftHand Socket
+	//Itemì„ ì¡ì„ LeftHand Socket
 
 	const FName LeftHandGripSocketName = FName("handLeftGripPos");
 
-	//WeaponÀ» ÀâÀ» LeftHandÀÇ Position (Weapon's socket)
+	//Weaponì„ ì¡ì„ LeftHandì˜ Position (Weapon's socket)
 	const FName WeaponLeftHandSocketName = FName("LeftHandPos");
 
 	/* Enums */
@@ -105,9 +105,9 @@ public:
 
 	/* Movement */
 	UPROPERTY(EditDefaultsOnly, Category = Movement)
-	float MaxWalkSpeed = 600.f; //¶Ù´Â ¼Óµµ
+	float MaxWalkSpeed = 600.f; //ë›°ëŠ” ì†ë„
 	UPROPERTY(EditDefaultsOnly, Category = Movement)
-	float MinWalkSpeed = 300.f; //°È´Â ¼Óµµ
+	float MinWalkSpeed = 300.f; //ê±·ëŠ” ì†ë„
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement)
 	bool bIsAccelerating;
@@ -149,7 +149,7 @@ public:
 	/*Consume*/
 	float RecoveryTickTime = 0.f;
 
-	//¾Æ·¡ WidgetµéÀ» ´ë½ÅÇØ Widgetcomponent¸¦ »ç¿ëÇÔ.
+	//ì•„ë˜ Widgetë“¤ì„ ëŒ€ì‹ í•´ Widgetcomponentë¥¼ ì‚¬ìš©í•¨.
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LootWidget")
 	//TSubclassOf<UCharacterLootWidget> WCharLootWidget;
 
@@ -253,8 +253,8 @@ public:
 
 	/****************** Weapon ******************************/
 
-	/*WeaponÀÇ Pri, Sub, PistolÀ» ÁöÁ¤ÇÑ´Ù.
-	* RifleSlotÀÌ MAXÀÎ °æ¿ì, Pistol·Î ÁöÁ¤ÇÑ´Ù.
+	/*Weaponì˜ Pri, Sub, Pistolì„ ì§€ì •í•œë‹¤.
+	* RifleSlotì´ MAXì¸ ê²½ìš°, Pistolë¡œ ì§€ì •í•œë‹¤.
 	*/
 	UFUNCTION()
 	void SetWeaponAssign(AWeapon* Weapon, ERifleSlot RifleSlot);
@@ -273,22 +273,22 @@ public:
 	bool CheckAmmo();
 	bool CheckAmmoStep(UItemStorageObject* Storage, int32& AmmoCnt, bool bIsCheckAmmo = false);
 
-	/* AmmoPerMag¿¡¼­ ³²Àº ÀÜÅºÀ» »«, ÀåÀü °¡´ÉÇÑ Åº¾à °³¼ö¸¦ ¸®ÅÏÇÑ´Ù. */
+	/* AmmoPerMagì—ì„œ ë‚¨ì€ ì”íƒ„ì„ ëº€, ì¥ì „ ê°€ëŠ¥í•œ íƒ„ì•½ ê°œìˆ˜ë¥¼ ë¦¬í„´í•œë‹¤. */
 	int32 GetNumberofCanReload();
 
-	/* GetNumberofCanReloadÇÔ¼ö¿¡¼­ »ç¿ë,
-	* Storage¿¡¼­ ammo¸¦ Ã£¾Æ ÀåÀü½Ã ÇÊ¿äÇÑ Åº¾à °³¼ö¸¦ ±¸ÇÏ°í,
-	* ¸ğµç Åº¾àÀ» Ã£Áö ¸øÇÑ °æ¿ì ³²Àº Åº¾àÀÇ °³¼ö¸¦ ¸®ÅÏÇÑ´Ù.
+	/* GetNumberofCanReloadí•¨ìˆ˜ì—ì„œ ì‚¬ìš©,
+	* Storageì—ì„œ ammoë¥¼ ì°¾ì•„ ì¥ì „ì‹œ í•„ìš”í•œ íƒ„ì•½ ê°œìˆ˜ë¥¼ êµ¬í•˜ê³ ,
+	* ëª¨ë“  íƒ„ì•½ì„ ì°¾ì§€ ëª»í•œ ê²½ìš° ë‚¨ì€ íƒ„ì•½ì˜ ê°œìˆ˜ë¥¼ ë¦¬í„´í•œë‹¤.
 	*/
 	int32 CollectRemainAmmo(UItemStorageObject* Storage, int32 NumberofAmmoReq);
 
-	/* Pocket, Vest¿¡ ÀÖ´Â Equipped Weapon¿¡ Reload°¡´ÉÇÑ TypeÀÇ AmmoÀÇ °³¼ö¸¦ ¸®ÅÏÇÑ´Ù.*/
+	/* Pocket, Vestì— ìˆëŠ” Equipped Weaponì— Reloadê°€ëŠ¥í•œ Typeì˜ Ammoì˜ ê°œìˆ˜ë¥¼ ë¦¬í„´í•œë‹¤.*/
 	int32 GetTotalNumberofSameTypeAmmo();
 
 	UFUNCTION()
 	void UseItem(AActor* Item);
 
-	// AIController::ItemFarmingÇÔ¼ö¿¡¼­ »ç¿ëµÊ
+	// AIController::ItemFarmingí•¨ìˆ˜ì—ì„œ ì‚¬ìš©ë¨
 	UNewInventoryComponent* GetAllInvComp(int32 index);
 
 	UFUNCTION(BlueprintCallable)

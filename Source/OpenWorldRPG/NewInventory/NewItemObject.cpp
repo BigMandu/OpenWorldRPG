@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
@@ -36,7 +36,7 @@ FIntPoint UNewItemObject::GetTempItemSize()
 
 FIntPoint UNewItemObject::GetItemSize()
 {
-	//if (bRotated) //ÀçÈ£Ãâ µÇ¸é¼­ ´Ù½Ã ÇÃ¸³µÇ´Â ¹®Á¦°¡ ¹ß»ýÇÔ.
+	//if (bRotated) //ìž¬í˜¸ì¶œ ë˜ë©´ì„œ ë‹¤ì‹œ í”Œë¦½ë˜ëŠ” ë¬¸ì œê°€ ë°œìƒí•¨.
 	//{
 	//	int32 temp = itemsize.X;
 	//	itemsize.X = itemsize.Y;
@@ -76,7 +76,7 @@ void UNewItemObject::ItemRotate()
 	if (ItemInfo.DataAsset->bCanRotate)
 	{	
 		//FIntPoint ItemSize = FIntPoint(ItemInfo.DataAsset->ItemSize.X, ItemInfo.DataAsset->ItemSize.Y);
-		//È¸ÀüÀ» Çß´Ù¸é item size¸¦ swapÇØÁÜ.
+		//íšŒì „ì„ í–ˆë‹¤ë©´ item sizeë¥¼ swapí•´ì¤Œ.
 		/*int32 temp = ItemSize.X;
 		ItemSize.X = ItemSize.Y;
 		ItemSize.Y = temp;*/
@@ -152,7 +152,7 @@ const UItemStorageObject* UNewItemObject::GetMotherStorage()
 }
 void UNewItemObject::SetMotherStorage(UItemStorageObject* Var_MotherStorage)
 {
-	//Mothercontainer¸¦ nullptr·Î ÁöÁ¤ÇÒ ¶§°¡ ÀÖÀ¸¹Ç·Î °ËÁõÀº ÇÏÁö ¾Ê´Â´Ù.
+	//Mothercontainerë¥¼ nullptrë¡œ ì§€ì •í•  ë•Œê°€ ìžˆìœ¼ë¯€ë¡œ ê²€ì¦ì€ í•˜ì§€ ì•ŠëŠ”ë‹¤.
 	//if (Var_InvGrid != nullptr) 
 	{
 		MotherStorage = Var_MotherStorage;
@@ -169,7 +169,7 @@ const UEquipmentComponent* UNewItemObject::GetMotherEquipComp()
 }
 void UNewItemObject::SetMotherEquipComp(UEquipmentComponent* Var_EquipSlot)
 {
-	//¾êµµ °ËÁõ ÇÊ¿ä ¾øÀ½.
+	//ì–˜ë„ ê²€ì¦ í•„ìš” ì—†ìŒ.
 	MotherEquipComp = Var_EquipSlot;
 }
 
@@ -219,7 +219,7 @@ void UNewItemObject::UseItem(UWorld* World)
 		{
 			SpawnItem->AttachToHand(BChar,this);
 
-			//Grenade TypeÀÌ ¾Æ´Ï¶ó¸é Attach ÀÌÈÄ¿¡ ¹Ù·Î Use ÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
+			//Grenade Typeì´ ì•„ë‹ˆë¼ë©´ Attach ì´í›„ì— ë°”ë¡œ Use í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
 			if (ItemInfo.DataAsset->ItemType != EItemType::EIT_Grenade)
 			{
 				/*ACoreUsableItem* CoreUsableItem = Cast<ACoreUsableItem>(SpawnItem);

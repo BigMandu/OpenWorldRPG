@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "OpenWorldRPG/NewInventory/LootWidgetComponent.h"
@@ -41,7 +41,7 @@ void ULootWidgetComponent::CreateInteractionWidget(AMainController* MainCon, AAc
 						RWidget->InitContainerWidget(actor);
 						MainInventory->SetRightWidget(RWidget);
 
-						//NewInventoryÀÇ ¿À¸¥ÂÊ À§Á¬¿¡ LootBoxWidgetÀ» ³Ö¾îÁØ´Ù.
+						//NewInventoryì˜ ì˜¤ë¥¸ìª½ ìœ„ì ¯ì— LootBoxWidgetì„ ë„£ì–´ì¤€ë‹¤.
 
 					}
 				}
@@ -52,7 +52,7 @@ void ULootWidgetComponent::CreateInteractionWidget(AMainController* MainCon, AAc
 				UCharacterLootWidget* RWidget = CreateWidget<UCharacterLootWidget>(MainCon, WBPWidget);//(BChar, WBPWidget);
 				if (RWidget && BChar)
 				{
-					//for Delegate, CharLootWidget¿¡ ÀÖ´Â EquipStorageWidgetÀÇ OpenAdditional bind¸¦ À§ÇÔ
+					//for Delegate, CharLootWidgetì— ìˆëŠ” EquipStorageWidgetì˜ OpenAdditional bindë¥¼ ìœ„í•¨
 					RWidget->EquipStorageWidget->MainWidget = MainInventory;
 					RWidget->InitCharLootWidget(BChar);					
 					//ABaseCharacter* BChar = Cast<ABaseCharacter>(actor);

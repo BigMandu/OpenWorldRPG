@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -135,7 +135,7 @@ public:
 	void DecideWhatToDoAfterDetected();
 
 	/**********   Update BlackBoard Key func  ***********/
-	//BT Task¿¡¼­ »ç¿ëÇÏ±â À§ÇÑ ÇÔ¼öÀÎµ¥ ¿©±â¿¡¼­µµ ¾¸.
+	//BT Taskì—ì„œ ì‚¬ìš©í•˜ê¸° ìœ„í•œ í•¨ìˆ˜ì¸ë° ì—¬ê¸°ì—ì„œë„ ì”€.
 	void UpdateBBCompVectorKey(FName KeyName, FVector Vector);
 	void UpdateBBCompBoolKey(FName KeyName, bool bBool);
 	void UpdateBBCompIntegerKey(FName KeyName, int32 Numb);

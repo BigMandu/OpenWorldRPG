@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 
@@ -85,7 +85,7 @@ void AEquipment::SettingStorage()
 
 	//OldVersion
 	/*
-	//EquipGridWidgetÀÌ ¾øÀ»¶§¸¸ »ý¼ºÇÑ´Ù.
+	//EquipGridWidgetì´ ì—†ì„ë•Œë§Œ ìƒì„±í•œë‹¤.
 	//if (EquipGridWidget == nullptr)
 	{
 		if (MainCon == nullptr)
@@ -105,7 +105,7 @@ void AEquipment::SettingStorage()
 			{
 				UE_LOG(LogTemp, Warning, TEXT("SettingStorage::Try Initialize EquipGridWidget "));
 
-				//EquipInventoryComp = ItemObj->GetItemInvComp(); //Item Swap½Ã¿¡ ¹®Á¦ ¹ß»ý (ItemObjÀÇ InvComp°¡ null¸¸ °¡Áö°í ÀÖÀ½)
+				//EquipInventoryComp = ItemObj->GetItemInvComp(); //Item Swapì‹œì— ë¬¸ì œ ë°œìƒ (ItemObjì˜ InvCompê°€ nullë§Œ ê°€ì§€ê³  ìžˆìŒ)
 				//EquipGridWidget->GridInitialize(ItemObj->GetItemInvComp(), ItemObj->GetItemInvComp()->TileSize);
 				EquipGridWidget->GridInitialize(EquipInventoryComp, EquipInventoryComp->TileSize);
 
@@ -138,7 +138,7 @@ void AEquipment::ReInitialize(UNewItemObject* Obj)
 	if(ItemObj)// && EquipGridWidget == nullptr)
 	{
 		ItemObj = Obj;
-		//if(bHasStorage) ¿©±â´Â ±×³É ¹Ù·Î SettingStorage·Î »©¹ö¸°´Ù.
+		//if(bHasStorage) ì—¬ê¸°ëŠ” ê·¸ëƒ¥ ë°”ë¡œ SettingStorageë¡œ ë¹¼ë²„ë¦°ë‹¤.
 		{
 			/*if (MainCon == nullptr) 
 			{
@@ -163,7 +163,7 @@ void AEquipment::ReInitialize(UNewItemObject* Obj)
 	}
 }
 
-//ºÎ¸ð Å¬·¡½º¿¡¼­ Beginplay½Ã ÇÑ¹ø¸¸ »ç¿ëµÊ.
+//ë¶€ëª¨ í´ëž˜ìŠ¤ì—ì„œ Beginplayì‹œ í•œë²ˆë§Œ ì‚¬ìš©ë¨.
 //UNewItemObject* AEquipment::GetDefaultItemObj()
 //{
 //	UNewItemObject* Obj = Super::GetDefaultItemObj();
@@ -203,7 +203,7 @@ void AEquipment::SetOwningPlayer(AActor* Actor)
 			}
 
 			OwningPlayer = BChar;
-			SetInstigator(BChar); //Instigator ¼³Á¤.
+			SetInstigator(BChar); //Instigator ì„¤ì •.
 		}
 	}
 }
@@ -217,7 +217,7 @@ AActor* AEquipment::GetOwningPlayer()
 	return nullptr;
 }
 
-////Inventory¿Í Equipped°£ÀÇ Àåºñ Swap
+////Inventoryì™€ Equippedê°„ì˜ ìž¥ë¹„ Swap
 //void AEquipment::SwapBetweenInvAndEquipped(ABaseCharacter* BChar, UNewItemObject* ToInventory)
 //{
 //	if (ToInventory && ToInventory->Equipment)
@@ -225,13 +225,13 @@ AActor* AEquipment::GetOwningPlayer()
 //		UE_LOG(LogTemp, Warning, TEXT("Equipment::SwapEquip / need to same below obj"));
 //		UE_LOG(LogTemp,Warning, TEXT("Equipment::SwapEquip / call RemoveEquip func. Remove Equip : %s"), *ToInventory->GetFName().ToString());
 //		BChar->Equipment->RemoveEquipment(ToInventory);
-//		//Obj¸¦ ³Ñ°Ü¹ö¸®ÀÚ. 
+//		//Objë¥¼ ë„˜ê²¨ë²„ë¦¬ìž. 
 //		UE_LOG(LogTemp, Warning, TEXT("Equipment::SwapEquip / call SendToInv func. Send Equip : %s"),*ToInventory->GetFName().ToString());
 //		ToInventory->Equipment->SendToInventory(BChar, ToInventory);
 //	}
 //}
 //
-////Equipped Weapon°£ÀÇ Slot swap (Rifle type¸¸ ÇØ´ç)
+////Equipped Weaponê°„ì˜ Slot swap (Rifle typeë§Œ í•´ë‹¹)
 //void AEquipment::SwapBetweenEquipped(ABaseCharacter* BChar, UNewItemObject* BeforeEquipped)
 //{
 //	if (ItemObj && BeforeEquipped)
@@ -271,13 +271,13 @@ bool AEquipment::Equip(AActor* Actor, ERifleSlot RifleSlot)
 		SKMesh->SetSimulatePhysics(false);
 		SKMesh->SetEnableGravity(false);
 
-		Mesh->SetHiddenInGame(true); //Static Mesh¸¦ ¾Èº¸ÀÌ°Ô ÇÏ°í, CollisionÀ» ²ö´Ù.
+		Mesh->SetHiddenInGame(true); //Static Meshë¥¼ ì•ˆë³´ì´ê²Œ í•˜ê³ , Collisionì„ ëˆë‹¤.
 		Mesh->SetSimulatePhysics(false);
 		Mesh->SetEnableGravity(false);
 		Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		
 
-		//ÀåÂøÇÒ¼ö ¾ø´Â TypeÀÌ°Å³ª // ÀÌ¹Ì °°Àº Å¸ÀÔÀÇ Àåºñ¸¦ ÀåÂø Áß ÀÌ¶ó¸é false¸¦ ¸®ÅÏÇÏ°í ¸¶Ä£´Ù.
+		//ìž¥ì°©í• ìˆ˜ ì—†ëŠ” Typeì´ê±°ë‚˜ // ì´ë¯¸ ê°™ì€ íƒ€ìž…ì˜ ìž¥ë¹„ë¥¼ ìž¥ì°© ì¤‘ ì´ë¼ë©´ falseë¥¼ ë¦¬í„´í•˜ê³  ë§ˆì¹œë‹¤.
 		if ((Cast<UCustomPDA>(this->ItemSetting.DataAsset)->bCanEquip == false) || (BChar->Equipment->IsSameTypeExist(this, RifleSlot)))
 		{
 			
@@ -295,17 +295,17 @@ bool AEquipment::Equip(AActor* Actor, ERifleSlot RifleSlot)
 		}
 
 
-		//¾Æ·¡ ÄÚµå´Â SwapÀ» ÇÏ´Â ÄÚµå´Ù. Swap±â´ÉÀº ¾ø¾Ý´Ù.
-		/*ÀÌ ¹«±âÀÇ Å¸ÀÔ°ú ÀÏÄ¡ÇÏ´Â ¹«±â°¡ ÀÌ¹Ì ÀÖ´Ù¸é ¾Æ·¡ 2°¡Áö Á¶°Ç¿¡ µû¶ó ºÐ±âÇÑ´Ù.
-		 * 1. ÀÌ ¹«±â°¡ ¿ùµå¿¡ ½ºÆùµÈ »óÅÂ¶ó¸é, Inventory¿¡ Ãß°¡¸¦ ½ÃµµÇÑ´Ù.
-		 * 2. ÀÌ ¹«±â°¡ Inventory¿¡ ÀÖ´Â »óÅÂ¶ó¸é ¿ø·¡ ÀåÂøµÈ Àåºñ¿Í ¹Ù²ã ÀåÂø ÇÑ´Ù.
-		 * ÀÏÄ¡ÇÏ´Â ¹«±â°¡ ¾ø´Ù¸é EquipÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
+		//ì•„ëž˜ ì½”ë“œëŠ” Swapì„ í•˜ëŠ” ì½”ë“œë‹¤. Swapê¸°ëŠ¥ì€ ì—†ì•´ë‹¤.
+		/*ì´ ë¬´ê¸°ì˜ íƒ€ìž…ê³¼ ì¼ì¹˜í•˜ëŠ” ë¬´ê¸°ê°€ ì´ë¯¸ ìžˆë‹¤ë©´ ì•„ëž˜ 2ê°€ì§€ ì¡°ê±´ì— ë”°ë¼ ë¶„ê¸°í•œë‹¤.
+		 * 1. ì´ ë¬´ê¸°ê°€ ì›”ë“œì— ìŠ¤í°ëœ ìƒíƒœë¼ë©´, Inventoryì— ì¶”ê°€ë¥¼ ì‹œë„í•œë‹¤.
+		 * 2. ì´ ë¬´ê¸°ê°€ Inventoryì— ìžˆëŠ” ìƒíƒœë¼ë©´ ì›ëž˜ ìž¥ì°©ëœ ìž¥ë¹„ì™€ ë°”ê¿” ìž¥ì°© í•œë‹¤.
+		 * ì¼ì¹˜í•˜ëŠ” ë¬´ê¸°ê°€ ì—†ë‹¤ë©´ Equipí•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
 		 */
 		/*
 		{
 			if (GetItemState() == EItemState::EIS_Spawn)
 			{
-				////ÀÌ¹Ì ÀåÂøÁßÀÎ WeaponÀ» ÀåÂøµÈ ½½·Ô¿¡ EquipÀ» ½ÃµµÇÑ´Ù¸é slotÀ» ¼­·Î swapÇÑ´Ù.
+				////ì´ë¯¸ ìž¥ì°©ì¤‘ì¸ Weaponì„ ìž¥ì°©ëœ ìŠ¬ë¡¯ì— Equipì„ ì‹œë„í•œë‹¤ë©´ slotì„ ì„œë¡œ swapí•œë‹¤.
 				//AWeapon* Weapon = Cast<AWeapon>(this);
 				//if (Weapon)
 				//{
@@ -314,20 +314,20 @@ bool AEquipment::Equip(AActor* Actor, ERifleSlot RifleSlot)
 				//}
 				//else
 				{
-					//ÀÏ¹Ý Àåºñ¸é ÀÎº¥Åä¸®·Î ÀÌ itemÀ» º¸³»°í ÇÔ¼ö¸¦ Á¾·áÇÑ´Ù.
+					//ì¼ë°˜ ìž¥ë¹„ë©´ ì¸ë²¤í† ë¦¬ë¡œ ì´ itemì„ ë³´ë‚´ê³  í•¨ìˆ˜ë¥¼ ì¢…ë£Œí•œë‹¤.
 					SendToInventory(BChar,nullptr);
 					return true;
 				}
 			}
 
-			//¾Æ·¡ ÄÚµåµéÀº Swap±â´É °ü·Ã ÄÚµåµéÀÌ´Ù. Swap±â´ÉÀº ¾ø¾Ö±â·Î Çß´Ù.
+			//ì•„ëž˜ ì½”ë“œë“¤ì€ Swapê¸°ëŠ¥ ê´€ë ¨ ì½”ë“œë“¤ì´ë‹¤. Swapê¸°ëŠ¥ì€ ì—†ì• ê¸°ë¡œ í–ˆë‹¤.
 
 			//else if (GetItemState() == EItemState::EIS_Pickup)
 			//{
-			////Àåºñ°£ Swap ±â´ÉÀº ¾ø¾Ú.
+			////ìž¥ë¹„ê°„ Swap ê¸°ëŠ¥ì€ ì—†ì•°.
 
-			//	// ÀåÂø ÇÏ·Á´Â Àåºñ°¡ Pickup»óÅÂ(Inventory¿¡ ÀÖ´Â »óÅÂ)¸é
-			//	 // Àåºñ SwapÀ» ÁøÇàÇÑ´Ù.
+			//	// ìž¥ì°© í•˜ë ¤ëŠ” ìž¥ë¹„ê°€ Pickupìƒíƒœ(Inventoryì— ìžˆëŠ” ìƒíƒœ)ë©´
+			//	 // ìž¥ë¹„ Swapì„ ì§„í–‰í•œë‹¤.
 			//	BeforeEquippedObj = BChar->Equipment->GetEquippedWeaponSameType(EEquipmentType::EET_MAX, ItemObj, RifleSlot);
 			//	if (BeforeEquippedObj != nullptr)
 			//	{
@@ -338,8 +338,8 @@ bool AEquipment::Equip(AActor* Actor, ERifleSlot RifleSlot)
 	*/
 		/*if (bIsInvEquipSwapState)
 		{
-			//EquipÀ» ÇÏ°í³ª¼­ ±âÁ¸¿¡ ÀåÂøÇß´ø°É ¿Å±ä´Ù.. »õ·Î ÀåÂøÇÒ ÀÌ weaponÀÌ attach socket¿¡ ºÎÂøµÇ´Â ´ÜÁ¡ÀÌ ÀÖÁö¸¸
-			//Inventory Á¤¸®°¡ ´õ ±ò²ûÇÏ±â ¶§¹®¿¡ ÀÌ·¸°Ô Çß´Ù.
+			//Equipì„ í•˜ê³ ë‚˜ì„œ ê¸°ì¡´ì— ìž¥ì°©í–ˆë˜ê±¸ ì˜®ê¸´ë‹¤.. ìƒˆë¡œ ìž¥ì°©í•  ì´ weaponì´ attach socketì— ë¶€ì°©ë˜ëŠ” ë‹¨ì ì´ ìžˆì§€ë§Œ
+			//Inventory ì •ë¦¬ê°€ ë” ê¹”ë”í•˜ê¸° ë•Œë¬¸ì— ì´ë ‡ê²Œ í–ˆë‹¤.
 			SwapBetweenInvAndEquipped(BChar, BeforeEquippedObj);
 		}*/
 		
@@ -370,13 +370,13 @@ bool AEquipment::StepEquip(AActor* Actor, ERifleSlot RifleSlot)
 	case EEquipmentType::EET_Backpack:
 		Socket = BChar->GetMesh()->GetSocketByName("BackpackSocket");
 		break;
-		//Weapon Parts¸é false¸¦ ¸®ÅÏÇÑ´Ù.
+		//Weapon Partsë©´ falseë¥¼ ë¦¬í„´í•œë‹¤.
 	case EEquipmentType::EET_WeaponParts:
 		return false;
 		break;
 	}
 
-	//SocketÀÌ ÀÖ°Å³ª, WeaponTypeÀÌ¸é ÇØ´ç (WeaponÀº WeaponClass¿¡¼­ ÁøÇàÇÏ±â ¶§¹®¿¡ SocketÀÌ ¾øÀ½)
+	//Socketì´ ìžˆê±°ë‚˜, WeaponTypeì´ë©´ í•´ë‹¹ (Weaponì€ WeaponClassì—ì„œ ì§„í–‰í•˜ê¸° ë•Œë¬¸ì— Socketì´ ì—†ìŒ)
 	//if (Socket != nullptr || (ItemSetting.DataAsset->EquipmentType == EEquipmentType::EET_Rifle || ItemSetting.DataAsset->EquipmentType == EEquipmentType::EET_Pistol))
 	if (Socket != nullptr)
 	{
@@ -386,14 +386,14 @@ bool AEquipment::StepEquip(AActor* Actor, ERifleSlot RifleSlot)
 	
 	SetOwningPlayer(BChar);
 	
-	//Main¿¡ ÀÖ´Â Equipment¿¡ AddÇØÁØ´Ù.
+	//Mainì— ìžˆëŠ” Equipmentì— Addí•´ì¤€ë‹¤.
 	AMainCharacter* Main = Cast<AMainCharacter>(BChar);
 	if (BChar->Equipment->AddEquipment(ItemSetting, this) && Main)
 	{
 		bReturn = true;
 
-		//¸¸ÀÏ, MainCharÀÇ Cammode°¡ fpsmode¶ó¸é hideÇÔ¼ö¸¦ È£ÃâÇØ ±×¸²ÀÚ¸¸ ÄÒ´Ù.
-		// V keyDN¿¡µµ ÀÖ´Â ±â´ÉÀÌÁö¸¸, FPS¸ðµåÀÏ¶§ ÀåÂøÇÏ¸é ²¨ÁöÁö ¾Ê¾Æ »õ·Î Ãß°¡Çß´Ù.
+		//ë§Œì¼, MainCharì˜ Cammodeê°€ fpsmodeë¼ë©´ hideí•¨ìˆ˜ë¥¼ í˜¸ì¶œí•´ ê·¸ë¦¼ìžë§Œ ì¼ ë‹¤.
+		// V keyDNì—ë„ ìžˆëŠ” ê¸°ëŠ¥ì´ì§€ë§Œ, FPSëª¨ë“œì¼ë•Œ ìž¥ì°©í•˜ë©´ êº¼ì§€ì§€ ì•Šì•„ ìƒˆë¡œ ì¶”ê°€í–ˆë‹¤.
 		if (Main->CameraMode == ECameraMode::ECM_FPS)
 		{
 			UCustomInventoryLibrary::HideAllEquipment(BChar->Equipment);
@@ -419,19 +419,19 @@ void AEquipment::SendToInventory(AActor* Actor, UNewItemObject* obj)
 	OwningEquipment = nullptr;
 	//ItemObj->bIsDestoryed = true;
 
-	//»õ·Î Ãß°¡ÇÔ InventoryComponent¸¦ °»½ÅÇÔ.
+	//ìƒˆë¡œ ì¶”ê°€í•¨ InventoryComponentë¥¼ ê°±ì‹ í•¨.
 	/*if (bHasStorage && EquipInventoryComp)
 	{
 		ItemObj->SetItemInvComp(EquipInventoryComp);
 	}*/
 
 	UE_LOG(LogTemp,Warning,TEXT("Equipment::SendToInv / call Pickup func"));
-	//ºÎ¸ð class¿¡ ÀÖ´Â PickupÇÔ¼ö È£ÃâÇØ¼­ itemÀ» ´ã´Â´Ù.
+	//ë¶€ëª¨ classì— ìžˆëŠ” Pickupí•¨ìˆ˜ í˜¸ì¶œí•´ì„œ itemì„ ë‹´ëŠ”ë‹¤.
 	Pickup(BChar,obj);
 }
 
-//ÀÌ ÇÔ¼ö´Â ³ªÁß¿¡ CustomInventoryLibrary¿¡ »©¾ßÇÒµí.
-//ItemObjµµ »ç¿ëÇØ¾ßµÊ.
+//ì´ í•¨ìˆ˜ëŠ” ë‚˜ì¤‘ì— CustomInventoryLibraryì— ë¹¼ì•¼í• ë“¯.
+//ItemObjë„ ì‚¬ìš©í•´ì•¼ë¨.
 
 
 void AEquipment::Drop()
@@ -447,8 +447,8 @@ void AEquipment::Drop()
 
 void AEquipment::Remove()
 {
-	/* ¾Æ¹«°Íµµ ¾ÈÇÔ. .. À½..*/
-	//WeaponÀÇ Remove°¡ ÀÖÀ½. ²À È£ÃâÇØ¾ßµÊ.
+	/* ì•„ë¬´ê²ƒë„ ì•ˆí•¨. .. ìŒ..*/
+	//Weaponì˜ Removeê°€ ìžˆìŒ. ê¼­ í˜¸ì¶œí•´ì•¼ë¨.
 
 
 	SKMesh->SetHiddenInGame(true);

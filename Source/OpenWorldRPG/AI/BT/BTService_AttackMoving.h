@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -11,7 +11,7 @@
  */
 
 /*
-	ÀÌ ¼­ºñ½º´Â »ç¿ë ÇÏÁö ¾Ê´Â ¼­ºñ½º´Ù.
+	ì´ ì„œë¹„ìŠ¤ëŠ” ì‚¬ìš© í•˜ì§€ ì•ŠëŠ” ì„œë¹„ìŠ¤ë‹¤.
 */
 UCLASS()
 class OPENWORLDRPG_API UBTService_AttackMoving : public UBTService

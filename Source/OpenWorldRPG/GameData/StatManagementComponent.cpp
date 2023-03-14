@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "OpenWorldRPG/GameData/StatManagementComponent.h"
@@ -13,7 +13,7 @@ UStatManagementComponent::UStatManagementComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 
-	//InitializeComponent()¸¦ »ç¿ëÇÏ±â À§ÇØ¼± ¾Æ·¡ booleanÀ» true·Î ÇØÁà¾ßÇÔ.
+	//InitializeComponent()ë¥¼ ì‚¬ìš©í•˜ê¸° ìœ„í•´ì„  ì•„ë˜ booleanì„ trueë¡œ í•´ì¤˜ì•¼í•¨.
 	bWantsInitializeComponent = true;
 
 	//StrengthLevel = 5;
@@ -53,8 +53,8 @@ void UStatManagementComponent::StrengthLevelUp(int32 SetLevel)
 }
 void UStatManagementComponent::SetStaminaStatus(EStaminaStatus NewStatus)
 {
-	//»õStatus°¡ ±âÁ¸°ú ´Ù¸£´Ù¸é ±×¿¡ µû¸¥ Breath Sound¸¦ Ãâ·ÂÇÏ±â À§ÇØ
-	//»õStatus¸¦ Àü´ŞÇÑ´Ù.
+	//ìƒˆStatusê°€ ê¸°ì¡´ê³¼ ë‹¤ë¥´ë‹¤ë©´ ê·¸ì— ë”°ë¥¸ Breath Soundë¥¼ ì¶œë ¥í•˜ê¸° ìœ„í•´
+	//ìƒˆStatusë¥¼ ì „ë‹¬í•œë‹¤.
 	if (StaminaStatus != NewStatus)
 	{
 		StaminaBreathSoundManager(NewStatus);

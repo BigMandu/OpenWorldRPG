@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "BaseCharacter.h"
@@ -47,19 +47,19 @@ ABaseCharacter::ABaseCharacter()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	GetCharacterMovement()->bOrientRotationToMovement = false; //¿òÁ÷ÀÎ ¹æÇâ != ÁøÇà¹æÇâÀ¸·Î ¼³Á¤
+	GetCharacterMovement()->bOrientRotationToMovement = false; //ì›€ì§ì¸ ë°©í–¥ != ì§„í–‰ë°©í–¥ìœ¼ë¡œ ì„¤ì •
 	GetCharacterMovement()->bUseControllerDesiredRotation = true;
 
-	GetCharacterMovement()->RotationRate = FRotator(0.f, 540.f, 0.f); //È¸Àü¼Óµµ
+	GetCharacterMovement()->RotationRate = FRotator(0.f, 540.f, 0.f); //íšŒì „ì†ë„
 	GetCharacterMovement()->JumpZVelocity = 440.f;
 	GetCharacterMovement()->AirControl = 0.2f;
 
-	GetCharacterMovement()->NavAgentProps.bCanCrouch = true; //¿õÅ©¸®±â¸¦ ÇÒ ¼ö ÀÖµµ·Ï true·Î ÇØÁØ´Ù.
-	GetCharacterMovement()->CrouchedHalfHeight = GetDefaultHalfHeight() / 1.4f; //¿õÅ©¸° Å©±â¸¦ ±âº»HalfHeightÀÇ /1.6À¸·Î ÁöÁ¤ÇÑ´Ù.
+	GetCharacterMovement()->NavAgentProps.bCanCrouch = true; //ì›…í¬ë¦¬ê¸°ë¥¼ í•  ìˆ˜ ìˆë„ë¡ trueë¡œ í•´ì¤€ë‹¤.
+	GetCharacterMovement()->CrouchedHalfHeight = GetDefaultHalfHeight() / 1.4f; //ì›…í¬ë¦° í¬ê¸°ë¥¼ ê¸°ë³¸HalfHeightì˜ /1.6ìœ¼ë¡œ ì§€ì •í•œë‹¤.
 
 	GetCharacterMovement()->MaxWalkSpeedCrouched = 300.f;
 	GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
-	bIsWalking = false; //°È±â ±âº»¼³Á¤Àº false
+	bIsWalking = false; //ê±·ê¸° ê¸°ë³¸ì„¤ì •ì€ false
 
 	FallingHighestZ = -999.f;
 
@@ -73,7 +73,7 @@ ABaseCharacter::ABaseCharacter()
 	//AudioComp = CreateDefaultSubobject<UAudioComponent>(TEXT("AudioComp"));
 	//AudioComp->SetupAttachment(GetRootComponent());
 
-	//decalÀ» ¹«½ÃÇÑ´Ù.
+	//decalì„ ë¬´ì‹œí•œë‹¤.
 	GetMesh()->SetReceivesDecals(false);
 
 }
@@ -129,7 +129,7 @@ void ABaseCharacter::PostInitializeComponents()
 	if (TPAnimInstance == nullptr) return;
 	
 
-	/* »ç¿îµå´Â TP AnimationÀ» ±âÁØÀ¸·Î Ãâ·ÂÇÑ´Ù. */ //AnimInstanceÀÇ StepSound_Notify¿¡¼­ È£Ãâ.
+	/* ì‚¬ìš´ë“œëŠ” TP Animationì„ ê¸°ì¤€ìœ¼ë¡œ ì¶œë ¥í•œë‹¤. */ //AnimInstanceì˜ StepSound_Notifyì—ì„œ í˜¸ì¶œ.
 	TPAnimInstance->StepSound.AddUObject(this, &ABaseCharacter::StepSound);
 	TPAnimInstance->ThrowDelegate.AddUObject(this,&ABaseCharacter::DetachThrowingObject);
 
@@ -194,7 +194,7 @@ void ABaseCharacter::ApplyFallingDamage(FHitResult& _FallHit)
 		if (FallingDistance >= GetDefaultHalfHeight() * 3.f)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("BaseChar::ApplyFallingDamage // Fall Damage : %f"), FallingDistance*0.05f);
-			StatManagementComponent->DamageApply(FallingDistance*0.05f); //FallingDamage´Â ¶³¾îÁø ³ôÀÌÀÇ 5%·Î ÇÑ´Ù.
+			StatManagementComponent->DamageApply(FallingDistance*0.05f); //FallingDamageëŠ” ë–¨ì–´ì§„ ë†’ì´ì˜ 5%ë¡œ í•œë‹¤.
 		}
 		FallingHighestZ = -999.f;
 	}
@@ -204,10 +204,10 @@ void ABaseCharacter::SetCharacterStatus(ECharacterStatus Type)
 {
 	ChracterStatus = Type;
 
-	/*Aim modeÀÎ °æ¿ì ¾Æ·¡¸¦ ¼öÇà ¾Ê°í ¹Ù·Î returnÇÑ´Ù.
-	* SetAimmode¿¡¼­ º°µµ·Î ÀÌµ¿¼Óµµ¸¦ Á¦ÇÑ ÇÏ±â ¶§¹®ÀÌ´Ù.
-	* ÀÌ¸¦ ÇÏÁö ¾ÊÀ¸¸é StatManageCompÀÇ Stamina°¡ º¯ÇÏ´Â Å¸ÀÓ¸¶´Ù ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏ±â¿¡
-	* ¹«Á¶°Ç º¯ÇÏ°Ô µÇ¾î, Aim mode½Ã¿¡ Ç®¸®´Â °æ¿ì°¡ ÀÖ´Ù.
+	/*Aim modeì¸ ê²½ìš° ì•„ë˜ë¥¼ ìˆ˜í–‰ ì•Šê³  ë°”ë¡œ returní•œë‹¤.
+	* SetAimmodeì—ì„œ ë³„ë„ë¡œ ì´ë™ì†ë„ë¥¼ ì œí•œ í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
+	* ì´ë¥¼ í•˜ì§€ ì•Šìœ¼ë©´ StatManageCompì˜ Staminaê°€ ë³€í•˜ëŠ” íƒ€ì„ë§ˆë‹¤ ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ê¸°ì—
+	* ë¬´ì¡°ê±´ ë³€í•˜ê²Œ ë˜ì–´, Aim modeì‹œì— í’€ë¦¬ëŠ” ê²½ìš°ê°€ ìˆë‹¤.
 	* */
 	if (AimMode == EAimMode::EAM_Aim) return;
 
@@ -296,7 +296,7 @@ void ABaseCharacter::DetachThrowingObject()
 	}
 }
 
-// AIController::ItemFarmingÇÔ¼ö¿¡¼­ »ç¿ëµÊ
+// AIController::ItemFarmingí•¨ìˆ˜ì—ì„œ ì‚¬ìš©ë¨
 UNewInventoryComponent* ABaseCharacter::GetAllInvComp(int32 index)
 {
 	switch (index)
@@ -344,7 +344,7 @@ void ABaseCharacter::ReloadWeapon()
 	}
 }
 
-/* AmmoPerMag¿¡¼­ ³²Àº ÀÜÅºÀ» »«, ÀåÀü °¡´ÉÇÑ Åº¾à °³¼ö¸¦ ¸®ÅÏÇÑ´Ù. */
+/* AmmoPerMagì—ì„œ ë‚¨ì€ ì”íƒ„ì„ ëº€, ì¥ì „ ê°€ëŠ¥í•œ íƒ„ì•½ ê°œìˆ˜ë¥¼ ë¦¬í„´í•œë‹¤. */
 int32 ABaseCharacter::GetNumberofCanReload()
 {
 	UItemStorageObject* Storage = Cast<UItemStorageObject>(Equipment->GetEquipStorage(EEquipmentType::EET_Vest));
@@ -364,15 +364,15 @@ int32 ABaseCharacter::GetNumberofCanReload()
 
 		NeedToFillAmmoCount = CollectRemainAmmo(PocketStorage, NeedToFillAmmoCount);
 
-		//AmmoPerMag¿¡¼­ ³²Àº ÀÜÅºÀ» »«, ÀåÀü °¡´ÉÇÑ Åº¾à °³¼ö¸¦ ¸®ÅÏÇÑ´Ù.
+		//AmmoPerMagì—ì„œ ë‚¨ì€ ì”íƒ„ì„ ëº€, ì¥ì „ ê°€ëŠ¥í•œ íƒ„ì•½ ê°œìˆ˜ë¥¼ ë¦¬í„´í•œë‹¤.
 		return TempNTFAC - NeedToFillAmmoCount;
 	}
 	return 0;
 }
 
-/* GetNumberofCanReloadÇÔ¼ö¿¡¼­ »ç¿ë,
-* Storage¿¡¼­ ammo¸¦ Ã£¾Æ ÀåÀü½Ã ÇÊ¿äÇÑ Åº¾à °³¼ö¸¦ ±¸ÇÏ°í, 
-* ¸ğµç Åº¾àÀ» Ã£Áö ¸øÇÑ °æ¿ì ³²Àº Åº¾àÀÇ °³¼ö¸¦ ¸®ÅÏÇÑ´Ù.
+/* GetNumberofCanReloadí•¨ìˆ˜ì—ì„œ ì‚¬ìš©,
+* Storageì—ì„œ ammoë¥¼ ì°¾ì•„ ì¥ì „ì‹œ í•„ìš”í•œ íƒ„ì•½ ê°œìˆ˜ë¥¼ êµ¬í•˜ê³ , 
+* ëª¨ë“  íƒ„ì•½ì„ ì°¾ì§€ ëª»í•œ ê²½ìš° ë‚¨ì€ íƒ„ì•½ì˜ ê°œìˆ˜ë¥¼ ë¦¬í„´í•œë‹¤.
 */
 int32 ABaseCharacter::CollectRemainAmmo(UItemStorageObject* Storage, int32 NumberofAmmoReq)
 {
@@ -387,7 +387,7 @@ int32 ABaseCharacter::CollectRemainAmmo(UItemStorageObject* Storage, int32 Numbe
 				{
 					return 0;
 				}
-				//itemÀÇ °³¼ö°¡ ÇÊ¿ä°³¼ö ÀÌ»óÀÌ¸é ÇÊ¿ä°³¼ö¸¸Å­ Áö¿ì°í ¸®ÅÏÇÑ´Ù.
+				//itemì˜ ê°œìˆ˜ê°€ í•„ìš”ê°œìˆ˜ ì´ìƒì´ë©´ í•„ìš”ê°œìˆ˜ë§Œí¼ ì§€ìš°ê³  ë¦¬í„´í•œë‹¤.
 				if (item->ItemInfo.Count >= NumberofRemainingAmmoReq)
 				{
 					BaseInventoryComp->RemoveItemCount(item, NumberofRemainingAmmoReq);
@@ -395,7 +395,7 @@ int32 ABaseCharacter::CollectRemainAmmo(UItemStorageObject* Storage, int32 Numbe
 				}
 				else
 				{
-					//±×°Ô ¾Æ´Ï¶ó¸é, ÇÊ¿ä°³¼ö¿¡¼­ item°³¼ö¸¦ »« °ªÀ» ÀúÀåÇÏ°í, for¹®À» µ¹¸é¼­ °è¼Ó °»½ÅÇÑ´Ù.
+					//ê·¸ê²Œ ì•„ë‹ˆë¼ë©´, í•„ìš”ê°œìˆ˜ì—ì„œ itemê°œìˆ˜ë¥¼ ëº€ ê°’ì„ ì €ì¥í•˜ê³ , forë¬¸ì„ ëŒë©´ì„œ ê³„ì† ê°±ì‹ í•œë‹¤.
 					NumberofRemainingAmmoReq = FMath::Clamp<int32>(NumberofRemainingAmmoReq - item->ItemInfo.Count,0, NumberofRemainingAmmoReq - item->ItemInfo.Count);
 					BaseInventoryComp->RemoveItemCount(item, item->ItemInfo.Count);
 				}
@@ -405,7 +405,7 @@ int32 ABaseCharacter::CollectRemainAmmo(UItemStorageObject* Storage, int32 Numbe
 	return NumberofRemainingAmmoReq;
 }
 
-/* Pocket, Vest¿¡ ÀÖ´Â Equipped Weapon¿¡ Reload°¡´ÉÇÑ TypeÀÇ AmmoÀÇ °³¼ö¸¦ ¸®ÅÏÇÑ´Ù.*/
+/* Pocket, Vestì— ìˆëŠ” Equipped Weaponì— Reloadê°€ëŠ¥í•œ Typeì˜ Ammoì˜ ê°œìˆ˜ë¥¼ ë¦¬í„´í•œë‹¤.*/
 int32 ABaseCharacter::GetTotalNumberofSameTypeAmmo()
 {
 	int32 Ammocnt = 0;
@@ -424,7 +424,7 @@ int32 ABaseCharacter::GetTotalNumberofSameTypeAmmo()
 }
 
 /*
-	EquippedWeaponÀÇ AmmoType°ú ¸Â´Â TypeÀÇ Ammo°¡ ÀÖ´Ù¸é true¸¦ ¸®ÅÏÇÑ´Ù.
+	EquippedWeaponì˜ AmmoTypeê³¼ ë§ëŠ” Typeì˜ Ammoê°€ ìˆë‹¤ë©´ trueë¥¼ ë¦¬í„´í•œë‹¤.
 */
 bool ABaseCharacter::CheckAmmo()
 {
@@ -447,9 +447,9 @@ bool ABaseCharacter::CheckAmmo()
 }
 
 
-/* @Storage : Ammo¸¦ °Ë»öÇÒ ½ºÅä¸®Áö
-*  @bIsCheckAmmo : True¸é, ¿À·ÎÁö AmmoÀÇ Á¸Àç ¿©ºÎ¸¸ Ã¼Å©ÇÏ±â À§ÇØ ÇÔ¼ö°¡ µ¿ÀÛµÈ´Ù.
-*  @AmmoCnt : bIsCheckAmmo°¡ False¿©¾ß ÀÌ ÆÄ¶ó¹ÌÅÍ°¡ »ç¿ëµÇ¸ç, µ¿ÀÏÇÑ Ammo TypeÀÇ ÃÑ °³¼ö¸¦ ±¸ÇÏ±â À§ÇÔÀÌµğ¤¿.
+/* @Storage : Ammoë¥¼ ê²€ìƒ‰í•  ìŠ¤í† ë¦¬ì§€
+*  @bIsCheckAmmo : Trueë©´, ì˜¤ë¡œì§€ Ammoì˜ ì¡´ì¬ ì—¬ë¶€ë§Œ ì²´í¬í•˜ê¸° ìœ„í•´ í•¨ìˆ˜ê°€ ë™ì‘ëœë‹¤.
+*  @AmmoCnt : bIsCheckAmmoê°€ Falseì—¬ì•¼ ì´ íŒŒë¼ë¯¸í„°ê°€ ì‚¬ìš©ë˜ë©°, ë™ì¼í•œ Ammo Typeì˜ ì´ ê°œìˆ˜ë¥¼ êµ¬í•˜ê¸° ìœ„í•¨ì´ë””ã….
 */
 bool ABaseCharacter::CheckAmmoStep(UItemStorageObject* Storage, int32& AmmoCnt, bool bIsCheckAmmo)
 {	
@@ -525,7 +525,7 @@ bool ABaseCharacter::ChangeWeapon(int32 index)
 		//FPAnimInstance->WeaponTypeNumber = 0;
 		break;
 	case 1:
-		// ÇöÀç ÀåÂøÇÏ°í ÀÖ´Â ¹«±â°¡ Primary¿Í ´Ù¸¦°æ¿ì¿¡¸¸ º¯°æ. ÀÏÄ¡ÇÏ¸é ¶È°°Àº°É ÀåÂøÇÒ ÇÊ¿ä°¡ ¾øÀ½.
+		// í˜„ì¬ ì¥ì°©í•˜ê³  ìˆëŠ” ë¬´ê¸°ê°€ Primaryì™€ ë‹¤ë¥¼ê²½ìš°ì—ë§Œ ë³€ê²½. ì¼ì¹˜í•˜ë©´ ë˜‘ê°™ì€ê±¸ ì¥ì°©í•  í•„ìš”ê°€ ì—†ìŒ.
 		if (PrimaryWeapon && (PrimaryWeapon != EquippedWeapon))
 		{
 			//detach and destroy when holding item.
@@ -650,7 +650,7 @@ void ABaseCharacter::SpeakSound(USoundCue* Sound)
 {
 	if (Sound)
 	{
-		AudioComp->Stop(); //-> PlayÇÔ¼ö ³»ºÎ¿¡¼­ StopÇÔ¼ö¸¦ È£Ãâ ÇÏ±â¶§¹®¿¡ ¹«ÀÇ¹Ì.
+		AudioComp->Stop(); //-> Playí•¨ìˆ˜ ë‚´ë¶€ì—ì„œ Stopí•¨ìˆ˜ë¥¼ í˜¸ì¶œ í•˜ê¸°ë•Œë¬¸ì— ë¬´ì˜ë¯¸.
 		AudioComp->SetSound(Sound);
 		AudioComp->Play();
 		//UGameplayStatics::PlaySoundAtLocation(GetWorld(),Sound,GetMesh()->GetSocketLocation(HeadSocketName));
@@ -668,7 +668,7 @@ void ABaseCharacter::StepSound()
 }
 
 
-//µ¿½Ã »ç¿ë, multiple Activate¸¦ À§ÇØ pointer¸¦ »ç¿ëÇÑ´Ù.
+//ë™ì‹œ ì‚¬ìš©, multiple Activateë¥¼ ìœ„í•´ pointerë¥¼ ì‚¬ìš©í•œë‹¤.
 void ABaseCharacter::RecoveryHealthDelegate(const float Time, const float RecoveryAmount, TWeakObjectPtr<AItem> UsingItemInfo)
 {
 	FTimerDelegate RecoverHPTimerDelegate;
@@ -812,24 +812,24 @@ bool ABaseCharacter::CanBeSeenFrom(const FVector& ObserverLocation, FVector& Out
 	bool bResult = false;
 
 	const USkeletalMeshSocket* Head = GetMesh()->GetSocketByName(HeadSocketName);
-	if (Head) //Head socketÀÌ ÀÖÀ¸¸é ÀÌ socketÀÇ À§Ä¡¸¦, 
+	if (Head) //Head socketì´ ìˆìœ¼ë©´ ì´ socketì˜ ìœ„ì¹˜ë¥¼, 
 	{
 		PlayerLocation = GetMesh()->GetSocketLocation(HeadSocketName);
 	}
-	else PlayerLocation = GetActorLocation(); //¾øÀ¸¸é ActorÀÇ À§Ä¡¸¦(Á¤°¡¿îµ¥)
+	else PlayerLocation = GetActorLocation(); //ì—†ìœ¼ë©´ Actorì˜ ìœ„ì¹˜ë¥¼(ì •ê°€ìš´ë°)
 
 
-	// FCollisionObjectQueryParams¿¡´Â 	FCollisionObjectQueryParams(int32 InObjectTypesToQuery)¸¦ »ç¿ëÇÒ°Å´Ù.
-	// ÀÌ¸¦ »ç¿ëÇÏ±â À§ÇØ¼­´Â To do this, use ECC_TO_BITFIELD to convert to bit field ÀÌ·¸°Ô ÇÏ¶ó°í ÇÑ´Ù. 
+	// FCollisionObjectQueryParamsì—ëŠ” 	FCollisionObjectQueryParams(int32 InObjectTypesToQuery)ë¥¼ ì‚¬ìš©í• ê±°ë‹¤.
+	// ì´ë¥¼ ì‚¬ìš©í•˜ê¸° ìœ„í•´ì„œëŠ” To do this, use ECC_TO_BITFIELD to convert to bit field ì´ë ‡ê²Œ í•˜ë¼ê³  í•œë‹¤. 
 
-	//WorldDynamic, WorldStatic, IgnoreActor¸¦ (°üÃøÀÚÀÇ À§Ä¡¿¡¼­ PlayerÀÇ À§Ä¡ÀÇ ¹üÀ§) LineTrace·Î °¨Áö. 
+	//WorldDynamic, WorldStatic, IgnoreActorë¥¼ (ê´€ì¸¡ìì˜ ìœ„ì¹˜ì—ì„œ Playerì˜ ìœ„ì¹˜ì˜ ë²”ìœ„) LineTraceë¡œ ê°ì§€. 
 	bool bHit = GetWorld()->LineTraceSingleByObjectType(HitResult, ObserverLocation, PlayerLocation
 		, FCollisionObjectQueryParams(ECC_TO_BITFIELD(ECC_WorldDynamic) | ECC_TO_BITFIELD(ECC_WorldStatic))
 		, FCollisionQueryParams(FName(TEXT("SightSense")), true, IgnoreActor));
 
 	NumberOfLoSChecksPerformed++;
 
-	//À§¿¡¼­ °¨ÁöµÈ°Ô ¾Æ´Ï°Å³ª, Actor°¡ Player¶ó¸é
+	//ìœ„ì—ì„œ ê°ì§€ëœê²Œ ì•„ë‹ˆê±°ë‚˜, Actorê°€ Playerë¼ë©´
 	if (bHit == false || (HitResult.Actor.IsValid() && HitResult.Actor->IsOwnedBy(this)))
 	{
 		OutSeenLocation = PlayerLocation;
@@ -870,7 +870,7 @@ void ABaseCharacter::Interaction(AActor* Actor)
 		{
 			PlayerCon->bIsInteractCharacterLoot = true;
 			//Player->LootWidgetComp->CreateInteractionWidget(PlayerCon,this);
-			LootWidgetComp->CreateInteractionWidget(PlayerCon, this); //»õ·ÎÃß°¡
+			LootWidgetComp->CreateInteractionWidget(PlayerCon, this); //ìƒˆë¡œì¶”ê°€
 		}
 
 		if (AICon)

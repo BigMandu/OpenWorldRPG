@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "InventoryComponent.h"
@@ -18,7 +18,7 @@ void UInventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	//for (auto& item : DefaultItems) //½ÃÀÛÇÒ¶§ Default ItemÀ» ³Ö¾îÁØ´Ù.
+	//for (auto& item : DefaultItems) //ì‹œì‘í• ë•Œ Default Itemì„ ë„£ì–´ì¤€ë‹¤.
 	//{
 	//	AItem* RefItem = Cast<AItem>(item);
 	//	if (RefItem)
@@ -32,7 +32,7 @@ void UInventoryComponent::BeginPlay()
 
 bool UInventoryComponent::AddItem(class AItem* Item)
 {
-	if (InventoryItems.Num() >= Capacity || Item == nullptr) //Çã¿ë°³¼ö¸¦ ³Ñ°Å³ª, itemÀÌ ¾øÀ¸¸é 
+	if (InventoryItems.Num() >= Capacity || Item == nullptr) //í—ˆìš©ê°œìˆ˜ë¥¼ ë„˜ê±°ë‚˜, itemì´ ì—†ìœ¼ë©´ 
 	{
 		UE_LOG(LogTemp, Warning, TEXT(" Item Add Failed "));
 		return false;
@@ -71,7 +71,7 @@ bool UInventoryComponent::RemoveItem(class AItem* Item)
 	return false;
 
 	/*
-	* index·Î Ã£´Â ¹æ¹ıµµ ÀÖ´Ù.
+	* indexë¡œ ì°¾ëŠ” ë°©ë²•ë„ ìˆë‹¤.
 	if (int ItemIndex = InventoryItems.Find(Item))
 	{
 		InventoryItems.RemoveAt(ItemIndex);

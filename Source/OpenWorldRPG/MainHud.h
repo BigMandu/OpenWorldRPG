@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+Ôªø// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -51,7 +51,7 @@ protected:
 
 
 public:
-	//Initialize∫∏¥Ÿ ∏’¿˙ Ω««‡µ .
+	//InitializeÎ≥¥Îã§ Î®ºÏ†Ä Ïã§ÌñâÎê®.
 	virtual void NativeConstruct() override;
 
 	void ShowInventoryWindow();

@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -8,7 +8,7 @@
 #include "StatManagementComponent.generated.h"
 
 /*
-* ÇÊ¿äÇÑ°Íµé.
+* í•„ìš”í•œê²ƒë“¤.
 * Load Exp
 * Save Exp
 * 
@@ -16,8 +16,8 @@
 * Level Up
 * Update Widget
 * 
-* À½..¿©±â¼­ CurrentMaxStamina´Â MainHudÀÇ StatWidget¿¡¼­ »ç¿ëÇØ¾ßµÊ
-* CurrentMAXJumpZ´Â MainCharÀÇ MovementComponent¿¡ ³Ñ°ÜÁà¾ßµÊ.
+* ìŒ..ì—¬ê¸°ì„œ CurrentMaxStaminaëŠ” MainHudì˜ StatWidgetì—ì„œ ì‚¬ìš©í•´ì•¼ë¨
+* CurrentMAXJumpZëŠ” MainCharì˜ MovementComponentì— ë„˜ê²¨ì¤˜ì•¼ë¨.
 */
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnStaminaChange);
@@ -37,7 +37,7 @@ struct FCharacterCurrentStat
 	GENERATED_BODY()
 public:
 	// Stats
-	//Ã¼·ÂÀº ÀÏ´Ü 100°íÁ¤ÀÌ°í/ Ã¼·ÂÀ» Á¦¿ÜÇÑ ½ºÅİÀº DataTable¿¡¼­ °¡Á®¿Â´Ù.
+	//ì²´ë ¥ì€ ì¼ë‹¨ 100ê³ ì •ì´ê³ / ì²´ë ¥ì„ ì œì™¸í•œ ìŠ¤í…Ÿì€ DataTableì—ì„œ ê°€ì ¸ì˜¨ë‹¤.
 
 	float Health = 100.f;
 

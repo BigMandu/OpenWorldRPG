@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "SplineTool.h"
@@ -58,7 +58,7 @@ void ASplineTool::OnConstruction(const FTransform& Transform)
 	}	
 }
 
-//°³¼±¹öÀü Toggle·Î on/off°¡´É.
+//ê°œì„ ë²„ì „ Toggleë¡œ on/offê°€ëŠ¥.
 void ASplineTool::NewMeshSpline()
 {
 	HISMComp->ClearInstances();
@@ -93,7 +93,7 @@ void ASplineTool::MeshSpline()
 	
 	for (UHierarchicalInstancedStaticMeshComponent* storedComp : ISMCompStoredArray)
 	{
-		//µÎ¹øÀÇ valid check
+		//ë‘ë²ˆì˜ valid check
 		
 		if (!storedComp) break;
 		if (storedComp->GetInstanceCount() < 1) break;
@@ -118,21 +118,21 @@ void ASplineTool::MeshSpline()
 
 			FBox PlacedMeshBox = ele.WantToPlaceMesh->GetBoundingBox();
 			
-			//MeshÀÇ °¡Àå ¿ŞÂÊ ¾Æ·¡ºÎÅÍ ¿À¸¥ÂÊ »ó´Ü±îÁö µ¤´Â BoxÀÇ Max - Min°ªÀ» ÇØ Å©±â¸¦ ±¸ÇÔ. (MinÀÌ ¿ŞÂÊ¾Æ·¡, Max°¡ ¿À¸¥ÂÊ À§ ÁöÁ¡ÀÓ)
+			//Meshì˜ ê°€ì¥ ì™¼ìª½ ì•„ë˜ë¶€í„° ì˜¤ë¥¸ìª½ ìƒë‹¨ê¹Œì§€ ë®ëŠ” Boxì˜ Max - Minê°’ì„ í•´ í¬ê¸°ë¥¼ êµ¬í•¨. (Minì´ ì™¼ìª½ì•„ë˜, Maxê°€ ì˜¤ë¥¸ìª½ ìœ„ ì§€ì ì„)
 			FVector PlacedMeshSize = PlacedMeshBox.Max - PlacedMeshBox.Min;
 		
-			//PlacedMeshÀÇ °£°İÀ» µû·Î ÀúÀåÇÔ.
+			//PlacedMeshì˜ ê°„ê²©ì„ ë”°ë¡œ ì €ì¥í•¨.
 			Gap = PlacedMeshSize.X + ele.GapOffset;
 
-			//SplineLength¿¡ GapÀ» ³ª´«°ªÀ» ¼Ò¼öÁ¡ ÀÌÇÏ Àı»èÇÏ¿© PlacedµÉ MeshÀÇ °³¼ö¸¦ ±¸ÇÑ´Ù.
+			//SplineLengthì— Gapì„ ë‚˜ëˆˆê°’ì„ ì†Œìˆ˜ì  ì´í•˜ ì ˆì‚­í•˜ì—¬ Placedë  Meshì˜ ê°œìˆ˜ë¥¼ êµ¬í•œë‹¤.
 			int32 PlacedMeshCount = GetPlacedeleCount(Gap);
 
 
 			for (int32 i = 0; i <= PlacedMeshCount; i++)
 			{
-				//SplineÀ» µû¶ó Mesh°¡ PlacingµÇ´Â °Å¸®, SplineÀ» µû¶ó PlacingµÈ MeshÀÇ ÃÑ ±æÀÌ°¡ µÈ´Ù.
+				//Splineì„ ë”°ë¼ Meshê°€ Placingë˜ëŠ” ê±°ë¦¬, Splineì„ ë”°ë¼ Placingëœ Meshì˜ ì´ ê¸¸ì´ê°€ ëœë‹¤.
 
-				//SplineÀÇ ½ÃÀÛ À§Ä¡¿¡¼­ ÁÖ¾îÁø ±æÀÌ¸¸Å­ ¶³¾îÁø À§Ä¡ÀÇ Local Space À§Ä¡¸¦ ±¸ÇÑ°É InstancedMeshÀÇ À§Ä¡·Î ³Ö¾îÁÖ¸é µÈ´Ù.
+				//Splineì˜ ì‹œì‘ ìœ„ì¹˜ì—ì„œ ì£¼ì–´ì§„ ê¸¸ì´ë§Œí¼ ë–¨ì–´ì§„ ìœ„ì¹˜ì˜ Local Space ìœ„ì¹˜ë¥¼ êµ¬í•œê±¸ InstancedMeshì˜ ìœ„ì¹˜ë¡œ ë„£ì–´ì£¼ë©´ ëœë‹¤.
 
 				FVector PlacedLocalVec;
 				FVector PlaceRotateVec;
@@ -141,7 +141,7 @@ void ASplineTool::MeshSpline()
 				//FVector AdjustLocalVec = PlacedLocalVec + ele.ElementTransform.GetLocation();
 
 				/* Old Version */
-				//ÀÌÀü InstantMesh¸¦ / Áö±İ ¹èÄ¡ÇÏ´Â InstantÀÇ Vector°ªÀ» ÂüÁ¶ÇØ ±¸ÇÑ NormalVector·Î È¸Àü°ªÀ» ¼öÁ¤ÇÑ´Ù.
+				//ì´ì „ InstantMeshë¥¼ / ì§€ê¸ˆ ë°°ì¹˜í•˜ëŠ” Instantì˜ Vectorê°’ì„ ì°¸ì¡°í•´ êµ¬í•œ NormalVectorë¡œ íšŒì „ê°’ì„ ìˆ˜ì •í•œë‹¤.
 				/*
 				if (i > 0)// && ele.bTestbool)
 				{
@@ -180,7 +180,7 @@ void ASplineTool::DecalSpline()
 		if(ele.WantToPlaceDecal == false) break;
 
 
-		//DecalÀÇ X axis´Â Åõ¿µÇÏ±âÀ§ÇÑ axis·Î »ç¿ëµÈ´Ù. µû¶ó¼­ y axis·Î ÇØ¾ßÇÔ.
+		//Decalì˜ X axisëŠ” íˆ¬ì˜í•˜ê¸°ìœ„í•œ axisë¡œ ì‚¬ìš©ëœë‹¤. ë”°ë¼ì„œ y axisë¡œ í•´ì•¼í•¨.
 		//ele.GapOffset =   ->DecalSize.Y * 2;
 		Gap = ele.GapOffset; //+ DecalComp->DecalSize.Y * 2
 
@@ -239,7 +239,7 @@ void ASplineTool::GetSplineElementPlacedLoRo(FVector& LoVec, FVector& RoVec, flo
 	}
 }
 
-//SplineLength¿¡ GapÀ» ³ª´«°ªÀ» ¼Ò¼öÁ¡ ÀÌÇÏ Àı»èÇÏ¿© PlacedµÉ MeshÀÇ °³¼ö¸¦ ±¸ÇÑ´Ù.
+//SplineLengthì— Gapì„ ë‚˜ëˆˆê°’ì„ ì†Œìˆ˜ì  ì´í•˜ ì ˆì‚­í•˜ì—¬ Placedë  Meshì˜ ê°œìˆ˜ë¥¼ êµ¬í•œë‹¤.
 int32 ASplineTool::GetPlacedeleCount(int32 space)
 {
 	return FMath::FloorToInt(SplineComp->GetSplineLength() / space);

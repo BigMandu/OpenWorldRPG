@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "OpenWorldRPG/NewInventory/Widget/DraggInventoryWindow.h"
@@ -124,7 +124,7 @@ FReply UDraggInventoryWindow::DetectDragWidget(const FPointerEvent& InMouseEvent
 
 			//	if (SlateDetectedWidget.IsValid())
 			//	{
-			//		//DetectDrag°¡ Á¤»ó È£ÃâµÈ´Ù¸é, NativeOnDragDetected°¡ È£ÃâµÈ´Ù.
+			//		//DetectDragê°€ ì •ìƒ í˜¸ì¶œëœë‹¤ë©´, NativeOnDragDetectedê°€ í˜¸ì¶œëœë‹¤.
 			//		Reply.NativeReply = Reply.NativeReply.DetectDrag(SlateDetectedWidget.ToSharedRef(),EKeys::LeftMouseButton);
 			//	
 			//		return Reply.NativeReply;
@@ -141,7 +141,7 @@ FReply UDraggInventoryWindow::DetectDragWidget(const FPointerEvent& InMouseEvent
 	return FReply::Unhandled();
 }
 
-//ÀÌ ÀÌÈÄÀÇ ·çÆ¾Àº NewInventoryÀÇ NativeOnDropÀÌ È£ÃâµÈ´Ù.
+//ì´ ì´í›„ì˜ ë£¨í‹´ì€ NewInventoryì˜ NativeOnDropì´ í˜¸ì¶œëœë‹¤.
 /*
 void UDraggInventoryWindow::NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation)
 {
@@ -167,8 +167,8 @@ void UDraggInventoryWindow::NativeOnDragEnter(const FGeometry& InGeometry, const
 	
 	if (DragWidget)
 	{
-		Áö±İ DraggingÇÏ°í ÀÖ´Â°Ô WidgetÀÌ°í,
-		Dragging ÁßÀÎ Widget°ú ÀÌ WidgetÀÌ ´Ù¸¥ À§Á¬ÀÌ¸é ÀÌ WidgetÀ» ºñÈ°¼ºÈ­ ÇÑ´Ù.
+		ì§€ê¸ˆ Draggingí•˜ê³  ìˆëŠ”ê²Œ Widgetì´ê³ ,
+		Dragging ì¤‘ì¸ Widgetê³¼ ì´ Widgetì´ ë‹¤ë¥¸ ìœ„ì ¯ì´ë©´ ì´ Widgetì„ ë¹„í™œì„±í™” í•œë‹¤.
 		
 		if (DragWidget->AdditionalWidget->GetName() != GetName())
 		{
@@ -186,8 +186,8 @@ void UDraggInventoryWindow::NativeOnDragLeave(const FDragDropEvent& InDragDropEv
 	UE_LOG(LogTemp, Warning, TEXT("DraggingInvWidget::NativeOnDragLeave"));
 	if (DragWidget)
 	{
-		//DraggingÁßÀÎ WidgetÀÌ ÀÌ Widget°ú °°Àº°Å¶ó¸é ÀÌ WidgetÀ» Áö¿öÁØ´Ù.
-		//DragLeaveÇÔ¼ö´Â DragDetectedÀÌÈÄ, DraggingÇÒ¶§ È£ÃâµÈ´Ù. º¹Á¦º»ÀÇ ¿øº»À» »èÁ¦ÇÏ´Â°ÅÀÓ.
+		//Draggingì¤‘ì¸ Widgetì´ ì´ Widgetê³¼ ê°™ì€ê±°ë¼ë©´ ì´ Widgetì„ ì§€ì›Œì¤€ë‹¤.
+		//DragLeaveí•¨ìˆ˜ëŠ” DragDetectedì´í›„, Draggingí• ë•Œ í˜¸ì¶œëœë‹¤. ë³µì œë³¸ì˜ ì›ë³¸ì„ ì‚­ì œí•˜ëŠ”ê±°ì„.
 		//UDraggInventoryWindow* InvWindow = Cast<UDraggInventoryWindow>(DragWidget->AdditionalWidget);
 		if (DragWidget->AdditionalWidget->GetName() == GetName())
 		{

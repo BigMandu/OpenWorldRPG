@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Item.h"
@@ -144,7 +144,7 @@ bool AItem::Pickup(class AActor* Actor, UNewItemObject* obj)
 		//UE_LOG(LogTemp, Warning, TEXT("AItem::Add To Inventory"));
 		if (BChar->Equipment)
 		{
-			//New Version. EnumRange¸¦ ÀÌ¿ëÇØ Backpack, Vest¼øÀ¸·Î ³ÖÀ» ¼ö ÀÖ´Ù¸é ³Ö´Â´Ù.
+			//New Version. EnumRangeë¥¼ ì´ìš©í•´ Backpack, Vestìˆœìœ¼ë¡œ ë„£ì„ ìˆ˜ ìˆë‹¤ë©´ ë„£ëŠ”ë‹¤.
 			
 			for (EEquipmentType EquipTp : TEnumRange<EEquipmentType>())
 			{
@@ -169,7 +169,7 @@ bool AItem::Pickup(class AActor* Actor, UNewItemObject* obj)
 				if (bFlag) break;
 			}
 
-			//ÀåÂøÁßÀÎ Àåºñ¿¡ AddItemÀÌ ½ÇÆĞÇß´Ù¸é Pocket, Securebox¼øÀ¸·Î AddItemÀ» ½ÃµµÇÑ´Ù.
+			//ì¥ì°©ì¤‘ì¸ ì¥ë¹„ì— AddItemì´ ì‹¤íŒ¨í–ˆë‹¤ë©´ Pocket, Secureboxìˆœìœ¼ë¡œ AddItemì„ ì‹œë„í•œë‹¤.
 			//pocket, secure box
 			if(bFlag == false)
 			{
@@ -180,8 +180,8 @@ bool AItem::Pickup(class AActor* Actor, UNewItemObject* obj)
 					bFlag = AddAtCharInv(BChar, BChar->SecureBoxStorage);
 					if(bFlag == false)
 					{
-						//DDOPerÀÇ defaultVisualÀ» º¹Á¦ÇÏ¸é¼­ ÇÊ¿ä ¾ø¾îÁü.
-						//PickUP»óÅÂÀÇ Item Add¿¡ ½ÇÆĞÇß´Ù¸é CustomInventoryLibraryÀÇ BackToItemÀ» ½ÇÇàÇÑ´Ù.
+						//DDOPerì˜ defaultVisualì„ ë³µì œí•˜ë©´ì„œ í•„ìš” ì—†ì–´ì§.
+						//PickUPìƒíƒœì˜ Item Addì— ì‹¤íŒ¨í–ˆë‹¤ë©´ CustomInventoryLibraryì˜ BackToItemì„ ì‹¤í–‰í•œë‹¤.
 						/*if (ItemState == EItemState::EIS_Pickup)
 						{
 							ItemObj->bIsDestoryed = true;
@@ -276,7 +276,7 @@ void AItem::Drop()
 			FVector DropLocation = OwnerLocation + OwnerForwardLo * 120.f;			
 			
 			
-			/* ItemÀ» DropÇÒ¶§ Ä³¸¯ÅÍ ¾ÕÀ¸·Î ¹ö¸®°Ô ÇÏ´Âµ¥, ÈûÀ» ·£´ıÀ¸·Î Áà¼­ »ìÂ¦¾¿ ´Ù¸£°Ô ÇÑ´Ù.*/
+			/* Itemì„ Dropí• ë•Œ ìºë¦­í„° ì•ìœ¼ë¡œ ë²„ë¦¬ê²Œ í•˜ëŠ”ë°, í˜ì„ ëœë¤ìœ¼ë¡œ ì¤˜ì„œ ì‚´ì§ì”© ë‹¤ë¥´ê²Œ í•œë‹¤.*/
 			//SetActorLocation(DropLocation);
 			//Mesh->SetWorldLocation(DropLocation);
 			
@@ -296,27 +296,27 @@ void AItem::Drop()
 
 
 //Remove Weapon Or Item before Attached, And Change Holding Item.
-//AttachÇÏ±â Àü °úÁ¤
+//Attachí•˜ê¸° ì „ ê³¼ì •
 void AItem::AttachToHand(ABaseCharacter* Actor, UNewItemObject* Obj)
 {
 	if (Actor->EquippedWeapon)
 	{
 		Actor->EquippedWeapon->GunAttachToSubSocket(Actor);
 
-		//ÀçÀåÂøÀ» À§ÇØ ÀÓ½ÃÀúÀåÇÑ´Ù.
+		//ì¬ì¥ì°©ì„ ìœ„í•´ ì„ì‹œì €ì¥í•œë‹¤.
 		BeforeEquipppedWeapon = Actor->EquippedWeapon;
 		Actor->EquippedWeapon = nullptr;
 	}
-	//ÀÌ¹Ì ´Ù¸¥ HoldingItemÀÌ ÀÖ´Ù¸é ºñ±³ÇÑ´Ù.
+	//ì´ë¯¸ ë‹¤ë¥¸ HoldingItemì´ ìˆë‹¤ë©´ ë¹„êµí•œë‹¤.
 	else if (Actor->HoldingItem.IsValid())
 	{
-		//¸¸ÀÏ ÀÌ°Å¶û µ¿ÀÏÇÑ°Å¸é »õ·Î »ı¼ºÇÑ ÀÌ itemÀ» destoryÇÑ´Ù.
+		//ë§Œì¼ ì´ê±°ë‘ ë™ì¼í•œê±°ë©´ ìƒˆë¡œ ìƒì„±í•œ ì´ itemì„ destoryí•œë‹¤.
 		if (Actor->HoldingItem.Get() == this)
 		{
 			this->Destroy();
 			return;
 		}
-		//¸¸ÀÏ ´Ù¸¥ itemÀ» µé°í ÀÖ¾ú´Ù¸é, ±â µî·ÏµÈ holding actor¸¦ »èÁ¦ÇÑ´Ù.
+		//ë§Œì¼ ë‹¤ë¥¸ itemì„ ë“¤ê³  ìˆì—ˆë‹¤ë©´, ê¸° ë“±ë¡ëœ holding actorë¥¼ ì‚­ì œí•œë‹¤.
 		else if (Actor->HoldingItem.Get() != this)
 		{
 			Actor->HoldingItem.Get()->Destroy();
@@ -332,10 +332,10 @@ void AItem::AttachToHand(ABaseCharacter* Actor, UNewItemObject* Obj)
 
 	Mesh->SetSimulatePhysics(false);
 
-	//¼Õ¿¡ µç ¼ø°£ºÎÅÍ InteractionÀÌ µÇÁö ¾Êµµ·Ï ÇÑ´Ù.
+	//ì†ì— ë“  ìˆœê°„ë¶€í„° Interactionì´ ë˜ì§€ ì•Šë„ë¡ í•œë‹¤.
 	bCanNotInteractable = true;
 
-	//MainCharÀÇ LMBDown, UpÀ» À§ÇØ EquippedGrenadeº¯¼ö¸¦ ¼±¾ğ, ´ëÀÔÇÑ´Ù.
+	//MainCharì˜ LMBDown, Upì„ ìœ„í•´ EquippedGrenadeë³€ìˆ˜ë¥¼ ì„ ì–¸, ëŒ€ì…í•œë‹¤.
 	Actor->SetHoldingItem(this);//HoldingItem = this;
 	
 	AttachToHand_Step(Actor);
@@ -376,11 +376,11 @@ void AItem::AttachToHand_Step(ABaseCharacter* Actor)
 
 void AItem::DetachFromHand(ABaseCharacter* Actor, bool bIsNeedToEquipBeforeWeapon)
 {
-	//Detach¸¦ ÇÑ´Ù.
+	//Detachë¥¼ í•œë‹¤.
 	FDetachmentTransformRules Rules = FDetachmentTransformRules(EDetachmentRule::KeepWorld, false);
 	this->DetachFromActor(Rules);
 
-	//´øÁøµÚ PrimaryWeaponÀ» ÀåÂø½ÃÅ²´Ù.
+	//ë˜ì§„ë’¤ PrimaryWeaponì„ ì¥ì°©ì‹œí‚¨ë‹¤.
 	Actor->SetHoldingItem(nullptr);// = nullptr;
 	if(bIsNeedToEquipBeforeWeapon)
 	{
@@ -456,7 +456,7 @@ void AItem::EquipBeforeWeapon(ABaseCharacter* Actor)
 
 //void AItem::SettingStorage()
 //{
-//	//EquipGridWidgetÀÌ ¾øÀ»¶§¸¸ »ı¼ºÇÑ´Ù.
+//	//EquipGridWidgetì´ ì—†ì„ë•Œë§Œ ìƒì„±í•œë‹¤.
 //	if (ItemInvComponent == nullptr)
 //	{
 //		if (MainCon == nullptr)
@@ -476,7 +476,7 @@ void AItem::EquipBeforeWeapon(ABaseCharacter* Actor)
 //			{
 //				UE_LOG(LogTemp, Warning, TEXT("SettingStorage::Try Initialize EquipGridWidget "));
 //				//ItemObj->SetItemInvComp(EquipInventoryComp);
-//				//EquipInventoryComp = ItemObj->GetItemInvComp(); //Item Swap½Ã¿¡ ¹®Á¦ ¹ß»ı (ItemObjÀÇ InvComp°¡ null¸¸ °¡Áö°í ÀÖÀ½)
+//				//EquipInventoryComp = ItemObj->GetItemInvComp(); //Item Swapì‹œì— ë¬¸ì œ ë°œìƒ (ItemObjì˜ InvCompê°€ nullë§Œ ê°€ì§€ê³  ìˆìŒ)
 //				ItemInvComponent->GridInitialize(ItemObj->GetItemInvComp(), ItemObj->GetItemInvComp()->TileSize);
 //
 //			}

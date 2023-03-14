@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 
@@ -29,7 +29,7 @@ AEnemyAIController::AEnemyAIController(const FObjectInitializer& ObjectInitializ
 {
 	PrimaryActorTick.bCanEverTick = true;
 
-	/**************  AI Perception°ü·Ã  ***************/
+	/**************  AI Perceptionê´€ë ¨  ***************/
 	SetPerceptionComponent(*CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("PerceptionComponent")));
 	SightConfig = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("SightConfig"));
 	HearingConfig = CreateDefaultSubobject<UAISenseConfig_Hearing>(TEXT("HearingConfig"));
@@ -48,12 +48,12 @@ AEnemyAIController::AEnemyAIController(const FObjectInitializer& ObjectInitializ
 	HearingConfig->DetectionByAffiliation.bDetectFriendlies = true;
 	
 	
-	GetPerceptionComponent()->SetDominantSense(SightConfig->Implementation); //¿ì¼±¼øÀ§¸¦ Sight·Î ¼³Á¤.
+	GetPerceptionComponent()->SetDominantSense(SightConfig->Implementation); //ìš°ì„ ìˆœìœ„ë¥¼ Sightë¡œ ì„¤ì •.
 
 	GetPerceptionComponent()->ConfigureSense(*SightConfig);
 	GetPerceptionComponent()->ConfigureSense(*HearingConfig);
-	////HearingConfig->SetMaxAge(15.f); //OnPossessÇÔ¼ö¿¡¼­ ´Ù½Ã º¯°æÇÔ.
-	////HearingConfig->DetectionByAffiliation.bDetectNeutrals = true; //±âº»¼¼ÆÃÀÌ Friend·Î µÇ¾îÀÖ¾î¼­ ÁÖ¼®Ã³¸® Çß´Ù.
+	////HearingConfig->SetMaxAge(15.f); //OnPossessí•¨ìˆ˜ì—ì„œ ë‹¤ì‹œ ë³€ê²½í•¨.
+	////HearingConfig->DetectionByAffiliation.bDetectNeutrals = true; //ê¸°ë³¸ì„¸íŒ…ì´ Friendë¡œ ë˜ì–´ìˆì–´ì„œ ì£¼ì„ì²˜ë¦¬ í–ˆë‹¤.
 	////HearingConfig->DetectionByAffiliation.bDetectEnemies = true;
 
 	/************** Behavoir ***********/
@@ -85,18 +85,18 @@ void AEnemyAIController::Tick(float DeltaTime)
 
 	//if (BBComp->GetValueAsBool(bSeeEnemyKey) == true)
 	//{
-	//	//Attack Distance°¡ µÈ´Ù¸é
-	//	//CanAttack booleanÀ» ¼¼ÆÃÇØÁØ´Ù, Range°¡ xÀÌÇÏ¸é ÁÂ¿ì·Î ¹«ºùÇÑ´Ù.
+	//	//Attack Distanceê°€ ëœë‹¤ë©´
+	//	//CanAttack booleanì„ ì„¸íŒ…í•´ì¤€ë‹¤, Rangeê°€ xì´í•˜ë©´ ì¢Œìš°ë¡œ ë¬´ë¹™í•œë‹¤.
 	//	CalcAttackDist(DeltaTime);
 	//}
 	//else
 	//{
-	//	SetFocus(nullptr); //½Äº°ÇÏÁö ¸øÇßÀ¸¸é FocusÃÊ±âÈ­.
+	//	SetFocus(nullptr); //ì‹ë³„í•˜ì§€ ëª»í–ˆìœ¼ë©´ Focusì´ˆê¸°í™”.
 	//}
 }
 
 
-//AIController°¡ ÇØ´çEnemy¸¦ Á¦¾îÇÒ ¼ö ÀÖµµ·ÏÇÔ.
+//AIControllerê°€ í•´ë‹¹Enemyë¥¼ ì œì–´í•  ìˆ˜ ìˆë„ë¡í•¨.
 void AEnemyAIController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
@@ -107,14 +107,14 @@ void AEnemyAIController::OnPossess(APawn* InPawn)
 	if (OwnerActor)
 	{
 		const FVector OriginPosition = OwnerActor->GetActorLocation();
-		BBComp->InitializeBlackboard(*(OwnerActor->BTAsset->BlackboardAsset)); //BlackboardÃÊ±âÈ­
+		BBComp->InitializeBlackboard(*(OwnerActor->BTAsset->BlackboardAsset)); //Blackboardì´ˆê¸°í™”
 
-		//¿©±ä ±ÍÂú¾Æ¼­ °Á ÀÌ°É·ÎÇÔ
-		BBComp->SetValueAsVector(OriginPosKey, OriginPosition); //SpawnÀ§Ä¡ ÀúÀå.
-		BBComp->SetValueAsBool(bHasPatrolPointsKey, OwnerActor->bHasPatrolPoints); //Targetpoint º¸À¯ ¿©ºÎ¸¦ ³Ñ°ÜÁÜ.
-		BBComp->SetValueAsInt(PatrolPointIndexKey, 0); //Targetpoint index¸¦ 0À¸·Î ¼¼ÆÃÇÑ´Ù.
+		//ì—¬ê¸´ ê·€ì°®ì•„ì„œ ê± ì´ê±¸ë¡œí•¨
+		BBComp->SetValueAsVector(OriginPosKey, OriginPosition); //Spawnìœ„ì¹˜ ì €ì¥.
+		BBComp->SetValueAsBool(bHasPatrolPointsKey, OwnerActor->bHasPatrolPoints); //Targetpoint ë³´ìœ  ì—¬ë¶€ë¥¼ ë„˜ê²¨ì¤Œ.
+		BBComp->SetValueAsInt(PatrolPointIndexKey, 0); //Targetpoint indexë¥¼ 0ìœ¼ë¡œ ì„¸íŒ…í•œë‹¤.
 		
-		BTComp->StartTree(*(OwnerActor->BTAsset)); //¸¶Áö¸·¿¡ StartTree
+		BTComp->StartTree(*(OwnerActor->BTAsset)); //ë§ˆì§€ë§‰ì— StartTree
 
 		SightConfig->SetMaxAge(OwnerActor->SightMaxAge);
 		HearingConfig->SetMaxAge(OwnerActor->HearingMaxAge);
@@ -122,7 +122,7 @@ void AEnemyAIController::OnPossess(APawn* InPawn)
 }
 
 
-//BaseCharacter¿¡ ¼³Á¤ÇÑ TeamTypeÀ» ºñ±³ÇØ¼­ ÀûÀ» ÆÇº°ÇÑ´Ù.
+//BaseCharacterì— ì„¤ì •í•œ TeamTypeì„ ë¹„êµí•´ì„œ ì ì„ íŒë³„í•œë‹¤.
 bool AEnemyAIController::CheckIsEnemy(ABaseCharacter* Target)
 {
 	bool bIsEnemy = false;
@@ -144,13 +144,13 @@ void AEnemyAIController::DetectedTarget(AActor* Target, FAIStimulus Stimulus)
 		ABaseCharacter* Char = Cast<ABaseCharacter>(Target);
 		//AInteractable* Object = Cast<AInteractable>(Target);
 
-		//Character¸¦ °¨ÁöÇßÀ» °æ¿ì EnemyÀÎÁö È®ÀÎÇÑ´Ù.
+		//Characterë¥¼ ê°ì§€í–ˆì„ ê²½ìš° Enemyì¸ì§€ í™•ì¸í•œë‹¤.
 		if (Char && CheckIsEnemy(Char))
 		{
 			DetectedEnemy(Char, Stimulus);
 			//UE_LOG(LogTemp, Warning, TEXT("AI Found Player!"));
 		}
-		//Object¸¦ °¨ÁöÇßÀ»°æ¿ì´Â Interact¸¦ ÇÒ¼öÀÖ´ÂÁö checkÇÑ´Ù.
+		//Objectë¥¼ ê°ì§€í–ˆì„ê²½ìš°ëŠ” Interactë¥¼ í• ìˆ˜ìˆëŠ”ì§€ checkí•œë‹¤.
 		else if(CanInteraction(Target))//Object && CanInteraction(Target))
 		{
 			DetectedObject(Target, Stimulus);
@@ -166,14 +166,14 @@ void AEnemyAIController::DetectedTarget(AActor* Target, FAIStimulus Stimulus)
 /**************************************************/
 /***********    Detected Type         ************/
 /**************************************************/
-//Sight¿Í HearingÀ» ±¸ºĞÇÑ´Ù.
+//Sightì™€ Hearingì„ êµ¬ë¶„í•œë‹¤.
 void AEnemyAIController::DetectedEnemy(ABaseCharacter* Player, FAIStimulus Stimulus)
 {
 
 	FVector DetectedLocation = Stimulus.StimulusLocation;
 
-	FAISenseID HearingSenseID = HearingConfig->GetSenseID();  //HearingÀÎÁö
-	FAISenseID SightSenseID = SightConfig->GetSenseID(); //SightÀÎÁö µû·Î Ã³¸®¸¦ ÇÏ±â À§ÇØ  ID¸¦ °¡Á®¿Â´Ù.
+	FAISenseID HearingSenseID = HearingConfig->GetSenseID();  //Hearingì¸ì§€
+	FAISenseID SightSenseID = SightConfig->GetSenseID(); //Sightì¸ì§€ ë”°ë¡œ ì²˜ë¦¬ë¥¼ í•˜ê¸° ìœ„í•´  IDë¥¼ ê°€ì ¸ì˜¨ë‹¤.
 
 	const FActorPerceptionInfo* info = GetPerceptionComponent()->GetActorInfo(*Player);
 	check(info);
@@ -181,40 +181,40 @@ void AEnemyAIController::DetectedEnemy(ABaseCharacter* Player, FAIStimulus Stimu
 
 	if (Stimulus.WasSuccessfullySensed())
 	{
-		if (GetWorldTimerManager().IsTimerActive(EnemyLostTimer)) //Å¸ÀÌ¸Ó ÃÊ±âÈ­
+		if (GetWorldTimerManager().IsTimerActive(EnemyLostTimer)) //íƒ€ì´ë¨¸ ì´ˆê¸°í™”
 		{
 			GetWorldTimerManager().ClearTimer(EnemyLostTimer);
 		}
 
-		//DominantSense´Â GetLastStimuliLocationÇÔ¼ö¿¡¸¸ ¾²ÀÌ´Â°Í °°´Ù. 
+		//DominantSenseëŠ” GetLastStimuliLocationí•¨ìˆ˜ì—ë§Œ ì“°ì´ëŠ”ê²ƒ ê°™ë‹¤. 
 		//UE_LOG(LogTemp, Warning, TEXT("DominantSense is %s"), *PerceptionComponent->GetDominantSenseID().Name.ToString());
 		
 
-		//Sight¸¦ °¨Áö ÇßÀ»¶§ (sight·Î detect Çß´Ù¸é, hearingÀº ÇÊ¿ä¾ø´Ù.)
-		if (Stimulus.Type == SightSenseID)// && Stimulus.Strength >= 1.f) //Sight¸¦ °¨ÁöÇßÀ»¶§
+		//Sightë¥¼ ê°ì§€ í–ˆì„ë•Œ (sightë¡œ detect í–ˆë‹¤ë©´, hearingì€ í•„ìš”ì—†ë‹¤.)
+		if (Stimulus.Type == SightSenseID)// && Stimulus.Strength >= 1.f) //Sightë¥¼ ê°ì§€í–ˆì„ë•Œ
 		{
-			//Sight·Î ÀûÀÌ¶ó´Â°É ½Äº°ÇßÀ»¶§¸¸ ½ÇÇàÇÑ´Ù.
+			//Sightë¡œ ì ì´ë¼ëŠ”ê±¸ ì‹ë³„í–ˆì„ë•Œë§Œ ì‹¤í–‰í•œë‹¤.
 			
 			OwnerActor->GetCharacterMovement()->MaxWalkSpeed = OwnerActor->MaxWalkSpeed;
-			//Enemy->bSeePlayer = true; //µğ¹ö±ë
-			//Enemy->bHearPlayer = false; //µğ¹ö±ë
+			//Enemy->bSeePlayer = true; //ë””ë²„ê¹…
+			//Enemy->bHearPlayer = false; //ë””ë²„ê¹…
 
 			UpdateBBCompBoolKey(bSeeEnemyKey, true);
 			UpdateBBCompBoolKey(bHearEnemyKey, false);
 			UpdateBBCompObjectKey(EnemyKey, Player);
 			//UpdateSeePlayerKey(true);
 			//UpdateHearPlayerKey(false);
-			//UpdatePlayerKey(Player); //Player¸¦ SettingÇØÁØ´Ù.
+			//UpdatePlayerKey(Player); //Playerë¥¼ Settingí•´ì¤€ë‹¤.
 			//UE_LOG(LogTemp, Warning, TEXT("AI : Sight, Sense ID : %d"), SightSenseID.Index);
 			//UE_LOG(LogTemp, Warning, TEXT("Stimulus Age is : %f, SightMaxAge is : %f"), Stimulus.GetAge(), SightConfig->GetMaxAge());
 		}
-		//hearing¸¸ °¨Áö ÇßÀ»¶§
-		else if (Stimulus.Type == HearingSenseID && info->IsSenseActive(SightSenseID) == false)// && Stimulus.Strength >= 1.f) //HearingÀ» °¨ÁöÇßÀ»¶§
+		//hearingë§Œ ê°ì§€ í–ˆì„ë•Œ
+		else if (Stimulus.Type == HearingSenseID && info->IsSenseActive(SightSenseID) == false)// && Stimulus.Strength >= 1.f) //Hearingì„ ê°ì§€í–ˆì„ë•Œ
 		{
-			//HearingÀº ÆÀ ±¸ºĞ¾øÀÌ ½Äº°°¡´ÉÇÏ°Ô ÇÑ´Ù.
+			//Hearingì€ íŒ€ êµ¬ë¶„ì—†ì´ ì‹ë³„ê°€ëŠ¥í•˜ê²Œ í•œë‹¤.
 
 			OwnerActor->GetCharacterMovement()->MaxWalkSpeed = OwnerActor->MinWalkSpeed;
-			//Enemy->bHearPlayer = true; //µğ¹ö±ë
+			//Enemy->bHearPlayer = true; //ë””ë²„ê¹…
 			//Enemy->bSeePlayer = false;
 			UpdateBBCompBoolKey(bHearEnemyKey, true);
 			UpdateBBCompObjectKey(EnemyKey, Player);
@@ -228,7 +228,7 @@ void AEnemyAIController::DetectedEnemy(ABaseCharacter* Player, FAIStimulus Stimu
 			///UpdateHearPlayerKey(true);
 			//UpdateHearLocationKey(Stimulus.StimulusLocation);
 
-			//Ã»°¢¸¸ µé¾úÀ»¶§ HearingÀÇ MaxAgeÀÌÈÄ LostTargetÀ» ½ÇÇàÇÑ´Ù.
+			//ì²­ê°ë§Œ ë“¤ì—ˆì„ë•Œ Hearingì˜ MaxAgeì´í›„ LostTargetì„ ì‹¤í–‰í•œë‹¤.
 			EnemyLostDelegate = FTimerDelegate::CreateUObject(this, &AEnemyAIController::LostTarget, Player); // Target);
 			GetWorldTimerManager().SetTimer(EnemyLostTimer, EnemyLostDelegate, HearingConfig->GetMaxAge(), false);
 			//UE_LOG(LogTemp, Warning, TEXT("AI : Hearing, Sense ID : %d"), HearingSenseID.Index);
@@ -236,18 +236,18 @@ void AEnemyAIController::DetectedEnemy(ABaseCharacter* Player, FAIStimulus Stimu
 		}
 		//UE_LOG(LogTemp, Warning, TEXT("AI : Detected!! / Detect Location : %s"), *DetectedLocation.ToString());
 
-		//Stimulus.SetExpirationAge(3.f); //1ÃÊµÚ¿¡ °¨°¢ ¹«È¿È­.
+		//Stimulus.SetExpirationAge(3.f); //1ì´ˆë’¤ì— ê°ê° ë¬´íš¨í™”.
 	}
-	else //°¨Áö¸¦ ¸øÇßÀ»¶§ (½Ã¾ß¸¸ µ¿ÀÛ)
+	else //ê°ì§€ë¥¼ ëª»í–ˆì„ë•Œ (ì‹œì•¼ë§Œ ë™ì‘)
 	{
-		//°¨Áö¸¦  ½ÇÆĞÇßÀ»¶§, ¸¶Áö¸· TargetÀÇ Vector°ª°ú Rotation°ªÀ» ÀúÀåÇÑ´Ù.
+		//ê°ì§€ë¥¼  ì‹¤íŒ¨í–ˆì„ë•Œ, ë§ˆì§€ë§‰ Targetì˜ Vectorê°’ê³¼ Rotationê°’ì„ ì €ì¥í•œë‹¤.
 		UpdateBBCompVectorKey(LastTargetLocationKey, DetectedLocation);
 		BBComp->SetValueAsRotator(LastTargetRotationKey, Player->GetActorRotation());
 
 		UpdateBBCompBoolKey(bSeeEnemyKey, false);
 		
 		EnemyLostDelegate = FTimerDelegate::CreateUObject(this, &AEnemyAIController::LostTarget, Player); // Target);
-		GetWorldTimerManager().SetTimer(EnemyLostTimer, EnemyLostDelegate, SightConfig->GetMaxAge(), false); //Æ¯Á¤ÃÊ ÀÌÈÄ¿¡ LostTargetÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
+		GetWorldTimerManager().SetTimer(EnemyLostTimer, EnemyLostDelegate, SightConfig->GetMaxAge(), false); //íŠ¹ì •ì´ˆ ì´í›„ì— LostTargetí•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
 
 		//UE_LOG(LogTemp, Warning, TEXT("AI : Missing!! / Last Location : %s"), *DetectedLocation.ToString());
 	
@@ -258,15 +258,15 @@ void AEnemyAIController::DetectedObject(AActor* Obj, FAIStimulus  Stimulus)//AIn
 {
 	if(Stimulus.WasSuccessfullySensed())
 	{
-		//AI°¡ µé°íÀÖ´Â ¹«±âÀÇ °æ¿ì Perception ½Ã¾ß¿¡ Áö¼ÓÀûÀ¸·Î °¨Áö°¡ µÇ¾î ¿¡·¯°¡ »ı±ä´Ù.
-		//AI°¡ ÀåÂøÇÑ ¹«±â¸¦ Ignore½ÃÅ²´Ù.
+		//AIê°€ ë“¤ê³ ìˆëŠ” ë¬´ê¸°ì˜ ê²½ìš° Perception ì‹œì•¼ì— ì§€ì†ì ìœ¼ë¡œ ê°ì§€ê°€ ë˜ì–´ ì—ëŸ¬ê°€ ìƒê¸´ë‹¤.
+		//AIê°€ ì¥ì°©í•œ ë¬´ê¸°ë¥¼ Ignoreì‹œí‚¨ë‹¤.
 		//bool bCheckAlreadyHave = OwnerActor->CheckEquippedWeapon(Obj);
 
-		//False¸é °¨ÁöÇÑ Obj°¡ ÀåÂøÇÑ ¹«±â°¡ ¾Æ´Ô.
+		//Falseë©´ ê°ì§€í•œ Objê°€ ì¥ì°©í•œ ë¬´ê¸°ê°€ ì•„ë‹˜.
 		//if (bCheckAlreadyHave == false)
 		{
 			//UE_LOG(LogTemp, Warning, TEXT("AI : Detected Object "));
-			//LootBox´Â StaticMesh·Î ÁöÁ¤ÇØ¾ßÇÔ -> NavMesh°¡ Àû¿ëµÇÁö ¾Ê¾Æ¼­ LocationÀÌ ¾Æ´Ñ Object·Î ÀÌµ¿µÇ°Ô ÇÑ´Ù.
+			//LootBoxëŠ” StaticMeshë¡œ ì§€ì •í•´ì•¼í•¨ -> NavMeshê°€ ì ìš©ë˜ì§€ ì•Šì•„ì„œ Locationì´ ì•„ë‹Œ Objectë¡œ ì´ë™ë˜ê²Œ í•œë‹¤.
 			UpdateBBCompObjectKey(ObjectKey, Obj);
 		}
 		//test
@@ -282,7 +282,7 @@ void AEnemyAIController::DetectedObject(AActor* Obj, FAIStimulus  Stimulus)//AIn
 
 void AEnemyAIController::LostTarget(ABaseCharacter* Target) //AActor* Target)
 {
-	if (GetWorldTimerManager().IsTimerActive(EnemyLostTimer)) //Å¸ÀÌ¸Ó ÃÊ±âÈ­
+	if (GetWorldTimerManager().IsTimerActive(EnemyLostTimer)) //íƒ€ì´ë¨¸ ì´ˆê¸°í™”
 	{
 		GetWorldTimerManager().ClearTimer(EnemyLostTimer);
 	}
@@ -294,7 +294,7 @@ void AEnemyAIController::LostTarget(ABaseCharacter* Target) //AActor* Target)
 
 	}
 
-	//»õ·Î Ãß°¡ÇÔ.
+	//ìƒˆë¡œ ì¶”ê°€í•¨.
 	GetPerceptionComponent()->ForgetActor(Target); //test
 
 	UpdateBBCompObjectKey(EnemyKey, nullptr);
@@ -306,40 +306,40 @@ void AEnemyAIController::LostObject(AActor* InteractActor)
 {
 	UpdateBBCompObjectKey(ObjectKey, nullptr);
 
-	//Perception¿¡ SightµÈ Log¸¦ »èÁ¦ÇÏ°í
+	//Perceptionì— Sightëœ Logë¥¼ ì‚­ì œí•˜ê³ 
 	GetPerceptionComponent()->ForgetActor(InteractActor);
 	
-	//Perception IgnoreActor¿¡ Ãß°¡ÇÑ´Ù.
+	//Perception IgnoreActorì— ì¶”ê°€í•œë‹¤.
 	//OwnerActor->PerceptionIgnoreActor.Add(InteractActor);
 }
 
 /********************************************************************/
 
 /*
- * Interactable classÀÇ InteractionÇÔ¼ö¿¡¼­ °¢°¢ÀÇ Object¸¶´Ù È£Ãâ.
- * ex) EquipmentÀÇ EquipÇÔ¼ö¿¡¼­ È£Ãâ
+ * Interactable classì˜ Interactioní•¨ìˆ˜ì—ì„œ ê°ê°ì˜ Objectë§ˆë‹¤ í˜¸ì¶œ.
+ * ex) Equipmentì˜ Equipí•¨ìˆ˜ì—ì„œ í˜¸ì¶œ
 */
 
-//True - Interact°¡´É, false - ºÒ°¡´É
+//True - Interactê°€ëŠ¥, false - ë¶ˆê°€ëŠ¥
 bool AEnemyAIController::CanInteraction(AActor* Object)
 {
 	bool bCanInteract = true;
 
 	AEquipment* Equip = Cast<AEquipment>(Object);
 
-	//AI°¡ ÀåÂøÇÑ Àåºñ°Å³ª, ´Ù¸¥ Ä³¸¯ÅÍ°¡ ÀåÂøÁßÀÎ Àåºñ´Â InteractionÀÌ ºÒ°¡´ÉÇÏ´Ù.
-	//¿©±â¼­ Ãß°¡ÇØ¾ßÇÒ°Í -> ´Ù¸¥ AI°¡ ÀÌ¹Ì ¸ÕÀú ½Äº°ÇßÀ» °æ¿ìÀÇ Á¶°Çµµ Ãß°¡ÇØ¾ßÇÔ.
-	//Equip¿¡ boolean º¯¼ö¸¦ ÇÏ³ª Ãß°¡ÇØ¼­. OtherCharacterÀÇ occupy¼±Á¡ ¿©ºÎ¸¦ È®ÀÎ ÇÏ´Â°Å ¤©Ãß°¡ÇÏ¸é µÉµí?
+	//AIê°€ ì¥ì°©í•œ ì¥ë¹„ê±°ë‚˜, ë‹¤ë¥¸ ìºë¦­í„°ê°€ ì¥ì°©ì¤‘ì¸ ì¥ë¹„ëŠ” Interactionì´ ë¶ˆê°€ëŠ¥í•˜ë‹¤.
+	//ì—¬ê¸°ì„œ ì¶”ê°€í•´ì•¼í• ê²ƒ -> ë‹¤ë¥¸ AIê°€ ì´ë¯¸ ë¨¼ì € ì‹ë³„í–ˆì„ ê²½ìš°ì˜ ì¡°ê±´ë„ ì¶”ê°€í•´ì•¼í•¨.
+	//Equipì— boolean ë³€ìˆ˜ë¥¼ í•˜ë‚˜ ì¶”ê°€í•´ì„œ. OtherCharacterì˜ occupyì„ ì  ì—¬ë¶€ë¥¼ í™•ì¸ í•˜ëŠ”ê±° ã„¹ì¶”ê°€í•˜ë©´ ë ë“¯?
 
 	
 	//if (Equip && Equip->bIsPreOccupied == false)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("PreOccupied is false, Check Equip, Owning"));
-		//AI°¡ ÇØ´ç EquipÀ» ÀåÂøÇÏÁö ¾Ê¾Ò°Å³ª, OwningPlayer°¡ ¾ø´Ù¸é
+		//AIê°€ í•´ë‹¹ Equipì„ ì¥ì°©í•˜ì§€ ì•Šì•˜ê±°ë‚˜, OwningPlayerê°€ ì—†ë‹¤ë©´
 		if (Equip && Equip->OwningPlayer != nullptr) //OwnerActor->CheckEquipped(Object) != true) || Equip && Equip->OwningPlayer == nullptr)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Can Interaction"));
-			//Interact°¡ °¡´ÉÇÏ´Ù
+			//Interactê°€ ê°€ëŠ¥í•˜ë‹¤
 			//Equip->bIsPreOccupied = true;
 			bCanInteract = false;
 		}
@@ -348,7 +348,7 @@ bool AEnemyAIController::CanInteraction(AActor* Object)
 	return bCanInteract;
 }
 
-//LootBoxÀÇ OpenBoxÇÔ¼ö¿¡¼­ ItemFarmingÇÔ¼ö È£Ãâ
+//LootBoxì˜ OpenBoxí•¨ìˆ˜ì—ì„œ ItemFarmingí•¨ìˆ˜ í˜¸ì¶œ
 void AEnemyAIController::ItemFarming(AActor* InteractActor)
 {
 	//AInteractable* Interact = Cast<AInteractable>(InteractActor);
@@ -363,7 +363,7 @@ void AEnemyAIController::ItemFarming(AActor* InteractActor)
 
 		if (Char)
 		{
-			//backpack, vest, pocket, secure box ¼øÀ¸·Î InvComp¸¦ °¡Á®¿Â´Ù. 
+			//backpack, vest, pocket, secure box ìˆœìœ¼ë¡œ InvCompë¥¼ ê°€ì ¸ì˜¨ë‹¤. 
 			for (int32 iter = 0; iter < 4; ++iter)
 			{
 				UNewInventoryComponent* InvCmp = Char->GetAllInvComp(iter);
@@ -389,12 +389,12 @@ void AEnemyAIController::ItemChoice(UNewInventoryComponent* GiverInvComp)
 			}
 
 
-			//Áö±İÀº ¹«Á¶°Ç ³Ö´Âµ¥, Value°ªÀÌ ¾ó¸¶ ÀÌ»óÀÌ°Å³ª, (ºñ±³´Â ..Á» ºñ¿ë ³¶ºñÀÓ)
-			// ¾Æ´Ï¸é, ÀÚ±â°¡ °®°íÀÖ´Â Inventory°¡Ä¡¸¦ Æò°¡ÇØ¼­ 
-			// °®°íÀÖ´Â °¡Ä¡°¡ Ãµ¿ø ÀÌ»óÀÌ¸é 500¿ø ¹Ì¸¸Â¥¸®´Â °Åµé¶° º¸Áöµµ ¾Ê´Â½ÄÀ¸·Î ÇÏ¸é ÁÁÀ»Áöµµ??
+			//ì§€ê¸ˆì€ ë¬´ì¡°ê±´ ë„£ëŠ”ë°, Valueê°’ì´ ì–¼ë§ˆ ì´ìƒì´ê±°ë‚˜, (ë¹„êµëŠ” ..ì¢€ ë¹„ìš© ë‚­ë¹„ì„)
+			// ì•„ë‹ˆë©´, ìê¸°ê°€ ê°–ê³ ìˆëŠ” Inventoryê°€ì¹˜ë¥¼ í‰ê°€í•´ì„œ 
+			// ê°–ê³ ìˆëŠ” ê°€ì¹˜ê°€ ì²œì› ì´ìƒì´ë©´ 500ì› ë¯¸ë§Œì§œë¦¬ëŠ” ê±°ë“¤ë–  ë³´ì§€ë„ ì•ŠëŠ”ì‹ìœ¼ë¡œ í•˜ë©´ ì¢‹ì„ì§€ë„??
 			// 
 			
-			//Pickup¿¡ ¼º°øÇÏ¸é ItemÀÌ ÀÖ´ø Component¿¡¼­ »èÁ¦ÇÑ´Ù.
+			//Pickupì— ì„±ê³µí•˜ë©´ Itemì´ ìˆë˜ Componentì—ì„œ ì‚­ì œí•œë‹¤.
 			if (ItemObj->item->Pickup(OwnerActor))
 			{
 				GiverInvComp->RemoveItem(ItemObj);
@@ -412,42 +412,42 @@ void AEnemyAIController::CalcAttackDist(float DeltaTime)
 	ABaseCharacter* Main = Cast<ABaseCharacter>(BBComp->GetValueAsObject(EnemyKey));
 	if (Main)
 	{
-		//Player¸¦ ½Äº°ÇÏ¸é °è¼ÓÇØ¼­ PlayerÀÇ ¹æÇâÀ¸·Î È¸ÀüÇÑ´Ù.
+		//Playerë¥¼ ì‹ë³„í•˜ë©´ ê³„ì†í•´ì„œ Playerì˜ ë°©í–¥ìœ¼ë¡œ íšŒì „í•œë‹¤.
 		FVector PlayerLo = Main->GetActorLocation();
 		FVector EnemyLo = OwnerActor->GetActorLocation();
 
 		FVector RotationVec = (PlayerLo - EnemyLo).GetSafeNormal();
 		FRotator NRot = FRotator(0.f, RotationVec.Rotation().Yaw, 0.f);
-		OwnerActor->SetActorRotation(NRot); //È¸Àü°ú
-		SetFocus(Main); //Focus¸¦ Player¸¦ ÇâÇÏ°Ô ÇÑ´Ù.
-		//SetFocalPoint(PlayerLo); // SetFocalPoint¿¡¼­ SetFocus·Î º¯°æ
+		OwnerActor->SetActorRotation(NRot); //íšŒì „ê³¼
+		SetFocus(Main); //Focusë¥¼ Playerë¥¼ í–¥í•˜ê²Œ í•œë‹¤.
+		//SetFocalPoint(PlayerLo); // SetFocalPointì—ì„œ SetFocusë¡œ ë³€ê²½
 
 		float Distance = FVector::Dist(EnemyLo, PlayerLo);
-		if (Distance <= (OwnerActor->Range + OwnerActor->Range * 0.1)) //main°ú EnemyÀÇ °Å¸®°¡ enemy range³»¿¡ ÀÖÀ¸¸é °ø°İ °¡´É.
+		if (Distance <= (OwnerActor->Range + OwnerActor->Range * 0.1)) //mainê³¼ Enemyì˜ ê±°ë¦¬ê°€ enemy rangeë‚´ì— ìˆìœ¼ë©´ ê³µê²© ê°€ëŠ¥.
 		{
 			UpdateBBCompBoolKey(bCanAttackKey, true);
 
-			//Range°¡ 400ÀÌÇÏ -> ³ªÁß¿£ ¹«±â °è¿­(¼¦°ÇÀÌ³ª smg°è¿­¸¸)¿¡ µû¶ó Àû¿ë ¿©ºÎ ÆÇ´Ü.
-			if (OwnerActor->Range <= 400.f) //ÁÂ¿ì·Î ¿òÁ÷ÀÌ´Â ÄÚµå -> È®·ü Àû¿ëÇÏ±â.
+			//Rangeê°€ 400ì´í•˜ -> ë‚˜ì¤‘ì—” ë¬´ê¸° ê³„ì—´(ìƒ·ê±´ì´ë‚˜ smgê³„ì—´ë§Œ)ì— ë”°ë¼ ì ìš© ì—¬ë¶€ íŒë‹¨.
+			if (OwnerActor->Range <= 400.f) //ì¢Œìš°ë¡œ ì›€ì§ì´ëŠ” ì½”ë“œ -> í™•ë¥  ì ìš©í•˜ê¸°.
 			{
 				FVector EnemyRightLo = OwnerActor->GetActorRightVector();
-				if (bUpdateEnemyLo == false) //À§Ä¡¸¦ ÇÑ¹ø¸¸ ¾÷µ¥ÀÌÆ® ÇÏ±â À§ÇÔ.
+				if (bUpdateEnemyLo == false) //ìœ„ì¹˜ë¥¼ í•œë²ˆë§Œ ì—…ë°ì´íŠ¸ í•˜ê¸° ìœ„í•¨.
 				{
 					bUpdateEnemyLo = true;
-					EnemyAttackLo = OwnerActor->GetActorLocation(); //ÀÌ ¾îÅÃ À§Ä¡¸¦ AttackMoving()¿¡ ³Ñ°ÜÁØ´Ù.
+					EnemyAttackLo = OwnerActor->GetActorLocation(); //ì´ ì–´íƒ ìœ„ì¹˜ë¥¼ AttackMoving()ì— ë„˜ê²¨ì¤€ë‹¤.
 				}
 				Alpha += DeltaTime;
 
-				if (Alpha >= 0.3f && EnemyAttackLo != FVector::ZeroVector) //.3 ÃÊ Áö³ª¸é
+				if (Alpha >= 0.3f && EnemyAttackLo != FVector::ZeroVector) //.3 ì´ˆ ì§€ë‚˜ë©´
 				{
 					Alpha = 0.f;
 
-					AttackMVDist *= -1; //ÁÂ, ¿ì·Î º¯°æÇÏ±â
+					AttackMVDist *= -1; //ì¢Œ, ìš°ë¡œ ë³€ê²½í•˜ê¸°
 					AttackMoving(EnemyAttackLo, EnemyRightLo);
 				}
 			}
 		}
-		else //°ø°İÀÌ ºÒ°¡´ÉÇÒ¶§
+		else //ê³µê²©ì´ ë¶ˆê°€ëŠ¥í• ë•Œ
 		{
 			UpdateBBCompBoolKey(bCanAttackKey, false);
 			bUpdateEnemyLo = false;
@@ -466,7 +466,7 @@ void AEnemyAIController::AttackMoving(const FVector LocationVec, FVector RightVe
 	MoveReq.SetGoalLocation(MovementVec);
 	MoveTo(MoveReq);
 
-	//µğ¹ö±ë¿ë
+	//ë””ë²„ê¹…ìš©
 	{
 		UKismetSystemLibrary::DrawDebugLine(this, LocationVec, MovementVec, FLinearColor::Yellow, 0.6f, 2.f);
 	}

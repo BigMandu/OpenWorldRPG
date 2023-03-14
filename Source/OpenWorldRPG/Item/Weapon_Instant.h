@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -64,10 +64,10 @@ public:
 
 
 	/********************************************/
-	/************* ¾Æ·¡´Â »ç¿ëÇÏÁö ¾ÊÀ½ ***********/
+	/************* ì•„ë˜ëŠ” ì‚¬ìš©í•˜ì§€ ì•ŠìŒ ***********/
 	/********************************************/
 
-	//1~3¹ß µ¿¾È ÅºÂøÁöÁ¡À» ¿Ã¸°µÚ, ÀÌÈÄ ÅºÂøÁ¡À» À§ÇÔ.
+	//1~3ë°œ ë™ì•ˆ íƒ„ì°©ì§€ì ì„ ì˜¬ë¦°ë’¤, ì´í›„ íƒ„ì°©ì ì„ ìœ„í•¨.
 	//float LastZpos;
 
 	/*FVector PreviousSpread;

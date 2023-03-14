@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "CoreUsableItem.h"
@@ -68,7 +68,7 @@ void ACoreUsableItem::ToggleOn(AMainCharacter* Actor, UNewItemObject* Obj)
 	if (NP == nullptr) return;
 
 	Obj->bIsUsing = true;
-	//BaseCharacterÀÇ PlayUseItemAnim func È£Ãâ
+	//BaseCharacterì˜ PlayUseItemAnim func í˜¸ì¶œ
 	Actor->PlayUseItemAnim(this);
 	
 	Actor->CompassBeginUse.Broadcast();
@@ -108,8 +108,8 @@ void ACoreUsableItem::UpdateCompassPointerRotation()
 		FRotator NorthDirection = (NPLocation - ViewportLocation).GetSafeNormal().Rotation();
 		
 
-		/**Ä³¸¯ÅÍ È¸Àü°ª°ú NP»çÀÌÀÇ °¢µµ°è»ê½Ã -180~180»çÀÌÀÇ °ªÀ» °¡Á®¾ß ÇÏ±â ¶§¹®¿¡
-		* 180ÀÌÇÏ¶ó¸é 360À» ´õÇÏ°í, 180ÀÌ»óÀÌ¸é 360À» »©¼­ -180~180»çÀÌÀÇ °ªÀ» À¯ÁöÇÑ´Ù.
+		/**ìºë¦­í„° íšŒì „ê°’ê³¼ NPì‚¬ì´ì˜ ê°ë„ê³„ì‚°ì‹œ -180~180ì‚¬ì´ì˜ ê°’ì„ ê°€ì ¸ì•¼ í•˜ê¸° ë•Œë¬¸ì—
+		* 180ì´í•˜ë¼ë©´ 360ì„ ë”í•˜ê³ , 180ì´ìƒì´ë©´ 360ì„ ë¹¼ì„œ -180~180ì‚¬ì´ì˜ ê°’ì„ ìœ ì§€í•œë‹¤.
 		*/
 		float AdjustYaw = NorthDirection.Yaw - ConYaw;
 		if (AdjustYaw < 180.f)

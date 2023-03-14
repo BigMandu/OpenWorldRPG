@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "OpenWorldRPG/MainHud.h"
@@ -26,10 +26,10 @@ void UMainHud::ShowInventoryWindow()
 {
 	if (NewInventoryWidget)
 	{
-		//Inventory¸¦ ¿­¸é Ç¥½ÃµÈ widgetÀ» hideÇÑ´Ù.
+		//Inventoryë¥¼ ì—´ë©´ í‘œì‹œëœ widgetì„ hideí•œë‹¤.
 		HideOtherUI();
 
-		FInputModeGameAndUI Mode; ///TabKey·Î HIde¸¦ ÇÏ±âÀ§ÇØ Game And UI mode·Î Çß´Âµ¥µµ Å°°¡ ¾È¸ÔÈù´Ù. 
+		FInputModeGameAndUI Mode; ///TabKeyë¡œ HIdeë¥¼ í•˜ê¸°ìœ„í•´ Game And UI modeë¡œ í–ˆëŠ”ë°ë„ í‚¤ê°€ ì•ˆë¨¹ížŒë‹¤. 
 		Mode.SetWidgetToFocus(NewInventoryWidget->TakeWidget());
 		MainCon->SetInputMode(Mode);
 
@@ -43,9 +43,9 @@ void UMainHud::HideInventoryWindow()
 {
 	if (NewInventoryWidget)
 	{
-		//Inventory¸¦ ´ÝÀ¸¸é Ç¥½ÃÇØ¾ßÇÒ widgetÀ» showÇÑ´Ù.
+		//Inventoryë¥¼ ë‹«ìœ¼ë©´ í‘œì‹œí•´ì•¼í•  widgetì„ showí•œë‹¤.
 		ShowOtherUI();
-		//´ÝÀ»¶§ ¸¶´Ù HighestZ¸¦ 2·Î ÃÊ±âÈ­ ÇÑ´Ù.
+		//ë‹«ì„ë•Œ ë§ˆë‹¤ HighestZë¥¼ 2ë¡œ ì´ˆê¸°í™” í•œë‹¤.
 		NewInventoryWidget->HighestZ = 2;
 		
 		NewInventoryWidget->CloseAllAdditionalWidget(NewInventoryWidget->OpenedWindowArray.Num());

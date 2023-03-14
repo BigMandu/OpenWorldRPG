@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "OpenWorldRPG/AI/BT/BTTask_GetChaseLocation.h"
@@ -44,32 +44,32 @@ EBTNodeResult::Type UBTTask_GetChaseLocation::ExecuteTask(UBehaviorTreeComponent
 
 		FVector FinalSearchLocation = FVector(0.f);
 
-		//¸¶Áö¸· TargetÀÇ ³ôÀÌ¿Í ÇöÀçTargetÀÇ ³ôÀÌ°¡ ´Ù¸¥°æ¿ì ¼ö»ö À§Ä¡¸¦ ¸¶Áö¸· ½Äº°À§Ä¡·Î ´ëÀÔÇÏ°í ³¡³½´Ù.
+		//ë§ˆì§€ë§‰ Targetì˜ ë†’ì´ì™€ í˜„ìž¬Targetì˜ ë†’ì´ê°€ ë‹¤ë¥¸ê²½ìš° ìˆ˜ìƒ‰ ìœ„ì¹˜ë¥¼ ë§ˆì§€ë§‰ ì‹ë³„ìœ„ì¹˜ë¡œ ëŒ€ìž…í•˜ê³  ëë‚¸ë‹¤.
 		if (CurrentTargetLocation.Z != LastSeenLocation.Z || LastSeenLocation.Z != OwnerComp.GetOwner()->GetActorLocation().Z)
 		{
 			FinalSearchLocation = LastSeenLocation;
 		}
-		//³ôÀÌ°¡ °°Àº°æ¿ì == TargetÀÌ ÄÚ³Ê³ª, Àå¾Ö¹° »çÀÌ·Î µé¾î°¡ ¼ûÀº °æ¿ìÀÓ.
-		//µû¶ó¼­ Å¸°ÙÀÇ ¸¶Áö¸· ½Äº° À§Ä¡¿Í, TargetÀÇ ÇöÀç À§Ä¡ÀÇ °Å¸®°ªÀ» ±¸ÇØ¼­ 
-		//±× °Å¸®°ªÀ» ÃÖ¼Ò : °Å¸®°ª/3,  ÃÖ´ë : °Å¸®°ª  »çÀÌÀÇ ·£´ýÇÑ °ªÀ» ±¸ÇØ
-		// ÇöÀç OwnerAIÀÇ À§Ä¡¿¡ TargetÀÇ ¸¶Áö¸· ½Äº° È¸Àü°ª * °Å¸® ·£´ý°ªÀ» ´õÇØ ÃÖÁ¾ ¼ö»ö À§Ä¡¸¦ ±¸ÇÑ´Ù.
+		//ë†’ì´ê°€ ê°™ì€ê²½ìš° == Targetì´ ì½”ë„ˆë‚˜, ìž¥ì• ë¬¼ ì‚¬ì´ë¡œ ë“¤ì–´ê°€ ìˆ¨ì€ ê²½ìš°ìž„.
+		//ë”°ë¼ì„œ íƒ€ê²Ÿì˜ ë§ˆì§€ë§‰ ì‹ë³„ ìœ„ì¹˜ì™€, Targetì˜ í˜„ìž¬ ìœ„ì¹˜ì˜ ê±°ë¦¬ê°’ì„ êµ¬í•´ì„œ 
+		//ê·¸ ê±°ë¦¬ê°’ì„ ìµœì†Œ : ê±°ë¦¬ê°’/3,  ìµœëŒ€ : ê±°ë¦¬ê°’  ì‚¬ì´ì˜ ëžœë¤í•œ ê°’ì„ êµ¬í•´
+		// í˜„ìž¬ OwnerAIì˜ ìœ„ì¹˜ì— Targetì˜ ë§ˆì§€ë§‰ ì‹ë³„ íšŒì „ê°’ * ê±°ë¦¬ ëžœë¤ê°’ì„ ë”í•´ ìµœì¢… ìˆ˜ìƒ‰ ìœ„ì¹˜ë¥¼ êµ¬í•œë‹¤.
 		else
 		{
-			//TargetÀÇ ÇöÀç À§Ä¡¿Í ¸¶Áö¸· ½Äº° À§Ä¡ÀÇ °Å¸®¸¦ ±¸ÇÑ´Ù.
+			//Targetì˜ í˜„ìž¬ ìœ„ì¹˜ì™€ ë§ˆì§€ë§‰ ì‹ë³„ ìœ„ì¹˜ì˜ ê±°ë¦¬ë¥¼ êµ¬í•œë‹¤.
 			FVector LocationDist = FVector(FVector::Dist(LastSeenLocation, CurrentTargetLocation));
 
-			//À§¿¡¼­ ±¸ÇÑ °Å¸®¿¡¼­ ¹«ÀÛÀ§°ª 3À¸·Î ³ª´«°ª(ÃÖ¼Ò) °ú ¿ø·¡°ª(ÃÖ´ë)»çÀÌÀÇ ·£´ý °Å¸® °ªÀ» ±¸ÇÑ´Ù.
+			//ìœ„ì—ì„œ êµ¬í•œ ê±°ë¦¬ì—ì„œ ë¬´ìž‘ìœ„ê°’ 3ìœ¼ë¡œ ë‚˜ëˆˆê°’(ìµœì†Œ) ê³¼ ì›ëž˜ê°’(ìµœëŒ€)ì‚¬ì´ì˜ ëžœë¤ ê±°ë¦¬ ê°’ì„ êµ¬í•œë‹¤.
 			float RandDist = FMath::RandRange(LocationDist.Size() / 3, LocationDist.Size());
 
-			//TargetÀÇ ¸¶Áö¸· ½Äº° È¸Àü°ª¿¡ À§ÀÇ ·£´ý °Å¸®float°ªÀ» °öÇØ  Ãß°¡ÀûÀ¸·Î ¾ó¸¸Å­ ´õ ³ª°¥Áö °áÁ¤ÇÏ´Â Vector°ªÀ» ±¸ÇÑ´Ù.
+			//Targetì˜ ë§ˆì§€ë§‰ ì‹ë³„ íšŒì „ê°’ì— ìœ„ì˜ ëžœë¤ ê±°ë¦¬floatê°’ì„ ê³±í•´  ì¶”ê°€ì ìœ¼ë¡œ ì–¼ë§Œí¼ ë” ë‚˜ê°ˆì§€ ê²°ì •í•˜ëŠ” Vectorê°’ì„ êµ¬í•œë‹¤.
 			FVector PreCalc = FVector(RotationVec.X * RandDist, RotationVec.Y * RandDist, RotationVec.Z);
 
 
-			//ÇöÀç ÀÌ OwnerAIÀÇ À§Ä¡°ª¿¡ À§¿¡¼­ ±¸ÇÑ ¹æÇâ+°Å¸®º¤ÅÍ¸¦ ´õÇØ ÃÖÁ¾ ¼ö»ö À§Ä¡¸¦ °áÁ¤ÇÑ´Ù.
+			//í˜„ìž¬ ì´ OwnerAIì˜ ìœ„ì¹˜ê°’ì— ìœ„ì—ì„œ êµ¬í•œ ë°©í–¥+ê±°ë¦¬ë²¡í„°ë¥¼ ë”í•´ ìµœì¢… ìˆ˜ìƒ‰ ìœ„ì¹˜ë¥¼ ê²°ì •í•œë‹¤.
 			FinalSearchLocation = OwnerComp.GetOwner()->GetActorLocation() + PreCalc;
 		}
 
-		//±¸ÇÑ ÃÖÁ¾ SearchLocationÀ» BBKey¿¡ SetÇÑ´Ù.
+		//êµ¬í•œ ìµœì¢… SearchLocationì„ BBKeyì— Setí•œë‹¤.
 		BBComp->SetValueAsVector(AICon->EstimatedLocationOfTargetKey,FinalSearchLocation);
 		ReturnResult = EBTNodeResult::Succeeded;
 	}

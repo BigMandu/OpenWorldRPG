@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "OpenWorldRPG/UI/CraftItemWidget.h"
@@ -26,7 +26,7 @@ void UCraftItemWidget::InitCraftItemWidget(UBasePDA* CraftableItemPDA, bool bIsC
 		CountBox->SetVisibility(ESlateVisibility::Collapsed);
 		bCraftItem = bIsCraftItem;
 
-		//CraftItemÀÌ ¾Æ´Ñ IngredientWidgetÀÌ¸é NameÀ» º¸ÀÌ°Ô ÇÑ´Ù.
+		//CraftItemì´ ì•„ë‹Œ IngredientWidgetì´ë©´ Nameì„ ë³´ì´ê²Œ í•œë‹¤.
 		if(bCraftItem == false)
 		{
 			CountBox->SetVisibility(ESlateVisibility::Visible);
@@ -73,7 +73,7 @@ FReply UCraftItemWidget::NativeOnMouseButtonDown(const FGeometry& InGeometry, co
 		{
 			UE_LOG(LogTemp, Warning, TEXT("UCraftItemWidget::LeftMousebutton Down"));			
 
-			//UCraftSystemWidget::SettingRecipe¿Í BindÇÔ
+			//UCraftSystemWidget::SettingRecipeì™€ Bindí•¨
 			OnCraftWidgetClicked.Broadcast(this);
 		}
 	}
@@ -89,19 +89,19 @@ bool UCraftItemWidget::NativeOnDrop(const FGeometry& InGeometry, const FDragDrop
 	UCustomDDOperation* CusDDOper = Cast<UCustomDDOperation>(InOperation);
 	if (CusDDOper)
 	{
-		//DragItem°ú thisWidgetÀÇ DA°¡ °°Àº°æ¿ì Drop°¡´É
+		//DragItemê³¼ thisWidgetì˜ DAê°€ ê°™ì€ê²½ìš° Dropê°€ëŠ¥
 		if (CusDDOper->ItemObj->ItemInfo.DataAsset == CraftItemDA)
 		{
 			int32 DroppedItemCount = CusDDOper->ItemObj->ItemInfo.Count;
 			int32 RemainCount = NeedCount_num - CurrentCount_num;
 
-			//DropÇÏ´Â ItemCount°¡ NeedCountº¸´Ù Å« °æ¿ì
+			//Dropí•˜ëŠ” ItemCountê°€ NeedCountë³´ë‹¤ í° ê²½ìš°
 			if (DroppedItemCount > RemainCount)
 			{
 				CusDDOper->ItemObj->RemoveCount(RemainCount);
 				CurrentCount_num = NeedCount_num;
 			}
-			//DropÇÏ´Â Item°³¼ö°¡ NeedCount¿Í °°°Å³ª ÀÛÀº°æ¿ì (¿Å±äÈÄ ¾ø¾îÁ®¾ßÇÔ)
+			//Dropí•˜ëŠ” Itemê°œìˆ˜ê°€ NeedCountì™€ ê°™ê±°ë‚˜ ì‘ì€ê²½ìš° (ì˜®ê¸´í›„ ì—†ì–´ì ¸ì•¼í•¨)
 			else
 			{
 				AMainCharacter * Player = Cast<AMainCharacter>(GetWorld()->GetFirstPlayerController()->GetCharacter());

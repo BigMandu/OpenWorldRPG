@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -115,7 +115,7 @@ public:
 	void BindingOpenWidgetFunc(class UNewItemObject* ItemObj);
 	void CreateAdditionalWidget(UNewItemObject* T_Obj);
 
-	/* AdditionalWindow¾È¿¡ µé¾î°¥ ½ÇÁ¦ WidgetÀ» »ı¼ºÇÑ´Ù. */
+	/* AdditionalWindowì•ˆì— ë“¤ì–´ê°ˆ ì‹¤ì œ Widgetì„ ìƒì„±í•œë‹¤. */
 	UWidget* CreateChildWidget(UDraggInventoryWindow* StorageWindow, UNewItemObject* Obj);
 	bool CheckAlreadyOpened(UNewItemObject* T_Obj);
 

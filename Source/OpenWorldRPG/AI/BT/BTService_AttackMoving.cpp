@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "BTService_AttackMoving.h"
@@ -45,12 +45,12 @@ void UBTService_AttackMoving::TickNode(UBehaviorTreeComponent& OwnerComp, uint8*
 	RightVec.Y *= Distance;
 
 	FVector MovementVec = FVector(RightVec.X+EnemyLo.X, RightVec.Y+EnemyLo.Y, EnemyLo.Z); 
-	//->ÁÂ¿ì·Î ¿òÁ÷ÀÌ´Â ÄÚµå´Â AIController¿¡ ³Ö¾îÁá´Ù. ÀÌ ¼­ºñ½º´Â ÀÎÅÍ¹ú¸¶´Ù ºÒ·¯¿Í¼­ ½ÇÇàµÇ±â¶§¹®¿¡ Åä±ÛÇü½ÄÀÌ ¾È¸ÔÈû.
+	//->ì¢Œìš°ë¡œ ì›€ì§ì´ëŠ” ì½”ë“œëŠ” AIControllerì— ë„£ì–´ì¤¬ë‹¤. ì´ ì„œë¹„ìŠ¤ëŠ” ì¸í„°ë²Œë§ˆë‹¤ ë¶ˆëŸ¬ì™€ì„œ ì‹¤í–‰ë˜ê¸°ë•Œë¬¸ì— í† ê¸€í˜•ì‹ì´ ì•ˆë¨¹íž˜.
 
 
 	//FVector PlayerLo = Main->GetActorLocation();
 
-	//ÇÃ·¹ÀÌ¾î ÁÖº¯ ºù±Ûºù±Û µµ´Â ÄÚµå
+	//í”Œë ˆì´ì–´ ì£¼ë³€ ë¹™ê¸€ë¹™ê¸€ ë„ëŠ” ì½”ë“œ
 	/*
 	float Dist = Enemy->Range - Enemy->Range * 0.3;
 	FVector Distance = FVector(Dist, 0.f, 0.f);
@@ -70,7 +70,7 @@ void UBTService_AttackMoving::TickNode(UBehaviorTreeComponent& OwnerComp, uint8*
 	AICon->MoveToLocation(PlayerLo);
 	*/
 
-	//ÇÃ·¹ÀÌ¾î¸¦ ÇâÇØ È¸ÀüÇÏ´Â ÄÚµå -> AIController Tick¿¡¼­ ±¸ÇöÇÔ.
+	//í”Œë ˆì´ì–´ë¥¼ í–¥í•´ íšŒì „í•˜ëŠ” ì½”ë“œ -> AIController Tickì—ì„œ êµ¬í˜„í•¨.
 	/*
 	PlayerLo = Main->GetActorLocation();
 	FVector EnemyLo = Enemy->GetActorLocation();
@@ -81,7 +81,7 @@ void UBTService_AttackMoving::TickNode(UBehaviorTreeComponent& OwnerComp, uint8*
 	Enemy->SetActorRotation(NRot);
 	*/
 
-	//µð¹ö±ë
+	//ë””ë²„ê¹…
 	{
 		UE_LOG(LogTemp, Warning, TEXT("MovementVec : %s"), *MovementVec.ToString());
 		UE_LOG(LogTemp, Warning, TEXT("Delta : %f"), DeltaSeconds);

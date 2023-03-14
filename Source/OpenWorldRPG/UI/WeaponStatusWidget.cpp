@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "OpenWorldRPG/UI/WeaponStatusWidget.h"
@@ -19,8 +19,8 @@ void UWeaponStatusWidget::NativeConstruct()
 }
 
 /*
-* BaseChar¿¡ Declare¸¦ Çß´Ù.
-* broadcast À§Ä¡´Â
+* BaseCharì— Declareë¥¼ í–ˆë‹¤.
+* broadcast ìœ„ì¹˜ëŠ”
 * OnGetAmmo = Weapon::UseAmmo, AWeapon::Reload, AMainCharacter::ChangeWeapon, AMainCharacter::TabKeyDown
 * OnChangeWeapon = AMainCharacter::ChangeWeapon, 
 */

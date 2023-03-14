@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "OpenWorldRPG/Item/BaseGrenade.h"
@@ -62,10 +62,10 @@ void ABaseGrenade::OnConstruction(const FTransform& Transform)
 		CapsuleComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 		Mesh->SetSimulatePhysics(true);
-		//¼±ÇüÁ¦µ¿, ¼±ÇüÀÌµ¿¿¡ °¡ÇØÁö´Â 'Drag(Á¦µ¿·Â)'ÀÌ´Ù.
+		//ì„ í˜•ì œë™, ì„ í˜•ì´ë™ì— ê°€í•´ì§€ëŠ” 'Drag(ì œë™ë ¥)'ì´ë‹¤.
 		Mesh->SetLinearDamping(0.1f);//100.f);
 
-		//È¸ÀüÁ¦µ¿, È¸Àü ÀÌµ¿À» ÁÙÀÌ±â À§ÇØ ´õÇØÁø'Drag(Á¦µ¿·Â)'ÀÌ´Ù.
+		//íšŒì „ì œë™, íšŒì „ ì´ë™ì„ ì¤„ì´ê¸° ìœ„í•´ ë”í•´ì§„'Drag(ì œë™ë ¥)'ì´ë‹¤.
 		Mesh->SetAngularDamping(0.f);//100.f);
 	
 		Mesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
@@ -79,7 +79,7 @@ void ABaseGrenade::OnConstruction(const FTransform& Transform)
 	}*/
 }
 
-//QuickSlotWidget -> NewItemObject::UseItem¿¡¼­ È£ÃâÇÔ.
+//QuickSlotWidget -> NewItemObject::UseItemì—ì„œ í˜¸ì¶œí•¨.
 void ABaseGrenade::AttachToHand(ABaseCharacter* Actor, UNewItemObject* Obj)
 {
 	Super::AttachToHand(Actor,Obj);
@@ -88,7 +88,7 @@ void ABaseGrenade::AttachToHand(ABaseCharacter* Actor, UNewItemObject* Obj)
 	Mesh->SetLinearDamping(0.01f);
 	Mesh->SetAngularDamping(0.f);
 
-	//WeaponClassÀÇ GunAttachToMesh func¸¦ È£ÃâÇØ WeaponGripSocket¿¡ ºÎÂøÇÑ´Ù.
+	//WeaponClassì˜ GunAttachToMesh funcë¥¼ í˜¸ì¶œí•´ WeaponGripSocketì— ë¶€ì°©í•œë‹¤.
 	GunAttachToMesh(Actor);
 	SetOwningPlayer(Actor);
 }
@@ -122,13 +122,13 @@ void ABaseGrenade::ThrowGrenade(ABaseCharacter* Actor)
 	
 	Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Block);
 	
-	//´øÁö°í ³­ ÀÌÈÄ¿£ InteractionÀÌ ºÒ°¡´ÉÇÏµµ·Ï ÇÑ´Ù.
+	//ë˜ì§€ê³  ë‚œ ì´í›„ì—” Interactionì´ ë¶ˆê°€ëŠ¥í•˜ë„ë¡ í•œë‹¤.
 	bCanNotInteractable = true;
 
-	//detachÇÏ±â Àü¿¡ bool¸ÕÀú update	
+	//detachí•˜ê¸° ì „ì— boolë¨¼ì € update	
 	bThrow = true;
 
-	//ItemÀ» Inventory¿¡¼­ Áö¿öÁÖ°í
+	//Itemì„ Inventoryì—ì„œ ì§€ì›Œì£¼ê³ 
 	RemoveCountAtIventory(Actor,1);
 }
 
@@ -137,7 +137,7 @@ void ABaseGrenade::DetectThrow(ABaseCharacter* Actor)
 	UE_LOG(LogTemp, Warning, TEXT("ABaseGrenade:: DetectThrow, detect AnimNotify"));
 	
 
-	////Detach¸¦ ÇÑ´Ù.
+	////Detachë¥¼ í•œë‹¤.
 	DetachFromHand(Actor,false);
 
 
@@ -150,7 +150,7 @@ void ABaseGrenade::DetectThrow(ABaseCharacter* Actor)
 	Mesh->SetAngularDamping(1.f);
 
 
-	/*¿©±â¼­ ´øÁ®¾ßÇÏ´Âµ¥
+	/*ì—¬ê¸°ì„œ ë˜ì ¸ì•¼í•˜ëŠ”ë°
 	* AddImpulse || SetPhysics LinearVelocity
 	*
 	* predict projectile path by tracechannel
@@ -176,7 +176,7 @@ void ABaseGrenade::DetectThrow(ABaseCharacter* Actor)
 
 
 
-	////´øÁøµÚ PrimaryWeaponÀ» ÀåÂø½ÃÅ²´Ù.
+	////ë˜ì§„ë’¤ PrimaryWeaponì„ ì¥ì°©ì‹œí‚¨ë‹¤.
 	//Actor->HoldingItem = nullptr;
 	//EquipBeforeWeapon(Actor);
 }
@@ -187,14 +187,14 @@ void ABaseGrenade::BeginEffect()
 	UGrenadePDA* GPDA = Cast<UGrenadePDA>(this->ItemSetting.DataAsset);
 	if (GPDA == nullptr) return;
 	
-	//Cascade(³ªÀÌ¾Æ°¡¶ó ÀÌÀü ÀÌÆåÆ®) Effect¸¦ ¸ÕÀú Ã¼Å©ÇÏ°í
+	//Cascade(ë‚˜ì´ì•„ê°€ë¼ ì´ì „ ì´í™íŠ¸) Effectë¥¼ ë¨¼ì € ì²´í¬í•˜ê³ 
 	if (GPDA->Ca_GrenadeEffect)
 	{
 		Ca_ParticleComp->SetAutoActivate(true);
 		Ca_ParticleComp->SetTemplate(GPDA->Ca_GrenadeEffect);
 		Ca_ParticleComp->Activate();
 	}
-	//´ÙÀ½À¸·Î ³ªÀÌ¾Æ°¡¶ó Effect¸¦ Ã¼Å©ÇÑ´Ù.
+	//ë‹¤ìŒìœ¼ë¡œ ë‚˜ì´ì•„ê°€ë¼ Effectë¥¼ ì²´í¬í•œë‹¤.
 	else if (GPDA->Ni_GrenadeEffect)
 	{
 		Ni_ParticleComp->SetAutoActivate(true);
@@ -222,7 +222,7 @@ void ABaseGrenade::BeginEffect()
 	break;
 	}	
 
-	//´øÁöÁö ¾ÊÀº »óÅÂ¿¡¼­ ÅÍÁ³À» °æ¿ì
+	//ë˜ì§€ì§€ ì•Šì€ ìƒíƒœì—ì„œ í„°ì¡Œì„ ê²½ìš°
 	if (bThrow == false)
 	{
 		ABaseCharacter* BChar = Cast<ABaseCharacter>(GetOwningPlayer());
@@ -247,7 +247,7 @@ void ABaseGrenade::FragmentEffect(UGrenadePDA* gPDA)
 	UGameplayStatics::ApplyRadialDamage(GetWorld(), gPDA->Damage, GetActorLocation(), gPDA->EffectRadius,DmgType,IgnoreActarr,this,GetOwningPlayer()->GetInstigatorController(),true);
 	
 
-	//¾È¸ÔÀ½
+	//ì•ˆë¨¹ìŒ
 	//UGameplayStatics::ApplyRadialDamageWithFalloff(GetWorld(),GPDA->Damage, GPDA->Damage - GPDA->Damage*0.1f,GetActorLocation(), GPDA->EffectRadius - GPDA->EffectRadius*0.2f,GPDA->EffectRadius, 1.f,
 	//	DmgType, IgnoreActarr, OwningPlayer,GetInstigatorController());
 	
@@ -260,7 +260,7 @@ void ABaseGrenade::FragmentEffect(UGrenadePDA* gPDA)
 	FCollisionShape Shape = FCollisionShape::MakeSphere(gPDA->EffectRadius);
 	//ECollisionChannel Collisionch = 
 
-	/* RadialForce¿Í TakeDamage¸¦ ÇÕÄ§. */
+	/* RadialForceì™€ TakeDamageë¥¼ í•©ì¹¨. */
 	TArray<FOverlapResult> Overlaps;
 	if (UWorld* World = GEngine->GetWorldFromContextObject(GetWorld(), EGetWorldErrorMode::LogAndReturnNull))
 	{
@@ -274,7 +274,7 @@ void ABaseGrenade::FragmentEffect(UGrenadePDA* gPDA)
 		
 		if (OverlapAct && OverlapAct != this && Overlap.Component.IsValid())
 		{
-			//¿ì¼± MeshComponent¸¸ ÀÖ´Â StaticMeshÀÎ °æ¿ì, CharacterÀÎ °æ¿ì /µÎ°³·Î ³ª´¶´Ù.
+			//ìš°ì„  MeshComponentë§Œ ìˆëŠ” StaticMeshì¸ ê²½ìš°, Characterì¸ ê²½ìš° /ë‘ê°œë¡œ ë‚˜ë‰œë‹¤.
 			UStaticMeshComponent* meshcomp = Cast< UStaticMeshComponent>(OverlapAct->GetRootComponent());
 			ABaseCharacter* Char = Cast<ABaseCharacter>(OverlapAct);
 			if (meshcomp)
@@ -286,7 +286,7 @@ void ABaseGrenade::FragmentEffect(UGrenadePDA* gPDA)
 				Char->GetMesh()->AddRadialForce(Location, gPDA->EffectRadius, 20000.f, ERadialImpulseFalloff::RIF_Constant, true);
 			}
 
-			//LineTrace¸¦ ¿©·¯¹ø ½÷¾ßÇÒµí
+			//LineTraceë¥¼ ì—¬ëŸ¬ë²ˆ ì´ì•¼í• ë“¯
 			/*if (OverlapAct->CanBeDamaged())
 			{
 				FHitResult OutHit;
@@ -331,7 +331,7 @@ void ABaseGrenade::EndEffect()
 	
 	GetWorldTimerManager().ClearTimer(EffectDurationTimerHandle);
 
-	//´øÁö°í ³ª¼­ EffectÀÌÈÄ Destroy¸¦ ÇØÁØ´Ù.
+	//ë˜ì§€ê³  ë‚˜ì„œ Effectì´í›„ Destroyë¥¼ í•´ì¤€ë‹¤.
 	OwningPlayer = nullptr;
 	Destroy();
 }

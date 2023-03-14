@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -23,11 +23,11 @@ public:
 	UPROPERTY(meta=(BindWidget))
 	class UImage* WeaponImage;
 
-	//ÅºÃ¢¿¡ ³²Àº Åº °³¼ö
+	//íƒ„ì°½ì— ë‚¨ì€ íƒ„ ê°œìˆ˜
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* AmmoText;
 
-	//Inventory¿¡ ³²Àº Åº °³¼ö
+	//Inventoryì— ë‚¨ì€ íƒ„ ê°œìˆ˜
 	/*UPROPERTY(meta = (BindWidget))
 	UTextBlock* LeftinInventory;*/
 

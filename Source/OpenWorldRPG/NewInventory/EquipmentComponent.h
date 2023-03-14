@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -39,9 +39,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Equipment)
 	TArray<UNewItemObject*> EquipmentItems;
 
-	//PickupÀÏ¶§ ÇØ´ç boolº¯¼ö°¡ Ã¼Å© µÇ¾îÀÖÀ¸¸é
-	//ÇØ´ç ÀåºñÀÇ InventoryºÎÅÍ Ã¤¿ö³ª°¡±â À§ÇÔ.
-	//TEnumRange·Î ´ëÃ¼ÇØ¼­ ´õÀÌ»ó ¾²ÀÌÁö ¾ÊÀ½.
+	//Pickupì¼ë•Œ í•´ë‹¹ boolë³€ìˆ˜ê°€ ì²´í¬ ë˜ì–´ìˆìœ¼ë©´
+	//í•´ë‹¹ ì¥ë¹„ì˜ Inventoryë¶€í„° ì±„ì›Œë‚˜ê°€ê¸° ìœ„í•¨.
+	//TEnumRangeë¡œ ëŒ€ì²´í•´ì„œ ë”ì´ìƒ ì“°ì´ì§€ ì•ŠìŒ.
 	/*bool bHasBackpack;
 	bool bHasVest;*/
 
@@ -50,7 +50,7 @@ public:
 
 	
 private:
-	//WeaponPartsManager¸¦ »ı¼º , data¸¦ ³Ñ°ÜÁØ´Ù.
+	//WeaponPartsManagerë¥¼ ìƒì„± , dataë¥¼ ë„˜ê²¨ì¤€ë‹¤.
 	void SetWeaponPartsManager(AEquipment* WantToEquip, UNewItemObject* WeaponObj);
 
 protected:
@@ -62,10 +62,10 @@ public:
 	bool AddEquipment(AEquipment* Equip);
 	bool RemoveEquipment(AEquipment* Equip);
 
-	//EquipÀÇ ÆÄ¶ó¹ÌÅÍ¿Í °°Àº Å¸ÀÔÀÇ Àåºñ°¡ ÀÌ¹Ì ÀÖ´ÂÁö È®ÀÎ
+	//Equipì˜ íŒŒë¼ë¯¸í„°ì™€ ê°™ì€ íƒ€ì…ì˜ ì¥ë¹„ê°€ ì´ë¯¸ ìˆëŠ”ì§€ í™•ì¸
 	bool IsSameTypeExist(AEquipment* Equip, ERifleSlot RifleSlot = ERifleSlot::ERS_MAX);
 	
-	//WeaponÆÄ¶ó¹ÌÅÍ¿Í °°Àº Å¸ÀÔÀÇ Àåºñ¸¦ ¸®ÅÏ
+	//WeaponíŒŒë¼ë¯¸í„°ì™€ ê°™ì€ íƒ€ì…ì˜ ì¥ë¹„ë¥¼ ë¦¬í„´
 	//AEquipment* GetEquippedWeaponSameType(EEquipmentType EquipType, AEquipment* Equip = nullptr, ERifleSlot RifleSlot = ERifleSlot::ERS_MAX);
 
 	bool SwapEquipment(AEquipment* Before, AEquipment* Next);

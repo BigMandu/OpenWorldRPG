@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -28,7 +28,7 @@ class USkeletalMeshComponent;
 class UPoseableMeshComponent;
 
 /* Custom Actor Component */
-class UInventoryComponent; //¾È¾¸
+class UInventoryComponent; //ì•ˆì”€
 class UNewInventoryComponent;
 class UEquipmentComponent;
 class UStatManagementComponent;
@@ -54,7 +54,7 @@ public:
 
 	FOnQuickSlotUse OnQuickSlotUse;
 
-	/* CoreUsableItem¿¡¼­ broadcast,*/
+	/* CoreUsableItemì—ì„œ broadcast,*/
 	FCompassBeginUse CompassBeginUse;
 	FCompassEndUse CompassEndUse;
 	bool bIsUsingCompass;
@@ -76,7 +76,7 @@ public:
 
 
 
-	/**********   Ä«¸Ş¶ó *************/
+	/**********   ì¹´ë©”ë¼ *************/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	float BaseTurnRate;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
@@ -85,16 +85,16 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	USpringArmComponent* CameraBoom;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
-	UCameraComponent* CameraTPS; //3ÀÎÄª Ä«¸Ş¶ó
+	UCameraComponent* CameraTPS; //3ì¸ì¹­ ì¹´ë©”ë¼
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
-	UCameraComponent* CameraFPS; //1ÀÎÄª Ä«¸Ş¶ó
+	UCameraComponent* CameraFPS; //1ì¸ì¹­ ì¹´ë©”ë¼
 
-	//1ÀÎÄª Ä«¸Ş¶óÀÇ ÃÊ±â À§Ä¡°ª.
+	//1ì¸ì¹­ ì¹´ë©”ë¼ì˜ ì´ˆê¸° ìœ„ì¹˜ê°’.
 	FTransform CameraFPSTransform = FTransform(FRotator(0.f,0.f,0.f),FVector(-7.f,11.8f,57.f));
-	//1ÀÎÄª Ä«¸Ş¶óÀÇ FOV°ª.
+	//1ì¸ì¹­ ì¹´ë©”ë¼ì˜ FOVê°’.
 	float BaseCamFPSfov;
 
-	//3ÀÎÄª Ä«¸Ş¶óÀÇ AimÀ» À§ÇÑ À§Ä¡°ª.
+	//3ì¸ì¹­ ì¹´ë©”ë¼ì˜ Aimì„ ìœ„í•œ ìœ„ì¹˜ê°’.
 	float BaseCamTPSfov;
 	const FVector TPSCam_Rel_Location = FVector(0.f, 0.f, 8.f);
 	const FVector TPSCam_Aim_Rel_Location = FVector(0.f, 18.5f, -8.f);
@@ -103,9 +103,9 @@ public:
 	float BeforeCameraLength;
 
 	FTransform FPMeshOriginTransform;
-	//¾Æ·¡´Â ¾È¾²´Â º¯¼öµé.
+	//ì•„ë˜ëŠ” ì•ˆì“°ëŠ” ë³€ìˆ˜ë“¤.
 	
-	/* FPS AimÀ» À§ÇÑ ÀúÀå°ª*/
+	/* FPS Aimì„ ìœ„í•œ ì €ì¥ê°’*/
 	FTransform BaseFPMeshTransform;
 	FTransform BaseWeapTransform;
 
@@ -136,11 +136,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	bool bAimToggle;
 
-	/********* ÀÔ·Â ¸·¾ÆÁÖ±â *********/
-	bool bDisableInput; //WidgetÀ» º¸°í ÀÖÀ»¶§ true·Î ¸¸µé¾î Æ¯Á¤Å° ÀÔ·ÂÀ» ¸·´Â´Ù.
+	/********* ì…ë ¥ ë§‰ì•„ì£¼ê¸° *********/
+	bool bDisableInput; //Widgetì„ ë³´ê³  ìˆì„ë•Œ trueë¡œ ë§Œë“¤ì–´ íŠ¹ì •í‚¤ ì…ë ¥ì„ ë§‰ëŠ”ë‹¤.
 	bool bDisableInteractionLineTrace;
 	
-	/**********  Interactive °ü·Ã ************/
+	/**********  Interactive ê´€ë ¨ ************/
 	//Minimum value of Active Interaction Distance.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interactive")
 	float ActiveInteractDistance;
@@ -187,10 +187,10 @@ public:
 	
 	
 
-	/***** Timer °ü·Ã ******/
+	/***** Timer ê´€ë ¨ ******/
 	void ClearSprintUpTimer();
 	
-	/********   Movement ÇÔ¼ö *******/
+	/********   Movement í•¨ìˆ˜ *******/
 	void MoveForward(float Value);
 	void MoveRight(float Value);
 
@@ -221,7 +221,7 @@ public:
 	void LMBDown();
 	void LMBUp();
 
-	/* Item & Weapon °ü·Ã */
+	/* Item & Weapon ê´€ë ¨ */
 
 	
 	void RMBDown();
@@ -256,11 +256,11 @@ public:
 	void CompassStop();
 
 
-	//FPMesh¶§¹®¿¡ overrideÇØ¼­ FPAnimÀ» µû·Î °»½ÅÇØÁØ´Ù.
+	//FPMeshë•Œë¬¸ì— overrideí•´ì„œ FPAnimì„ ë”°ë¡œ ê°±ì‹ í•´ì¤€ë‹¤.
 	virtual bool ChangeWeapon(int32 index) override;
 
 
-	/********  Interaction °ü·Ã ******/
+	/********  Interaction ê´€ë ¨ ******/
 
 	FHitResult InteractableLineTrace(const FVector& StartLo, const FVector& EndLo);
 

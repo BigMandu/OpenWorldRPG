@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -30,19 +30,19 @@ class UWeaponPDA;
 class UItemStorageObject;
 
 
-//단발, 점사, 연사를 구분
+//?⑤?, ??? ?곗щ? 援щ?
 UENUM(BlueprintType)
 enum class EWeaponFiringMode : uint8
 {
-	EWFM_Safe		UMETA(DisplayName = "Safe"),	//안전
-	EWFM_SemiAuto	UMETA(DisplayName = "SemiAuto"),//단발
-	EWFM_Burst		UMETA(DisplayName = "Burst"),	//점사
-	EWFM_FullAuto	UMETA(DisplayName = "FullAuto"),//연발
+	EWFM_Safe		UMETA(DisplayName = "Safe"),	//??
+	EWFM_SemiAuto	UMETA(DisplayName = "SemiAuto"),//?⑤?
+	EWFM_Burst		UMETA(DisplayName = "Burst"),	//???
+	EWFM_FullAuto	UMETA(DisplayName = "FullAuto"),//?곕?
 
 	EWFM_MAX		UMETA(DisplayName = "DefaultMAX")
 };
 
-//Weapon의 상태
+//Weapon? ??
 UENUM(BlueprintType)
 enum class EWeaponState : uint8
 {
@@ -74,32 +74,32 @@ protected:
 
 	FTimerHandle FiringTimer;
 
-	//WeaponClipping을 위해 Hand와 Muzzle의 Relative값.
+	//WeaponClipping? ???Hand? Muzzle? Relative媛.
 	FTransform MuzzleRelative;
 
 	FVector WorldAimPosition;
 	//FVector WeaponMuzzleLocation;
 
-	//아래 3개의 FTransform은 PDA로 옮김.
-	//FPMesh의 WeaponGrip 소켓에 붙일 Weapon의 Transform값.
+	//?? 3媛? FTransform? PDA濡 ?源.
+	//FPMesh? WeaponGrip ?耳? 遺??Weapon? Transform媛.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")
 	FTransform FPMeshAttachTransform;
 
-	//TPMesh에 Weapon을 Attach할 소켓의 Transform값.
+	//TPMesh? Weapon? Attach? ?耳? Transform媛.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")
 	FTransform PrimaryWeaponAttachTransform;
 
-	//TPMesh에 Weapon을 Attach할 소켓의 Transform값.
+	//TPMesh? Weapon? Attach? ?耳? Transform媛.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")
 	FTransform SubWeaponAttachTransform;
 
 
 
-	/* Aim Initialize에서 사용 */
+	/* Aim Initialize?? ?ъ?*/
 	FRotator StartFiringRotation;
 	FRotator EndFiringRotation;
 
-	float RecoilTime; //Curve float에서 사용.
+	float RecoilTime; //Curve float?? ?ъ?
 	float Time;
 
 	FVector PreviousSpread;
@@ -116,8 +116,8 @@ public:
 	//FOnEndHighReady OnEndHighReady;
 
 
-	//StepEquip때 대입한다.
-	//지정한 값을 쉽게 사용하기 위해 Cast해둔다.
+	//StepEquip? ?????
+	//吏?? 媛? ?쎄? ?ъ⑺湲????Cast?대??
 	UWeaponPDA* WeaponDataAsset;
 
 	TWeakObjectPtr<class UWeaponPartsManagerObject> WeaponPartsManager;
@@ -132,9 +132,9 @@ public:
 	bool bLMBDown;
 
 	bool bIsFiring;
-	bool bIsAiming; //Main에서 값을 단순히 넣어주기만 한다.
+	bool bIsAiming; //Main?? 媛? ?⑥? ?ｌ댁＜湲곕? ???
 
-	//Clipping을 하고있을때 Aim을 막고, BulletOut의 Trace를 수정하기 위한 boolean
+	//Clipping? ?怨??? Aim? 留怨, BulletOut? Trace瑜????湲??? boolean
 	bool bIsHighReady;
 
 	float AlphaTime;
@@ -142,7 +142,7 @@ public:
 
 
 
-	/* FPS Aim모드 일때 위치값 저장 -> PDA에 저장함.*/
+	/* FPS Aim紐⑤ ?쇰 ?移媛 ???-> PDA? ??ν?*/
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon | Transform")
 	FTransform CharFPMeshTransform;
 	
@@ -150,7 +150,7 @@ public:
 	FTransform WeapSKMeshTransform;
 
 
-	//Primary, Sub을 지정한다.
+	//Primary, Sub? 吏????
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	ERifleSlot RifleAssign;
 
@@ -166,13 +166,13 @@ public:
 
 
 	/********* Ammo *********/
-	//소모한 탄 개수
+	//?紐⑦ ? 媛?
 	int32 ConsumeAmmoCnt = 0;
 
-	//탄창에 남은 탄약의 개수
+	//?李쎌 ?⑥ ??쎌 媛?
 	int32 AmmoLeftInMag = 0;
 
-	//Inv에 남은 같은 타입 탄약의 총 개수 forWeaponStatusWidget.
+	//Inv? ?⑥ 媛? ?? ??쎌 珥 媛? forWeaponStatusWidget.
 	int32 CntAmmoSameType = 0;
 
 	//////////////////////////////////

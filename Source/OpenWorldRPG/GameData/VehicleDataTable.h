@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
@@ -33,10 +33,10 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Detail option")
 	bool bIs4WD;
-	//Áú·® kg´ÜÀ§
+	//ì§ˆëŸ‰ kgë‹¨ìœ„
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Detail option")
 	float Mass;
-	//Ç×·Â°è¼ö f1 = 0.81, ¾ç»êÂ÷ 0.27~9
+	//í•­ë ¥ê³„ìˆ˜ f1 = 0.81, ì–‘ì‚°ì°¨ 0.27~9
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Detail option")
 	float Dragcoefficient;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Detail option")

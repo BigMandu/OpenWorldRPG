@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "OpenWorldRPG/GameData/CraftSystemComponent.h"
@@ -25,7 +25,7 @@ void UCraftSystemComponent::BeginPlay()
 
 void UCraftSystemComponent::SaveCraftStatus_TwoIng(FName CraftItemName, FTwoIngredientRecipe RemainReciepeStatus)
 {
-	//ÀÌ¹Ì ÀúÀåµÇ¾îÀÖ´Â Data°¡ ÀÖ´Ù¸é µ¤¾î¾´´Ù.
+	//ì´ë¯¸ ì €ì¥ë˜ì–´ìˆëŠ” Dataê°€ ìˆë‹¤ë©´ ë®ì–´ì“´ë‹¤.
 	FTwoIngredientRecipe* FindRow = SaveTwoIngRecipeStatusMap.Find(CraftItemName);
 	if (FindRow)
 	{
@@ -33,7 +33,7 @@ void UCraftSystemComponent::SaveCraftStatus_TwoIng(FName CraftItemName, FTwoIngr
 		FindRow->IngTwoRemainCount = RemainReciepeStatus.IngTwoRemainCount;
 		UE_LOG(LogTemp, Warning, TEXT("UCraftSystemComponent::LoadCraftIngredient_TwoIng // Save to Exist data."));
 	}
-	//ÀúÀåµÈ°Ô ¾øÀ¸¸é Data¸¦ »õ·Î Ãß°¡ÇÑ´Ù.
+	//ì €ì¥ëœê²Œ ì—†ìœ¼ë©´ Dataë¥¼ ìƒˆë¡œ ì¶”ê°€í•œë‹¤.
 	else
 	{
 		SaveTwoIngRecipeStatusMap.Add(CraftItemName,RemainReciepeStatus);

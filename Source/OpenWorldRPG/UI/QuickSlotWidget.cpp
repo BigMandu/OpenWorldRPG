@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "OpenWorldRPG/UI/QuickSlotWidget.h"
@@ -15,14 +15,14 @@ void UQuickSlotWidget::BindSlotWidget(class AMainCharacter* Player)
 	Player->Equipment->OnWeaponRemoveSlot.AddDynamic(this,&UQuickSlotWidget::RemoveWeaponQuickSlot);
 }
 
-/* Æ¯Á¤ Slot ÇÏ³ª¾¿ RegisterÇÏ´Â ¹æ½ÄÀÌ´Ù.  (Inventory, Equipwidget °ú´Â ´Ù¸¥ Çü½ÄÀÓ <- ¾êµéÀº ÀüÃ¼ refresh) */
+/* íŠ¹ì • Slot í•˜ë‚˜ì”© Registerí•˜ëŠ” ë°©ì‹ì´ë‹¤.  (Inventory, Equipwidget ê³¼ëŠ” ë‹¤ë¥¸ í˜•ì‹ì„ <- ì–˜ë“¤ì€ ì „ì²´ refresh) */
 void UQuickSlotWidget::SetItemInQuickSlot(EQuickSlotNumber QuickSlotNum, UNewItemObject* ItemObj, bool bIsNeedOnlyDeleted)
 {
 	if (ItemObj)
 	{
 		if(CheckCanBeRegister(ItemObj))
 		{
-			//µ¿ÀÏ Quickslot¿¡ µ¿ÀÏ itemÀÎ °æ¿ì¿¡¸¸ false¸¦ ¸®ÅÏÇÑ´Ù.
+			//ë™ì¼ Quickslotì— ë™ì¼ itemì¸ ê²½ìš°ì—ë§Œ falseë¥¼ ë¦¬í„´í•œë‹¤.
 			if(CheckAlreadyRegistered(ItemObj, bIsNeedOnlyDeleted, QuickSlotNum))
 			{
 				switch (QuickSlotNum)
@@ -80,9 +80,9 @@ UQuickSlotSlotWidget* UQuickSlotWidget::GetQuickSlotSlot(EQuickSlotNumber QuickS
 }
 
 
-/** QuickSlot¿¡ µî·Ï ÇÒ ¼ö ÀÖ´ÂÁö ÆÇ´ÜÇÑ´Ù.
- * ItemObj°¡ ´ã±ä Storage (ºÎ¸ğ storage)°¡
- * PocketÀÌ³ª, Vest StorageÀÏ¶§ ¸¸ Quick Slot¿¡ µî·ÏÀÌ °¡´ÉÇÏ´Ù.
+/** QuickSlotì— ë“±ë¡ í•  ìˆ˜ ìˆëŠ”ì§€ íŒë‹¨í•œë‹¤.
+ * ItemObjê°€ ë‹´ê¸´ Storage (ë¶€ëª¨ storage)ê°€
+ * Pocketì´ë‚˜, Vest Storageì¼ë•Œ ë§Œ Quick Slotì— ë“±ë¡ì´ ê°€ëŠ¥í•˜ë‹¤.
  */
 
 bool UQuickSlotWidget::CheckCanBeRegister(UNewItemObject* WantToSlot)
@@ -109,7 +109,7 @@ bool UQuickSlotWidget::CheckCanBeRegister(UNewItemObject* WantToSlot)
 		}
 	}
 
-	//PocketÀÌ³ª Vest¿¡ ÀÖ´Â °æ¿ì ItemTypeÀ» °ËÁõÇÑ´Ù.
+	//Pocketì´ë‚˜ Vestì— ìˆëŠ” ê²½ìš° ItemTypeì„ ê²€ì¦í•œë‹¤.
 	if (bIsInPocketOrVest)
 	{
 		EItemType ObjItemType = WantToSlot->ItemInfo.DataAsset->ItemType;
@@ -130,8 +130,8 @@ bool UQuickSlotWidget::CheckCanBeRegister(UNewItemObject* WantToSlot)
 
 
 /* 
-* UNewInventoryGrid::RefreshInventory¿¡¼­ 
-* ItemObject¿¡ bIsRegQuickSlotÀÌ True¸é ¾Æ·¡ ÇÔ¼ö°¡ È£ÃâµÈ´Ù.
+* UNewInventoryGrid::RefreshInventoryì—ì„œ 
+* ItemObjectì— bIsRegQuickSlotì´ Trueë©´ ì•„ë˜ í•¨ìˆ˜ê°€ í˜¸ì¶œëœë‹¤.
 * 
 * 
 */
@@ -142,8 +142,8 @@ void UQuickSlotWidget::JudgeCanbeInQuickSlotOrUpdate(UNewItemObject* ItemObj)
 		UQuickSlotSlotWidget* QuickSlot = GetQuickSlotSlot(QuickNum);
 		if (ItemObj == QuickSlot->GetMountedObject())
 		{
-			//µî·Ï ÇÒ ¼ö ¾ø´Â (Pocket || Vest¿¡ ÀÖÁö ¾Ê´Â) °æ¿ì¶ó¸é
-			//QuickSlot¿¡¼­ µî·Ï ÇØÁ¦ÇÑ´Ù.
+			//ë“±ë¡ í•  ìˆ˜ ì—†ëŠ” (Pocket || Vestì— ìˆì§€ ì•ŠëŠ”) ê²½ìš°ë¼ë©´
+			//QuickSlotì—ì„œ ë“±ë¡ í•´ì œí•œë‹¤.
 			if (CheckCanBeRegister(ItemObj) == false)
 			{
 				QuickSlot->RemoveMountedObj();
@@ -151,7 +151,7 @@ void UQuickSlotWidget::JudgeCanbeInQuickSlotOrUpdate(UNewItemObject* ItemObj)
 			}
 			else
 			{
-				//µî·Ï °¡´ÉÇÑ »óÅÂ¸é Item»óÈ²À» UpdateÇÑ´Ù. (»èÁ¦ÈÄ Àç»ğÀÔ ¤·¤·)
+				//ë“±ë¡ ê°€ëŠ¥í•œ ìƒíƒœë©´ Itemìƒí™©ì„ Updateí•œë‹¤. (ì‚­ì œí›„ ì¬ì‚½ì… ã…‡ã…‡)
 				SetItemInQuickSlot(QuickSlot->QuickSlotNumber,ItemObj, false);
 			}
 		}
@@ -159,8 +159,8 @@ void UQuickSlotWidget::JudgeCanbeInQuickSlotOrUpdate(UNewItemObject* ItemObj)
 }
 
 /*
-* ÀÌ¹Ì µî·Ï µÇ¾îÀÖ´ÂÁö È®ÀÎÇÏ°í
-* ÀÌ¹Ì µî·ÏÀÌ µÇ¾î ÀÖÀ¸¸é, µî·ÏµÈ Slot¿¡¼­ »èÁ¦ ½ÃÅ²´Ù.
+* ì´ë¯¸ ë“±ë¡ ë˜ì–´ìˆëŠ”ì§€ í™•ì¸í•˜ê³ 
+* ì´ë¯¸ ë“±ë¡ì´ ë˜ì–´ ìˆìœ¼ë©´, ë“±ë¡ëœ Slotì—ì„œ ì‚­ì œ ì‹œí‚¨ë‹¤.
 */
 bool UQuickSlotWidget::CheckAlreadyRegistered(UNewItemObject* ItemObj, bool bIsOnlyDeleted, EQuickSlotNumber WantQuickNum)
 {
@@ -168,13 +168,13 @@ bool UQuickSlotWidget::CheckAlreadyRegistered(UNewItemObject* ItemObj, bool bIsO
 	{
 		UQuickSlotSlotWidget* QuickSlot = GetQuickSlotSlot(QuickNum);
 
-		//QuickSlot¿¡ µî·ÏµÈ Obj¿Í °°´Ù¸é µî·ÏµÇ¾îÀÖ´ø QuickSlot¿¡¼­ »èÁ¦ÇÑ´Ù.
+		//QuickSlotì— ë“±ë¡ëœ Objì™€ ê°™ë‹¤ë©´ ë“±ë¡ë˜ì–´ìˆë˜ QuickSlotì—ì„œ ì‚­ì œí•œë‹¤.
 		if (QuickSlot && ItemObj == QuickSlot->GetMountedObject())
 		{
 			QuickSlot->RemoveMountedObj();
 
-			/**±Ùµ¥ ¸¸¾à, ÇØ´ç QuickSlot Number¿¡ µî·ÏµÈ ItemÀ» Áßº¹ ÀÔ·ÂÇÏ¸é 
-			* »èÁ¦ ÇÁ·Î¼¼½º¸¸ ÁøÇà ÇÏ±âÀ§ÇØ false¸¦ ¸®ÅÏÇÏ°í ¸¶Ä£´Ù.
+			/**ê·¼ë° ë§Œì•½, í•´ë‹¹ QuickSlot Numberì— ë“±ë¡ëœ Itemì„ ì¤‘ë³µ ì…ë ¥í•˜ë©´ 
+			* ì‚­ì œ í”„ë¡œì„¸ìŠ¤ë§Œ ì§„í–‰ í•˜ê¸°ìœ„í•´ falseë¥¼ ë¦¬í„´í•˜ê³  ë§ˆì¹œë‹¤.
 			*/
 			if (bIsOnlyDeleted && WantQuickNum != EQuickSlotNumber::EQSN_MAX && QuickNum == WantQuickNum)
 			{

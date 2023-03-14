@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "BTTask_UpdateTargetPos.h"
@@ -12,7 +12,7 @@ UBTTask_UpdateTargetPos::UBTTask_UpdateTargetPos()
 	NodeName = (TEXT("UpdatePatrolPos"));
 }
 
-//ÁöÁ¤µÈ Point°¡ ÀÖÀ»¶§  Enemy¿¡ ÀúÀåµÈ Patrol PointÀÇ À§Ä¡¸¦ ¾ò¾î¿Â´Ù.
+//ì§€ì •ëœ Pointê°€ ìžˆì„ë•Œ  Enemyì— ì €ìž¥ëœ Patrol Pointì˜ ìœ„ì¹˜ë¥¼ ì–»ì–´ì˜¨ë‹¤.
 EBTNodeResult::Type UBTTask_UpdateTargetPos::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	EBTNodeResult::Type Result = EBTNodeResult::Failed;
@@ -23,17 +23,17 @@ EBTNodeResult::Type UBTTask_UpdateTargetPos::ExecuteTask(UBehaviorTreeComponent&
 	check(Enemy);
 	check(BBComp);
 
-	int32 TPindex = BBComp->GetValueAsInt(AIController->PatrolPointIndexKey); //TargetPointIndex¸¦ °¡Á®¿Â´Ù. (±âº»¼¼ÆÃ 0)
-	int32 TPNum = Enemy->TargetPoints.Num(); //Targetpoint ArrayÀÇ °³¼ö¸¦ °¡Á®¿Â´Ù.
+	int32 TPindex = BBComp->GetValueAsInt(AIController->PatrolPointIndexKey); //TargetPointIndexë¥¼ ê°€ì ¸ì˜¨ë‹¤. (ê¸°ë³¸ì„¸íŒ… 0)
+	int32 TPNum = Enemy->TargetPoints.Num(); //Targetpoint Arrayì˜ ê°œìˆ˜ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
 
-	ATargetPoint* TP = Enemy->TargetPoints[TPindex]; //index¹øÂ°ÀÇ TargetPoint¸¦ °¡Á®¿Â´Ù.
+	ATargetPoint* TP = Enemy->TargetPoints[TPindex]; //indexë²ˆì§¸ì˜ TargetPointë¥¼ ê°€ì ¸ì˜¨ë‹¤.
 	FVector NewLocation = TP->GetActorLocation();
 
 	AIController->UpdateBBCompVectorKey(AIController->TargetLocationKey, NewLocation);
-	//AIController->UpdatePatrolPosKey(NewLocation); //°¡Á®¿ÂTPÀÇ LocationÀ» PatrolPos¿¡ ¾÷µ¥ÀÌÆ® ÇÑ´Ù.
+	//AIController->UpdatePatrolPosKey(NewLocation); //ê°€ì ¸ì˜¨TPì˜ Locationì„ PatrolPosì— ì—…ë°ì´íŠ¸ í•œë‹¤.
 
 
-	//¾÷µ¥ÀÌÆ® ÇÑ µÚ, TPindex¸¦ +1 ½ÃÄÑÁØ´Ù.
+	//ì—…ë°ì´íŠ¸ í•œ ë’¤, TPindexë¥¼ +1 ì‹œì¼œì¤€ë‹¤.
 	if (TPindex + 1 >= TPNum)
 	{
 		AIController->UpdateBBCompIntegerKey(AIController->PatrolPointIndexKey, 0);

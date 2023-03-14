@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -48,7 +48,7 @@ public:
 	//If true, This Actor Can't Interact.
 	bool bCanNotInteractable = false;
 
-	//AI³¢¸® Ãæµ¹¹æÁö, ¸ÕÀú ¼±Á¡(ÀÎ½Ä) Çß´ÂÁö ¿©ºÎ.
+	//AIë¼ë¦¬ ì¶©ëŒë°©ì§€, ë¨¼ì € ì„ ì (ì¸ì‹) í–ˆëŠ”ì§€ ì—¬ë¶€.
 	bool bIsPreOccupied;
 
 

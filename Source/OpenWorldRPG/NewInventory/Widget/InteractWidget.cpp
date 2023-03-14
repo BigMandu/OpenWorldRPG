@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "OpenWorldRPG/NewInventory/Widget/InteractWidget.h"
@@ -23,8 +23,8 @@ void UInteractWidget::NativeOnInitialized()
 	}
 }
 
-//WBP_InteractWidget¿¡¼­ FText¸¦ ÇØ´ç ÇÔ¼ö·Î ÁöÁ¤ÇÑ´Ù.
-//Actor¿¡ DataAssetÀÌ ¾øÀ¸¸é ÀÛµ¿ÇÏÁö ¾Ê´Â´Ù.
+//WBP_InteractWidgetì—ì„œ FTextë¥¼ í•´ë‹¹ í•¨ìˆ˜ë¡œ ì§€ì •í•œë‹¤.
+//Actorì— DataAssetì´ ì—†ìœ¼ë©´ ì‘ë™í•˜ì§€ ì•ŠëŠ”ë‹¤.
 FText UInteractWidget::InterSetText()
 {
 	FText ReturnTEXT;

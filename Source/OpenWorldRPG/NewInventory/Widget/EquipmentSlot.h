@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -9,7 +9,7 @@
 
 
 /* 
-* ´Ü¼øÈ÷, Image¿Í Border»ö»ó¸¸À» º¯°æÇÑ´Ù.
+* ë‹¨ìˆœíˆ, Imageì™€ Borderìƒ‰ìƒë§Œì„ ë³€ê²½í•œë‹¤.
 
 */
 class UImage;
@@ -39,13 +39,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slot | EquipSlot")
 	EEquipmentType SlotType;
 	
-	//RifleSlot±â´ÉÀÏ¶§
+	//RifleSlotê¸°ëŠ¥ì¼ë•Œ
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slot | RifleSlot")
 	bool bIsforRifleSlot = false;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slot | RifleSlot", meta = (EditCondition = "bIsforRifleSlot"))
 	ERifleSlot RifleSlotType;
 
-	//Weapon Parts Slot ±â´ÉÀÏ ¶§ ( for WeaponPartsWidget)
+	//Weapon Parts Slot ê¸°ëŠ¥ì¼ ë•Œ ( for WeaponPartsWidget)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slot | WeaponParts")
 	bool bIsforWeaponParts = false;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slot | WeaponParts", meta = (EditCondition = "bIsforWeaponParts"))
@@ -80,13 +80,13 @@ public:
 	bool IsSupportedEquip(UNewItemObject* ItemObj);
 	
 
-	/* Equipment¸¦ SpawnÇÏ¿© ÀåÂø ½ÃµµÇÑ´Ù. */
+	/* Equipmentë¥¼ Spawní•˜ì—¬ ì¥ì°© ì‹œë„í•œë‹¤. */
 	bool TrySlotEquip(UNewItemObject* Var_ItemObj);
 
-	/* Parts¸¦ WeaponPDA¿¡ µî·Ï ½ÃÅ²´Ù. */
+	/* Partsë¥¼ WeaponPDAì— ë“±ë¡ ì‹œí‚¨ë‹¤. */
 	bool TrySlotParts(UNewItemObject* PartsObj);
 	
-	/* µî·ÏµÈ Parts¸¦ Áö¿î´Ù. */
+	/* ë“±ë¡ëœ Partsë¥¼ ì§€ìš´ë‹¤. */
 	void RemoveParts(UNewItemObject* PartsObj);
 
 };

@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "OpenWorldRPG/UI/ResourceStatusWidget.h"
@@ -8,7 +8,7 @@
 void UResourceStatusWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	//¾Æ·¡ ÇÔ¼öÈ£Ãâ ¾ÈÇØµµµÊ. ¾îÂ÷ÇÇ Statmanager°¡ ¾ø¾î¼­ ½ÇÇà ¾ÈµÊ.
+	//ì•„ë˜ í•¨ìˆ˜í˜¸ì¶œ ì•ˆí•´ë„ë¨. ì–´ì°¨í”¼ Statmanagerê°€ ì—†ì–´ì„œ ì‹¤í–‰ ì•ˆë¨.
 	UpdateHPRatio();
 	UpdateStaminaRatio();
 }

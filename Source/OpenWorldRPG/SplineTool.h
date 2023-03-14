@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -21,7 +21,7 @@ enum class ESplineElementType
 	ESET_Decal	UMETA(Displayname = "DecalActor")
 };
 
-// ¿¡µğÅÍ On/offÇÏ´Â ¹æ¹ıÀÓ
+// ì—ë””í„° On/offí•˜ëŠ” ë°©ë²•ì„
 //UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "IsLocationConstant"), Category = "Location Settings", meta = (AllowPreserveRatio))
 //FVector Offset = FVector::ZeroVector;
 

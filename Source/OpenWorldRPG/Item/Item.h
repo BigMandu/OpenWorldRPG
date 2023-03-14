@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+Ôªø// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -81,7 +81,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Item)
 	bool bCanRotate;*/
 
-	UNewInventoryComponent* OwningInventory; // Obj∑Œ ª©±‚
+	UNewInventoryComponent* OwningInventory; // ObjÎ°ú ÎπºÍ∏∞
 
 	/*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")
 	EEquipmentType EquipmentType;
@@ -110,7 +110,7 @@ public:
 
 	FORCEINLINE void SetItemState(EItemState State) { ItemState = State; }
 
-	/* child classø°º≠ override«“ øπ¡§¿”*/
+	/* child classÏóêÏÑú overrideÌï† ÏòàÏ†ïÏûÑ*/
 	//virtual UNewItemObject* GetDefaultItemObj();
 
 	bool Pickup(AActor* Actor, UNewItemObject* obj = nullptr);

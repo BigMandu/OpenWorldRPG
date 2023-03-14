@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -97,7 +97,7 @@ public:
 	
 
 	/******************** Storage ********************/
-	//Grid¿¡ ´ã±ä WidgetÀ» ÀúÀåÇÑ´Ù.
+	//Gridì— ë‹´ê¸´ Widgetì„ ì €ì¥í•œë‹¤.
 	TArray<UNewItemwidget*> ItemsWidget;
 
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Settings)
@@ -117,12 +117,12 @@ private:
 public:
 	virtual void NativeConstruct() override;
 	
-	/* Line Segments¸¦ ±×·ÁÁÖ´Â ÇÔ¼ö -> ÀÚµ¿ È£ÃâµÊ */
+	/* Line Segmentsë¥¼ ê·¸ë ¤ì£¼ëŠ” í•¨ìˆ˜ -> ìë™ í˜¸ì¶œë¨ */
 	virtual int32 NativePaint(const FPaintArgs& Args, const FGeometry& AllottedGeometry, const FSlateRect& MyCullingRect, FSlateWindowElementList& OutDrawElements, int32 LayerId, const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const override;
 
-	/* ItemÀ» GridWidget¿¡ µå¶ø½Ã ItemÀ» ¸¶¿ì½º index¿¡ Ãß°¡½ÃÅ²´Ù. */
+	/* Itemì„ GridWidgetì— ë“œëì‹œ Itemì„ ë§ˆìš°ìŠ¤ indexì— ì¶”ê°€ì‹œí‚¨ë‹¤. */
 	virtual bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
-	/* Mouse index¸¦ ¾ò¾î¿À±â À§ÇØ ÇÊ¿äÇÑ ÇÔ¼ö */
+	/* Mouse indexë¥¼ ì–»ì–´ì˜¤ê¸° ìœ„í•´ í•„ìš”í•œ í•¨ìˆ˜ */
 	virtual bool NativeOnDragOver(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
 	virtual void NativeOnDragEnter(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
 	virtual void NativeOnDragLeave(const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;

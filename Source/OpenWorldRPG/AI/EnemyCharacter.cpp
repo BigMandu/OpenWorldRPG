@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "EnemyCharacter.h"
@@ -29,8 +29,8 @@ AEnemyCharacter::AEnemyCharacter()
 
 	Range = 1800.f;
 
-	AIControllerClass = AEnemyAIController::StaticClass(); //AIController¸¦ ³Ö¾îÁÖ°í
-	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned; //AIControllerÀÇ ¼ÒÀ¯½Ã±â¸¦ Á¤ÇØÁÜ.
+	AIControllerClass = AEnemyAIController::StaticClass(); //AIControllerë¥¼ ë„£ì–´ì£¼ê³ 
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned; //AIControllerì˜ ì†Œìœ ì‹œê¸°ë¥¼ ì •í•´ì¤Œ.
 
 }
 
@@ -78,7 +78,7 @@ void AEnemyCharacter::SetAIStatus(EAIStatus Status)
 	}
 }
 
-//ÀÌ¹Ì ÀåÂøÇÏ°íÀÖ´Â Àåºñ¸¦ ÀÎÁöÇÏ¸é True¸¦ ¸®ÅÏ, ±×¿Ü´Â false¸®ÅÏ.
+//ì´ë¯¸ ì¥ì°©í•˜ê³ ìˆëŠ” ì¥ë¹„ë¥¼ ì¸ì§€í•˜ë©´ Trueë¥¼ ë¦¬í„´, ê·¸ì™¸ëŠ” falseë¦¬í„´.
 bool AEnemyCharacter::CheckEquipped(AActor* Actor)
 {
 	if(Equipment)

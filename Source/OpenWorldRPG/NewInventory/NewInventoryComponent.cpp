@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "NewInventoryComponent.h"
@@ -30,7 +30,7 @@ void UNewInventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	//ÇØ´çInventoryCompÀÇ Inventory¹è¿­»çÀÌÁî¸¦ ¼³Á¤ÇÑ´Ù.
+	//í•´ë‹¹InventoryCompì˜ Inventoryë°°ì—´ì‚¬ì´ì¦ˆë¥¼ ì„¤ì •í•œë‹¤.
 	//InventoryItems[Columns * Rows] = { nullptr, };
 	//InventoryItems.SetNum(Columns * Rows);
 	InventoryItems.Init(nullptr, Columns * Rows);
@@ -78,24 +78,24 @@ bool UNewInventoryComponent::RemoveItem(UNewItemObject* ItemObj)
 bool UNewInventoryComponent::TryAddItem(UNewItemObject* ItemObj)
 {
 	/*
-	* ÀÌ ItemObjÀÇ Å©±â¸¦ Â÷ÁöÇÒ Å¸ÀÏÀ» ¹İº¹ÇÑ´Ù.
+	* ì´ ItemObjì˜ í¬ê¸°ë¥¼ ì°¨ì§€í•  íƒ€ì¼ì„ ë°˜ë³µí•œë‹¤.
 	*/
 	bool bResult = false;
 	if (ItemObj)
 	{
 		bResult = TryAddItemStep(ItemObj);
 
-		/* ItemÃß°¡¿¡ ½ÇÆĞÇß°í ItemÀ» µ¹¸± ¼ö ÀÖ´Ù¸é */
+		/* Itemì¶”ê°€ì— ì‹¤íŒ¨í–ˆê³  Itemì„ ëŒë¦´ ìˆ˜ ìˆë‹¤ë©´ */
 		if (!bResult && ItemObj->bCanRotated)
 		{
 #ifdef DEBUG_INVCOMP
 			UE_LOG(LogTemp, Warning, TEXT("NewInvComp::AddItem = Inventory is full, Try Item Rotate."));
 #endif
-			/* ItemÀ» µ¹¸®°í ´Ù½Ã Ãß°¡ÇÑ´Ù. */
+			/* Itemì„ ëŒë¦¬ê³  ë‹¤ì‹œ ì¶”ê°€í•œë‹¤. */
 			ItemObj->ItemRotate();
 			bResult = TryAddItemStep(ItemObj);
 
-			/* ±×·¡µµ ½ÇÆĞÇß´Ù¸é µ¹¸° itemÀ» ´Ù½Ã ¿øº¹ ½ÃÅ²´Ù.*/
+			/* ê·¸ë˜ë„ ì‹¤íŒ¨í–ˆë‹¤ë©´ ëŒë¦° itemì„ ë‹¤ì‹œ ì›ë³µ ì‹œí‚¨ë‹¤.*/
 			if (!bResult)
 			{
 				ItemObj->ItemRotate();
@@ -124,7 +124,7 @@ bool UNewInventoryComponent::TryAddItemStep(UNewItemObject* ItemObj)
 			if (bResult)
 			{
 				AddItemAtIndex(ItemObj, iter);
-				//ÇØÁ¦´Â InventoryLibrary::SpawnEquip ¶Ç´Â DropWidgetÀÇ OnDrop¿¡¼­ ÇÑ´Ù.
+				//í•´ì œëŠ” InventoryLibrary::SpawnEquip ë˜ëŠ” DropWidgetì˜ OnDropì—ì„œ í•œë‹¤.
 				ItemObj->bIsDestoryed = true;
 
 				//SetItemState(EItemState::EIS_Pickup);
@@ -172,8 +172,8 @@ void UNewInventoryComponent::AddItemAtIndex(UNewItemObject* ItemObj, int32 Index
 #ifdef DEBUG_INVCOMP
 	UE_LOG(LogTemp, Warning, TEXT("NewInvComp::AddItem = Success Add Item"));
 #endif			
-	/*	AddItemÀÌ ¼º°øÀûÀÌ¸é UNewInventoryGrid::RefreshInventory¸¦ È£ÃâÇÏ±â À§ÇØ
-		Delegate¸¦ »ı¼ºÇÏ°í broadcast¸¦ ¶§·ÁÁØ´Ù.
+	/*	AddItemì´ ì„±ê³µì ì´ë©´ UNewInventoryGrid::RefreshInventoryë¥¼ í˜¸ì¶œí•˜ê¸° ìœ„í•´
+		Delegateë¥¼ ìƒì„±í•˜ê³  broadcastë¥¼ ë•Œë ¤ì¤€ë‹¤.
 	*/
 	OnInventoryUpdated.Broadcast();
 }
@@ -181,9 +181,9 @@ void UNewInventoryComponent::AddItemAtIndex(UNewItemObject* ItemObj, int32 Index
 bool UNewInventoryComponent::IsAvailableSpace(UNewItemObject* ItemObj, int32 TopLeftIndex)
 {
 	/*
-		InventoryÀÇ Top-LeftºÎÅÍ itemÀ» addÇÒ¶§ 
-		ÀÌ ItemÀÌ Â÷ÁöÇÒ Å¸ÀÏ¸¸Å­	(ÇØ´ç indexÀÇ Top-leftºÎÅÍ) ¸ğµç Inventory tileÀ» 
-		loop µ¹¸é¼­ À¯È¿ÇÑ °ø°£ÀÌ ÀÖ´ÂÁö È®ÀÎÇÑ´Ù. ÀÌ¹Ì Â÷ÁöÇÏ°í ÀÖ´Ù¸é false, ¾ø´Ù¸é true¸¦ ¸®ÅÏ.
+		Inventoryì˜ Top-Leftë¶€í„° itemì„ addí• ë•Œ 
+		ì´ Itemì´ ì°¨ì§€í•  íƒ€ì¼ë§Œí¼	(í•´ë‹¹ indexì˜ Top-leftë¶€í„°) ëª¨ë“  Inventory tileì„ 
+		loop ëŒë©´ì„œ ìœ íš¨í•œ ê³µê°„ì´ ìˆëŠ”ì§€ í™•ì¸í•œë‹¤. ì´ë¯¸ ì°¨ì§€í•˜ê³  ìˆë‹¤ë©´ false, ì—†ë‹¤ë©´ trueë¥¼ ë¦¬í„´.
 	*/
 	bool bReturn = true;
 	//FTile tile = ForEachIndex(ItemObj, TopLeftIndex);
@@ -206,7 +206,7 @@ bool UNewInventoryComponent::IsAvailableSpace(UNewItemObject* ItemObj, int32 Top
 			{
 				int32 index = 0;// TileToIndex(checktile);
 				UNewItemObject* GettingItemObj = GetItemAtIndex(index);
-				/* ÇØ´ç index¿¡ ÀÌ¹Ì item obj°¡ ÀÖÀ¸¸é false¸¦ returnÇÑ´Ù */
+				/* í•´ë‹¹ indexì— ì´ë¯¸ item objê°€ ìˆìœ¼ë©´ falseë¥¼ returní•œë‹¤ */
 				if (GettingItemObj != nullptr)
 				{
 					bReturn = false;
@@ -226,8 +226,8 @@ bool UNewInventoryComponent::IsAvailableSpace(UNewItemObject* ItemObj, int32 Top
 	return bReturn;
 }
 
-/* item obj¿Í top left index¸¦ °¡Áö°í itemÀÇ Å©±â¸¸Å­ 
-	index¸¦ loopµ¹¸é¼­ itemÀÌ Â÷ÁöÇÒ¼ö ÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
+/* item objì™€ top left indexë¥¼ ê°€ì§€ê³  itemì˜ í¬ê¸°ë§Œí¼ 
+	indexë¥¼ loopëŒë©´ì„œ itemì´ ì°¨ì§€í• ìˆ˜ ìˆëŠ”ì§€ í™•ì¸í•œë‹¤.
 */
 /*
 FTile UNewInventoryComponent::ForEachIndex(UNewItemObject* Obj, int32 TopLeftIndex)
@@ -255,7 +255,7 @@ FTile UNewInventoryComponent::ForEachIndex(UNewItemObject* Obj, int32 TopLeftInd
 }
 */
 
-/* Index¸¦ gridÀÇ x, yÁÂÇ¥·Î ¹Ù²ãÁØ´Ù.*/
+/* Indexë¥¼ gridì˜ x, yì¢Œí‘œë¡œ ë°”ê¿”ì¤€ë‹¤.*/
 //FTile UNewInventoryComponent::IndexToTile(int32 index)
 //{
 //	FTile tile;
@@ -264,13 +264,13 @@ FTile UNewInventoryComponent::ForEachIndex(UNewItemObject* Obj, int32 TopLeftInd
 //	return tile;
 //}
 
-/* gridÀÇ x,yÁÂÇ¥¸¦ index·Î ¹Ù²Û´Ù. */
+/* gridì˜ x,yì¢Œí‘œë¥¼ indexë¡œ ë°”ê¾¼ë‹¤. */
 //int32 UNewInventoryComponent::TileToIndex(FTile tile)
 //{
 //	return tile.X + tile.Y * Columns;	
 //}
 
-/* index¿¡ itemÀÌ ÀÖ´ÂÁö È®ÀÎÇÑ´Ù.*/
+/* indexì— itemì´ ìˆëŠ”ì§€ í™•ì¸í•œë‹¤.*/
 UNewItemObject* UNewInventoryComponent::GetItemAtIndex(int32 index)
 {
 	UNewItemObject* ReturnObj = nullptr;
@@ -293,12 +293,12 @@ UNewItemObject* UNewInventoryComponent::GetItemAtIndex(int32 index)
 const TMap<UNewItemObject*, FTile> UNewInventoryComponent::GetAllItems()
 {
 	/*
-	* Item°ú, ÇØ´ç itemÀÇ Top-Left index¸¦ ´ãÀº MapÀ» ¸®ÅÏÇØÁØ´Ù.
-	* Key°ªÀ» ItemObject·Î, Value¸¦ FTile·Î ÁöÁ¤Çß´Ù.
+	* Itemê³¼, í•´ë‹¹ itemì˜ Top-Left indexë¥¼ ë‹´ì€ Mapì„ ë¦¬í„´í•´ì¤€ë‹¤.
+	* Keyê°’ì„ ItemObjectë¡œ, Valueë¥¼ FTileë¡œ ì§€ì •í–ˆë‹¤.
 	*/
 	TMap<UNewItemObject*, FTile> InventoryStoredInfo;
 	
-	//¿©±â InventoryItems¿¡ Garbage°ª µé¾î¿È 
+	//ì—¬ê¸° InventoryItemsì— Garbageê°’ ë“¤ì–´ì˜´ 
 	for (int32 index = 0; index < InventoryItems.Num(); ++index)
 	{
 		UNewItemObject* CurItemObj = InventoryItems[index];
@@ -372,12 +372,12 @@ bool UNewInventoryComponent::TryAddItem(UItemStorageObject* StorageObj, FItemSet
 		
 		if (bWantToGenerateRandomCount)
 		{
-			//LootBox(Chest)¿¡ ItemÀ» Spawn½Ã, ¶Ç´Â World¿¡ »Ñ·ÁÁø Backpack, EnemyAI Character¿¡ ItemÀ» Spawn½Ã ¼ö·®À» ·£´ıÇÏ°Ô ÁØ´Ù.
+			//LootBox(Chest)ì— Itemì„ Spawnì‹œ, ë˜ëŠ” Worldì— ë¿Œë ¤ì§„ Backpack, EnemyAI Characterì— Itemì„ Spawnì‹œ ìˆ˜ëŸ‰ì„ ëœë¤í•˜ê²Œ ì¤€ë‹¤.
 			UCustomInventoryLibrary::GenerateRandomCount(ItemObj);
 		}
 		else if (ItemObj->ItemInfo.DataAsset->bCanStack)
 		{
-			//StackÀÌ °¡´ÉÇÑ ItemÀÎ °æ¿ì, Storage¿¡¼­ µ¿ÀÏÇÑ ItemÀ» ±¸ÇØ AddCount¸¦ ½ÃÄÑÁØ´Ù.
+			//Stackì´ ê°€ëŠ¥í•œ Itemì¸ ê²½ìš°, Storageì—ì„œ ë™ì¼í•œ Itemì„ êµ¬í•´ AddCountë¥¼ ì‹œì¼œì¤€ë‹¤.
 			const auto ItemInStorage = StorageObj->GetAllItems();
 			for (auto Item : ItemInStorage)
 			{
@@ -385,7 +385,7 @@ bool UNewInventoryComponent::TryAddItem(UItemStorageObject* StorageObj, FItemSet
 				if(Item.Key->ItemInfo.DataAsset->bCanStack == false) continue;
 				
 
-				//ItemAddCount¸¦ Çß´Ù¸é for¹®À» breakÇÑ´Ù.
+				//ItemAddCountë¥¼ í–ˆë‹¤ë©´ forë¬¸ì„ breakí•œë‹¤.
 				if (AddItemCount(ItemObj, Item.Key))
 				{
 					bAddCount = true;
@@ -416,27 +416,27 @@ bool UNewInventoryComponent::RemoveItem(UItemStorageObject* StorageObj, UNewItem
 }
 
 
-/*DroppedItemÀÇ Count°¡ ¸ğµÎ StackÀÌ µÆ´Ù¸é true¸¦ ¸®ÅÏÇÏ°í
-* DroppedItemÀÇ Count°¡ ³²¾ÒÀ¸¸é false¸¦ ¸®ÅÏÇÑ´Ù.
+/*DroppedItemì˜ Countê°€ ëª¨ë‘ Stackì´ ëë‹¤ë©´ trueë¥¼ ë¦¬í„´í•˜ê³ 
+* DroppedItemì˜ Countê°€ ë‚¨ì•˜ìœ¼ë©´ falseë¥¼ ë¦¬í„´í•œë‹¤.
 */
 bool UNewInventoryComponent::AddItemCount(UNewItemObject* DroppedItemObj, UNewItemObject* OnItemObj)
 {
 	int32 OnMAXStack = OnItemObj->ItemInfo.DataAsset->MaxStackSize;
 	
-	//Stack°¡´ÉÇÑ °³¼ö¸¦ ±¸ÇÑ´Ù.
+	//Stackê°€ëŠ¥í•œ ê°œìˆ˜ë¥¼ êµ¬í•œë‹¤.
 	int32 OnCanStackCount = OnMAXStack - OnItemObj->ItemInfo.Count;
 	int32 DroppedStackCount = DroppedItemObj->ItemInfo.Count;
 
 	bool bReturn = false;
 
-	// 1 ÀÌ»ó ½×À» ¼ö ¾ø´Ù¸é, Stack°¡´ÉÇÑ count°¡ 0ÀÌ¸é °Á ¹Ù·Î false¸¦ ¸®ÅÏÇÑ´Ù.
+	// 1 ì´ìƒ ìŒ“ì„ ìˆ˜ ì—†ë‹¤ë©´, Stackê°€ëŠ¥í•œ countê°€ 0ì´ë©´ ê± ë°”ë¡œ falseë¥¼ ë¦¬í„´í•œë‹¤.
 	if (OnCanStackCount <= 0)
 	{
 		return false;
 	}
 
-	/*µå¶ø°³¼ö°¡ Stack°¡´ÉÇÑ °³¼öº¸´Ù Å©´Ù¸é
-	* OnItem(ÀÖ´ø°Í)¿¡ Stack°¡´ÉÇÑ °³¼ö¸¦ ³Ö¾îÁÖ°í DroppedItem(µå¶øÇÑ°Í)¿¡¼­ Stack °¡´ÉÇÑ °³¼ö¸¦ »©ÁØ´Ù.
+	/*ë“œëê°œìˆ˜ê°€ Stackê°€ëŠ¥í•œ ê°œìˆ˜ë³´ë‹¤ í¬ë‹¤ë©´
+	* OnItem(ìˆë˜ê²ƒ)ì— Stackê°€ëŠ¥í•œ ê°œìˆ˜ë¥¼ ë„£ì–´ì£¼ê³  DroppedItem(ë“œëí•œê²ƒ)ì—ì„œ Stack ê°€ëŠ¥í•œ ê°œìˆ˜ë¥¼ ë¹¼ì¤€ë‹¤.
 	*/
 	if (DroppedStackCount >= OnCanStackCount)
 	{
@@ -448,7 +448,7 @@ bool UNewInventoryComponent::AddItemCount(UNewItemObject* DroppedItemObj, UNewIt
 	{
 		OnItemObj->AddCount(DroppedStackCount);
 
-		//ItemÀÌ SpawnÀÌ¶ó Storage°¡ ¾ø´Â °æ¿ì°¡ ÀÖ¤§¤§¤¿.
+		//Itemì´ Spawnì´ë¼ Storageê°€ ì—†ëŠ” ê²½ìš°ê°€ ìˆã„·ã„·ã….
 		//if(DroppedItemObj->MotherStorage)
 		{
 			RemoveItemCount(DroppedItemObj, DroppedStackCount);
@@ -467,21 +467,21 @@ bool UNewInventoryComponent::AddItemCount(UNewItemObject* DroppedItemObj, UNewIt
 	return bReturn;
 }
 
-//ItemObjÀÇ Count¸¦ ¾ÈÀüÇÏ°Ô Áö¿ì´Â ÇÔ¼ö
+//ItemObjì˜ Countë¥¼ ì•ˆì „í•˜ê²Œ ì§€ìš°ëŠ” í•¨ìˆ˜
 void UNewInventoryComponent::RemoveItemCount(UNewItemObject* RemoveItemObj, int32 RemoveCount)
 {	
 	int32 RemoveStackCount = FMath::Clamp<int32>(RemoveItemObj->ItemInfo.Count - RemoveCount, 0, RemoveItemObj->ItemInfo.Count - RemoveCount);
 #ifdef DEBUG_INVCOMP
 	UE_LOG(LogTemp,Warning,TEXT("InvComp::RemoveItemCnt / RemoveStackCount is %d"),RemoveStackCount);
 #endif
-	//ÀÖ´ø°Í - »¬°¹¼ö°¡ 0ÀÌÇÏ¸é RemoveItemÀ» ÁøÇàÇÑ´Ù.
+	//ìˆë˜ê²ƒ - ëº„ê°¯ìˆ˜ê°€ 0ì´í•˜ë©´ RemoveItemì„ ì§„í–‰í•œë‹¤.
 	if (RemoveStackCount <= 0)
 	{
 		if (RemoveItemObj->MotherStorage)
 		{
-			//»èÁ¦ ´ë±â ¿©ºÎ¸¦ True·Î º¯°æÇÑ´Ù. 
-			/*(MotherStorageÀÇ RemoveItem¿¡¼­ InventoryGrid WidgetÀÇ RefreshInvtoryÇÔ¼ö¿¡¼­ 
-			* Quickslot »èÁ¦¸¦ ÇØ¾ßÇÏ´ÂÁö ÆÇ´ÜÇÒ¶§ »ç¿ëµÇ´Â boolº¯¼öÀÓ.
+			//ì‚­ì œ ëŒ€ê¸° ì—¬ë¶€ë¥¼ Trueë¡œ ë³€ê²½í•œë‹¤. 
+			/*(MotherStorageì˜ RemoveItemì—ì„œ InventoryGrid Widgetì˜ RefreshInvtoryí•¨ìˆ˜ì—ì„œ 
+			* Quickslot ì‚­ì œë¥¼ í•´ì•¼í•˜ëŠ”ì§€ íŒë‹¨í• ë•Œ ì‚¬ìš©ë˜ëŠ” boolë³€ìˆ˜ì„.
 			* */
 			RemoveItemObj->bIsPendingDelete = true;
 			RemoveItemObj->RemoveCount(RemoveCount);
@@ -489,8 +489,8 @@ void UNewInventoryComponent::RemoveItemCount(UNewItemObject* RemoveItemObj, int3
 		}
 		else
 		{
-			//MotherStorage°¡ ¾ø´Â °æ¿ì -> SpawnµÈ ItemÀÎ °æ¿ì(Craft, Pickup)
-			//±×³É RemoveCount¸¦ ÁøÇàÇÑ´Ù. ItemClassÀÇ Destory´Â Craft, Pickup¿¡¼­ ÁøÇà.
+			//MotherStorageê°€ ì—†ëŠ” ê²½ìš° -> Spawnëœ Itemì¸ ê²½ìš°(Craft, Pickup)
+			//ê·¸ëƒ¥ RemoveCountë¥¼ ì§„í–‰í•œë‹¤. ItemClassì˜ DestoryëŠ” Craft, Pickupì—ì„œ ì§„í–‰.
 			RemoveItemObj->RemoveCount(RemoveCount);
 		}
 	}
@@ -511,7 +511,7 @@ int32 UNewInventoryComponent::GetItemCount(UNewItemObject* ItemObj)
 }
 
 
-//CustomInventoryLibrary·Î ¿Å±è.
+//CustomInventoryLibraryë¡œ ì˜®ê¹€.
 /*
 UNewItemObject* UNewInventoryComponent::CreateObject(FItemSetting ItemStruct, bool& bIsCreated)
 {

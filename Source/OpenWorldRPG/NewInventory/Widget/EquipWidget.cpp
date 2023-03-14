@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "OpenWorldRPG/NewInventory/Widget/EquipWidget.h"
@@ -37,7 +37,7 @@ void UEquipWidget::EquipInitialize(UEquipmentComponent* p_EquipComp)
 	{
 		EquipComp->OnEquipmentUpdated.AddUFunction(this, FName("RefreshEquipWidget"));
 
-		//AIÀÇ LootWidget¿¡¼­ »ç¿ëÇÒ¶§
+		//AIì˜ LootWidgetì—ì„œ ì‚¬ìš©í• ë•Œ
 		if (LootedChar_Owner)
 		{
 			HelmetSlot->LootedChar_Owner = LootedChar_Owner;
@@ -173,7 +173,7 @@ void UEquipWidget::SetSlot(UNewItemObject* EquipObj, UEquipmentSlot* EquipSlot)
 			EquipSlot->BGBorder->ClearChildren();
 
 
-			ItemWidget->Tilesize = 60.f;//Equip->EquipInventoryComp->TileSize; //ÀÓ½Ã·Î ÀÌ·¸°Ô »çÀÌÁî¸¦ ¹Ú¾Æµ×´Ù., GetDesiredSize´Â widgetÀÌ È­¸é¿¡ Ãâ·ÂµÇ¾ß ±¸ÇÒ¼ö ÀÖ´Â°Çµ¥ ..  //EquipSlot->GetDesiredSize().X;
+			ItemWidget->Tilesize = 60.f;//Equip->EquipInventoryComp->TileSize; //ìž„ì‹œë¡œ ì´ë ‡ê²Œ ì‚¬ì´ì¦ˆë¥¼ ë°•ì•„ë’€ë‹¤., GetDesiredSizeëŠ” widgetì´ í™”ë©´ì— ì¶œë ¥ë˜ì•¼ êµ¬í• ìˆ˜ ìžˆëŠ”ê±´ë° ..  //EquipSlot->GetDesiredSize().X;
 			ItemWidget->ItemObj = EquipObj;
 			ItemWidget->MotherEquipWidget = this;
 			ItemWidget->Refresh();
@@ -184,7 +184,7 @@ void UEquipWidget::SetSlot(UNewItemObject* EquipObj, UEquipmentSlot* EquipSlot)
 			}
 
 			/**
-			* Equip Slot°ú EquipObj¸¦ ¼­·Î LinkÇÑ´Ù.
+			* Equip Slotê³¼ EquipObjë¥¼ ì„œë¡œ Linkí•œë‹¤.
 			*/
 			EquipSlot->SettedObj = EquipObj;
 			EquipObj->RemoveLinkSlot();
@@ -218,7 +218,7 @@ void UEquipWidget::SetSlot(UNewItemObject* EquipObj, UEquipmentSlot* EquipSlot)
 //			//VestOverlay->ClearChildren();
 //
 //			
-//			ItemWidget->Tilesize = 60.f;//Equip->EquipInventoryComp->TileSize; //ÀÓ½Ã·Î ÀÌ·¸°Ô »çÀÌÁî¸¦ ¹Ú¾Æµ×´Ù., GetDesiredSize´Â widgetÀÌ È­¸é¿¡ Ãâ·ÂµÇ¾ß ±¸ÇÒ¼ö ÀÖ´Â°Çµ¥ ..  //EquipSlot->GetDesiredSize().X;
+//			ItemWidget->Tilesize = 60.f;//Equip->EquipInventoryComp->TileSize; //ìž„ì‹œë¡œ ì´ë ‡ê²Œ ì‚¬ì´ì¦ˆë¥¼ ë°•ì•„ë’€ë‹¤., GetDesiredSizeëŠ” widgetì´ í™”ë©´ì— ì¶œë ¥ë˜ì•¼ êµ¬í• ìˆ˜ ìžˆëŠ”ê±´ë° ..  //EquipSlot->GetDesiredSize().X;
 //			ItemWidget->ItemObj = Equip->ItemObj; // ele.Key;
 //			ItemWidget->Refresh();// Equip->ItemObj, 60.f);
 //			

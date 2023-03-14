@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "BTTask_GetAttackableArea.h"
@@ -43,17 +43,17 @@ EBTNodeResult::Type UBTTask_GetAttackableArea::ExecuteTask(UBehaviorTreeComponen
 
 	FVector NewAILocation;
 
-	//if (abs(PlayerLo.Z - AILo.Z) >= 30.f) //³ôÀÌÂ÷°¡ 30 ÀÌ»óÀÌ¸é 
+	//if (abs(PlayerLo.Z - AILo.Z) >= 30.f) //ë†’ì´ì°¨ê°€ 30 ì´ìƒì´ë©´ 
 	//{
-	//	NewAILocation = PlayerLo; //±×³É PlayerLocationÀ¸·Î ÇØÁØ´Ù.
+	//	NewAILocation = PlayerLo; //ê·¸ëƒ¥ PlayerLocationìœ¼ë¡œ í•´ì¤€ë‹¤.
 	//}
-	//else //³ôÀÌ Â÷°¡ ¾ó¸¶ ¾È³ª¸é
+	//else //ë†’ì´ ì°¨ê°€ ì–¼ë§ˆ ì•ˆë‚˜ë©´
 	{
-		FVector RotationVec = (PlayerLo - AILo).GetSafeNormal(); //ÇÃ·¹ÀÌ¾îÀÇ ¹æÇâÀ¸·Î
-		float Distance = (FVector::Dist(PlayerLo, AILo) - (Enemy->Range - Enemy->Range * 0.5)); //Player¿Í Enemy+RangeÀÇ °Å¸®¸¦ ±¸ÇÑ´Ù. -> ³Ê¹« Å¸ÀÌÆ®ÇØ¼­ »ìÂ¦ ´õ ³ª°¡°Ô ÇØÁá´Ù.
-		FVector AIWithRange = (RotationVec * Distance) + AILo; //Range¸¸Å­ ³ª¾Æ°£´Ù. ->Range¸¸Å­¸¸ ³ª°¡¸é ¾ÈµÇ°í, PlayerÀÇ À§Ä¡¿Í  AIÀÇ À§Ä¡ÀÇ Â÷°¡ Rangeº¸´Ù ¾ó¸¸Å­ Å¬¶§~·Î ÇØÁØ´Ù.
+		FVector RotationVec = (PlayerLo - AILo).GetSafeNormal(); //í”Œë ˆì´ì–´ì˜ ë°©í–¥ìœ¼ë¡œ
+		float Distance = (FVector::Dist(PlayerLo, AILo) - (Enemy->Range - Enemy->Range * 0.5)); //Playerì™€ Enemy+Rangeì˜ ê±°ë¦¬ë¥¼ êµ¬í•œë‹¤. -> ë„ˆë¬´ íƒ€ì´íŠ¸í•´ì„œ ì‚´ì§ ë” ë‚˜ê°€ê²Œ í•´ì¤¬ë‹¤.
+		FVector AIWithRange = (RotationVec * Distance) + AILo; //Rangeë§Œí¼ ë‚˜ì•„ê°„ë‹¤. ->Rangeë§Œí¼ë§Œ ë‚˜ê°€ë©´ ì•ˆë˜ê³ , Playerì˜ ìœ„ì¹˜ì™€  AIì˜ ìœ„ì¹˜ì˜ ì°¨ê°€ Rangeë³´ë‹¤ ì–¼ë§Œí¼ í´ë•Œ~ë¡œ í•´ì¤€ë‹¤.
 
-		NewAILocation = FVector(AIWithRange.X, AIWithRange.Y, AIWithRange.Z); //PlayerÀÇ ³ôÀÌ·Î ÇØÁØ´Ù. -> ai°¡ ÅÎ¿¡ °É·Á ¸ø¿Ã¶ó°£´Ù. ¼öÁ¤ ÇÊ¿ä.
+		NewAILocation = FVector(AIWithRange.X, AIWithRange.Y, AIWithRange.Z); //Playerì˜ ë†’ì´ë¡œ í•´ì¤€ë‹¤. -> aiê°€ í„±ì— ê±¸ë ¤ ëª»ì˜¬ë¼ê°„ë‹¤. ìˆ˜ì • í•„ìš”.
 	}
 	
 	//for debug

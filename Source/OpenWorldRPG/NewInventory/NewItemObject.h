@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -51,7 +51,7 @@ public:
 	EInteractType InteractType;
 
 
-	//EquipComp, InvenComp¿¡¼­ »ç¿ëÇÑ´Ù. (ÆíÇÏ°Ô ÇÏ±â À§ÇÔ...)
+	//EquipComp, InvenCompì—ì„œ ì‚¬ìš©í•œë‹¤. (í¸í•˜ê²Œ í•˜ê¸° ìœ„í•¨...)
 	AItem* item;
 	AEquipment* Equipment;
 
@@ -107,10 +107,10 @@ public:
 
 
 
-	//GridWidget¿¡¼­ On-Drop½Ã¿¡ Rotate°ªÀ» È®Á¤ÇÑ´Ù. (TempRotate°ªÀ» Rotate°ªÀ¸·Î ³Ö¾îÁÖ±â¸¸ ÇÑ´Ù.)
+	//GridWidgetì—ì„œ On-Dropì‹œì— Rotateê°’ì„ í™•ì •í•œë‹¤. (TempRotateê°’ì„ Rotateê°’ìœ¼ë¡œ ë„£ì–´ì£¼ê¸°ë§Œ í•œë‹¤.)
 	void SetItemRotate();
 
-	//DragDefaultVisual¸¸ È¸Àü½ÃÅ²´Ù.
+	//DragDefaultVisualë§Œ íšŒì „ì‹œí‚¨ë‹¤.
 	void ItemRotate();
 
 	UMaterialInterface* GetItemIcon();

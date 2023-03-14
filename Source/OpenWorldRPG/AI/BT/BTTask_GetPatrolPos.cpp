@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "BTTask_GetPatrolPos.h"
@@ -12,7 +12,7 @@ UBTTask_GetPatrolPos::UBTTask_GetPatrolPos()
 	NodeName = TEXT("GetPatrolPos");
 }
 
-//Random PatrolÀ» ÇÒ¶§ ÃÖ¼Ò °Å¸® ÀÌ»óÀÇ Patrol Point¸¦ ¾ò¾î¿Â´Ù.
+//Random Patrolì„ í• ë•Œ ìµœì†Œ ê±°ë¦¬ ì´ìƒì˜ Patrol Pointë¥¼ ì–»ì–´ì˜¨ë‹¤.
 EBTNodeResult::Type UBTTask_GetPatrolPos::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	Super::ExecuteTask(OwnerComp, NodeMemory);
@@ -36,9 +36,9 @@ EBTNodeResult::Type UBTTask_GetPatrolPos::ExecuteTask(UBehaviorTreeComponent& Ow
 				FNavLocation NavLocation;
 				float sub = 0.f;
 				int32 Count = 0;
-				while ( sub <= 500.f) //ÇöÀçÀ§Ä¡¿Í »õ·Î±¸ÇÑ Á¤ÂûÀ§Ä¡°¡ xÀÌ»ó Â÷ÀÌ³¯¶§±îÁö
+				while ( sub <= 500.f) //í˜„ì¬ìœ„ì¹˜ì™€ ìƒˆë¡œêµ¬í•œ ì •ì°°ìœ„ì¹˜ê°€ xì´ìƒ ì°¨ì´ë‚ ë•Œê¹Œì§€
 				{
-					//10¹ø ÀÌ»ó ½ÃµµÇØµµ ¸øÃ£À¸¸é Á¾·áÇÑ´Ù.
+					//10ë²ˆ ì´ìƒ ì‹œë„í•´ë„ ëª»ì°¾ìœ¼ë©´ ì¢…ë£Œí•œë‹¤.
 					if(Count >= 10) break;
 		
 					bool bNavResult = NavSys->GetRandomReachablePointInRadius(OriginPos, Enemy->RandomPatrolRadius, NavLocation);

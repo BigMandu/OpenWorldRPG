@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "NiceCar.h"
@@ -86,7 +86,7 @@ ANiceCar::ANiceCar()
 	TrunkCollision->OnComponentEndOverlap.AddDynamic(this,&ANiceCar::TrunkOnOverlapEnd);
 
 	/* Wheels Setting*/
-	//ÈÙ ÇÒ´ç ¼ø¼­´Â ¾Õ,µÚ »ó°ü¾ø°í ¿ÀÁ÷ Bone name°ú wheel class¿¡¸¸ ¿µÇâÀ» ÁØ´Ù.
+	//íœ  í• ë‹¹ ìˆœì„œëŠ” ì•,ë’¤ ìƒê´€ì—†ê³  ì˜¤ì§ Bone nameê³¼ wheel classì—ë§Œ ì˜í–¥ì„ ì¤€ë‹¤.
 	UWheeledVehicleMovementComponent4W* Vehicle4W = CastChecked<UWheeledVehicleMovementComponent4W>(GetVehicleMovement());
 
 	TSubclassOf<UVehicleWheel> FW = TSubclassOf<UVehicleWheel>(UVehicleWheel::StaticClass());
@@ -243,18 +243,18 @@ void ANiceCar::FWDSetting(FVehicleDataTable Data)
 	Vehicle4W->SteeringCurve.GetRichCurve()->AddKey(40.0f, 0.7f);
 	Vehicle4W->SteeringCurve.GetRichCurve()->AddKey(120.0f, 0.6f);
 
-	//±¸µ¿¹æ½Ä 4wd
-	/*Open Diff = ÇÊ¿ä½Ã ¼­·Î´Ù¸¥ ¼Óµµ·Î È¸ÀüÇÔ. (spider gear)
-	* Á÷¼±±¸°£ È¸ÀüX, ÄÚ³Ê¸µ½Ã È¸ÀüO
+	//êµ¬ë™ë°©ì‹ 4wd
+	/*Open Diff = í•„ìš”ì‹œ ì„œë¡œë‹¤ë¥¸ ì†ë„ë¡œ íšŒì „í•¨. (spider gear)
+	* ì§ì„ êµ¬ê°„ íšŒì „X, ì½”ë„ˆë§ì‹œ íšŒì „O
 	* 
-	* Limited Slip Diff(LSD), °í¼º´É µğÆÛ·±¼È
-	* µğÆÛ·±¼È ½º½º·Î Fully-open / Fully-locked »çÀÌ¿¡¼­ Á¶ÀıÇÔ.
+	* Limited Slip Diff(LSD), ê³ ì„±ëŠ¥ ë””í¼ëŸ°ì…œ
+	* ë””í¼ëŸ°ì…œ ìŠ¤ìŠ¤ë¡œ Fully-open / Fully-locked ì‚¬ì´ì—ì„œ ì¡°ì ˆí•¨.
 	* 
-	* maximum Locking = Fully Lock-up -> ÇÏ³ªÀÇ ¾×½½ Ã³·³ ÀÛµ¿.
-	* Minimum Locking = FullyOpen -> ¿ÀÇÂ µğÆÛ·±¼È Ã³·³ ÀÛµ¿
+	* maximum Locking = Fully Lock-up -> í•˜ë‚˜ì˜ ì•¡ìŠ¬ ì²˜ëŸ¼ ì‘ë™.
+	* Minimum Locking = FullyOpen -> ì˜¤í”ˆ ë””í¼ëŸ°ì…œ ì²˜ëŸ¼ ì‘ë™
 	* 
-	* LSD´Â
-	* ÇÑ ÂÊ Å¸ÀÌ¾î Æ®·¢¼Ç ÀÒÀ¸¸é, ´Ù¸¥ÂÊ ¹ÙÄû·Î ÈûÀ» Àü´ŞÇÔ (½½¸³->½ºÇÉ ¹æÁö)
+	* LSDëŠ”
+	* í•œ ìª½ íƒ€ì´ì–´ íŠ¸ë™ì…˜ ìƒìœ¼ë©´, ë‹¤ë¥¸ìª½ ë°”í€´ë¡œ í˜ì„ ì „ë‹¬í•¨ (ìŠ¬ë¦½->ìŠ¤í•€ ë°©ì§€)
 	*/
 	Vehicle4W->DifferentialSetup.DifferentialType = EVehicleDifferential4W::LimitedSlip_4W;
 
@@ -354,7 +354,7 @@ void ANiceCar::OpenTrunk()
 	if (MainInventory)
 	{
 		PlayerCon->bIsInteractLootBox = this;
-		LootWidgetComp->CreateInteractionWidget(PlayerCon, this); //»õ·ÎÃß°¡
+		LootWidgetComp->CreateInteractionWidget(PlayerCon, this); //ìƒˆë¡œì¶”ê°€
 	}
 
 }
@@ -382,7 +382,7 @@ void ANiceCar::GetoutCar()
 
 		bool bCanGetOut = true;
 
-		//¿îÀü¼® ¸ÕÀú °ËÁõ
+		//ìš´ì „ì„ ë¨¼ì € ê²€ì¦
 		if (CanGetout(DoorBoxLo, YNeSide, CharacterHalfBounding))
 		{
 			GetoutLocation = YNeSide;
@@ -397,7 +397,7 @@ void ANiceCar::GetoutCar()
 		}
 
 		
-		//³ª°¥ ¼ö ÀÖÀ»¶§¸¸ ½ÇÇàÇÑ´Ù.
+		//ë‚˜ê°ˆ ìˆ˜ ìˆì„ë•Œë§Œ ì‹¤í–‰í•œë‹¤.
 		if (bCanGetOut)
 		{
 			UGameplayStatics::PlaySoundAtLocation(GetWorld(), VD.EngineOffSound, GetActorLocation());//EngineSoundComp->GetComponentLocation());
@@ -423,7 +423,7 @@ bool ANiceCar::CanGetout(const FVector DoorOrigin, const FVector WantToGetOutPos
 		bReturn = false;
 	}
 	
-	//OldVersion... °£´ÜÇÑ ¹æ¹ıÀ¸·Î ¹Ù²Ş.
+	//OldVersion... ê°„ë‹¨í•œ ë°©ë²•ìœ¼ë¡œ ë°”ê¿ˆ.
 	/*
 	FHitResult VerifyHit;
 	

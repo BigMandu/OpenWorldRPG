@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -45,7 +45,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Door | Type")
 	EDoorType DoorType;
 
-	//ActorÀÇ ¹æÇâ´ë·Î ¹Ì´Â¹®ÀÎÁö, ´Ü ¹æÇâÀ¸·Î¸¸ ¿­¸®´Â ¹®ÀÎÁö.
+	//Actorì˜ ë°©í–¥ëŒ€ë¡œ ë¯¸ëŠ”ë¬¸ì¸ì§€, ë‹¨ ë°©í–¥ìœ¼ë¡œë§Œ ì—´ë¦¬ëŠ” ë¬¸ì¸ì§€.
 	//Only affect rotation
 	UPROPERTY(EditAnywhere, Category = "Door | Settings")
 	bool bIsDuplexDoor = false;

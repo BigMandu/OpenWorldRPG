@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -51,11 +51,11 @@ public:
 	bool CheckCanBeRegister(UNewItemObject* WantToSlot);
 	void JudgeCanbeInQuickSlotOrUpdate(UNewItemObject* ItemObj);
 
-	/** ÀÌ ÇÔ¼ö´Â this::SetItemInQuickSlot ÇÔ¼ö, NewInventoryGrid::RefreshInventroy ÇÔ¼ö¿¡¼­ È£ÃâµÇ´Â ÇÔ¼ö´Ù.
+	/** ì´ í•¨ìˆ˜ëŠ” this::SetItemInQuickSlot í•¨ìˆ˜, NewInventoryGrid::RefreshInventroy í•¨ìˆ˜ì—ì„œ í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜ë‹¤.
 	* 
-	* ÀÌ¹Ì µî·ÏµÇ¾î ÀÖ´ÂÁö È®ÀÎÇÏ°í ÀÌ¹Ì µî·Ï  µÇ¾î ÀÖ´Ù¸é, µî·ÏµÈ Slot¿¡¼­ »èÁ¦ÇÑ´Ù.
-	* ´Ù¸¸, WantToQuickSlot°ú ºñ±³ÇÏ¿© ÀÌ¹Ì µî·ÏµÈ Quickslot¿¡ ¶Ç µî·ÏÇÑ´Ù¸é, »èÁ¦¸¸ ÁøÇàÇÏµµ·Ï false¸¦ ¸®ÅÏÇÑ´Ù.
-	* NewInventoryGrid Å¬·¡½º¿¡¼­ RefereshÇÒ¶§ ¸¶´Ù ÀÌ ÇÔ¼ö¸¦ È£ÃâÇÏ´Âµ¥, ÀÌ ¶§´Â »èÁ¦¸¦ ¹æÁöÇÒ ¼ö ÀÖµµ·Ï bNeedToPreventRemove ÆÄ¶ó¹ÌÅÍ¸¦ Á¦°øÇÑ´Ù.
+	* ì´ë¯¸ ë“±ë¡ë˜ì–´ ìˆëŠ”ì§€ í™•ì¸í•˜ê³  ì´ë¯¸ ë“±ë¡  ë˜ì–´ ìˆë‹¤ë©´, ë“±ë¡ëœ Slotì—ì„œ ì‚­ì œí•œë‹¤.
+	* ë‹¤ë§Œ, WantToQuickSlotê³¼ ë¹„êµí•˜ì—¬ ì´ë¯¸ ë“±ë¡ëœ Quickslotì— ë˜ ë“±ë¡í•œë‹¤ë©´, ì‚­ì œë§Œ ì§„í–‰í•˜ë„ë¡ falseë¥¼ ë¦¬í„´í•œë‹¤.
+	* NewInventoryGrid í´ë˜ìŠ¤ì—ì„œ Refereshí• ë•Œ ë§ˆë‹¤ ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ëŠ”ë°, ì´ ë•ŒëŠ” ì‚­ì œë¥¼ ë°©ì§€í•  ìˆ˜ ìˆë„ë¡ bNeedToPreventRemove íŒŒë¼ë¯¸í„°ë¥¼ ì œê³µí•œë‹¤.
 	* 
 	* @ItemObj - Item object that want to register at quick slot.
 	* @bNeedToPreventRemove - if true, always return false.

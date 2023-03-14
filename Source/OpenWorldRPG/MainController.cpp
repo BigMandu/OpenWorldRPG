@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "MainController.h"
@@ -70,7 +70,7 @@ void AMainController::ControlInteractText(bool bIsInteract)
 
 void AMainController::ControlCoreUsableWidget(bool bIsTPSMode)
 {
-	//TPS modeÀÎ °æ¿ì 
+	//TPS modeì¸ ê²½ìš° 
 	if (bIsTPSMode)
 	{
 		bIsCompassWidgetVisible = true;
@@ -90,10 +90,10 @@ void AMainController::SetInputAndFocus(bool bIsShow)
 {
 	if (bIsShow) //Set To UI Mode
 	{
-		//Show ÀÏ¶§ InputMode´Â MainHud¿¡¼­ Á÷Á¢ÇØÁØ´Ù.
+		//Show ì¼ë•Œ InputModeëŠ” MainHudì—ì„œ ì§ì ‘í•´ì¤€ë‹¤.
 
 		bShowMouseCursor = true;
-		//Main->DisableInput(this); //PlayerÀÇ ¿òÁ÷ÀÓ Á¦ÇÑ. -> ÀÔ·ÂÀÚÃ¼¸¦ ¸·¾Æ¹ö¸®±â ¶§¹®¿¡ ToggleÀ» ÇÒ ¼ö ¾øÀ½.
+		//Main->DisableInput(this); //Playerì˜ ì›€ì§ìž„ ì œí•œ. -> ìž…ë ¥ìžì²´ë¥¼ ë§‰ì•„ë²„ë¦¬ê¸° ë•Œë¬¸ì— Toggleì„ í•  ìˆ˜ ì—†ìŒ.
 		Main->bDisableInput = true;
 		SetIgnoreMoveInput(true);
 		SetIgnoreLookInput(true);
@@ -141,7 +141,7 @@ void AMainController::Respawn()
 	FVector RespawnLoc = FVector(0.f);
 	if (Car.IsValid())
 	{
-		//CarÀÇ SeatSocketNameÀ¸·Î
+		//Carì˜ SeatSocketNameìœ¼ë¡œ
 		RespawnLoc = Car->GetMesh()->GetSocketLocation(Car->SeatSocketName);
 
 	}

@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "SpawnVolume.h"
@@ -70,18 +70,18 @@ void ASpawnVolume::BeginPlay()
 
 
 /*
-* ½ÇÁ¦ while¹®ÀÇ ¹İº¹Àº Ç¥¸é»ó loopº¯¼ö¸¦ ÀÌ¿ëÇÏÁö¸¸
-* 0~DTCount-1 ¹ø µ¹¸é¼­ DTCount¸¸Å­ÀÇ È½¼ö¸¦ Ã¤¿ì±â À§ÇØ //spawn ½ÇÆĞ½Ã ¹«ÇÑloop, ¹æÁöÇÏ±â À§ÇÔ.
-* Spawn¼º°ø½Ã ActualSpawnCountº¯¼ö¸¦ Áõ°¡½ÃÅ°°í, loop¿¡ ´ëÀÔÇØÁØ´Ù.
+* ì‹¤ì œ whileë¬¸ì˜ ë°˜ë³µì€ í‘œë©´ìƒ loopë³€ìˆ˜ë¥¼ ì´ìš©í•˜ì§€ë§Œ
+* 0~DTCount-1 ë²ˆ ëŒë©´ì„œ DTCountë§Œí¼ì˜ íšŸìˆ˜ë¥¼ ì±„ìš°ê¸° ìœ„í•´ //spawn ì‹¤íŒ¨ì‹œ ë¬´í•œloop, ë°©ì§€í•˜ê¸° ìœ„í•¨.
+* Spawnì„±ê³µì‹œ ActualSpawnCountë³€ìˆ˜ë¥¼ ì¦ê°€ì‹œí‚¤ê³ , loopì— ëŒ€ì…í•´ì¤€ë‹¤.
 * 
-* ½ÇÆĞ½Ã¿¡´Â loop¸¦ Áõ°¡½ÃÄÑ GetSpawnItem¿¡¼­ ´ÙÀ½ Ç×¸ñ(case)ÀÇ ItemÀ» °¡Á®¿Àµµ·ÏÇÏ¸ç,
-* °è¼Ó ½ÇÆĞÇÏ¿© DTCount-1¸¸Å­ ¿ÔÀ»¶§ ActualSpawnCount°¡ ¸ñÇ¥(DTCount)¿¡ ÀÌ¸£Áö ¸øÇÑ °æ¿ì loop¸¦ °­Á¦ 0À¸·Î ¸ÂÃç
-* ½ÃÀÛºÎÅÍ ´Ù½Ã ½ÃÀÛÇÏµµ·Ï ÇÑ´Ù.
+* ì‹¤íŒ¨ì‹œì—ëŠ” loopë¥¼ ì¦ê°€ì‹œì¼œ GetSpawnItemì—ì„œ ë‹¤ìŒ í•­ëª©(case)ì˜ Itemì„ ê°€ì ¸ì˜¤ë„ë¡í•˜ë©°,
+* ê³„ì† ì‹¤íŒ¨í•˜ì—¬ DTCount-1ë§Œí¼ ì™”ì„ë•Œ ActualSpawnCountê°€ ëª©í‘œ(DTCount)ì— ì´ë¥´ì§€ ëª»í•œ ê²½ìš° loopë¥¼ ê°•ì œ 0ìœ¼ë¡œ ë§ì¶°
+* ì‹œì‘ë¶€í„° ë‹¤ì‹œ ì‹œì‘í•˜ë„ë¡ í•œë‹¤.
 */
 void ASpawnVolume::StartVolumeSpawn()
 {
-	//DTCount´Â DataTableÀÇ °³¼ö.
-	//¸¸ÀÏ ÀÌ°É ¼öÁ¤ÇÏ°Ô µÈ´Ù¸é, GetSpawnItemÀÇ Switch¹®¿¡µµ case¸¦ Ãß°¡ ¶Ç´Â »èÁ¦¸¦ ÇØ¾ßÇÑ´Ù.
+	//DTCountëŠ” DataTableì˜ ê°œìˆ˜.
+	//ë§Œì¼ ì´ê±¸ ìˆ˜ì •í•˜ê²Œ ëœë‹¤ë©´, GetSpawnItemì˜ Switchë¬¸ì—ë„ caseë¥¼ ì¶”ê°€ ë˜ëŠ” ì‚­ì œë¥¼ í•´ì•¼í•œë‹¤.
 	const int32 DTCount = 8;
 	int32 SaveMinDTTableindex = DTCount;
 	int32 loop = 0;
@@ -91,7 +91,7 @@ void ASpawnVolume::StartVolumeSpawn()
 
 	while (loop < DTCount)
 	{
-		//ActualSpawncount°¡ SpawnCountÀÌ»óÀÌ¸é while¹®À» ºüÁ® ³ª°£´Ù.
+		//ActualSpawncountê°€ SpawnCountì´ìƒì´ë©´ whileë¬¸ì„ ë¹ ì ¸ ë‚˜ê°„ë‹¤.
 		if (ActualSpawnCount >= SpawnCount)
 		{
 			break;
@@ -119,19 +119,19 @@ void ASpawnVolume::StartVolumeSpawn()
 				++ActualSpawnCount;
 				bWasSpawn = true;
 
-				//bCanSpawnÀÏ¶§ÀÇ °¡Àå ÃÖ¼Ò DTTable(loop)°ªÀ» °»½ÅÇÑ´Ù. -> 132 line
+				//bCanSpawnì¼ë•Œì˜ ê°€ì¥ ìµœì†Œ DTTable(loop)ê°’ì„ ê°±ì‹ í•œë‹¤. -> 132 line
 				SaveMinDTTableindex = (SaveMinDTTableindex > loop) ? loop : SaveMinDTTableindex;
 
 				//Adjust Item Location,
 				WantToSpawn->SetActorLocation(SpawnVector);
 				UE_LOG(LogTemp, Warning, TEXT("SpawnVolume::StartVolumeSpawn // ActualCount ; %d"), ActualSpawnCount);
 			}
-			//½ºÆù ºÒ°¡ÇÒ °æ¿ì
+			//ìŠ¤í° ë¶ˆê°€í•  ê²½ìš°
 			else
 			{
 				if (loop >= DTCount -1 && ActualSpawnCount < SpawnCount)
 				{
-					//SpawnÇÒ ¼ö ¾øÀ»¶§, 0ÀÌ ¾Æ´Ñ Spawn°¡´ÉÇÑ °¡Àå ÃÖ¼Ò DTºÎÅÍ ½ÃÀÛÇÏ±â À§ÇØ ´ëÀÔÇÑ´Ù.
+					//Spawní•  ìˆ˜ ì—†ì„ë•Œ, 0ì´ ì•„ë‹Œ Spawnê°€ëŠ¥í•œ ê°€ì¥ ìµœì†Œ DTë¶€í„° ì‹œì‘í•˜ê¸° ìœ„í•´ ëŒ€ì…í•œë‹¤.
 					loop = SaveMinDTTableindex;
 				}
 				else
@@ -146,7 +146,7 @@ void ASpawnVolume::StartVolumeSpawn()
 			}
 
 		}
-		//OnGroud°¡ ¾Æ´Ñ°æ¿ì
+		//OnGroudê°€ ì•„ë‹Œê²½ìš°
 		else
 		{
 			
@@ -161,8 +161,8 @@ void ASpawnVolume::StartPointSpawn()
 
 
 
-//³ªÁß¿¡´Â SpawnÇÒ ItemÀÇ »çÀÌÁî¸¦ °¡Á®¿Í¾ß ÇÑ´Ù.
-//SpawnÀ» °ËÁõÇÑ´Ù.
+//ë‚˜ì¤‘ì—ëŠ” Spawní•  Itemì˜ ì‚¬ì´ì¦ˆë¥¼ ê°€ì ¸ì™€ì•¼ í•œë‹¤.
+//Spawnì„ ê²€ì¦í•œë‹¤.
 //if return true : can Spawn, false : can't spawn.
 bool ASpawnVolume::VerifyCanSpawn(const FVector WantToSpawn, const FVector SpawnItemSize)
 {
@@ -210,7 +210,7 @@ bool ASpawnVolume::VerifyCanSpawn(const FVector WantToSpawn, const FVector Spawn
 		}*/
 	}
 
-	//¸ÂÀº°Ô ÀÖ´Ù¸é, ItmeSize¸¦ ³ÖÀ»¼ö ¾øÀ¸¹Ç·Î ½ºÆùÇÒ¼ö ¾ø´Ù.
+	//ë§ì€ê²Œ ìˆë‹¤ë©´, ItmeSizeë¥¼ ë„£ì„ìˆ˜ ì—†ìœ¼ë¯€ë¡œ ìŠ¤í°í• ìˆ˜ ì—†ë‹¤.
 	return bReturnBool;// = bIsHit? false : true;
 }
 
@@ -287,7 +287,7 @@ AItem* ASpawnVolume::GetSpawnItem(const int32 TableTypeNumber)
 
 	if(SpawnPDA != nullptr)
 	{
-		//TableTypeNumber°¡ 4~7»çÀÌ (EquipmentType)ÀÎ °æ¿ì SpawnEquipÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
+		//TableTypeNumberê°€ 4~7ì‚¬ì´ (EquipmentType)ì¸ ê²½ìš° SpawnEquipí•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
 		if (TableTypeNumber >= 4 && TableTypeNumber <= 7)
 		{
 			
@@ -319,7 +319,7 @@ FVector ASpawnVolume::GetPointInVolume()
 }
 
 
-//¾Æ·¡ ¹æÇâÀ¸·Î Ray¸¦ ½î°í Vector¸¦ ¸®ÅÏÇÑ´Ù.
+//ì•„ë˜ ë°©í–¥ìœ¼ë¡œ Rayë¥¼ ì˜ê³  Vectorë¥¼ ë¦¬í„´í•œë‹¤.
 FVector ASpawnVolume::GetGroundVector(const FVector OriginVector, bool& bCanSpawn, const FVector ItemSize)
 {
 	FVector AdustHitLocation = FVector(0.f); //return Vector
@@ -336,13 +336,13 @@ FVector ASpawnVolume::GetGroundVector(const FVector OriginVector, bool& bCanSpaw
 	if (Hit.IsValidBlockingHit())
 	{
 		DrawDebugPoint(GetWorld(), Hit.Location, 5.f, FColor::Red, false, 3.f);	
-		//ZÁ¦ÇÑÀÌ ÀÖ´Ù¸é
+		//Zì œí•œì´ ìˆë‹¤ë©´
 		FString HitActorName;
 		Hit.GetActor()->GetName(HitActorName);
 		bool bIsLandScape = HitActorName.Contains(TEXT("landscape"));
 		bool bIsPlane = HitActorName.Contains(TEXT("plane"));
 		
-		//LandScape, PlaneÀ» ¶§¸®Áö ¾ÊÀº °æ¿ì¸¸ CheckLimitZ¸¦ °ËÁõÇÑ´Ù.
+		//LandScape, Planeì„ ë•Œë¦¬ì§€ ì•Šì€ ê²½ìš°ë§Œ CheckLimitZë¥¼ ê²€ì¦í•œë‹¤.
 		if (!bIsLandScape && !bIsPlane)
 		{			
 			if (bLimitZ && CheckLimitZ(Hit))
@@ -350,7 +350,7 @@ FVector ASpawnVolume::GetGroundVector(const FVector OriginVector, bool& bCanSpaw
 				bIsLimitAllow = true;
 			}
 		}
-		//landscape³ª planeÀ» ¶§¸°°æ¿ì¿£, ¾Æ·¡ verifyCanSpawnÇÔ¼ö È£ÃâÀ» À§ÇØ LimitAllow¸¦ true·Î º¯°æÇØÁØ´Ù.
+		//landscapeë‚˜ planeì„ ë•Œë¦°ê²½ìš°ì—”, ì•„ë˜ verifyCanSpawní•¨ìˆ˜ í˜¸ì¶œì„ ìœ„í•´ LimitAllowë¥¼ trueë¡œ ë³€ê²½í•´ì¤€ë‹¤.
 		else if (bIsLandScape || bIsPlane)
 		{
 			bIsLimitAllow = true;
@@ -359,8 +359,8 @@ FVector ASpawnVolume::GetGroundVector(const FVector OriginVector, bool& bCanSpaw
 		
 		if ((bLimitZ == true && bIsLimitAllow == true) || bLimitZ == false)
 		{
-			//HitLocation¿¡ ±×´ë·Î ItemÀ» SpawnÇÏ°Ô µÇ¸é ¾Æ·¡·Î ¹¯È÷´Â Çö»óÀÌ ¹ß»ı
-			//ItemSizeÀÇ ³ôÀÌ ¸¸Å­ ¿Ã·Á¼­ Verify¸¦ ÇÏ°í, ÇØ´ç À§Ä¡¸¦ returnÇÑ´Ù.
+			//HitLocationì— ê·¸ëŒ€ë¡œ Itemì„ Spawní•˜ê²Œ ë˜ë©´ ì•„ë˜ë¡œ ë¬»íˆëŠ” í˜„ìƒì´ ë°œìƒ
+			//ItemSizeì˜ ë†’ì´ ë§Œí¼ ì˜¬ë ¤ì„œ Verifyë¥¼ í•˜ê³ , í•´ë‹¹ ìœ„ì¹˜ë¥¼ returní•œë‹¤.
 			AdustHitLocation = Hit.Location + FVector(0.f,0.f,ItemSize.Z+10.f);
 
 			if (VerifyCanSpawn(AdustHitLocation, ItemSize))
@@ -375,11 +375,11 @@ FVector ASpawnVolume::GetGroundVector(const FVector OriginVector, bool& bCanSpaw
 }
 
 
-//4¹æÇâ ¾Æ·¡·Î Ray¸¦ ½÷ ¸ÂÀº VectorÀÇ ³ôÀÌ¸¦ °è»êÇÑ´Ù.
+//4ë°©í–¥ ì•„ë˜ë¡œ Rayë¥¼ ì´ ë§ì€ Vectorì˜ ë†’ì´ë¥¼ ê³„ì‚°í•œë‹¤.
 bool ASpawnVolume::CheckLimitZ(FHitResult HitResult)
 {
 	bool bCanSpawn = false;
-	if (HitResult.Actor.IsValid())//   && HitResult.Actor->getf) //ÀÌ¸§¿¡ LandScape°¡ µé¾î°¬À¸¸é if¹®À» ¾Èµé¾î°¡°ÔÇÑ´Ù.
+	if (HitResult.Actor.IsValid())//   && HitResult.Actor->getf) //ì´ë¦„ì— LandScapeê°€ ë“¤ì–´ê°”ìœ¼ë©´ ifë¬¸ì„ ì•ˆë“¤ì–´ê°€ê²Œí•œë‹¤.
 	{
 		float CharHeight = 180.f; //for Simulate
 		//float CharHeight = GetWorld()->GetFirstPlayerController()->GetCharacter()->GetDefaultHalfHeight() * 2;
@@ -394,8 +394,8 @@ bool ASpawnVolume::CheckLimitZ(FHitResult HitResult)
 		float Calc2 = 0.f;
 		switch (Side)
 		{
-			/* Up||Down Side¸é, X¿Í Y ¼±ºĞÀ» ¸®ÅÏÇÑ´Ù.
-			* Á¤¸é,µÚÂÊ side¸é X¿Í Z,,µîµî
+			/* Up||Down Sideë©´, Xì™€ Y ì„ ë¶„ì„ ë¦¬í„´í•œë‹¤.
+			* ì •ë©´,ë’¤ìª½ sideë©´ Xì™€ Z,,ë“±ë“±
 			*/
 			case EWhichSide::EWS_UpDown: // X && Y
 				Calc1 = HitActorSize.X/2;
@@ -426,8 +426,8 @@ bool ASpawnVolume::CheckLimitZ(FHitResult HitResult)
 
 bool ASpawnVolume::StepCheckLimit_Loop1(FHitResult ParentHit, float CharHeight, FVector SpawnLocation, float Num1, FColor Color)
 {
-	/** Num1¿¡ ´ëÇÑ SpawnLocationÀÇ X, -X, Y, -Y¿Í
-	*  Num2¿¡ ´ëÇÑ SpawnLocationÀÇ X, -X, Y, -Y¸¦ °è»êÇÏ±â À§ÇØ 4¹ø¾¿ loop¸¦ µ¹¸°´Ù.
+	/** Num1ì— ëŒ€í•œ SpawnLocationì˜ X, -X, Y, -Yì™€
+	*  Num2ì— ëŒ€í•œ SpawnLocationì˜ X, -X, Y, -Yë¥¼ ê³„ì‚°í•˜ê¸° ìœ„í•´ 4ë²ˆì”© loopë¥¼ ëŒë¦°ë‹¤.
 	*/
 	
 	bool bReturn = false;
@@ -443,13 +443,13 @@ bool ASpawnVolume::StepCheckLimit_Loop1(FHitResult ParentHit, float CharHeight, 
 
 	for (FVector Point : CheckPoint)
 	{
-		Point = FVector(Point.X,Point.Y,Point.Z + 10.f); //°°Àº Actor¸¦ HitÇÏ´Â°É ¹æÁöÇÏ±âÀ§ÇØ »ìÂ¦ ¿Ã·Á¼­ Ray¸¦ ¶§¸°´Ù.
+		Point = FVector(Point.X,Point.Y,Point.Z + 10.f); //ê°™ì€ Actorë¥¼ Hití•˜ëŠ”ê±¸ ë°©ì§€í•˜ê¸°ìœ„í•´ ì‚´ì§ ì˜¬ë ¤ì„œ Rayë¥¼ ë•Œë¦°ë‹¤.
 
-		//»ìÂ¦ ¿Ã¸°¸¸Å­ ´õÇØ¼­ RayÀÇ ³¡ÁöÁ¡À» ¸ÂÃá´Ù.
+		//ì‚´ì§ ì˜¬ë¦°ë§Œí¼ ë”í•´ì„œ Rayì˜ ëì§€ì ì„ ë§ì¶˜ë‹¤.
 		DrawDebugLine(World,SpawnLocation,Point, Color,false,3.f,0,3.f);
 		DrawDebugLine(World,Point, Point + Point.DownVector * (CharHeight+10.f), Color,false,3.f,0,3.f);
 
-		//SpawnVolume Ray°¡ ¶§¸° Actor´Â °ËÁõ¿¡¼­ Á¦¿ÜÇÑ´Ù.
+		//SpawnVolume Rayê°€ ë•Œë¦° ActorëŠ” ê²€ì¦ì—ì„œ ì œì™¸í•œë‹¤.
 		FCollisionQueryParams Params(NAME_Name, false, ParentHit.GetActor());
 
 		if (GetWorld()->LineTraceSingleByChannel(Hit, Point, Point+ Point.DownVector * (CharHeight + 10.f), ECollisionChannel::ECC_WorldStatic,Params))

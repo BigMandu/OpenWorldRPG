@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "OpenWorldRPG/NewInventory/Widget/NewInventoryGrid.h"
@@ -92,7 +92,7 @@ void UNewInventoryGrid::GridInit()
 
 }
 
-//GridInitÀ¸·Î º¯°æÇÔ. Old version.
+//GridInitìœ¼ë¡œ ë³€ê²½í•¨. Old version.
 void UNewInventoryGrid::GridInitialize(UNewInventoryComponent* p_InvComp, float p_TileSize)
 {
 	//UE_LOG(LogTemp, Warning, TEXT("InvGrid:: called GridInit func"));
@@ -112,7 +112,7 @@ void UNewInventoryGrid::GridInitialize(UNewInventoryComponent* p_InvComp, float 
 		CanvasSlot->SetSize(Size);
 	
 		
-		//InventoryCompÀÇ AddItemÇÔ¼ö°¡ ¼º°øÇÒ¶§¸¶´Ù broadcast,ÇØ´ç ÇÔ¼ö¸¦ ½ÇÇà½ÃÅ°±â À§ÇØ bind
+		//InventoryCompì˜ AddItemí•¨ìˆ˜ê°€ ì„±ê³µí• ë•Œë§ˆë‹¤ broadcast,í•´ë‹¹ í•¨ìˆ˜ë¥¼ ì‹¤í–‰ì‹œí‚¤ê¸° ìœ„í•´ bind
 		if (InventoryComp)
 		{
 			InventoryComp->OnInventoryUpdated.Clear();
@@ -135,7 +135,7 @@ int32 UNewInventoryGrid::NativePaint(const FPaintArgs& Args, const FGeometry& Al
 	FGeometry BorderGeo = GridBorder->GetCachedGeometry();
 	FVector2D BorderLo = USlateBlueprintLibrary::GetLocalTopLeft(BorderGeo);
 	/*
-	* borderÀÇ Top-LeftºÎÅÍ ±×·Á³ª°£´Ù.
+	* borderì˜ Top-Leftë¶€í„° ê·¸ë ¤ë‚˜ê°„ë‹¤.
 	*/
 	for (FLine line : Lines)
 	{
@@ -143,7 +143,7 @@ int32 UNewInventoryGrid::NativePaint(const FPaintArgs& Args, const FGeometry& Al
 		FVector2D posB = FVector2D(line.End + BorderLo);
 
 
-		//DrawLineÀÇ Tint = RGB all 0.5f, Alpha is 0.5f;
+		//DrawLineì˜ Tint = RGB all 0.5f, Alpha is 0.5f;
 		FLinearColor LineColor = FLinearColor(0.5f, 0.5f, 0.5f, 0.5f);
 		UWidgetBlueprintLibrary::DrawLine(Context, posA, posB, LineColor);
 	}
@@ -162,7 +162,7 @@ int32 UNewInventoryGrid::NativePaint(const FPaintArgs& Args, const FGeometry& Al
 void UNewInventoryGrid::CreateLineSegments(int32 VarRows, int32 VarColumns)
 {
 	/* create vertical line */
-	/* 0¿­ºÎÅÍ ³¡¿­±îÁö ¼øÂ÷ÀûÀ¸·Î ±×¸®±â À§ÇØ ¶óÀÎÀ» ¸¸µé¾î ³Ö¾îÁÜ*/
+	/* 0ì—´ë¶€í„° ëì—´ê¹Œì§€ ìˆœì°¨ì ìœ¼ë¡œ ê·¸ë¦¬ê¸° ìœ„í•´ ë¼ì¸ì„ ë§Œë“¤ì–´ ë„£ì–´ì¤Œ*/
 	for (int32 iter = 0; iter <= VarColumns; iter++)
 	{
 		float LocalX = iter * StorageObj->TileSize;
@@ -185,18 +185,18 @@ void UNewInventoryGrid::CreateLineSegments(int32 VarRows, int32 VarColumns)
 }
 
 
-/* ÀÌ ÇÔ¼ö´Â ItemÀÌ ItemStorageObject¿¡¼­ ¾÷µ¥ÀÌÆ® µÉ¶§ (Ãß°¡µÉ¶§, »èÁ¦µÉ¶§) È£Ãâ½ÃÄÑÁà¾ßÇÑ´Ù.
+/* ì´ í•¨ìˆ˜ëŠ” Itemì´ ItemStorageObjectì—ì„œ ì—…ë°ì´íŠ¸ ë ë•Œ (ì¶”ê°€ë ë•Œ, ì‚­ì œë ë•Œ) í˜¸ì¶œì‹œì¼œì¤˜ì•¼í•œë‹¤.
 * 
-* ÆÄ¶ó¹ÌÅÍ·Î ³Ñ±ä Obj´Â ItemStorageObject¿¡¼­ RemovedÇÒ¶§ »©°í´Â ¾²ÀÌÁö ¾Ê°í ÀÖ´Ù.
-* RemoveÇÒ ¶§ QuickSlot¿¡ µî·ÏµÇ¾îÀÖ´ø°Å¸é Quickslot¿¡¼­ Áö¿öÁÖ±â À§ÇÔ.
+* íŒŒë¼ë¯¸í„°ë¡œ ë„˜ê¸´ ObjëŠ” ItemStorageObjectì—ì„œ Removedí• ë•Œ ë¹¼ê³ ëŠ” ì“°ì´ì§€ ì•Šê³  ìˆë‹¤.
+* Removeí•  ë•Œ QuickSlotì— ë“±ë¡ë˜ì–´ìˆë˜ê±°ë©´ Quickslotì—ì„œ ì§€ì›Œì£¼ê¸° ìœ„í•¨.
 */
 void UNewInventoryGrid::RefreshInventory(UNewItemObject* Obj)
 {
-	/* ¾ÈÂÊ¿¡ ÀÖ´Â CanvasPanelÀ» ÀüºÎ Áö¿öÁØ´Ù.
-	* LineÀº Border¿¡ ÀÖÀ¸´Ï ¼±À» ´Ù½Ã ±×À»ÇÊ¿ä´Â ¾øÀ½.
-	* ±×¸®°í InventoryComponent¿¡ ÀÖ´Â ¸ğµç itemÀ» ºÒ·¯¿Í¼­ ÇØ´çÇÏ´Â ¾ÆÀÌÄÜ°ú »çÀÌÁî¸¸Å­ 
-	* Ã¤¿ö ³Ö´Â´Ù.
-	* InventoryComponent¿¡ ¸ğµç ItemÀ» ¾ò¾î¿À´Â ÇÔ¼ö¸¦ »õ·Î Ãß°¡ÇØÁØ´Ù.
+	/* ì•ˆìª½ì— ìˆëŠ” CanvasPanelì„ ì „ë¶€ ì§€ì›Œì¤€ë‹¤.
+	* Lineì€ Borderì— ìˆìœ¼ë‹ˆ ì„ ì„ ë‹¤ì‹œ ê·¸ì„í•„ìš”ëŠ” ì—†ìŒ.
+	* ê·¸ë¦¬ê³  InventoryComponentì— ìˆëŠ” ëª¨ë“  itemì„ ë¶ˆëŸ¬ì™€ì„œ í•´ë‹¹í•˜ëŠ” ì•„ì´ì½˜ê³¼ ì‚¬ì´ì¦ˆë§Œí¼ 
+	* ì±„ì›Œ ë„£ëŠ”ë‹¤.
+	* InventoryComponentì— ëª¨ë“  Itemì„ ì–»ì–´ì˜¤ëŠ” í•¨ìˆ˜ë¥¼ ìƒˆë¡œ ì¶”ê°€í•´ì¤€ë‹¤.
 	*/
 
 	AMainController* TMainCon = Cast<AMainController>(GetOwningPlayer());
@@ -206,12 +206,12 @@ void UNewInventoryGrid::RefreshInventory(UNewItemObject* Obj)
 	{
 		GridCanvasPanel->ClearChildren();
 
-		//ObjÆÄ¶ó¹ÌÅÍ¸¦ »ç¿ëÇÏ´Â °æ¿ì´Â ¾Æ·¡ °æ¿ì¹Û¿¡ ¾ø´Ù.
-		/* "Obj°¡ UseµÇ¾î Count°¡ 0 ÀÌÇÏ°¡ µÇ¾î »èÁ¦µÇ´Â °æ¿ì" 
+		//ObjíŒŒë¼ë¯¸í„°ë¥¼ ì‚¬ìš©í•˜ëŠ” ê²½ìš°ëŠ” ì•„ë˜ ê²½ìš°ë°–ì— ì—†ë‹¤.
+		/* "Objê°€ Useë˜ì–´ Countê°€ 0 ì´í•˜ê°€ ë˜ì–´ ì‚­ì œë˜ëŠ” ê²½ìš°" 
 		*/
 		if (Obj && Obj->bIsPendingDelete && Obj->bIsRegQuickSlot && Obj->ItemInfo.Count <= 0)
 		{
-			//QuickSlot¿¡ µî·ÏµÇ¾î ÀÖ´ÂÁö È®ÀÎÇÏ°í µî·Ï µÇ¾î ÀÖ´Â °æ¿ì¿¡ QuickSlot¿¡¼­ »èÁ¦ process¸¦ ÁøÇàÇÑ´Ù.
+			//QuickSlotì— ë“±ë¡ë˜ì–´ ìˆëŠ”ì§€ í™•ì¸í•˜ê³  ë“±ë¡ ë˜ì–´ ìˆëŠ” ê²½ìš°ì— QuickSlotì—ì„œ ì‚­ì œ processë¥¼ ì§„í–‰í•œë‹¤.
 			MainCon->MainHud->QuickSlot->CheckAlreadyRegistered(Obj,false);
 		}
 
@@ -220,7 +220,7 @@ void UNewInventoryGrid::RefreshInventory(UNewItemObject* Obj)
 		 
 		for (auto ele : ItemsMap)
 		{
-			if (ele.Key != nullptr) //ItemsMap¿¡ nullÀÌ µé¾î¿Í¹ö·Á¼­ ÇÑ¹ø ´õ °ËÁõ.
+			if (ele.Key != nullptr) //ItemsMapì— nullì´ ë“¤ì–´ì™€ë²„ë ¤ì„œ í•œë²ˆ ë” ê²€ì¦.
 			{
 				UNewItemwidget* Itemwidget = CreateWidget<UNewItemwidget>(this, WNewItemWidget);
 				if (Itemwidget)
@@ -228,19 +228,19 @@ void UNewInventoryGrid::RefreshInventory(UNewItemObject* Obj)
 					Itemwidget->OnRemoved.AddUFunction(this, FName("OnItemRemove"));
 					//Itemwidget->OnDragDetect.AddUFunction(this, FName("PendingRemoveItem"));
 
-					Itemwidget->Tilesize = StorageObj->TileSize; //Á¦´ë·Î ³Ñ°ÜÁÜ. 40.f
+					Itemwidget->Tilesize = StorageObj->TileSize; //ì œëŒ€ë¡œ ë„˜ê²¨ì¤Œ. 40.f
 					Itemwidget->ItemObj = ele.Key;
 					Itemwidget->MotherContainer = this;
-					//Itemwidget->Refresh(); //¿©±â´Ù ÇÏ´Ï±î DDoper¶§ DefaultDrag°¡ ¾È³ª¿È.ItemWidgetÀÇ NativeConstruct¿¡¼­ È£ÃâÇÏ´Â°ÍÀ¸·Î º¯°æÇÔ.
+					//Itemwidget->Refresh(); //ì—¬ê¸°ë‹¤ í•˜ë‹ˆê¹Œ DDoperë•Œ DefaultDragê°€ ì•ˆë‚˜ì˜´.ItemWidgetì˜ NativeConstructì—ì„œ í˜¸ì¶œí•˜ëŠ”ê²ƒìœ¼ë¡œ ë³€ê²½í•¨.
 
 					ele.Key->SetMotherStorage(StorageObj);
 
 					UPanelSlot* PanelSlot = GridCanvasPanel->AddChild(Itemwidget);
 
 
-					/*Ãß°¡½ÃÅ² ItemWidgetÀÇ size¿Í PositionÀ» ¸ÂÃç ÁÖ±â À§ÇÑ ÀÛ¾÷À» ÁøÇàÇÑ´Ù.
-					* Setsize¸¦ »ç¿ëÇÏ±â À§ÇØ CanvasPanelSlotÀ¸·Î Cast¸¦ ÇØÁØ´Ù.
-					* SetPositionµµ »ç¿ëÇÑ´Ù.
+					/*ì¶”ê°€ì‹œí‚¨ ItemWidgetì˜ sizeì™€ Positionì„ ë§ì¶° ì£¼ê¸° ìœ„í•œ ì‘ì—…ì„ ì§„í–‰í•œë‹¤.
+					* Setsizeë¥¼ ì‚¬ìš©í•˜ê¸° ìœ„í•´ CanvasPanelSlotìœ¼ë¡œ Castë¥¼ í•´ì¤€ë‹¤.
+					* SetPositionë„ ì‚¬ìš©í•œë‹¤.
 					*/
 					UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(PanelSlot);
 					if (CanvasSlot)
@@ -277,13 +277,13 @@ void UNewInventoryGrid::OnItemRemove(UObject* T_ItemObj)
 			//if (ItemObj->GetMotherContainer() != nullptr)
 			{
 				/*
-				* NewItemWidgetÀÇ delegate¿¡ bindµÈ ÇÔ¼ö.
-				* ÀÌ ÇÔ¼ö°¡ È£ÃâµÇ¸é¼­,
-				* ÇØ´ç InventoryGrid¿¡ ¿¬°áµÈ InventoryComponentÀÇ Æ¯Á¤ ÇÔ¼ö¸¦ È£ÃâÇÑ´Ù.
+				* NewItemWidgetì˜ delegateì— bindëœ í•¨ìˆ˜.
+				* ì´ í•¨ìˆ˜ê°€ í˜¸ì¶œë˜ë©´ì„œ,
+				* í•´ë‹¹ InventoryGridì— ì—°ê²°ëœ InventoryComponentì˜ íŠ¹ì • í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œë‹¤.
 				*/
 				bool bRemoveResult = InventoryComp->RemoveItem(ItemObj);
 
-				/* Drop widget »óÅÂ º¯È¯ */
+				/* Drop widget ìƒíƒœ ë³€í™˜ */
 				if (Dropwidget && !MainCon->bIsInteractLootBox)
 				{
 					//UE_LOG(LogTemp, Warning, TEXT("InvGrid:: Drop Widget Change 'Drop' State "));
@@ -314,14 +314,14 @@ bool UNewInventoryGrid::MoveItemInSameContainer(UNewItemObject* Item)
 	}
 	else
 	{
-		/* °ø°£ÀÌ ¾øÀ¸¸é ±âÁ¸ ÀúÀåµÈ Top-Left Index¿¡ ³Ö´Â´Ù.*/
+		/* ê³µê°„ì´ ì—†ìœ¼ë©´ ê¸°ì¡´ ì €ì¥ëœ Top-Left Indexì— ë„£ëŠ”ë‹¤.*/
 		if (InventoryComp->IsAvailableSpace(Item, Item->TopLeftIndex))
 		{
 			InventoryComp->AddItemAtIndex(Item, Item->TopLeftIndex);
 		}
 		else
 		{
-			/* ¹º°¡ ²¿¿´´Ù¸é ±×³É ItemÀ» ³Ö´Â´Ù.*/
+			/* ë­”ê°€ ê¼¬ì˜€ë‹¤ë©´ ê·¸ëƒ¥ Itemì„ ë„£ëŠ”ë‹¤.*/
 			InventoryComp->TryAddItem(Item);
 		}
 	}
@@ -346,7 +346,7 @@ bool UNewInventoryGrid::NativeOnDrop(const FGeometry& InGeometry, const FDragDro
 		DraggedTile.Y = DraggedTopLeftTile.Y;
 
 		int32 ind = StorageObj->TileToIndex(DraggedTile);
-		// Drop widget »óÅÂ º¯È¯ 
+		// Drop widget ìƒíƒœ ë³€í™˜ 
 		if (Dropwidget && MainCon && !MainCon->bIsInteractLootBox)
 		{
 			//UE_LOG(LogTemp, Warning, TEXT("InvGrid:: Drop Widget Change 'Normal' State "));
@@ -380,7 +380,7 @@ bool UNewInventoryGrid::NativeOnDrop(const FGeometry& InGeometry, const FDragDro
 		
 		int32 index = InventoryComp->TileToIndex(DraggedTile);
 		
-		// Drop widget »óÅÂ º¯È¯ 
+		// Drop widget ìƒíƒœ ë³€í™˜ 
 		if (Dropwidget && MainCon && !MainCon->bIsInteractLootBox)
 		{
 			//UE_LOG(LogTemp, Warning, TEXT("InvGrid:: Drop Widget Change 'Normal' State "));
@@ -388,26 +388,26 @@ bool UNewInventoryGrid::NativeOnDrop(const FGeometry& InGeometry, const FDragDro
 			Dropwidget->ChangeState();
 		}
 
-		// °ø°£ÀÌ µÈ´Ù¸é ÇØ´ç °ø°£¿¡ ³Ö´Â´Ù.
+		// ê³µê°„ì´ ëœë‹¤ë©´ í•´ë‹¹ ê³µê°„ì— ë„£ëŠ”ë‹¤.
 		if (InventoryComp->IsAvailableSpace(ItemObj, index))
 		{
 			InventoryComp->AddItemAtIndex(ItemObj, index);
 			return true;
 		}
-		//°ø°£ÀÌ µÇÁö ¾Ê´Â´Ù¸é
+		//ê³µê°„ì´ ë˜ì§€ ì•ŠëŠ”ë‹¤ë©´
 		else
 		{
-			//ItemObj°¡ ¿ø·¡ ÀÖ´ø MotherContainer¸¦ °¡Á®¿Í
+			//ItemObjê°€ ì›ë˜ ìˆë˜ MotherContainerë¥¼ ê°€ì ¸ì™€
 			if (ItemObj->GetMotherContainer() != nullptr)
 			{
-				//MotherContainer°¡ Áö±İ ÀÌ Gridwidget°ú ´Ù¸¥°Å¶ó¸é 
+				//MotherContainerê°€ ì§€ê¸ˆ ì´ Gridwidgetê³¼ ë‹¤ë¥¸ê±°ë¼ë©´ 
 				if (ItemObj->GetMotherContainer() != this)
 				{
 					UCustomInventoryLibrary::BackToItem(ItemObj);
 				}
 				else
 				{
-					//MotherContainer°¡ Áö±İ ÀÌ GridwidgetÀÌ¶ó¸é
+					//MotherContainerê°€ ì§€ê¸ˆ ì´ Gridwidgetì´ë¼ë©´
 					if (InventoryComp->IsAvailableSpace(ItemObj, ItemObj->TopLeftIndex))
 					{
 						InventoryComp->AddItemAtIndex(ItemObj, ItemObj->TopLeftIndex);
@@ -419,7 +419,7 @@ bool UNewInventoryGrid::NativeOnDrop(const FGeometry& InGeometry, const FDragDro
 					
 				}
 			}
-			//Mothercontainer¿¡ ÀÖÁö ¾Ê°í, ÀåÂøÁßÀÌ¾ú´ø Àåºñ¶ó¸é
+			//Mothercontainerì— ìˆì§€ ì•Šê³ , ì¥ì°©ì¤‘ì´ì—ˆë˜ ì¥ë¹„ë¼ë©´
 			else if (ItemObj->GetMotherEquipSlot() != nullptr)
 			{
 				UCustomInventoryLibrary::BackToItem(ItemObj);
@@ -458,7 +458,7 @@ bool UNewInventoryGrid::NativeOnDragOver(const FGeometry& InGeometry, const FDra
 
 		FIntPoint Itemsize = DDOper->ItemObj->GetTempItemSize();
 
-		// ÇØ´ç Å¸ÀÏÀÇ ¿À¸¥ÂÊÀ¸·Î ¹İÀÌ»ó, ¾Æ·¡·Î ¹İÀÌ»ó ³»·Á°¬´ÂÁö ÆÇ´Ü.
+		// í•´ë‹¹ íƒ€ì¼ì˜ ì˜¤ë¥¸ìª½ìœ¼ë¡œ ë°˜ì´ìƒ, ì•„ë˜ë¡œ ë°˜ì´ìƒ ë‚´ë ¤ê°”ëŠ”ì§€ íŒë‹¨.
 		if (MousePosInEachTile.X > StorageObj->TileSize / 2.f)
 		{
 			//UE_LOG(LogTemp, Warning, TEXT("Right"));
@@ -471,7 +471,7 @@ bool UNewInventoryGrid::NativeOnDragOver(const FGeometry& InGeometry, const FDra
 			AddDown = 1;
 		}
 
-		// ÃÖ¼Ò, ÃÖ´ë°ª Á¦ÇÑ 
+		// ìµœì†Œ, ìµœëŒ€ê°’ ì œí•œ 
 		int32 Reindex_X = FMath::Clamp<int32>(Itemsize.X - AddRight, 0, Itemsize.X - AddRight);
 		int32 Reindex_Y = FMath::Clamp<int32>(Itemsize.Y - AddDown, 0, Itemsize.Y - AddDown);
 
@@ -506,7 +506,7 @@ bool UNewInventoryGrid::NativeOnDragOver(const FGeometry& InGeometry, const FDra
 		//UE_LOG(LogTemp, Warning, TEXT("========================================="));
 		//UE_LOG(LogTemp, Warning, TEXT("OnDragOver ItemSize : %s"), *ItemObj->GetItemSize().ToString());
 
-		// ÇØ´ç Å¸ÀÏÀÇ ¿À¸¥ÂÊÀ¸·Î ¹İÀÌ»ó, ¾Æ·¡·Î ¹İÀÌ»ó ³»·Á°¬´ÂÁö ÆÇ´Ü.
+		// í•´ë‹¹ íƒ€ì¼ì˜ ì˜¤ë¥¸ìª½ìœ¼ë¡œ ë°˜ì´ìƒ, ì•„ë˜ë¡œ ë°˜ì´ìƒ ë‚´ë ¤ê°”ëŠ”ì§€ íŒë‹¨.
 		if (MousePosInEachTile.X > StorageObj->TileSize / 2.f)
 		{
 			//UE_LOG(LogTemp, Warning, TEXT("Right"));
@@ -519,7 +519,7 @@ bool UNewInventoryGrid::NativeOnDragOver(const FGeometry& InGeometry, const FDra
 			AddDown = 1;
 		}
 
-		// ÃÖ¼Ò, ÃÖ´ë°ª Á¦ÇÑ 
+		// ìµœì†Œ, ìµœëŒ€ê°’ ì œí•œ 
 		int32 Reindex_X = FMath::Clamp<int32>(Itemsize.X - AddRight, 0, Itemsize.X - AddRight);
 		int32 Reindex_Y = FMath::Clamp<int32>(Itemsize.Y - AddDown, 0, Itemsize.Y - AddDown);
 
@@ -644,7 +644,7 @@ void UNewInventoryGrid::MoveItemToItem(UNewItemObject* DroppedItemObj, UNewItemO
 	BaseInvComp->AddItemCount(DroppedItemObj,OnItemObj);
 }
 
-// NewItemwidgetÀ¸·Î ¿Å±è
+// NewItemwidgetìœ¼ë¡œ ì˜®ê¹€
 
 FReply UNewInventoryGrid::NativeOnPreviewKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
 {

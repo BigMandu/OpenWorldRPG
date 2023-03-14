@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "OpenWorldRPG/AI/BT/BTTask_InteractWithObject.h"
@@ -33,7 +33,7 @@ EBTNodeResult::Type UBTTask_InteractWithObject::ExecuteTask(UBehaviorTreeCompone
 				//Inter->bIsPreOccupied = true;
 				Inter->Interaction(EChar);
 
-				//InteractionÀ» ÇÏ°í³ª¼­ Focus¿Í Perception Ignore¿¡ Ãß°¡ÇÏ±â À§ÇØ ÇÔ¼ö¸¦ È£Ãâ
+				//Interactionì„ í•˜ê³ ë‚˜ì„œ Focusì™€ Perception Ignoreì— ì¶”ê°€í•˜ê¸° ìœ„í•´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œ
 				AICon->LostObject(Inter);
 			}
 		}

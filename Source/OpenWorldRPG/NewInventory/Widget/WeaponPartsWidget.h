@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -23,7 +23,7 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UNewItemwidget> WItemWidget;
 
-	//Garbage collection¹æÁö¸¦(»ç½Ç ¾ÈµÊ, Á¢±Ù Àü À¯È¿¼º °ËÁõÀÌ °¡´ÉÇÑ°Í.) À§ÇØ Weak Pointer »ç¿ë
+	//Garbage collectionë°©ì§€ë¥¼(ì‚¬ì‹¤ ì•ˆë¨, ì ‘ê·¼ ì „ ìœ íš¨ì„± ê²€ì¦ì´ ê°€ëŠ¥í•œê²ƒ.) ìœ„í•´ Weak Pointer ì‚¬ìš©
 	TWeakObjectPtr<class UNewItemObject> WeaponObj;
 	//class UNewItemObject* WeaponObj;
 

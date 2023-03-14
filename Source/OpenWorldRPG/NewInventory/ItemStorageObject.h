@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -8,7 +8,7 @@
 #include "ItemStorageObject.generated.h"
 
 
-/*	UNewInventoryGrid::RefreshInventory¸¦ È£ÃâÇÏ±â À§ÇÑ Delegate
+/*	UNewInventoryGrid::RefreshInventoryë¥¼ í˜¸ì¶œí•˜ê¸° ìœ„í•œ Delegate
 */
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnInventoryAdd, UNewItemObject*);
 

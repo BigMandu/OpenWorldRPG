@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "OpenWorldRPG/Item/WeaponPartsManagerObject.h"
@@ -9,18 +9,18 @@
 
 void UWeaponPartsManagerObject::SetOwnerWeapon(AWeapon* Weapon)
 {
-    OwnerWeapon = Weapon;
+	OwnerWeapon = Weapon;
 }
 
 AWeapon* UWeaponPartsManagerObject::GetOwnerWeapon()
 {
-    AWeapon* ReturnWeap = nullptr;
-    if (OwnerWeapon.IsValid())
-    {
-        ReturnWeap = OwnerWeapon.Get();
-    }
+	AWeapon* ReturnWeap = nullptr;
+	if (OwnerWeapon.IsValid())
+	{
+		ReturnWeap = OwnerWeapon.Get();
+	}
 
-    return ReturnWeap;
+	return ReturnWeap;
 }
 
 void UWeaponPartsManagerObject::AddParts(UNewItemObject* Parts)
@@ -57,16 +57,17 @@ void UWeaponPartsManagerObject::AddParts(UNewItemObject* Parts)
 			break;
 		}
 
-		//추가할 수 있다면, 기존에 존재했던곳에서 remove한뒤 이 ManagerObj를 추가시킨다.
+		//?곕떽????????筌? 疫꿸????鈺곕?????⑤
+밸??remove??裕 ??ManagerObj???곕떽???沅??
 		if (bIsSuccess)
 		{
 			DeleteLink(Parts);
 			Parts->WeaponPartsManager = this;
 		}
 	}
-	/**WeaponPartsWidget, Weapon에서 Bind된다
-	 * WeaponPartsWidget의 Widget을 update하고
-	 * Weapon에서 이 class의 함수인 partsUpdate를 호출한다.
+	/**WeaponPartsWidget, Weapon?癒?? Bind???
+	 * WeaponPartsWidget??Widget??update????
+	 * Weapon?癒?? ??class????λ??partsUpdate???紐????.
 	 */
 	OnChangeParts.Broadcast();
 }
@@ -133,17 +134,17 @@ void UWeaponPartsManagerObject::DeleteLink(UNewItemObject* PartsObj)
 
 
 
-/*WeaponPDA의 각 Parts는 nullptr또는 data를 갖고 있을 수 있다.
+/*WeaponPDA??揶?Parts??nullptr?癒? data??揶戮???????????.
 * 
-* 이 UpdateParts 함수는 WeaponPDA의 Parts들이 null이나 Data를 받았을때 마다 호출된다.
-* 따라서, 이 함수가 호출 될 때마다
-* 모든 parts들을 Remove시키고 Spawn해서 Attach시켜야 한다.
+* ??UpdateParts ??λ??WeaponPDA??Parts??쇱 null??援?Data??獄?釉?袁⑤르 筌????紐????.
+* ?怨??? ????λ揶? ?紐?????????
+* 筌?ㅻ?parts??쇱?Remove??沅??Spawn??苑 Attach????????.
 * */
 void UWeaponPartsManagerObject::UpdateParts(UWorld* World, AWeapon* VarWeapon)
 {
 	//if(VarWeapon == nullptr) return;
 	if(OwnerWeapon.IsValid() == false) return;
-    if(OwnerWeapon != VarWeapon) return;
+	if(OwnerWeapon != VarWeapon) return;
 	//OwnerWeapon = VarWeapon;
 
 	if (OwnerWeapon->WeaponDataAsset == nullptr) return;
@@ -174,7 +175,7 @@ void UWeaponPartsManagerObject::UpdateParts(UWorld* World, AWeapon* VarWeapon)
 				 Parts = OwnerWeapon->WeaponDataAsset->TacticalParts.Get();
 				 SpawnAndAttachParts(World, Parts, EWeaponPartsType::EWPT_Tactical);
 			 }
-		  	break;
+			break;
 		 }
 	}
 

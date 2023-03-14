@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -36,15 +36,15 @@ struct FWeaponStat
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Ammo")
 	EAmmoType AmmoType;
 
-	//WeaponÀÇ Damage
+	//Weaponì˜ Damage
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
 	float Damage;
 
-	//WeaponÀÇ »ç°Å¸®
+	//Weaponì˜ ì‚¬ê±°ë¦¬
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
 	float WeaponRange;
 
-	/* ÅºÀÌ Èğ¾îÁö´Â Á¤µµ.*/
+	/* íƒ„ì´ í©ì–´ì§€ëŠ” ì •ë„.*/
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
 	float HipBulletSpread;
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Stat")
@@ -78,12 +78,12 @@ struct FWeaponStat
 		HipBulletSpread = 1.5f;
 		AimBulletSpread = 1.f;
 		
-		//m4a1Àº ºĞ´ç 700~950¹ß.ºĞ´ç 950À¸·Î Àâ°í ÃÊ´ç 15.8¹ßÀ» ½î¸éµÊ. 0.06ÃÊ´ç ÇÑ¹ß¾¿.
+		//m4a1ì€ ë¶„ë‹¹ 700~950ë°œ.ë¶„ë‹¹ 950ìœ¼ë¡œ ì¡ê³  ì´ˆë‹¹ 15.8ë°œì„ ì˜ë©´ë¨. 0.06ì´ˆë‹¹ í•œë°œì”©.
 		FireRatePerMin = 950;
 
-		/*FireRatePerSecÀÌ³ª SecondPerBulletÀº
-		 * FireRatePerMinÀÌ Weapon¸¶´Ù º¯ÇÒ ¼ö ÀÖÀ¸´Ï.
-		 * EquipÇÔ¼ö¿¡¼­ °è»êÇÏ¿© ÀúÀåÇÑ´Ù.
+		/*FireRatePerSecì´ë‚˜ SecondPerBulletì€
+		 * FireRatePerMinì´ Weaponë§ˆë‹¤ ë³€í•  ìˆ˜ ìˆìœ¼ë‹ˆ.
+		 * Equipí•¨ìˆ˜ì—ì„œ ê³„ì‚°í•˜ì—¬ ì €ì¥í•œë‹¤.
 		 */
 
 		bHasBurstMode = false;
@@ -104,7 +104,7 @@ public:
 	UTexture2D* WeaponVectorIMG;
 
 
-	/* FPS Aim ¸ğµåÀÏ¶§ À§Ä¡°ª ÀúÀå */
+	/* FPS Aim ëª¨ë“œì¼ë•Œ ìœ„ì¹˜ê°’ ì €ì¥ */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon | Aim Transform")
 	FTransform CharFPMeshTransform;
 
@@ -112,15 +112,15 @@ public:
 	FTransform WeapSKMeshTransform;
 
 
-	//FPMeshÀÇ WeaponGrip ¼ÒÄÏ¿¡ ºÙÀÏ WeaponÀÇ Transform°ª.
+	//FPMeshì˜ WeaponGrip ì†Œì¼“ì— ë¶™ì¼ Weaponì˜ Transformê°’.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon | Transform")
 	FTransform FPMeshAttachTransform;
 
-	//TPMesh¿¡ WeaponÀ» AttachÇÒ ¼ÒÄÏÀÇ Transform°ª.
+	//TPMeshì— Weaponì„ Attachí•  ì†Œì¼“ì˜ Transformê°’.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon | Transform")
 	FTransform PrimaryWeaponAttachTransform;
 
-	//TPMesh¿¡ WeaponÀ» AttachÇÒ ¼ÒÄÏÀÇ Transform°ª.
+	//TPMeshì— Weaponì„ Attachí•  ì†Œì¼“ì˜ Transformê°’.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon | Transform")
 	FTransform SubWeaponAttachTransform;
 	

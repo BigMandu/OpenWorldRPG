@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -52,7 +52,7 @@ public:
 	class UBasePDA* DataAsset;
 
 
-	// Create ObjÇÒ¶§ Data¸¦ ³Ñ°ÜÁÖ±â À§ÇÔ.
+	// Create Objí• ë•Œ Dataë¥¼ ë„˜ê²¨ì£¼ê¸° ìœ„í•¨.
 	TArray<class UNewItemObject*> Inventory;
 	class UItemStorageObject* MotherStorage;
 

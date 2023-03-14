@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "OpenWorldRPG/UI/CraftSystemWidget.h"
@@ -71,7 +71,7 @@ void UCraftSystemWidget::SettingRecipe(UCraftItemWidget* NewClickedWidget)
 	UE_LOG(LogTemp, Warning, TEXT("UCraftSystemWidget::SettingRecipe"));
 
 	
-	//Table°ú ÀÌÀü Click¿©ºÎ¸¦ È®ÀÎÇÑ´Ù.
+	//Tableê³¼ ì´ì „ Clickì—¬ë¶€ë¥¼ í™•ì¸í•œë‹¤.
 	if (CraftRecipeTable.IsValid() && bIsSameClickedItem(NewClickedWidget))
 	{
 		FString TableName(CraftRecipeTable->GetName());
@@ -114,31 +114,31 @@ void UCraftSystemWidget::SettingRecipe(UCraftItemWidget* NewClickedWidget)
 
 
 
-//ÀÌÀü¿¡ ClickÇÑ°ÍÀÎÁö È®ÀÎÇÑ´Ù.
+//ì´ì „ì— Clickí•œê²ƒì¸ì§€ í™•ì¸í•œë‹¤.
 bool UCraftSystemWidget::bIsSameClickedItem(UCraftItemWidget* NewClickedWidget)
 {
-	//±âÁ¸ ÀúÀåµÇ¾îÀÖ´Â °ªÀÌ ÀÖ°í
+	//ê¸°ì¡´ ì €ì¥ë˜ì–´ìˆëŠ” ê°’ì´ ìˆê³ 
 	if (ClickedCraftWidget.IsValid())
 	{
-		//ÀúÀåµÈ °ª°ú »õ·Î ClickÇÑ À§Á¬ Á¤º¸°¡ °°Àº°æ¿ì false¸¦ ¸®ÅÏÇÏ°í ¸¶Ä£´Ù.
+		//ì €ì¥ëœ ê°’ê³¼ ìƒˆë¡œ Clickí•œ ìœ„ì ¯ ì •ë³´ê°€ ê°™ì€ê²½ìš° falseë¥¼ ë¦¬í„´í•˜ê³  ë§ˆì¹œë‹¤.
 		if (ClickedCraftWidget.Get() == NewClickedWidget)
 		{
-			//CraftButtonÀ» ´©¸£°í ÃÊ±âÈ­½Ã ÀÌ ÇÔ¼ö¸¦ °ÅÃÄ¾ß ÇÏ´Âµ¥, ÀÌ¶© ClickedCraftWidgetÀÌ nullÀÌ±â ¶§¹®¿¡ ¾Æ·¡ false¸¦ ¾ø¾İ´Ù.
+			//CraftButtonì„ ëˆ„ë¥´ê³  ì´ˆê¸°í™”ì‹œ ì´ í•¨ìˆ˜ë¥¼ ê±°ì³ì•¼ í•˜ëŠ”ë°, ì´ë• ClickedCraftWidgetì´ nullì´ê¸° ë•Œë¬¸ì— ì•„ë˜ falseë¥¼ ì—†ì•´ë‹¤.
 			//return false;
 		}
 		else
 		{
-			//ÀÌÀüwidgetÀÇ »öÀ» white·Î º¯°æÇÑ´Ù.
+			//ì´ì „widgetì˜ ìƒ‰ì„ whiteë¡œ ë³€ê²½í•œë‹¤.
 			ClickedCraftWidget->SetBorderColor(FLinearColor::White);
 		}
 	}
 
 	
 	 
-	//»õÅ¬¸¯widget°ªÀ» ³Ö¾îÁØ´Ù.
+	//ìƒˆí´ë¦­widgetê°’ì„ ë„£ì–´ì¤€ë‹¤.
 	ClickedCraftWidget = NewClickedWidget;
 
-	//»õ·Î¿î widgetÀÇ »öÀ» yellow·Î º¯°æÇÑ´Ù.
+	//ìƒˆë¡œìš´ widgetì˜ ìƒ‰ì„ yellowë¡œ ë³€ê²½í•œë‹¤.
 	ClickedCraftWidget->SetBorderColor(FLinearColor::Yellow);
 
 	return true;
@@ -157,7 +157,7 @@ bool UCraftSystemWidget::CheckCanCraft()
 			UCraftItemWidget* IngWidget = Cast<UCraftItemWidget>(IngredientWidget);
 			if (IngWidget)
 			{
-				//ÇöÀç°³¼ö°¡ ¸ğÀÚ¶ó¸é fasle
+				//í˜„ì¬ê°œìˆ˜ê°€ ëª¨ìë¼ë©´ fasle
 				if (IngWidget->CurrentCount_num < IngWidget->NeedCount_num)
 				{
 					bCanCraft = false;
@@ -205,10 +205,10 @@ void UCraftSystemWidget::CraftItem()
 				SpawnedItem->SetItemState(EItemState::EIS_Spawn);
 				if (SpawnedItem->Pickup(PlayerCraftComp->GetOwner()))
 				{
-					//Pickup¿¡ ¼º°øÇß´Ù¸é CraftComp¿¡ ÀúÀåµÈ ³»¿ªÀ» »èÁ¦ÇÑ´Ù.
+					//Pickupì— ì„±ê³µí–ˆë‹¤ë©´ CraftCompì— ì €ì¥ëœ ë‚´ì—­ì„ ì‚­ì œí•œë‹¤.
 
-					/* ¾Æ·¡´Â Row¸¦ °¡Á®¿Í Row¾È¿¡ ÀÖ´Â NumberofIng¸¦ Åä´ë·Î ÇØµµµÇ°í,
-					* RecipeBoxÀÇ ÀÚ¼Õ°³¼ö¸¦ Åä´ë·Î ÇØµµ µÈ´Ù.
+					/* ì•„ë˜ëŠ” Rowë¥¼ ê°€ì ¸ì™€ Rowì•ˆì— ìˆëŠ” NumberofIngë¥¼ í† ëŒ€ë¡œ í•´ë„ë˜ê³ ,
+					* RecipeBoxì˜ ìì†ê°œìˆ˜ë¥¼ í† ëŒ€ë¡œ í•´ë„ ëœë‹¤.
 					*/
 					FString TableName(CraftRecipeTable->GetName());
 					FName RowName = FName(ClickedCraftWidget->CraftItemDA->ItemName.ToString());
@@ -231,10 +231,10 @@ void UCraftSystemWidget::CraftItem()
 						}
 						
 					}
-					//Craft¸¦ Çß´Ù¸é Refresh½ÃÅ²´Ù.
+					//Craftë¥¼ í–ˆë‹¤ë©´ Refreshì‹œí‚¨ë‹¤.
 					SettingRecipe(ClickedCraftWidget.Get());
 				}
-				//Pickup¿¡ ½ÇÆĞÇß´Ù¸é »ı¼ºÇÑ ItemÀ» Destory½ÃÅ²´Ù.
+				//Pickupì— ì‹¤íŒ¨í–ˆë‹¤ë©´ ìƒì„±í•œ Itemì„ Destoryì‹œí‚¨ë‹¤.
 				else
 				{
 					SpawnedItem->Destroy();
@@ -252,9 +252,9 @@ void UCraftSystemWidget::OnDropAtIngridentWidget(UCraftItemWidget* OnWidget, UCu
 
 	if (PlayerCraftComp.IsValid())
 	{
-		//OnWidgetÀÇ CurrentCount¸¦ PlayerÀÇ CraftSystemComp¿¡ ÀúÀåÇÏ±â...
-		//¾î¶»°Ô ÀúÀåÇÒÁö »ı°¢ÁßÀÓ.
-		//SettingRecipe ÇÔ¼ö¿¡¼­ ÇØ´ç °ªÀ» °¡Á®¿Ã¶§  TMapÇüÅÂ·Î °¡Á®¿À°í Key°ª(CraftItemÀÇ Name)À¸·Î °¡Á®¿Í¾ß ÇÏ±â¶§¹®¿¡
+		//OnWidgetì˜ CurrentCountë¥¼ Playerì˜ CraftSystemCompì— ì €ì¥í•˜ê¸°...
+		//ì–´ë–»ê²Œ ì €ì¥í• ì§€ ìƒê°ì¤‘ì„.
+		//SettingRecipe í•¨ìˆ˜ì—ì„œ í•´ë‹¹ ê°’ì„ ê°€ì ¸ì˜¬ë•Œ  TMapí˜•íƒœë¡œ ê°€ì ¸ì˜¤ê³  Keyê°’(CraftItemì˜ Name)ìœ¼ë¡œ ê°€ì ¸ì™€ì•¼ í•˜ê¸°ë•Œë¬¸ì—
 		// 
 		//		
 

@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "MainAnimInstance.h"
@@ -41,26 +41,26 @@ void UMainAnimInstance::UpdateAnimationProperties()
 		//AMainController* MainCon = Cast<AMainController>(Player->GetController());
 		FVector Speed = Player->GetVelocity();
 		FVector LateralSpeed = FVector(Speed.X, Speed.Y, 0.f);
-		MovementSpeed = LateralSpeed.Size(); //¼Óµµ°è»ê
+		MovementSpeed = LateralSpeed.Size(); //ì†ë„ê³„ì‚°
 
 		FRotator Rotate = Player->GetActorRotation();
-		Direction = CalculateDirection(Speed, Rotate); //¹æÇâ °è»ê
+		Direction = CalculateDirection(Speed, Rotate); //ë°©í–¥ ê³„ì‚°
 
 		SetHandIK();
 
 		/**************   Aim Offset **************/
-		FRotator ControlRot = Player->GetControlRotation(); //ÄÁÆ®·Ñ·¯ È¸Àü°ª
-		FRotator ActorRot = Player->GetActorRotation(); //Ä³¸¯ÅÍ È¸Àü°ª
+		FRotator ControlRot = Player->GetControlRotation(); //ì»¨íŠ¸ë¡¤ëŸ¬ íšŒì „ê°’
+		FRotator ActorRot = Player->GetActorRotation(); //ìºë¦­í„° íšŒì „ê°’
 
-		FRotator Delta = (ControlRot - ActorRot).GetNormalized(); //¹æÇâÀ» ±¸ÇÏ°í
-		FRotator Current = FRotator(Pitch, Yaw, 0.f); //ÇöÀç pitch, yaw°ªÀ» °®°í¿Í ÇöÀç È¸Àü°ªÀ» ±¸ÇÏ°í
+		FRotator Delta = (ControlRot - ActorRot).GetNormalized(); //ë°©í–¥ì„ êµ¬í•˜ê³ 
+		FRotator Current = FRotator(Pitch, Yaw, 0.f); //í˜„ì¬ pitch, yawê°’ì„ ê°–ê³ ì™€ í˜„ì¬ íšŒì „ê°’ì„ êµ¬í•˜ê³ 
 		
-		FRotator NewRotate = FMath::RInterpTo(Current, Delta, GetWorld()->GetDeltaSeconds(), 15.f); //ºÎµå·´°Ô È¸Àü½ÃÅ²´Ù
+		FRotator NewRotate = FMath::RInterpTo(Current, Delta, GetWorld()->GetDeltaSeconds(), 15.f); //ë¶€ë“œëŸ½ê²Œ íšŒì „ì‹œí‚¨ë‹¤
 
 		//FRotator NewRotYaw = FRotator(0.f, NewRotate.Yaw, 0.f);
 		//FRotator NewRotPitch = FRotator(NewRotate.Pitch, 0.f, 0.f);
 		
-		Yaw = NewRotate.Yaw;//NewRotYaw.ClampAxis(90.f); //°¢°¢ È¸ÀüÀÇ Á¦ÇÑÀ» °É¾îÁØ´Ù.
+		Yaw = NewRotate.Yaw;//NewRotYaw.ClampAxis(90.f); //ê°ê° íšŒì „ì˜ ì œí•œì„ ê±¸ì–´ì¤€ë‹¤.
 		Pitch = NewRotate.Pitch;//NewRotPitch.ClampAxis(90.f);
 
 		/*if (MainCon && Player->EquippedWeapon)
@@ -93,8 +93,8 @@ bool UMainAnimInstance::IsReadyToThrow()
 
 void UMainAnimInstance::SetHandIK()
 {
-	//¿©±â¼­´Â LeftHandLocation¸¸ ¼¼ÆÃÇØÁÖ°í
-	//½ÇÁ¦ 2bone IK´Â AnimGraph¿¡¼­ ÇØÁØ´Ù.
+	//ì—¬ê¸°ì„œëŠ” LeftHandLocationë§Œ ì„¸íŒ…í•´ì£¼ê³ 
+	//ì‹¤ì œ 2bone IKëŠ” AnimGraphì—ì„œ í•´ì¤€ë‹¤.
 	if (Player->EquippedWeapon)
 	{
 		LeftHandLocation = Player->LeftHandik().GetLocation();
@@ -135,12 +135,12 @@ void UMainAnimInstance::BeginHighReady()
 		TP_NewALRot = FRotator(0.f, 0.f, -90.f);
 		TP_NewARRot = FRotator(0.f, 0.f, -90.f);
 
-		// TPMeshÀÇ Rotation°ª
+		// TPMeshì˜ Rotationê°’
 		TP_HighReadyRotator_Left = FMath::RInterpTo(TP_HighReadyRotator_Left, TP_NewALRot, GetWorld()->GetDeltaSeconds(), 1.0f);
 		TP_HighReadyRotator_Right = FMath::RInterpTo(TP_HighReadyRotator_Right, TP_NewARRot, GetWorld()->GetDeltaSeconds(), 5.0f);
 
 
-		// FPMeshÀÇ Rotation °ª
+		// FPMeshì˜ Rotation ê°’
 
 
 		FP_NewRot = FRotator(60.f, 0.f, 0.f);
@@ -175,7 +175,7 @@ void UMainAnimInstance::EndHighReady()
 
 
 
-		// 0¿¡ °¡±î¿öÁö¸é bEndHighReady¸¦ false·Î ¹Ù²ãÁà Àç ½ÇÇàÀ» ¹æÁöÇÑ´Ù.
+		// 0ì— ê°€ê¹Œì›Œì§€ë©´ bEndHighReadyë¥¼ falseë¡œ ë°”ê¿”ì¤˜ ì¬ ì‹¤í–‰ì„ ë°©ì§€í•œë‹¤.
 		if (TP_HighReadyRotator_Right.IsNearlyZero(0.01) || FP_HighReadyRotator.IsNearlyZero(0.01))
 		{
 			bEndHighReady = false;
