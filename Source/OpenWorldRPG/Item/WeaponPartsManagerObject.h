@@ -19,7 +19,8 @@ class OPENWORLDRPG_API UWeaponPartsManagerObject : public UObject
 	GENERATED_BODY()
 
 private:
-    TWeakObjectPtr<class AWeapon> OwnerWeapon;
+	UPROPERTY()
+    class AWeapon* OwnerWeapon;
 
 public:
 
@@ -28,14 +29,19 @@ public:
 
 	
 	
-	
-	TWeakObjectPtr<class UNewItemObject> MuzzleParts;
-	TWeakObjectPtr<UNewItemObject> ScopeParts;
-	TWeakObjectPtr<UNewItemObject> TacticalParts;
+	UPROPERTY()
+	class UNewItemObject* MuzzleParts;
+	UPROPERTY()
+	UNewItemObject* ScopeParts;
+	UPROPERTY()
+	UNewItemObject* TacticalParts;
 
-	TWeakObjectPtr<class AEquipment> A_MuzzleParts;
-	TWeakObjectPtr<AEquipment> A_ScopeParts;
-	TWeakObjectPtr<AEquipment> A_TacticalParts;
+	UPROPERTY()
+	class AEquipment* A_MuzzleParts;
+	UPROPERTY()
+	AEquipment* A_ScopeParts;
+	UPROPERTY()
+	AEquipment* A_TacticalParts;
 
 private:
 	const FName MuzzleSocketName = TEXT("MuzzleParts");

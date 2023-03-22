@@ -223,6 +223,8 @@ bool UEquipmentComponent::AddEquipment(FItemSetting ItemSetting, AEquipment* Wan
 		EquipObj = WantToEquip->ItemObj;
 	}
 
+
+
 	UCustomPDA* CPDA = Cast<UCustomPDA>(EquipObj->ItemInfo.DataAsset);
 
 	if ( EquipObj && CPDA )
@@ -250,7 +252,14 @@ bool UEquipmentComponent::AddEquipment(FItemSetting ItemSetting, AEquipment* Wan
 		if ( CPDA->EquipmentType == EEquipmentType::EET_Rifle || CPDA->EquipmentType == EEquipmentType::EET_Pistol )
 		{
 			EquipObj->RifleAssign = Cast<AWeapon>(WantToEquip)->RifleAssign;
-			//SetWeaponPartsManager(WantToEquip, EquipObj);
+			
+
+			UCustomInventoryLibrary::SetWeaponPartsManager(EquipObj, Cast<AWeapon>(WantToEquip));
+			if ( EquipObj->WeaponPartsManager )
+			{
+				EquipObj->WeaponPartsManager->OnChangeParts.Clear();
+				EquipObj->WeaponPartsManager->OnChangeParts.AddDynamic(Cast<AWeapon>(WantToEquip), &AWeapon::UpdateWeaponParts);
+			}
 			OnWeaponSetSlot.Broadcast(EquipObj);
 		}
 

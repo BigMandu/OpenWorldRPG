@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -123,8 +123,16 @@ public:
 	UFUNCTION()
 	virtual void Drop();
 
-
-	virtual void AttachToHand(class ABaseCharacter* Actor, class UNewItemObject* Obj);
+	/** Item을 Actor에 Attach하기 전 필수 작업을 하는 함수.
+	 *	@Actor - Actor to which this Item will be attached.
+	 *  @Obj - Attached Item's Object.
+	 *  @bIsNeedToDestory - Must Setting TRUE, when creating an item to be attached. it to prevent duplicate.
+	 *						Setting True list: UNewItemObject::UseItem
+	 * 
+	 *					  - Setting FALSE when re-attaching same item.
+	 *						False list : AMainCharacter::VKeyDN
+	 */
+	virtual void AttachToHand(class ABaseCharacter* Actor, class UNewItemObject* Obj, bool bIsNeedToDestory = true);
 	void AttachToHand_Step(ABaseCharacter* Actor);
 	virtual void DetachFromHand(ABaseCharacter* Actor, bool bIsNeedToEquipBeforeWeapon);
 	void EquipBeforeWeapon(ABaseCharacter* Actor);

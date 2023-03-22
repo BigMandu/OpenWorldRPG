@@ -244,7 +244,7 @@ public:
 
 	void FPSAimLocationAdjust();
 
-
+	virtual void PlayAttachItemAnim(AItem* Item) override;
 	virtual void PlayUseItemAnim(AItem* Item) override;
 	virtual void StopUseItemAnim() override;
 

@@ -1,9 +1,10 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "NewInventoryComponent.h"
 #include "OpenWorldRPG/Item/Item.h"
 #include "OpenWorldRPG/Item/CustomPDA.h"
+#include "OpenWorldRPG/Item/WeaponPDA.h"
 
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
 #include "OpenWorldRPG/NewInventory/ItemStorageObject.h"
@@ -344,7 +345,7 @@ void UNewInventoryComponent::AddItemAtIndex(UItemStorageObject* StorageObj, UNew
 	StorageObj->AddItemAtIndex(ItemObj, Index);
 }
 
-bool UNewInventoryComponent::TryAddItem(UItemStorageObject* StorageObj, FItemSetting ItemSetting, UNewItemObject* Obj, bool bWantToGenerateRandomCount)
+bool UNewInventoryComponent::TryAddItem(UItemStorageObject* StorageObj, FItemSetting ItemSetting, UNewItemObject* Obj, AItem* WantToAddItem, bool bWantToGenerateRandomCount)
 {
 	bool bCreated = false;
 	bool bAddCount = false;
@@ -394,6 +395,24 @@ bool UNewInventoryComponent::TryAddItem(UItemStorageObject* StorageObj, FItemSet
 				}
 			}
 		}
+
+
+		//ItemObj가 Weapon인 경우 && WPM이 없는 경우  WPM을 생성 해주고 Data를 넘겨준다.
+		if ( UWeaponPDA* WeapPDA = Cast<UWeaponPDA>(ItemObj->ItemInfo.DataAsset))
+		{
+			if ( (WeapPDA->EquipmentType == EEquipmentType::EET_Rifle || WeapPDA->EquipmentType == EEquipmentType::EET_Pistol) &&
+			WantToAddItem != nullptr )
+			{
+				UCustomInventoryLibrary::SetWeaponPartsManager(ItemObj, Cast<AWeapon>(WantToAddItem));
+				if ( ItemObj->WeaponPartsManager )
+				{
+					ItemObj->WeaponPartsManager->OnChangeParts.Clear();
+					ItemObj->WeaponPartsManager->OnChangeParts.AddDynamic(Cast<AWeapon>(WantToAddItem), &AWeapon::UpdateWeaponParts);
+				}
+			}
+		}
+
+
 #ifdef DEBUG_INVCOMP
 		//UE_LOG(LogTemp, Warning, TEXT("InvComp::TryAddItem / confirm, Call StorageObj::TryAddItem"));
 #endif

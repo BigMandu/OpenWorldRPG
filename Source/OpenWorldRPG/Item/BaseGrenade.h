@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -43,7 +43,7 @@ public:
 	bool bThrow;
 
 	virtual void OnConstruction(const FTransform& Transform) override;
-	void AttachToHand(class ABaseCharacter* Actor, class UNewItemObject* Obj) override;
+	void AttachToHand(class ABaseCharacter* Actor, class UNewItemObject* Obj, bool bIsNeedToDestory = true) override;
 
 	void ReadyToThrow();
 

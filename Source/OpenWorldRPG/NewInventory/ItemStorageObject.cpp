@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "OpenWorldRPG/NewInventory/ItemStorageObject.h"
@@ -161,7 +161,8 @@ void UItemStorageObject::AddItemAtIndex(UNewItemObject* ItemObj, int32 Index)
 		ItemObj->MotherEquipComp->RemoveEquipment(ItemObj);
 		ItemObj->MotherEquipComp = nullptr;
 	}
-	else if (ItemObj->WeaponPartsManager.IsValid())
+	//해당 Item이 이전에 WPM에 있던 Item이면 거기서 지워준다.
+	else if (ItemObj->WeaponPartsManager)
 	{
 		ItemObj->WeaponPartsManager->RemoveParts(ItemObj);
 	}

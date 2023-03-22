@@ -23,9 +23,10 @@ void UWeaponPartsWidget::WidgetInit(UNewItemObject* Var_WeaponObj)
 	ScopeSlot->OwnerWeaponObj = Var_WeaponObj;
 	
 	//MuzzleSlot->OnUnEquipWeaponParts.AddDynamic(this,)
-
-	WeaponObj->WeaponPartsManager->OnChangeParts.AddDynamic(this, &UWeaponPartsWidget::RefreshWidget);
-
+	if(WeaponObj->WeaponPartsManager)
+	{
+		WeaponObj->WeaponPartsManager->OnChangeParts.AddDynamic(this, &UWeaponPartsWidget::RefreshWidget);
+	}
 	/*MuzzleSlot->OnEquipWeaponParts.AddDynamic(this, &UWeaponPartsWidget::EquipWeaponParts);
 	TacticalSlot->OnEquipWeaponParts.AddDynamic(this, &UWeaponPartsWidget::EquipWeaponParts);
 	ScopeSlot->OnEquipWeaponParts.AddDynamic(this, &UWeaponPartsWidget::EquipWeaponParts);*/
@@ -42,6 +43,7 @@ void UWeaponPartsWidget::RefreshWidget()
 {
 	WeaponImage->SetColorAndOpacity(FLinearColor(0.f, 0.f, 0.f, 0.f));
 	if (WeaponObj == nullptr) return;
+	if(WeaponObj->WeaponPartsManager == nullptr) return;
 
 	WeaponImage->SetColorAndOpacity(FLinearColor(1.f, 1.f, 1.f, 1.f));
 	WeaponImage->SetBrushFromTexture(Cast<UWeaponPDA>(WeaponObj->ItemInfo.DataAsset)->WeaponVectorIMG);
@@ -52,15 +54,15 @@ void UWeaponPartsWidget::RefreshWidget()
 		switch (PartsType)
 		{
 			case EWeaponPartsType::EWPT_Muzzle:
-				PartsObj = WeaponObj->WeaponPartsManager->MuzzleParts.IsValid() ? WeaponObj->WeaponPartsManager->MuzzleParts.Get() : nullptr;
+				PartsObj = WeaponObj->WeaponPartsManager->MuzzleParts ? WeaponObj->WeaponPartsManager->MuzzleParts : nullptr;
 				UpdatePartsSlotWidget(MuzzleSlot,PartsObj);
 				break;
 			case EWeaponPartsType::EWPT_Scope:
-				PartsObj = WeaponObj->WeaponPartsManager->ScopeParts.IsValid() ? WeaponObj->WeaponPartsManager->ScopeParts.Get() : nullptr;
+				PartsObj = WeaponObj->WeaponPartsManager->ScopeParts ? WeaponObj->WeaponPartsManager->ScopeParts : nullptr;
 				UpdatePartsSlotWidget(ScopeSlot, PartsObj);
 				break;
 			case EWeaponPartsType::EWPT_Tactical:
-				PartsObj = WeaponObj->WeaponPartsManager->TacticalParts.IsValid() ? WeaponObj->WeaponPartsManager->TacticalParts.Get() : nullptr;
+				PartsObj = WeaponObj->WeaponPartsManager->TacticalParts ? WeaponObj->WeaponPartsManager->TacticalParts : nullptr;
 				UpdatePartsSlotWidget(TacticalSlot, PartsObj);
 				break;
 		}

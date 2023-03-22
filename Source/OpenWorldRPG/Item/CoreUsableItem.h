@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -32,7 +32,7 @@ public:
 	
 	//override from AItem class
 	virtual void Use(class ABaseCharacter* Actor, UNewItemObject* Obj = nullptr) override;
-	virtual void AttachToHand(ABaseCharacter* Actor, class UNewItemObject* Obj) override;
+	virtual void AttachToHand(ABaseCharacter* Actor, class UNewItemObject* Obj, bool bIsNeedToDestory = true) override;
 	virtual void SetMesh() override;
 
 	void UpdateCompassPointerRotation();

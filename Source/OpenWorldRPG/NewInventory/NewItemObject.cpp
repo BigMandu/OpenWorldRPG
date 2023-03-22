@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
@@ -222,15 +222,7 @@ void UNewItemObject::UseItem(UWorld* World)
 			//Grenade Type이 아니라면 Attach 이후에 바로 Use 함수를 호출한다.
 			if (ItemInfo.DataAsset->ItemType != EItemType::EIT_Grenade)
 			{
-				/*ACoreUsableItem* CoreUsableItem = Cast<ACoreUsableItem>(SpawnItem);
-				if (CoreUsableItem)
-				{
-					CoreUsableItem->Use(BChar,this);
-				}
-				else*/
-				{
-					SpawnItem->Use(BChar, this);
-				}				
+				SpawnItem->Use(BChar, this);				
 			}
 		}
 		else

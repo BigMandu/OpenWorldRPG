@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Item.h"
@@ -165,7 +165,7 @@ bool AItem::Pickup(class AActor* Actor, UNewItemObject* obj)
 				UItemStorageObject* ItemStorage = Cast<UItemStorageObject>(TempObj);
 				if(ItemStorage == nullptr) continue;
 
-				bFlag = BChar->BaseInventoryComp->TryAddItem(ItemStorage,ItemSetting, obj);
+				bFlag = BChar->BaseInventoryComp->TryAddItem(ItemStorage,ItemSetting, obj, this);
 				if (bFlag) break;
 			}
 
@@ -297,7 +297,7 @@ void AItem::Drop()
 
 //Remove Weapon Or Item before Attached, And Change Holding Item.
 //Attach하기 전 과정
-void AItem::AttachToHand(ABaseCharacter* Actor, UNewItemObject* Obj)
+void AItem::AttachToHand(ABaseCharacter* Actor, UNewItemObject* Obj, bool bIsNeedToDestory)
 {
 	if (Actor->EquippedWeapon)
 	{
@@ -305,21 +305,25 @@ void AItem::AttachToHand(ABaseCharacter* Actor, UNewItemObject* Obj)
 
 		//재장착을 위해 임시저장한다.
 		BeforeEquipppedWeapon = Actor->EquippedWeapon;
+
 		Actor->EquippedWeapon = nullptr;
 	}
 	//이미 다른 HoldingItem이 있다면 비교한다.
-	else if (Actor->HoldingItem.IsValid())
+	else if (Actor->HoldingItem)
 	{
-		//만일 이거랑 동일한거면 새로 생성한 이 item을 destory한다.
-		if (Actor->HoldingItem.Get() == this)
+		/**만일 이거랑 동일한거면 새로 생성한 이 item을 destory한다.
+		 *다만, 원래 있던 Item을 재호출 하는 경우엔 삭제가 되면 안되므로 bIsNeedToDestory가 false인 경우 패스한다.
+		 * False로 Setting해 호출 하는곳은 MainCharacter::VkeyDN
+		 */
+		if (Actor->HoldingItem == this && bIsNeedToDestory)
 		{
 			this->Destroy();
 			return;
 		}
 		//만일 다른 item을 들고 있었다면, 기 등록된 holding actor를 삭제한다.
-		else if (Actor->HoldingItem.Get() != this)
+		else if (Actor->HoldingItem != this)
 		{
-			Actor->HoldingItem.Get()->Destroy();
+			Actor->HoldingItem->Destroy();
 			Actor->SetHoldingItem(nullptr);
 		}
 	}
@@ -346,8 +350,10 @@ void AItem::AttachToHand_Step(ABaseCharacter* Actor)
 	AMainCharacter* Player = Cast<AMainCharacter>(Actor);
 	if (Player)
 	{
+		//Item을 Player Character에 부착시킨다.
 		Player->ReAttachHoldingItem();
 	}
+	//Player가 아닌 AI Character의 Attach
 	else
 	{
 		const USkeletalMeshSocket* AttachSocket = nullptr;
@@ -372,6 +378,10 @@ void AItem::AttachToHand_Step(ABaseCharacter* Actor)
 
 		}
 	}
+
+
+	Actor->PlayAttachItemAnim(this);
+
 }
 
 void AItem::DetachFromHand(ABaseCharacter* Actor, bool bIsNeedToEquipBeforeWeapon)
@@ -430,13 +440,13 @@ void AItem::RemoveCountAtIventory(ABaseCharacter* Char, int32 RemoveCount)
 
 void AItem::EquipBeforeWeapon(ABaseCharacter* Actor)
 {
+	if ( Actor->TPAnimInstance )
+	{
+		Actor->TPAnimInstance->WeaponTypeNumber = 0;
+	}
+
 	if (BeforeEquipppedWeapon.IsValid())
 	{
-		if (Actor->TPAnimInstance)
-		{
-			Actor->TPAnimInstance->WeaponTypeNumber = 0;
-		}
-
 		switch (BeforeEquipppedWeapon->RifleAssign)
 		{
 			case ERifleSlot::ERS_Primary:

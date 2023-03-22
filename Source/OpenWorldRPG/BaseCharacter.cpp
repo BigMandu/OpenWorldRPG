@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "BaseCharacter.h"
@@ -285,7 +285,7 @@ void ABaseCharacter::UseItem(class AActor* Item)
 
 void ABaseCharacter::DetachThrowingObject()
 {
-	if (HoldingItem.IsValid())
+	if (HoldingItem)
 	{
 		ABaseGrenade* Grenade = Cast<ABaseGrenade>(HoldingItem);
 		UE_LOG(LogTemp, Warning, TEXT("ABaseCharacter::DetachThrowingObject, receive animnotify"));
@@ -577,9 +577,10 @@ bool ABaseCharacter::ChangeWeapon(int32 index)
 	}
 	if (bSuccessChangeWeapon)
 	{
-		if (HoldingItem.IsValid())
+		if (HoldingItem)
 		{
 			HoldingItem->Destroy();
+			SetHoldingItem(nullptr);
 		}
 	}
 	
@@ -602,13 +603,27 @@ void ABaseCharacter::ChangePistolWeapon()
 void ABaseCharacter::SetHoldingItem(AItem* WantToHolding)
 {	
 	HoldingItem = WantToHolding;
-	if(WantToHolding != nullptr)
+	if(WantToHolding != nullptr )
 	{
+		//만약 bind된게 있으면 안전하게 지워주고 bind한다.
+		if ( HoldingItem->ItemUseEnd.IsBound() )
+		{
+			HoldingItem->ItemUseEnd.Clear();
+		}		
+		
 		HoldingItem->ItemUseEnd.AddDynamic(this, &ABaseCharacter::StopUseItemAnim);
+		
 	}
 	
 }
 
+void ABaseCharacter::PlayAttachItemAnim(AItem* Item)
+{
+	if ( Item )
+	{
+		PlayAnimMontage(Item->ItemSetting.DataAsset->TPS_AttachAnimMontage);
+	}
+}
 
 void ABaseCharacter::PlayUseItemAnim(AItem* Item)
 {
@@ -637,10 +652,13 @@ FTransform ABaseCharacter::LeftHandik()
 
 void ABaseCharacter::DetachCoreUsableItem()
 {
-	if(HoldingItem.IsValid())
+	if(HoldingItem)
 	{
 		ACoreUsableItem* CoreItem = Cast<ACoreUsableItem>(HoldingItem);
-		CoreItem->Use(this,CoreItem->ItemObj);
+		if(CoreItem )
+		{
+			CoreItem->Use(this,CoreItem->ItemObj);
+		}
 	}
 }
 

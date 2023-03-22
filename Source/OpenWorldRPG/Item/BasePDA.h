@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -72,17 +72,22 @@ public:
 	bool bIsNeedToAttachHandBeforeUse;
 	UPROPERTY(EditAnywhere, Category = "Item | Hand")
 	FTransform TPS_HandAttachTransform;
-		UPROPERTY(EditAnywhere, Category = "Item | Hand")
+	UPROPERTY(EditAnywhere, Category = "Item | Hand")
 	FTransform FPS_HandAttachTransform;
 
 	/****** Using AnimMontage *****/
 	UPROPERTY(EditAnywhere, Category = "Item | Animation")
-	bool bIsNeedLooping;
+	class UAnimMontage* FPS_AttachAnimMontage;
 	UPROPERTY(EditAnywhere, Category = "Item | Animation")
-	class UAnimMontage* FPS_UseAnimMontage;
+	UAnimMontage* TPS_AttachAnimMontage;
 
 	UPROPERTY(EditAnywhere, Category = "Item | Animation")
-	class UAnimMontage* TPS_UseAnimMontage;
+	bool bIsNeedLooping;
+	UPROPERTY(EditAnywhere, Category = "Item | Animation")
+	UAnimMontage* FPS_UseAnimMontage;
+
+	UPROPERTY(EditAnywhere, Category = "Item | Animation")
+	UAnimMontage* TPS_UseAnimMontage;
 
 	/**** Stackable ****/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Stack")

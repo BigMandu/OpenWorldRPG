@@ -118,13 +118,16 @@ public:
 
 	//StepEquip때 대입한다.
 	//지정한 값을 쉽게 사용하기 위해 Cast해둔다.
+	UPROPERTY()
 	UWeaponPDA* WeaponDataAsset;
 
-	TWeakObjectPtr<class UWeaponPartsManagerObject> WeaponPartsManager;
+	UPROPERTY()
+	class UWeaponPartsManagerObject* WeaponPartsManager;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UCapsuleComponent* CapsuleComp;
 
+	UPROPERTY()
 	FTransform OriginalWeaponTransform;
 
 	
@@ -140,14 +143,21 @@ public:
 	float AlphaTime;
 	float RecoilAlphaTime;
 
-
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon | SpawnParts")
+	bool bHasSpawnParts;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon | SpawnParts")
+	TArray<UCustomPDA*> SpawnMuzzlePartsList;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon | SpawnParts")
+	TArray<UCustomPDA*> SpawnScopePartsList;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon | SpawnParts")
+	TArray<UCustomPDA*> SpawnTacticalPartsList;
 
 	/* FPS Aim모드 일때 위치값 저장 -> PDA에 저장함.*/
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon | Transform")
-	FTransform CharFPMeshTransform;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon | Transform")
-	FTransform WeapSKMeshTransform;
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon | Transform")
+	//FTransform CharFPMeshTransform;
+	//
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon | Transform")
+	//FTransform WeapSKMeshTransform;
 
 
 	//Primary, Sub을 지정한다.
@@ -180,6 +190,7 @@ public:
 
 private:
 	
+
 	void WeaponClipping();
 	bool CheckAmmo();
 
@@ -203,7 +214,8 @@ private:
 
 
 	void CapsuleAdjust();
-	
+
+	void AddSpawnParts(TArray<UCustomPDA*>SpawnParts);
 
 protected:	
 	void UpdateAim();
@@ -217,8 +229,11 @@ public:
 	void GunAttachToMesh(AActor* Actor);
 	void GunAttachToSubSocket(AActor* Actor);
 
+
+	void SettingWeaponPartsManager();
+
 	FTransform GetSightSocketTransform();
-	void CheckWeaponPartsManager();
+	
 	UFUNCTION()
 	void UpdateWeaponParts();
 

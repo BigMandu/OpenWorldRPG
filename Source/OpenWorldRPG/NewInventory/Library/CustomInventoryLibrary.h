@@ -42,6 +42,8 @@ public:
 	static AEquipment* SpawnEquipment(UWorld* World, UCustomPDA* EquipDA);
 
 
+	static TArray<UCustomPDA*> RandomSpawnUsingTableButCount(int32 SpawnCount, TArray<UCustomPDA*> SpawnTable);
+
 	/*  */
 	static void GenerateRandomCount(UNewItemObject* ItemObj);
 
@@ -53,11 +55,13 @@ public:
 
     /** Weapon형태의 Item이 추가되거나, 장착될때
      * 기존 Actor에서 생성되고 관리되던 WPM을 Obj에 넣어줘서 갱신해준다.
-     * @Weapon - 장착하거나 Inventory에 추가될 Weapon Actor
-     * @Obj - 장착하거나 Inventory에 추가될때 생성되는 Object
-     */
-    
-    static void SetWeaponPartsManager(AWeapon* Weapon, UNewItemObject* Obj);
+     * @To - Data를 이관 받을 WPM
+     * @From  - Data를 To로 전달할 WPM
+	 *
+	 * From에서 3개의 Parts data를 To로 이동시키고,
+	 * From의 OwnerWeapon을 To의 OwnerWeapon으로 변경한다.
+     */    
+    static void SetWeaponPartsManager(UNewItemObject* Obj, AWeapon* Weapon);
 
 
 	/// 이하 사용하지 않는 함수들

@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "OpenWorldRPG/Item/BaseGrenade.h"
@@ -80,9 +80,9 @@ void ABaseGrenade::OnConstruction(const FTransform& Transform)
 }
 
 //QuickSlotWidget -> NewItemObject::UseItem에서 호출함.
-void ABaseGrenade::AttachToHand(ABaseCharacter* Actor, UNewItemObject* Obj)
+void ABaseGrenade::AttachToHand(ABaseCharacter* Actor, UNewItemObject* Obj, bool bIsNeedToDestory)
 {
-	Super::AttachToHand(Actor,Obj);
+	Super::AttachToHand(Actor,Obj, bIsNeedToDestory);
 
 	Mesh->SetSimulatePhysics(false);
 	Mesh->SetLinearDamping(0.01f);
@@ -136,9 +136,11 @@ void ABaseGrenade::DetectThrow(ABaseCharacter* Actor)
 {
 	UE_LOG(LogTemp, Warning, TEXT("ABaseGrenade:: DetectThrow, detect AnimNotify"));
 	
+	UGrenadePDA* GPDA = Cast<UGrenadePDA>(this->ItemSetting.DataAsset);
 
+	if(GPDA == nullptr ) return;
 	////Detach를 한다.
-	DetachFromHand(Actor,false);
+	DetachFromHand(Actor, GPDA->bIsNeedToAttachHandBeforeUse);
 
 
 	if (Mesh)

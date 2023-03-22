@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Container.h"
@@ -94,7 +94,7 @@ void AContainer::SpawnItem()
 		AItem* Item = GetWorld()->SpawnActor<AItem>(AddItem);
 		if (Item)
 		{
-			if (ContainerInventoryComp->TryAddItem(ContainerStorage,Item->ItemSetting,nullptr,true))
+			if (ContainerInventoryComp->TryAddItem(ContainerStorage,Item->ItemSetting,nullptr,Item,true))
 			{
 				Item->SetItemState(EItemState::EIS_Pickup);
 				//Item->ItemObj->bIsDestoryed = true;

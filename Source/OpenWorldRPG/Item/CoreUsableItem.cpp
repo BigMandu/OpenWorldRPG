@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "CoreUsableItem.h"
@@ -31,13 +31,13 @@ void ACoreUsableItem::SetMesh()
 
 }
 
-void ACoreUsableItem::AttachToHand(class ABaseCharacter* Actor, class UNewItemObject* Obj)
+void ACoreUsableItem::AttachToHand(class ABaseCharacter* Actor, class UNewItemObject* Obj, bool bIsNeedToDestory)
 {
 	if (OptionalStaticMesh->GetStaticMesh())
 	{
 		OptionalStaticMesh->SetSimulatePhysics(false);
 	}
-	Super::AttachToHand(Actor,Obj);
+	Super::AttachToHand(Actor,Obj, bIsNeedToDestory);
 }
 
 

@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Interactable.h"
@@ -80,7 +80,11 @@ void AInteractable::SetMesh()// UCustomPDA* PDA)//, UMeshComponent*& MeshComp)
 			//MeshComp = SKMeshComp;
 		}
 	}
-	else if (ItemSetting.DataAsset->Mesh)
+
+	//else if문을 사용하면 안되고, if문을 따로 써야한다.
+	//Equipment같은 경우 SKMesh와 StaticMesh가 동시에 있는 경우가 있는데
+	//StaticMesh를 렌더링 하기때문에 필수임.
+	if (ItemSetting.DataAsset->Mesh)
 	{
 		//auto SMeshComp = NewObject<UStaticMeshComponent>(this, TEXT("StaticMeshComp"));
 		//if (SMeshComp)

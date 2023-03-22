@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -132,7 +132,9 @@ public:
 	FHitResult FallHit;
 	float FallingHighestZ;
 
-	TWeakObjectPtr<class AItem> HoldingItem;
+	UPROPERTY()
+	class AItem* HoldingItem;
+
 	/* Weapon */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item | Weapon")
 	AWeapon* EquippedWeapon;
@@ -300,7 +302,9 @@ public:
 	UFUNCTION()
 	void DetachThrowingObject();//ABaseCharacter* Actor);
 
+	virtual void PlayAttachItemAnim(AItem* Item);
 	virtual void PlayUseItemAnim(AItem* Item);
+	
 	UFUNCTION()
 	virtual void StopUseItemAnim();
 

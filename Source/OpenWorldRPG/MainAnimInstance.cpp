@@ -80,7 +80,7 @@ void UMainAnimInstance::UpdateAnimationProperties()
 
 bool UMainAnimInstance::IsReadyToThrow()
 {
-	if (Player->HoldingItem.IsValid())
+	if (Player->HoldingItem)
 	{
 		ABaseGrenade* Grenade = Cast<ABaseGrenade>(Player->HoldingItem);
 		if (Grenade)
@@ -119,6 +119,7 @@ void UMainAnimInstance::AnimNotify_throw()
 	UE_LOG(LogTemp,Warning,TEXT("UMainAnimInstance::AnimNotify_throw, broadcast"));
 	ThrowDelegate.Broadcast();
 }
+
 //
 //void UMainAnimInstance::AnimNotify_ADS()
 //{

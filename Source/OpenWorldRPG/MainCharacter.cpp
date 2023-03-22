@@ -385,7 +385,7 @@ void AMainCharacter::InteractionLineTrace()
 	//InteractActor가 다를경우 UnsetInteractActor 호출하자. (Outline이 안없어지는 버그가 있음.) -> 해결함.
 }
 
-
+/*
 void AMainCharacter::FPSAimLocationAdjust()
 {
 	if ( CameraFPS )
@@ -408,7 +408,7 @@ void AMainCharacter::FPSAimLocationAdjust()
 		}
 	}
 }
-
+*/
 
 //플레이어 시점 상태 -> VKeyDN
 void AMainCharacter::SetCameraMode(ECameraMode Type)
@@ -480,14 +480,6 @@ void AMainCharacter::SetCameraMode(ECameraMode Type)
 	{
 		EquippedWeapon->GunAttachToMesh(this);
 	}
-	else if ( HoldingItem.IsValid() )
-	{
-		ABaseGrenade* Grenade = Cast<ABaseGrenade>(HoldingItem);
-		if ( Grenade )
-		{
-			Grenade->AttachToHand(this, HoldingItem->ItemObj);
-		}
-	}
 }
 
 //RMB Down
@@ -526,7 +518,7 @@ void AMainCharacter::SetAimMode(EAimMode Mode)
 					FPAnimInstance->Montage_JumpToSection(FName("Default"), EquippedWeapon->WeaponDataAsset->Animaton.FPS_ADS_Anim);
 
 					//FPMesh->bPauseAnims = true;
-					LerpCamera(CameraFPS, 75.f);
+					LerpCamera(CameraFPS, 60.f);
 				}
 			}
 			break;
@@ -573,6 +565,7 @@ void AMainCharacter::SetAimMode(EAimMode Mode)
 void AMainCharacter::FPSADS()
 {
 	UE_LOG(LogTemp, Warning, TEXT("AMainCharacter::FPSADS called"));
+	//FPMesh (Arm Mesh)가 이동할 위치값을 가져온다.
 	FTransform ADSPos = GetFpsAdsPosition();
 
 	bIsAim = true;
@@ -628,6 +621,7 @@ void AMainCharacter::FPSnotADS()
 	}, GetWorld()->GetDeltaSeconds(), true);
 }
 
+//FPMesh가 이동할 위치를 구한다.
 FTransform AMainCharacter::GetFpsAdsPosition()
 {
 
@@ -650,9 +644,9 @@ FTransform AMainCharacter::GetFpsAdsPosition()
 
 	// Weapon의 Clipping을 위한 Trace를 FPMesh일때 Aim, NotAim을 보완하기 위해 Aim일때 Mesh를 앞으로 좀 나가게 한다.
 	// (기존 Aim때는 FPMesh가 뒤로 들어가버려 Clipping문제가 안일어 났음.)
-	FTransform OffsetWithoutX = FTransform(Offset.GetRotation(), FVector(-10.f, Offset.GetTranslation().Y, Offset.GetTranslation().Z));
+	//FTransform OffsetWithoutX = FTransform(Offset.GetRotation(), FVector(-10.f, Offset.GetTranslation().Y, Offset.GetTranslation().Z));
 
-	return OffsetWithoutX;
+	return Offset;//OffsetWithoutX;
 }
 
 void AMainCharacter::LerpCamera(UCameraComponent* VarTPScam, float TargetBoomLength, FVector TargetCamRelativeLocation, float TargetFOV)
@@ -937,7 +931,20 @@ void AMainCharacter::VKeyDN()
 			break;
 		}
 
-		ReAttachHoldingItem();
+		if ( HoldingItem )
+		{
+			ABaseGrenade* Grenade = Cast<ABaseGrenade>(HoldingItem);
+			if ( Grenade )
+			{
+				//false로 넘겨서 이미 들고 있는 Item을 Destory못하게 한다.
+				Grenade->AttachToHand(this, HoldingItem->ItemObj, false);
+			}
+			else
+			{
+				ReAttachHoldingItem();
+			}
+		}
+			
 	}
 }
 
@@ -951,7 +958,7 @@ void AMainCharacter::LMBDown()
 		{
 			EquippedWeapon->StartFire();
 		}
-		else if ( HoldingItem.IsValid() )
+		else if ( HoldingItem )
 		{
 			ABaseGrenade* Grenade = Cast<ABaseGrenade>(HoldingItem);
 			if ( Grenade )
@@ -970,7 +977,7 @@ void AMainCharacter::LMBUp()
 		{
 			EquippedWeapon->StopFire();
 		}
-		else if ( HoldingItem.IsValid() )
+		else if ( HoldingItem )
 		{
 			ABaseGrenade* Grenade = Cast<ABaseGrenade>(HoldingItem);
 			if ( Grenade )
@@ -1058,13 +1065,24 @@ void AMainCharacter::EKeyDown()
 //}
 
 /*************************  Weapon, Item 관련 ***************************************************/
+void AMainCharacter::PlayAttachItemAnim(AItem* Item)
+{
+	Super::PlayAttachItemAnim(Item);
+
+	if ( Item )
+	{
+		FPAnimInstance->Montage_Play(Item->ItemSetting.DataAsset->FPS_AttachAnimMontage);
+	}
+}
+
 void AMainCharacter::PlayUseItemAnim(AItem* Item)
 {
 	Super::PlayUseItemAnim(Item);
-
-	//FPMesh의 Anim도 재생한다.
-	FPAnimInstance->Montage_Play(Item->ItemSetting.DataAsset->FPS_UseAnimMontage);
-
+	if(Item )
+	{
+		//FPMesh의 Anim도 재생한다.
+		FPAnimInstance->Montage_Play(Item->ItemSetting.DataAsset->FPS_UseAnimMontage);
+	}
 }
 
 void AMainCharacter::StopUseItemAnim()
@@ -1076,7 +1094,7 @@ void AMainCharacter::StopUseItemAnim()
 //CameraMode에 따라 HoldingItem을 Attach시킨다.
 void AMainCharacter::ReAttachHoldingItem()
 {
-	if ( HoldingItem.IsValid() == false ) return;
+	if ( HoldingItem == nullptr ) return;
 
 	const USkeletalMeshSocket* HandSocket = nullptr;
 	FTransform RelativeTF;
@@ -1098,7 +1116,7 @@ void AMainCharacter::ReAttachHoldingItem()
 
 	if ( HandSocket && OnMesh )
 	{
-		if ( HandSocket->AttachActor(HoldingItem.Get(), OnMesh) )
+		if ( HandSocket->AttachActor(HoldingItem, OnMesh) )
 		{
 			//Mesh에 Attach했다면, Item의 Relative위치,회전값을 변경한다.
 			HoldingItem->SetActorRelativeTransform(RelativeTF);
@@ -1163,9 +1181,9 @@ FHitResult AMainCharacter::InteractableLineTrace(const FVector& StartLo, const F
 	{
 		Params.AddIgnoredActor(EquippedWeapon);
 	}
-	else if ( HoldingItem.IsValid() )
+	else if ( HoldingItem )
 	{
-		Params.AddIgnoredActor(HoldingItem.Get());
+		Params.AddIgnoredActor(HoldingItem);
 	}
 
 	//SweepSingle로 변경, 캡슐형태의 모양으로 LineTrace.	

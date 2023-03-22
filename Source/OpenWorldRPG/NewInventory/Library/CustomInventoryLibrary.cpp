@@ -99,6 +99,7 @@ AEquipment* UCustomInventoryLibrary::SpawnEquipment(UWorld* World, UNewItemObjec
 		if ( WeaponPDA )
 		{
 			Equipment = Cast<AWeapon_Instant>(World->SpawnActor<AActor>(AWeapon_Instant::StaticClass()));
+			Cast<AWeapon>(Equipment)->SettingWeaponPartsManager();
 			/*if (ItemObj->WeaponPartsManager.IsValid())
 			{
 				Cast<AWeapon>(Equipment)->WeaponPartsManager = ItemObj->WeaponPartsManager.Get();
@@ -222,6 +223,31 @@ AEquipment* UCustomInventoryLibrary::SpawnEquipment(UWorld* World, UCustomPDA* E
 }
 
 
+TArray<UCustomPDA*> UCustomInventoryLibrary::RandomSpawnUsingTableButCount(int32 SpawnCount, TArray<UCustomPDA*> SpawnTable)
+{
+	TArray<UCustomPDA*> ReturnTable;
+	int32 loop = 0;
+	int32 loopingMax = 0;
+	while ( loop < SpawnCount )
+	{
+		//원하는 SpawnCount만큼 얻었거나, 반복문을 SpawnTable 개수 3배만큼 돌았으면 빠져나오도록 한다.
+		//두번째는 무한 루프 방지.
+		if ( loop >= SpawnCount || loopingMax >= SpawnTable.Num()*3)
+		{
+			break;
+		}
+
+		int32 RandNum = FMath::RandRange(0,SpawnTable.Num());
+		if ( SpawnTable.IsValidIndex(RandNum) )
+		{
+			ReturnTable.Add(SpawnTable[RandNum]);
+			++loop;
+		}
+		++loopingMax;
+	}
+
+	return ReturnTable;
+}
 
 //Item의 Type별로 개수를 랜덤 지정한다.
 void UCustomInventoryLibrary::GenerateRandomCount(UNewItemObject* ItemObj)
@@ -292,24 +318,51 @@ void UCustomInventoryLibrary::ShowAllEquipment(UEquipmentComponent* EComp)
 }
 
 
+
 /**이 함수가 호출 되는 경우
  * 1. Weapon을 해제하여(Destory) Inventory에 넣을 때
  * 2. Weapon을 Equip할 때
  *
+ * 두 경우 모두 ItemObj가 생성될 때 호출된다.
  */
-void UCustomInventoryLibrary::SetWeaponPartsManager(AWeapon* Weapon, UNewItemObject* Obj)
+
+ /**여기서 해야할거
+  * 이 함수는 "Obj가 생길때 호출된다."
+  * Weapon의 WPM은 Weapon이 생성될때 생성되는데 이 WPM의 세팅값을
+  *
+  * 생성된 OBJ에 WPM이 없다면 기존걸 대입하고, 있다면 SetOwnerWeap을 해주면될거같다.
+  * 
+  */
+void UCustomInventoryLibrary::SetWeaponPartsManager(UNewItemObject* Obj, AWeapon* Weapon)
 {
-	//Obj에 WPM이 있는 경우 actor의 WPM에 넣어준다.
-	if ( Obj->WeaponPartsManager.IsValid() )
+	/*Obj에 이미 WPM이 있다면
+	* Obj->WPM의 Data를 Weapon의 WPM에 넘겨준다.
+	* */
+	if ( Obj->WeaponPartsManager)
 	{
-		Weapon->WeaponPartsManager = Obj->WeaponPartsManager;
+		if ( Obj->WeaponPartsManager->MuzzleParts )
+		{
+			Obj->WeaponPartsManager->A_MuzzleParts = nullptr;
+			Weapon->WeaponPartsManager->MuzzleParts = Obj->WeaponPartsManager->MuzzleParts;
+		}
+		if ( Obj->WeaponPartsManager->ScopeParts )
+		{
+			Obj->WeaponPartsManager->A_ScopeParts = nullptr;
+			Weapon->WeaponPartsManager->ScopeParts = Obj->WeaponPartsManager->ScopeParts;
+		}
+		if ( Obj->WeaponPartsManager->TacticalParts )
+		{
+			Obj->WeaponPartsManager->A_TacticalParts = nullptr;
+			Weapon->WeaponPartsManager->TacticalParts = Obj->WeaponPartsManager->TacticalParts;
+		}
+
+		Obj->WeaponPartsManager->SetOwnerWeapon(Weapon->WeaponPartsManager->GetOwnerWeapon());
 	}
-	//Weapon에만 WPM이 있는 경우 (Weapon이 맨 처음으로 world에 Spawn된 상태)
-	else if ( Weapon->WeaponPartsManager.IsValid() && Obj->WeaponPartsManager.IsValid() == false )
+	//Obj에 WPM이 없다면 Weapon의 Data를 그대로 대입해주고 끝낸다.
+	else
 	{
 		Obj->WeaponPartsManager = Weapon->WeaponPartsManager;
 	}
-
 }
 
 

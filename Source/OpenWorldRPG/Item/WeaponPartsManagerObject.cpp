@@ -15,9 +15,9 @@ void UWeaponPartsManagerObject::SetOwnerWeapon(AWeapon* Weapon)
 AWeapon* UWeaponPartsManagerObject::GetOwnerWeapon()
 {
 	AWeapon* ReturnWeap = nullptr;
-	if ( OwnerWeapon.IsValid() )
+	if ( OwnerWeapon )
 	{
-		ReturnWeap = OwnerWeapon.Get();
+		ReturnWeap = OwnerWeapon;
 	}
 
 	return ReturnWeap;
@@ -33,14 +33,14 @@ void UWeaponPartsManagerObject::AddParts(UNewItemObject* Parts)
 		switch ( PartsPDA->WeaponPartsType )
 		{
 		case EWeaponPartsType::EWPT_Muzzle:
-			if ( MuzzleParts.IsValid() == false )
+			if ( MuzzleParts == nullptr)
 			{
 				MuzzleParts = Parts;
 				bIsSuccess = true;
 			}
 			break;
 		case EWeaponPartsType::EWPT_Scope:
-			if ( ScopeParts.IsValid() == false )
+			if ( ScopeParts== nullptr)
 			{
 				ScopeParts = Parts;
 				//ScopeParts->WeaponPartsManager = this;
@@ -48,7 +48,7 @@ void UWeaponPartsManagerObject::AddParts(UNewItemObject* Parts)
 			}
 			break;
 		case EWeaponPartsType::EWPT_Tactical:
-			if ( TacticalParts.IsValid() == false )
+			if ( TacticalParts == nullptr )
 			{
 				TacticalParts = Parts;
 				//TacticalParts->WeaponPartsManager = this;
@@ -81,7 +81,7 @@ void UWeaponPartsManagerObject::RemoveParts(UNewItemObject* Parts)
 		switch ( PartsPDA->WeaponPartsType )
 		{
 		case EWeaponPartsType::EWPT_Muzzle:
-			if ( MuzzleParts.IsValid() && MuzzleParts.Get() == Parts )
+			if ( MuzzleParts )
 			{
 				MuzzleParts = nullptr;
 				A_MuzzleParts = nullptr;
@@ -89,7 +89,7 @@ void UWeaponPartsManagerObject::RemoveParts(UNewItemObject* Parts)
 			}
 			break;
 		case EWeaponPartsType::EWPT_Scope:
-			if ( ScopeParts.IsValid() && ScopeParts.Get() == Parts )
+			if ( ScopeParts)//.IsValid() && ScopeParts.Get() == Parts )
 			{
 				ScopeParts = nullptr;
 				A_ScopeParts = nullptr;
@@ -97,7 +97,7 @@ void UWeaponPartsManagerObject::RemoveParts(UNewItemObject* Parts)
 			}
 			break;
 		case EWeaponPartsType::EWPT_Tactical:
-			if ( TacticalParts.IsValid() && TacticalParts.Get() == Parts )
+			if ( TacticalParts)
 			{
 				TacticalParts = nullptr;
 				A_TacticalParts = nullptr;
@@ -118,7 +118,7 @@ void UWeaponPartsManagerObject::RemoveParts(UNewItemObject* Parts)
 
 void UWeaponPartsManagerObject::DeleteLink(UNewItemObject* PartsObj)
 {
-	if ( PartsObj->WeaponPartsManager.IsValid() )
+	if ( PartsObj->WeaponPartsManager )
 	{
 		PartsObj->WeaponPartsManager->RemoveParts(PartsObj);
 		PartsObj->WeaponPartsManager = nullptr;
@@ -143,12 +143,12 @@ void UWeaponPartsManagerObject::DeleteLink(UNewItemObject* PartsObj)
 void UWeaponPartsManagerObject::UpdateParts(UWorld* World, AWeapon* VarWeapon)
 {
 	//if(VarWeapon == nullptr) return;
-	if ( OwnerWeapon.IsValid() == false ) return;
+	if ( OwnerWeapon == nullptr ) return;
 	if ( OwnerWeapon != VarWeapon ) return;
 	//OwnerWeapon = VarWeapon;
 
 	if ( OwnerWeapon->WeaponDataAsset == nullptr ) return;
-	DestroyAllAttachParts(OwnerWeapon.Get());
+	DestroyAllAttachParts(OwnerWeapon);
 
 	for ( EWeaponPartsType PartsType : TEnumRange<EWeaponPartsType>() )
 	{
@@ -156,23 +156,23 @@ void UWeaponPartsManagerObject::UpdateParts(UWorld* World, AWeapon* VarWeapon)
 		switch ( PartsType )
 		{
 		case EWeaponPartsType::EWPT_Muzzle:
-			if ( OwnerWeapon.IsValid() && MuzzleParts.IsValid() )
+			if ( OwnerWeapon && MuzzleParts)//OwnerWeapon.IsValid() && MuzzleParts.IsValid() )
 			{
-				Parts = MuzzleParts.Get();
+				Parts = MuzzleParts;//.Get();
 				SpawnAndAttachParts(World, Parts, EWeaponPartsType::EWPT_Muzzle);
 			}
 			break;
 		case EWeaponPartsType::EWPT_Scope:
-			if ( OwnerWeapon.IsValid() && ScopeParts.IsValid() )
+			if ( OwnerWeapon && ScopeParts)
 			{
-				Parts = ScopeParts.Get();
+				Parts = ScopeParts;
 				SpawnAndAttachParts(World, Parts, EWeaponPartsType::EWPT_Scope);
 			}
 			break;
 		case EWeaponPartsType::EWPT_Tactical:
-			if ( OwnerWeapon.IsValid() && OwnerWeapon->WeaponDataAsset->MuzzleParts.IsValid() )
+			if ( OwnerWeapon && TacticalParts)
 			{
-				Parts = OwnerWeapon->WeaponDataAsset->TacticalParts.Get();
+				Parts = TacticalParts;
 				SpawnAndAttachParts(World, Parts, EWeaponPartsType::EWPT_Tactical);
 			}
 			break;
@@ -186,44 +186,86 @@ void UWeaponPartsManagerObject::SpawnAndAttachParts(UWorld* World, UNewItemObjec
 	if ( AEquipment* Parts = UCustomInventoryLibrary::SpawnEquipment(World, PartsObj) )
 	{
 		const USkeletalMeshSocket* WeaponSocket = nullptr;
+		bool bSKMeshAttach = false;
+		FName SKSocketName = NAME_None;
 		switch ( VarPartsType )
 		{
 		case EWeaponPartsType::EWPT_Muzzle:
 			WeaponSocket = OwnerWeapon->SKMesh->GetSocketByName(MuzzleSocketName);
 			A_MuzzleParts = Parts;
+			SKSocketName = MuzzleSocketName;
 			break;
 		case EWeaponPartsType::EWPT_Scope:
 			WeaponSocket = OwnerWeapon->SKMesh->GetSocketByName(ScopeSocketName);
 			A_ScopeParts = Parts;
+			SKSocketName = ScopeSocketName;
 			break;
 		case EWeaponPartsType::EWPT_Tactical:
 			WeaponSocket = OwnerWeapon->SKMesh->GetSocketByName(TacticalSocketName);
 			A_TacticalParts = Parts;
+			SKSocketName = TacticalSocketName;
 			break;
 		}
 
 		if ( WeaponSocket )
 		{
+			//MeshSetting을 하면서 SKMesh인 경우 bool setting.
 			if ( Parts->SKMesh->SkeletalMesh )
 			{
+				Parts->SKMesh->SetHiddenInGame(false);
 				Parts->SKMesh->SetSimulatePhysics(false);
+				
+				bSKMeshAttach = true;
+			}
+			//Mesh Setting
+			//StaticMesh와 SKMesh가 동시에 있는경우 StaticMesh를 숨긴다.
+			if(Parts->Mesh && bSKMeshAttach )
+			{
+				Parts->Mesh->SetHiddenInGame(true);
+				Parts->Mesh->SetSimulatePhysics(false);
+				Parts->Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			}
+			else if ( Parts->Mesh )
+			{
+				Parts->Mesh->SetSimulatePhysics(false);
+				Parts->Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			}
+
+
+			if ( bSKMeshAttach )
+			{
+				FMatrix SocketTM;
+				if (WeaponSocket->GetSocketMatrix(SocketTM, OwnerWeapon->SKMesh))
+				{
+					Parts->Modify();
+
+					Parts->SetActorLocation(SocketTM.GetOrigin(), false);
+					Parts->SetActorRotation(SocketTM.Rotator());
+					Parts->SKMesh->AttachToComponent(OwnerWeapon->SKMesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale, SKSocketName);
+
+					Parts->SetActorEnableCollision(false);
+				}
 			}
 			else
 			{
-				Parts->Mesh->SetSimulatePhysics(false);
+				if ( WeaponSocket->AttachActor(Parts, OwnerWeapon->SKMesh) )
+				{
+					Parts->SetActorEnableCollision(false);
+				}
 			}
+			
 
-			FAttachmentTransformRules rules(EAttachmentRule::KeepRelative, false);
+			/*
+			FAttachmentTransformRules rules(EAttachmentRule::SnapToTarget, false);
+			Parts->SKMesh->AttachToComponent(OwnerWeapon->Mesh, rules, ScopeSocketName);
 			if ( Parts->SKMesh->AttachToComponent(OwnerWeapon->SKMesh, rules, ScopeSocketName) )
 			{
 				Parts->SetActorEnableCollision(false);
-			}
-
-
-
-			/*if (WeaponSocket->AttachActor(Parts, OwnerWeapon->SKMesh))
-			{
 			}*/
+
+
+
+			
 		}
 
 	}
@@ -232,7 +274,7 @@ void UWeaponPartsManagerObject::SpawnAndAttachParts(UWorld* World, UNewItemObjec
 
 void UWeaponPartsManagerObject::DestroyAllAttachParts(AWeapon* VarWeapon)
 {
-	if ( OwnerWeapon.IsValid() )
+	if ( OwnerWeapon )
 	{
 		TArray<AActor*> AttachedParts;
 		OwnerWeapon->GetAttachedActors(AttachedParts);
@@ -259,13 +301,25 @@ AEquipment* UWeaponPartsManagerObject::GetWeaponParts(EWeaponPartsType PartsWant
 	switch ( PartsWantToGet )
 	{
 	case EWeaponPartsType::EWPT_Muzzle:
-		return A_MuzzleParts.Get();
+		if( MuzzleParts && A_MuzzleParts)
+		{
+			return A_MuzzleParts;
+		}
+		return nullptr;
 		break;
 	case EWeaponPartsType::EWPT_Scope:
-		return A_ScopeParts.Get();
+		if ( ScopeParts && A_ScopeParts)
+		{
+			return A_ScopeParts;
+		}
+		return nullptr;
 		break;
 	case EWeaponPartsType::EWPT_Tactical:
-		return A_TacticalParts.Get();
+		if ( TacticalParts && A_TacticalParts)
+		{
+			return A_TacticalParts;
+		}
+		return nullptr;
 		break;
 	}
 	return nullptr;

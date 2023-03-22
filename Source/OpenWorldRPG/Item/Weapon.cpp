@@ -2,7 +2,7 @@
 
 
 #include "Weapon.h"
-//#include "OpenWorldRPG/Item/CustomPDA.h"
+#include "OpenWorldRPG/Item/CustomPDA.h"
 #include "OpenWorldRPG/Item/WeaponPDA.h"
 #include "OpenWorldRPG/MainCharacter.h"
 #include "OpenWorldRPG/MainController.h"
@@ -75,8 +75,14 @@ void AWeapon::BeginPlay()
 {
 	Super::BeginPlay();
 
-	CheckWeaponPartsManager();
-	UpdateWeaponParts();
+	WeaponDataAsset = Cast<UWeaponPDA>(ItemSetting.DataAsset);
+
+	if ( WeaponDataAsset)
+	{
+		SettingWeaponPartsManager();
+		UpdateWeaponParts();
+	}
+	
 }
 
 bool AWeapon::StepEquip(AActor* Char, ERifleSlot RifleSlot)
@@ -84,11 +90,11 @@ bool AWeapon::StepEquip(AActor* Char, ERifleSlot RifleSlot)
 	ABaseCharacter* BChar = Cast<ABaseCharacter>(Char);
 	check(BChar)
 
-		//지정한 값을 쉽게 사용하기 위해 Cast해둔다.
-		WeaponDataAsset = Cast<UWeaponPDA>(ItemSetting.DataAsset);
+	//지정한 값을 쉽게 사용하기 위해 Cast해둔다.
+	WeaponDataAsset = Cast<UWeaponPDA>(ItemSetting.DataAsset);
 	check(WeaponDataAsset)
 
-		CapsuleAdjust();
+	CapsuleAdjust();
 
 
 	if ( RifleAssign == ERifleSlot::ERS_MAX )
@@ -160,7 +166,7 @@ bool AWeapon::StepEquip(AActor* Char, ERifleSlot RifleSlot)
 	/* 아래는 AddEquipment 이후에 진행 해야할 함수들을 호출..
 	* 아래함수들은 ItemObj가 필요함.
 	*/
-	UCustomInventoryLibrary::SetWeaponPartsManager(this, this->ItemObj);
+	
 	UpdateWeaponParts();
 
 	/**장착 직후 Ammo Widget을 update하기 위해
@@ -304,13 +310,33 @@ FTransform AWeapon::GetSightSocketTransform()
 	//SetActorRelativeTransform(WeaponDataAsset->FPMeshAttachTransform);
 
 	FTransform ReturnTransform;
+	bool bHasSight = false;
 
-
-	if ( AEquipment* A_Scope = WeaponPartsManager->GetWeaponParts(EWeaponPartsType::EWPT_Scope) )
+	if ( ItemObj->WeaponPartsManager )
 	{
-		ReturnTransform = A_Scope->SKMesh->GetSocketTransform(SightSocketName, ERelativeTransformSpace::RTS_World);
+		if ( AEquipment* A_Scope = ItemObj->WeaponPartsManager->GetWeaponParts(EWeaponPartsType::EWPT_Scope) )
+		{
+			ReturnTransform = A_Scope->SKMesh->GetSocketTransform(SightSocketName, ERelativeTransformSpace::RTS_World);
+			bHasSight = true;
+		}
 	}
+	else if(WeaponPartsManager)
+	{
+		if ( AEquipment* A_Scope = WeaponPartsManager->GetWeaponParts(EWeaponPartsType::EWPT_Scope) )
+		{
+			ReturnTransform = A_Scope->SKMesh->GetSocketTransform(SightSocketName, ERelativeTransformSpace::RTS_World);
+			bHasSight = true;
+		}
+
+	}
+	//need to debug why WPM is gone and when
 	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AWeapon::GetSightSocketTransform / WPM is null "));
+	}
+
+	//Sight가 있다면 아래 기본 IronSight는 진행하지 않는다.
+	if( bHasSight == false)
 	{
 		ReturnTransform = SKMesh->GetSocketTransform(SightSocketName, ERelativeTransformSpace::RTS_World);
 	}
@@ -327,26 +353,59 @@ FTransform AWeapon::GetSightSocketTransform()
 }
 
 //무조건 생성한다.
-void AWeapon::CheckWeaponPartsManager()
+void AWeapon::SettingWeaponPartsManager()
 {
-	if ( WeaponPartsManager.IsValid() == false )
-	{
-		WeaponPartsManager = NewObject<UWeaponPartsManagerObject>();
-		WeaponPartsManager->SetOwnerWeapon(this);
-		WeaponPartsManager->OnChangeParts.AddDynamic(this, &AWeapon::UpdateWeaponParts);
-	}
+	WeaponPartsManager = NewObject<UWeaponPartsManagerObject>();
+	WeaponPartsManager->SetOwnerWeapon(this);
+	WeaponPartsManager->OnChangeParts.AddDynamic(this, &AWeapon::UpdateWeaponParts);
 
+	if ( bHasSpawnParts )
+	{
+		TArray<UCustomPDA*> List1 = UCustomInventoryLibrary::RandomSpawnUsingTableButCount(1,SpawnMuzzlePartsList);
+		AddSpawnParts(List1);
+		TArray<UCustomPDA*> List2 = UCustomInventoryLibrary::RandomSpawnUsingTableButCount(1, SpawnScopePartsList);
+		AddSpawnParts(List2);
+		TArray<UCustomPDA*> List3 = UCustomInventoryLibrary::RandomSpawnUsingTableButCount(1, SpawnTacticalPartsList);
+		AddSpawnParts(List3);
+	}
+	
+
+	/*if ( ItemObj && ItemObj->WeaponPartsManager.IsValid() )
+	{
+		UCustomInventoryLibrary::SetWeaponPartsManager(WeaponPartsManager.Get(), ItemObj->WeaponPartsManager.Get());
+		ItemObj->WeaponPartsManager->SetOwnerWeapon(WeaponPartsManager->GetOwnerWeapon());
+		ItemObj->WeaponPartsManager->OnChangeParts.AddDynamic(this, &AWeapon::UpdateWeaponParts);
+	}*/
+}
+
+void AWeapon::AddSpawnParts(TArray<UCustomPDA*>SpawnParts)
+{
+	for ( UCustomPDA* PartsPDA : SpawnParts )
+	{
+		bool bIsCreated = false;
+		//auto SpawnParts = UCustomInventoryLibrary::SpawnEquipment(GetWorld(), Cast<UCustomPDA>(PartsPDA));
+		UNewItemObject* PartsObj = UCustomInventoryLibrary::CreateObject(FItemSetting(PartsPDA,1,0),bIsCreated); //SpawnParts->ItemSetting, bIsCreated);
+		//SpawnParts->Destroy();
+		if ( bIsCreated )
+		{
+			WeaponPartsManager->AddParts(PartsObj);
+		}
+	}
 }
 
 void AWeapon::UpdateWeaponParts()
 {
-	if ( ItemObj && ItemObj->WeaponPartsManager.IsValid() )
+	if(WeaponDataAsset->EquipmentType == EEquipmentType::EET_Rifle ||
+	WeaponDataAsset->EquipmentType == EEquipmentType::EET_Pistol )
 	{
-		ItemObj->WeaponPartsManager->UpdateParts(GetWorld(), this);
-	}
-	else
-	{
-		WeaponPartsManager->UpdateParts(GetWorld(), this);
+		if ( ItemObj && ItemObj->WeaponPartsManager )
+		{
+			ItemObj->WeaponPartsManager->UpdateParts(GetWorld(), this);
+		}
+		else if( WeaponPartsManager)
+		{
+			WeaponPartsManager->UpdateParts(GetWorld(), this);
+		}
 	}
 }
 
@@ -388,7 +447,7 @@ void AWeapon::Remove()
 	}
 
 	OwningPlayer = nullptr;
-	if ( WeaponPartsManager.IsValid() )
+	if ( WeaponPartsManager )
 	{
 		WeaponPartsManager->DestroyAllAttachParts(this);
 	}

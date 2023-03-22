@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -60,7 +60,7 @@ public:
 	/* New version */
 	bool IsAvailableSpace(UItemStorageObject* StorageObj, UNewItemObject* ItemObj, int32 TopLeftIndex);
 	void AddItemAtIndex(UItemStorageObject* StorageObj, UNewItemObject* ItemObj, int32 Index);
-	bool TryAddItem(UItemStorageObject* StorageObj, FItemSetting ItemSetting, UNewItemObject* Obj = nullptr, bool bWantToGenerateRandomCount = false);
+	bool TryAddItem(UItemStorageObject* StorageObj, FItemSetting ItemSetting, UNewItemObject* Obj = nullptr, class AItem* WantToAddItem = nullptr, bool bWantToGenerateRandomCount = false);
 	bool RemoveItem(UItemStorageObject* StorageObj, UNewItemObject* ItemObj);
 	//UNewItemObject* CreateObject(FItemSetting ItemStruct, bool& bIsCreated);
 
