@@ -88,7 +88,7 @@ public:
 	const FName LeftHandGripSocketName = FName("handLeftGripPos");
 
 	//Weapon을 잡을 LeftHand의 Position (Weapon's socket)
-	const FName WeaponLeftHandSocketName = FName("LeftHandPos");
+	const FName WeaponTPSLeftHandSocketName = FName("TPSLeftHandPos");
 
 	/* Enums */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Enums")
@@ -105,7 +105,7 @@ public:
 
 	/* Movement */
 	UPROPERTY(EditDefaultsOnly, Category = Movement)
-	float MaxWalkSpeed = 600.f; //뛰는 속도
+	float MaxWalkSpeed = 500.f; //뛰는 속도
 	UPROPERTY(EditDefaultsOnly, Category = Movement)
 	float MinWalkSpeed = 300.f; //걷는 속도
 
@@ -244,6 +244,10 @@ public:
 	FORCEINLINE ETeamType GetTeamType() { return TeamType; }
 	virtual void SetAimMode(EAimMode Mode);
 
+
+	virtual void Sprint();
+	virtual void UnSprint();
+
 	///**** Spawn items *******/
 	//void SpawnItems();
 	//void SpawnEquipments();
@@ -251,7 +255,7 @@ public:
 	/* Set Storage */
 	void SettingStorage();
 
-	void SetEquippedWeapon(AWeapon* Weapon);
+	virtual void SetEquippedWeapon(AWeapon* Weapon);
 
 	/****************** Weapon ******************************/
 
@@ -266,6 +270,7 @@ public:
 	void ChangeSubWeapon();
 	void ChangePistolWeapon();
 
+	virtual void ChangeWeaponTypeNumber(int32 number);
 	/* Change Weapon Firing Mode*/
 	void ChangeSafetyLever();
 
@@ -286,6 +291,8 @@ public:
 
 	/* Pocket, Vest에 있는 Equipped Weapon에 Reload가능한 Type의 Ammo의 개수를 리턴한다.*/
 	int32 GetTotalNumberofSameTypeAmmo();
+
+	
 
 	UFUNCTION()
 	void UseItem(AActor* Item);
@@ -328,6 +335,8 @@ public:
 
 	void CalcFallingDistance(FHitResult& _FallHit);
 	void ApplyFallingDamage(FHitResult& _FallHit);
+
+	
 
 	/*******************************/
 	virtual void Interaction(AActor* Actor) override;

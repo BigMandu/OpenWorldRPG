@@ -68,11 +68,17 @@ public:
 	EAmmoType AmmoType;
 
 	/***** Hand Attach Transform ******/
-	UPROPERTY(EditAnywhere, Category = "Item | Hand")
+	UPROPERTY(EditAnywhere, Category = "Item | Attach")
 	bool bIsNeedToAttachHandBeforeUse;
-	UPROPERTY(EditAnywhere, Category = "Item | Hand")
+
+	UPROPERTY(EditAnywhere, Category = "Item | Attach", meta = ( EditCondition = "!bAttachedToRightHand" ))
+	bool bAttachedToLeftHand = true;
+	UPROPERTY(EditAnywhere, Category = "Item | Attach", meta = ( EditCondition = "!bAttachedToLeftHand" ))
+	bool bAttachedToRightHand;
+
+	UPROPERTY(EditAnywhere, Category = "Item | Attach")
 	FTransform TPS_HandAttachTransform;
-	UPROPERTY(EditAnywhere, Category = "Item | Hand")
+	UPROPERTY(EditAnywhere, Category = "Item | Attach")
 	FTransform FPS_HandAttachTransform;
 
 	/****** Using AnimMontage *****/

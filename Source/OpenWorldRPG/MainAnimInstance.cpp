@@ -78,6 +78,7 @@ void UMainAnimInstance::UpdateAnimationProperties()
 	}
 }
 
+//Called from AnimBP::Throw state machine
 bool UMainAnimInstance::IsReadyToThrow()
 {
 	if (Player->HoldingItem)
@@ -85,6 +86,7 @@ bool UMainAnimInstance::IsReadyToThrow()
 		ABaseGrenade* Grenade = Cast<ABaseGrenade>(Player->HoldingItem);
 		if (Grenade)
 		{
+			//this bool setted when LMBDown
 			return Grenade->bReadyToThrow;		
 		}
 	}
@@ -97,12 +99,32 @@ void UMainAnimInstance::SetHandIK()
 	//실제 2bone IK는 AnimGraph에서 해준다.
 	if (Player->EquippedWeapon)
 	{
-		LeftHandLocation = Player->LeftHandik().GetLocation();
-		LeftHandAlpha = 1.0f;
+		AMainCharacter* MainPlayer = Cast<AMainCharacter>(Player);
+		if (MainPlayer)
+		{
+			LeftHandLocation = MainPlayer->LeftHandik().GetLocation();
+		}
+		else
+		{
+			LeftHandLocation = Player->LeftHandik().GetLocation();
+		}
+		
+		//SetLeftHandIKAlpha(1.f);
+		//LeftHandAlpha = 1.0f;
 	}
 	else
 	{
-		LeftHandAlpha = 0.0f;
+		//SetLeftHandIKAlpha(0.f);
+		//LeftHandAlpha = 0.0f;
+	}
+}
+
+void UMainAnimInstance::SetLeftHandIKAlpha(float Alpha)
+{
+	if(Player->EquippedWeapon )
+	{
+		LeftHandAlpha = Alpha;
+		UE_LOG(LogTemp, Warning, TEXT("UMainAnimInstance::SetLeftHandIKAlpha, Alpha  = %f"), LeftHandAlpha);
 	}
 }
 

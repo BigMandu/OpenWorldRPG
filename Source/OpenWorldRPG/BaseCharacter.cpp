@@ -133,7 +133,9 @@ void ABaseCharacter::PostInitializeComponents()
 	TPAnimInstance->StepSound.AddUObject(this, &ABaseCharacter::StepSound);
 	TPAnimInstance->ThrowDelegate.AddUObject(this,&ABaseCharacter::DetachThrowingObject);
 
-	TPAnimInstance->WeaponTypeNumber = 0;
+	//TPAnimInstance->WeaponTypeNumber = 0;
+	ChangeWeaponTypeNumber(0);
+	
 	
 
 	SetTeamType(TeamType);
@@ -225,7 +227,7 @@ void ABaseCharacter::SetCharacterStatus(ECharacterStatus Type)
 		bIsSprinting = false;
 		break;
 	case ECharacterStatus::EPS_Sprint:
-		GetCharacterMovement()->MaxWalkSpeed = 1300.f;
+		GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed * 1.7f;
 		bIsSprinting = true;
 		break;
 	default:
@@ -271,6 +273,7 @@ void ABaseCharacter::SetEquippedWeapon(AWeapon* Weapon)
 	if (Weapon)
 	{
 		EquippedWeapon = Weapon;
+		TPAnimInstance->SetLeftHandIKAlpha(1.f);
 	}
 }
 
@@ -281,6 +284,20 @@ void ABaseCharacter::UseItem(class AActor* Item)
 	{
 		//Item->Use(this);
 	}
+}
+
+void ABaseCharacter::Sprint()
+{
+	TPAnimInstance->bIsSprint = true;
+	TPAnimInstance->SetLeftHandIKAlpha(0.f);
+	//TPAnimInstance->LeftHandAlpha = 0.f;
+}
+
+void ABaseCharacter::UnSprint()
+{
+	TPAnimInstance->bIsSprint = false;
+	TPAnimInstance->SetLeftHandIKAlpha(1.f);
+	//TPAnimInstance->LeftHandAlpha = 1.f;
 }
 
 void ABaseCharacter::DetachThrowingObject()
@@ -521,7 +538,8 @@ bool ABaseCharacter::ChangeWeapon(int32 index)
 	switch (index)
 	{
 	case 0:
-		TPAnimInstance->WeaponTypeNumber = 0;
+		ChangeWeaponTypeNumber(0);
+		//TPAnimInstance->WeaponTypeNumber = 0;
 		//FPAnimInstance->WeaponTypeNumber = 0;
 		break;
 	case 1:
@@ -530,14 +548,17 @@ bool ABaseCharacter::ChangeWeapon(int32 index)
 		{
 			//detach and destroy when holding item.
 			DetachCoreUsableItem();
+			//이미 장착한 Weapon이 있는경우 SubSocket으로 보냄.
 			if(EquippedWeapon)
 			{
 				EquippedWeapon->GunAttachToSubSocket(this);
 			}
 			PrimaryWeapon->GunAttachToMesh(this);
-			
-			TPAnimInstance->WeaponTypeNumber = 1;
-			EquippedWeapon = PrimaryWeapon;	
+
+			ChangeWeaponTypeNumber(1);
+			//TPAnimInstance->WeaponTypeNumber = 1;
+			SetEquippedWeapon(PrimaryWeapon);
+			//EquippedWeapon = PrimaryWeapon;	
 
 			bSuccessChangeWeapon = true;
 		}
@@ -552,9 +573,12 @@ bool ABaseCharacter::ChangeWeapon(int32 index)
 				EquippedWeapon->GunAttachToSubSocket(this);
 			}
 			SubWeapon->GunAttachToMesh(this);
-			TPAnimInstance->WeaponTypeNumber = 1;
+			ChangeWeaponTypeNumber(1);
+			//TPAnimInstance->WeaponTypeNumber = 1;
 
-			EquippedWeapon = SubWeapon;
+			SetEquippedWeapon(SubWeapon);
+			//EquippedWeapon = SubWeapon;
+			
 
 			bSuccessChangeWeapon = true;
 		}
@@ -568,9 +592,12 @@ bool ABaseCharacter::ChangeWeapon(int32 index)
 			}				
 
 			PistolWeapon->GunAttachToMesh(this);
-			TPAnimInstance->WeaponTypeNumber = 2;
+			ChangeWeaponTypeNumber(2);
+			//TPAnimInstance->WeaponTypeNumber = 2;
 			//FPAnimInstance->WeaponTypeNumber = 2;
-			EquippedWeapon = PistolWeapon;			
+
+			SetEquippedWeapon(PistolWeapon);
+			//EquippedWeapon = PistolWeapon;			
 			bSuccessChangeWeapon = true;
 		}
 		break;
@@ -598,6 +625,13 @@ void ABaseCharacter::ChangeSubWeapon()
 void ABaseCharacter::ChangePistolWeapon()
 {
 	ChangeWeapon(3);
+}
+
+void ABaseCharacter::ChangeWeaponTypeNumber(int32 number)
+{
+	if(TPAnimInstance == nullptr ) return;
+
+	TPAnimInstance->WeaponTypeNumber = number;
 }
 
 void ABaseCharacter::SetHoldingItem(AItem* WantToHolding)
@@ -643,7 +677,7 @@ FTransform ABaseCharacter::LeftHandik()
 	FTransform Transform;
 	if (EquippedWeapon)
 	{
-		Transform = EquippedWeapon->SKMesh->GetSocketTransform(WeaponLeftHandSocketName, ERelativeTransformSpace::RTS_World);
+		Transform = EquippedWeapon->SKMesh->GetSocketTransform(WeaponTPSLeftHandSocketName, ERelativeTransformSpace::RTS_World);
 		return Transform;
 	}
 
@@ -673,7 +707,11 @@ void ABaseCharacter::SpeakSound(USoundCue* Sound)
 		AudioComp->Play();
 		//UGameplayStatics::PlaySoundAtLocation(GetWorld(),Sound,GetMesh()->GetSocketLocation(HeadSocketName));
 		UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), 1.f, this);
-	}	
+	}
+	else
+	{
+		AudioComp->Stop();
+	}
 }
 
 void ABaseCharacter::StepSound()

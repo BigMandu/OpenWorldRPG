@@ -107,14 +107,14 @@ void AMainCharacter::PostInitializeComponents()
 	//TPAnimInstance = Cast<UMainAnimInstance>(GetMesh()->GetAnimInstance()); 
 	FPAnimInstance = Cast<UMainAnimInstance>(FPMesh->GetAnimInstance());
 
-	if ( FPAnimInstance )//TPAnimInstance && FPAnimInstance)
-	{
+	//if ( FPAnimInstance )//TPAnimInstance && FPAnimInstance)
+	//{
 		/* 사운드는 TP Animation을 기준으로 출력한다. */ //AnimInstance의 StepSound_Notify에서 호출.
 		//TPAnimInstance->StepSound.AddUObject(this, &AMainCharacter::StepSound); 
 		//TPAnimInstance->WeaponTypeNumber = 0;
-		FPAnimInstance->WeaponTypeNumber = 0;
+		//FPAnimInstance->WeaponTypeNumber = 0;
 		//FPAnimInstance->StartADS.AddUFunction(this,FName("GetADSPosition"));
-	}
+	//}
 
 	//ShadowMesh의 AnimInstance를 넣어준다.
 	ShadowMesh->SetAnimInstanceClass(GetMesh()->GetAnimClass());
@@ -123,6 +123,7 @@ void AMainCharacter::PostInitializeComponents()
 	ShadowMesh->SetRenderInMainPass(false);
 	ShadowMesh->SetHiddenInGame(true);
 
+	ChangeWeaponTypeNumber(0);
 	//ShadowMesh->SetOwnerNoSee(true);
 	//ShadowMesh->SetCastShadow(true);
 
@@ -740,7 +741,9 @@ void AMainCharacter::MoveForward(float Value)
 void AMainCharacter::MoveRight(float Value)
 {
 	bMoveRight = false;
-	if ( MainController != NULL && Value != 0.f )
+
+	//bBlockMoveRight는 Sprint함수에서 제어한다.
+	if ( MainController != NULL && Value != 0.f && bBlockMoveRight == false)
 	{
 		bMoveRight = true;
 		FRotator Rotation = MainController->GetControlRotation();
@@ -761,7 +764,24 @@ void AMainCharacter::Sprint()
 	if ( GetWorldTimerManager().IsTimerActive(T_SprintKeyDown) == false &&
 	bIsCrouched == false && bDisableInput == false && GetCharacterMovement()->IsFalling() == false && bIsAim == false )
 	{
+		Super::Sprint();
+
+		FPAnimInstance->bIsSprint = true;
+		//HandIK를 해제한다.
+		FPAnimInstance->SetLeftHandIKAlpha(0.f);
+
 		bSprintKeyDown = true;
+
+		//좌우 회전 민감도를 확 낮춘다.
+		TempVar_OriginInputYawScale = MainController->InputYawScale;
+		TempVar_OriginInputPitchScale = MainController->InputPitchScale;
+
+		MainController->InputYawScale = 0.1f;
+		MainController->InputPitchScale = -0.1f;
+
+		//Sprint중에 MoveRight를 막아준다.
+		bBlockMoveRight = true;
+		
 		//Up Timer 초기화
 		GetWorldTimerManager().ClearTimer(T_SprintKeyUp);
 		GetWorldTimerManager().SetTimer(T_SprintKeyDown, [ & ]
@@ -770,11 +790,25 @@ void AMainCharacter::Sprint()
 		}, GetWorld()->GetDeltaSeconds(), true);
 	}
 }
+
 void AMainCharacter::UnSprint()
 {
 	if ( GetWorldTimerManager().IsTimerActive(T_SprintKeyUp) == false )
 	{
+		Super::UnSprint();
+		FPAnimInstance->bIsSprint = false;
+		//HandIK를 재설정한다.
+		FPAnimInstance->SetLeftHandIKAlpha(1.f);
+		//FPAnimInstance->LeftHandAlpha = 1.f;
+
+		//TPAnimInstance->bIsSprint = false;
 		bSprintKeyDown = false;
+		bBlockMoveRight = false;
+
+		//좌우 회전 민감도를 기본값으로 돌려놓는다.
+		MainController->InputYawScale = TempVar_OriginInputYawScale;
+		MainController->InputPitchScale = TempVar_OriginInputPitchScale;
+
 		//Down Timer 초기화
 		GetWorldTimerManager().ClearTimer(T_SprintKeyDown);
 
@@ -796,14 +830,21 @@ void AMainCharacter::MyJump()
 	if ( bDisableInput == false )
 	{
 		bIsJumpKeyDown = true;
-		Cast<UMainAnimInstance>(GetMesh()->GetAnimInstance())->bIsJumpkeyDown = true;
+
+		TPAnimInstance->bIsJumpkeyDown = true;
+		FPAnimInstance->bIsJumpkeyDown = true;
+		Cast<UMainAnimInstance>(ShadowMesh->GetAnimInstance())->bIsJumpkeyDown = true;
+		//Cast<UMainAnimInstance>(GetMesh()->GetAnimInstance())->bIsJumpkeyDown = true;
 		Super::Jump();
 	}
 }
 void AMainCharacter::MyStopJumping()
 {
 	bIsJumpKeyDown = false;
-	Cast<UMainAnimInstance>(GetMesh()->GetAnimInstance())->bIsJumpkeyDown = false;
+	TPAnimInstance->bIsJumpkeyDown = false;
+	FPAnimInstance->bIsJumpkeyDown = false;
+	Cast<UMainAnimInstance>(ShadowMesh->GetAnimInstance())->bIsJumpkeyDown = false;
+	//Cast<UMainAnimInstance>(GetMesh()->GetAnimInstance())->bIsJumpkeyDown = false;
 	Super::StopJumping();
 }
 
@@ -1047,6 +1088,21 @@ void AMainCharacter::EKeyDown()
 	}
 }
 
+void AMainCharacter::SetEquippedWeapon(AWeapon* Weapon)
+{
+	Super::SetEquippedWeapon(Weapon);
+	FPAnimInstance->SetLeftHandIKAlpha(1.f);
+}
+
+void AMainCharacter::ChangeWeaponTypeNumber(int32 number)
+{
+	Super::ChangeWeaponTypeNumber(number);
+	UMainAnimInstance* ShadowAnim = Cast<UMainAnimInstance>(ShadowMesh->GetAnimInstance());
+	if ( FPAnimInstance == nullptr || ShadowAnim == nullptr) return;
+
+	FPAnimInstance->WeaponTypeNumber = number;
+	ShadowAnim->WeaponTypeNumber = number;
+}
 /*******************************  Vehicle 관련 ************************************************/
 
 //void AMainCharacter::ToggleCar()
@@ -1103,13 +1159,29 @@ void AMainCharacter::ReAttachHoldingItem()
 	if ( CameraMode == ECameraMode::ECM_FPS )
 	{
 		OnMesh = FPMesh;
-		HandSocket = FPMesh->GetSocketByName(LeftHandGripSocketName);
+		if ( HoldingItem->ItemSetting.DataAsset->bAttachedToLeftHand )
+		{
+			HandSocket = FPMesh->GetSocketByName(LeftHandGripSocketName);
+		}
+		else
+		{
+			HandSocket = FPMesh->GetSocketByName(GripSocketName);
+		}
+		
 		RelativeTF = HoldingItem->ItemSetting.DataAsset->FPS_HandAttachTransform;
 	}
 	else
 	{
 		OnMesh = GetMesh();
-		HandSocket = GetMesh()->GetSocketByName(LeftHandGripSocketName);
+		if ( HoldingItem->ItemSetting.DataAsset->bAttachedToLeftHand )
+		{
+			HandSocket = GetMesh()->GetSocketByName(LeftHandGripSocketName);
+		}
+		else
+		{
+			HandSocket = GetMesh()->GetSocketByName(GripSocketName);
+		}
+		
 		RelativeTF = HoldingItem->ItemSetting.DataAsset->TPS_HandAttachTransform;
 	}
 
@@ -1134,28 +1206,36 @@ bool AMainCharacter::ChangeWeapon(int32 index)
 	switch ( index )
 	{
 	case 0:
-		FPAnimInstance->WeaponTypeNumber = 0;
-		ShadowAnim->WeaponTypeNumber = 0;
+		ChangeWeaponTypeNumber(0);
+		
+		//FPAnimInstance->WeaponTypeNumber = 0;
+		//ShadowAnim->WeaponTypeNumber = 0;
 		break;
 	case 1:
 		if ( PrimaryWeapon )
 		{
-			FPAnimInstance->WeaponTypeNumber = 1;
-			ShadowAnim->WeaponTypeNumber = 1;
+			ChangeWeaponTypeNumber(1);
+			SetEquippedWeapon(PrimaryWeapon);
+			//FPAnimInstance->WeaponTypeNumber = 1;
+			//ShadowAnim->WeaponTypeNumber = 1;
 		}
 		break;
 	case 2:
 		if ( SubWeapon )
 		{
-			FPAnimInstance->WeaponTypeNumber = 1;
-			ShadowAnim->WeaponTypeNumber = 1;
+			ChangeWeaponTypeNumber(1);
+			SetEquippedWeapon(SubWeapon);
+			//FPAnimInstance->WeaponTypeNumber = 1;
+			//ShadowAnim->WeaponTypeNumber = 1;
 		}
 		break;
 	case 3:
 		if ( PistolWeapon )
 		{
-			FPAnimInstance->WeaponTypeNumber = 2;
-			ShadowAnim->WeaponTypeNumber = 2;
+			ChangeWeaponTypeNumber(2);
+			SetEquippedWeapon(PistolWeapon);
+			//FPAnimInstance->WeaponTypeNumber = 2;
+			//ShadowAnim->WeaponTypeNumber = 2;
 		}
 		break;
 	}
@@ -1291,6 +1371,25 @@ void AMainCharacter::CompassStop()
 	}
 }
 
+FTransform AMainCharacter::LeftHandik()
+{
+	FTransform Transform;
+	if ( EquippedWeapon )
+	{
+		switch ( CameraMode )
+		{
+			case ECameraMode::ECM_FPS:
+				Transform = EquippedWeapon->SKMesh->GetSocketTransform(WeaponFPSLeftHandSocketName, ERelativeTransformSpace::RTS_World);
+			break;
+			case ECameraMode::ECM_TPS:
+				Transform = EquippedWeapon->SKMesh->GetSocketTransform(WeaponTPSLeftHandSocketName, ERelativeTransformSpace::RTS_World);
+			break;
+		}		
+		return Transform;
+	}
+
+	return Transform;
+}
 
 void AMainCharacter::QuickSlotNum4()
 {

@@ -89,7 +89,7 @@ void ABaseGrenade::AttachToHand(ABaseCharacter* Actor, UNewItemObject* Obj, bool
 	Mesh->SetAngularDamping(0.f);
 
 	//WeaponClass의 GunAttachToMesh func를 호출해 WeaponGripSocket에 부착한다.
-	GunAttachToMesh(Actor);
+	//GunAttachToMesh(Actor);
 	SetOwningPlayer(Actor);
 }
 
@@ -101,12 +101,17 @@ void ABaseGrenade::ReadyToThrow()
 	UE_LOG(LogTemp,Warning,TEXT("ABaseGrenade::ReadyTo Throw"));
 	
 	bReadyToThrow = true;
-	if (this->OwningPlayer->TPAnimInstance)
+
+	if ( AMainCharacter* Player = Cast<AMainCharacter>(this->OwningPlayer) )
 	{
-		this->OwningPlayer->TPAnimInstance->WeaponTypeNumber = 3;
+		Player->ChangeWeaponTypeNumber(3);
+	}
+	else if(OwningPlayer )
+	{		
+		OwningPlayer->ChangeWeaponTypeNumber(3);		
 	}
 
-	GetWorldTimerManager().SetTimer(EffectTriggerTimerHandle, this, &ABaseGrenade::BeginEffect, GPDA->EffectDelayTime, false);
+ 	GetWorldTimerManager().SetTimer(EffectTriggerTimerHandle, this, &ABaseGrenade::BeginEffect, GPDA->EffectDelayTime, false);
 
 }
 
@@ -115,9 +120,19 @@ void ABaseGrenade::ReadyToThrow()
 //Detach from hand
 void ABaseGrenade::ThrowGrenade(ABaseCharacter* Actor)
 {
-	UGrenadePDA* GPDA = Cast<UGrenadePDA>(this->ItemSetting.DataAsset);
-	UE_LOG(LogTemp, Warning, TEXT("ABaseGrenade:: Throw Grenade, playAnim"));
-	Actor->PlayAnimMontage(GPDA->ThrowingAnimMontage);
+	//UE_LOG(LogTemp, Warning, TEXT("ABaseGrenade:: Throw Grenade, playAnim"));
+	// 
+	//UGrenadePDA* GPDA = Cast<UGrenadePDA>(this->ItemSetting.DataAsset);
+	//Actor->PlayAnimMontage(GPDA->ThrowingAnimMontage);
+		
+	if ( AMainCharacter* Player = Cast<AMainCharacter>(Actor) )
+	{
+		Player->PlayUseItemAnim(this);
+	}
+	else
+	{
+		Actor->PlayUseItemAnim(this);
+	}	
 	
 	
 	Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Block);

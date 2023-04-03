@@ -49,6 +49,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement)
 	bool bIsJumpkeyDown;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement)
+	bool bIsSprint;
+
 	/* fix Clipping wall */
 	bool bBeginHighReady;
 	bool bEndHighReady;
@@ -101,6 +104,8 @@ public:
 	void SetHandIK();
 
 	void SetHighReady();
+
+	void SetLeftHandIKAlpha(float Alpha);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, meta = (BlueprintThreadSafe))
 	bool IsReadyToThrow();

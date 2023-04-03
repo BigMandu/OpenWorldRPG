@@ -45,20 +45,14 @@ void AItem::PostInitializeComponents()
 
 void AItem::OnConstruction(const FTransform& Transform)
 {
-	Super::OnConstruction(Transform);
-
-	if (Mesh)
-	{
-		Mesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
-		Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
-		Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Block);
-
-		
-		//Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
-	}
+	Super::OnConstruction(Transform);	
 	
-
-
+	Mesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
+	Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
+	Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Block);
+		
+	//Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+	
 	/*MeshComponent->SetSimulatePhysics(true);
 	MeshComponent->SetEnableGravity(true);
 	MeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
@@ -361,26 +355,41 @@ void AItem::AttachToHand_Step(ABaseCharacter* Actor)
 
 		if (Actor)
 		{
-			const USkeletalMeshSocket* LeftHandSocket = Actor->GetMesh()->GetSocketByName(Actor->LeftHandGripSocketName);
-			if (LeftHandSocket)
+			if ( ItemSetting.DataAsset->bAttachedToLeftHand )
 			{
-				if (LeftHandSocket->AttachActor(this,Actor->GetMesh()))
-				{
-					if (ItemSetting.DataAsset)
-					{
-						SetActorRelativeTransform(ItemSetting.DataAsset->TPS_HandAttachTransform);
-					}
-
-					//SKMesh->SetHiddenInGame(false);
-					//BChar->SetEquippedWeapon(this);
-				}
+				AttachSocket = Actor->GetMesh()->GetSocketByName(Actor->LeftHandGripSocketName);
 			}
+			else
+			{
+				AttachSocket = Actor->GetMesh()->GetSocketByName(Actor->GripSocketName);
+			}
+			//const USkeletalMeshSocket* LeftHandSocket = Actor->GetMesh()->GetSocketByName(Actor->LeftHandGripSocketName);
+
+			if(AttachSocket == nullptr ) return;
+			
+			if ( AttachSocket->AttachActor(this,Actor->GetMesh()))
+			{
+				if (ItemSetting.DataAsset)
+				{
+					SetActorRelativeTransform(ItemSetting.DataAsset->TPS_HandAttachTransform);
+				}
+
+				//SKMesh->SetHiddenInGame(false);
+				//BChar->SetEquippedWeapon(this);
+			}
+			
 
 		}
 	}
 
-
-	Actor->PlayAttachItemAnim(this);
+	if ( Player )
+	{
+		Player->PlayAttachItemAnim(this);
+	}
+	else
+	{
+		Actor->PlayAttachItemAnim(this);
+	}
 
 }
 
@@ -440,11 +449,20 @@ void AItem::RemoveCountAtIventory(ABaseCharacter* Char, int32 RemoveCount)
 
 void AItem::EquipBeforeWeapon(ABaseCharacter* Actor)
 {
-	if ( Actor->TPAnimInstance )
+	if ( AMainCharacter* Player = Cast<AMainCharacter>(Actor) )
 	{
-		Actor->TPAnimInstance->WeaponTypeNumber = 0;
+		Player->ChangeWeaponTypeNumber(0);
+		Player->FPAnimInstance->WeaponTypeNumber = 0;
+	}
+	else
+	{
+		if ( Actor)
+		{
+			Actor->ChangeWeaponTypeNumber(0);
+		}
 	}
 
+	
 	if (BeforeEquipppedWeapon.IsValid())
 	{
 		switch (BeforeEquipppedWeapon->RifleAssign)

@@ -19,12 +19,10 @@ AInteractable::AInteractable()
 	PrimaryActorTick.bCanEverTick = false;
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Static Mesh"));
 	SKMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMesh"));
-	SetRootComponent(Mesh);
 
-	if(SKMesh)
-	{
-		SKMesh->SetupAttachment(GetRootComponent());
-	}
+	SetRootComponent(Mesh);
+	SKMesh->SetupAttachment(GetRootComponent());
+	
 }
 
 // Called when the game starts or when spawned
@@ -37,7 +35,7 @@ void AInteractable::OnConstruction(const FTransform& Transform)
 {
 	if (ItemSetting.DataAsset)
 	{
-		SetMesh();// ItemSetting.DataAsset);// , MeshComponent);
+ 		SetMesh();// ItemSetting.DataAsset);// , MeshComponent);
 	}
 	Super::OnConstruction(Transform);
 }
@@ -56,51 +54,50 @@ void AInteractable::PostInitializeComponents()
 
 }
 
-void AInteractable::SetMesh()// UCustomPDA* PDA)//, UMeshComponent*& MeshComp)
+void AInteractable::SetMesh()
 {
 	if (ItemSetting.DataAsset == nullptr) return;
 
-	if (ItemSetting.DataAsset->SKMesh)
+	
+	//Skeletal Mesh만 있는 경우
+	if ( ItemSetting.DataAsset->SKMesh  && !ItemSetting.DataAsset->Mesh )
 	{
-		//auto SKMeshComp = NewObject<USkeletalMeshComponent>(this, TEXT("SkeletalMeshComp"));
-		//if (SKMeshComp)
+
+	//StaticMesh가 RootComponent이므로, SKMesh만 있는 경우엔 아무것도 되지 않는다.
+
+		/*SKMesh->SetSkeletalMesh(ItemSetting.DataAsset->SKMesh);
+		SKMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_EngineTraceChannel2, ECollisionResponse::ECR_Overlap);
+		if ( !ItemSetting.DataAsset->ReSizeScale.IsZero() )
 		{
-			
-			SKMesh->SetSkeletalMesh(ItemSetting.DataAsset->SKMesh);
+			SKMesh->SetWorldScale3D(ItemSetting.DataAsset->ReSizeScale);
+		}*/
 
-			SKMesh->SetHiddenInGame(true);
-			//SKMesh->SetHiddenInGame(false);  //for test
-
-			SKMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_EngineTraceChannel2, ECollisionResponse::ECR_Overlap);
-		
-			if (!ItemSetting.DataAsset->ReSizeScale.IsZero())
-			{
-				//SKMesh->SetWorldScale3D(ItemSetting.DataAsset->ReSizeScale);
-			}
-			//MeshComp = SKMeshComp;
+	}
+	//Static Mesh만 있는 경우
+	if ( ItemSetting.DataAsset->Mesh && !ItemSetting.DataAsset->SKMesh )
+	{
+		Mesh->SetStaticMesh(ItemSetting.DataAsset->Mesh);
+		if ( !ItemSetting.DataAsset->ReSizeScale.IsZero() )
+		{
+			Mesh->SetWorldScale3D(ItemSetting.DataAsset->ReSizeScale);
 		}
 	}
-
-	//else if문을 사용하면 안되고, if문을 따로 써야한다.
-	//Equipment같은 경우 SKMesh와 StaticMesh가 동시에 있는 경우가 있는데
-	//StaticMesh를 렌더링 하기때문에 필수임.
-	if (ItemSetting.DataAsset->Mesh)
+	//둘 다 있는 경우
+	else if ( ItemSetting.DataAsset->SKMesh && ItemSetting.DataAsset->Mesh )
 	{
-		//auto SMeshComp = NewObject<UStaticMeshComponent>(this, TEXT("StaticMeshComp"));
-		//if (SMeshComp)
+		//SKMesh는 숨긴다.
+		SKMesh->SetSkeletalMesh(ItemSetting.DataAsset->SKMesh);
+		SKMesh->SetHiddenInGame(true);
+		SKMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_EngineTraceChannel2, ECollisionResponse::ECR_Overlap);
+
+		Mesh->SetStaticMesh(ItemSetting.DataAsset->Mesh);
+
+		if ( !ItemSetting.DataAsset->ReSizeScale.IsZero() )
 		{
-			Mesh->SetStaticMesh(ItemSetting.DataAsset->Mesh);
-			if (!ItemSetting.DataAsset->ReSizeScale.IsZero())
-			{
-				Mesh->SetWorldScale3D(ItemSetting.DataAsset->ReSizeScale);
-			}
+			Mesh->SetWorldScale3D(ItemSetting.DataAsset->ReSizeScale);
+			SKMesh->SetWorldScale3D(ItemSetting.DataAsset->ReSizeScale);
 		}
 	}
-
-	//MeshComp->SetupAttachment(GetRootComponent());
-	//MeshComp->RegisterComponent();
-	//RootComponent = MeshComp;
-
 }
 
 void AInteractable::Interaction(class AActor* Actor)

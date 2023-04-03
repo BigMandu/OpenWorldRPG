@@ -59,6 +59,8 @@ public:
 	FCompassEndUse CompassEndUse;
 	bool bIsUsingCompass;
 
+	const FName WeaponFPSLeftHandSocketName = FName("FPSLeftHandPos");
+
 	/* Anim Instance */
 	UMainAnimInstance* FPAnimInstance;
 
@@ -74,7 +76,10 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Character)
 	UCraftSystemComponent* CraftSysComp;
 
-
+	UPROPERTY()
+	float TempVar_OriginInputYawScale;
+	UPROPERTY()
+	float TempVar_OriginInputPitchScale;
 
 	/**********   카메라 *************/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
@@ -117,6 +122,7 @@ public:
 
 
 	/********* Input *********/
+	bool bBlockMoveRight = false;
 	bool bMoveForward = false;
 	bool bMoveRight = false;
 
@@ -182,9 +188,6 @@ public:
 
 	void TurnAtRate(float Rate);
 	void LookUpAtRate(float Rate);
-
-	
-	
 	
 
 	/***** Timer 관련 ******/
@@ -194,8 +197,8 @@ public:
 	void MoveForward(float Value);
 	void MoveRight(float Value);
 
-	void Sprint();
-	void UnSprint();
+	virtual void Sprint() override;
+	virtual void UnSprint() override;
 
 	//Tobase
 	void MyJump();
@@ -214,6 +217,8 @@ public:
 
 	void VKeyDN();
 
+	virtual void ChangeWeaponTypeNumber(int32 number) override;
+
 	/************ Input **********/
 	void EKeyDown();
 	void TabKeyDown();
@@ -222,10 +227,11 @@ public:
 	void LMBUp();
 
 	/* Item & Weapon 관련 */
-
 	
 	void RMBDown();
 	void RMBUp();
+
+	virtual void SetEquippedWeapon(AWeapon* Weapon) override;
 
 	//called when rmbdown
 	virtual void SetAimMode(EAimMode Mode) override;
@@ -243,6 +249,8 @@ public:
 	void ReAttachHoldingItem();
 
 	void FPSAimLocationAdjust();
+
+	
 
 	virtual void PlayAttachItemAnim(AItem* Item) override;
 	virtual void PlayUseItemAnim(AItem* Item) override;
@@ -269,6 +277,9 @@ public:
 	void UnsetInteractActor();
 
 	void Interactive();
+
+	
+	FTransform LeftHandik();
 
 
 	/* Quick Slot */

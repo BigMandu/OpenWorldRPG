@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "OpenWorldRPG/GameData/StatManagementComponent.h"
@@ -266,7 +266,8 @@ void UStatManagementComponent::StaminaBreathSoundManager(EStaminaStatus CurrentS
 			Player->SpeakSound(Stam_ExhaustedRecoverySound);
 		break;
 		case EStaminaStatus::ESS_Recovery:
-			Player->SpeakSound(Stam_RecoverySound);
+			Player->SpeakSound(nullptr);
+			//Player->SpeakSound(Stam_RecoverySound);
 		break;
 
 		default:
