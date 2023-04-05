@@ -486,7 +486,8 @@ void AMainCharacter::SetCameraMode(ECameraMode Type)
 //RMB Down
 void AMainCharacter::SetAimMode(EAimMode Mode)
 {
-	AimMode = Mode;
+	Super::SetAimMode(Mode);
+	//AimMode = Mode;
 	if ( EquippedWeapon )
 	{
 
@@ -494,6 +495,10 @@ void AMainCharacter::SetAimMode(EAimMode Mode)
 		{
 		case EAimMode::EAM_Aim:
 		{
+			//Super로 옮김
+			/*bIsAim = true;
+			EquippedWeapon->bIsAiming = true;
+			GetCharacterMovement()->MaxWalkSpeed = MinWalkSpeed;*/
 			if ( CameraMode == ECameraMode::ECM_TPS )
 			{
 				//TPS모드 + Aim상태일때는 카메라를 살짝 앞으로 땡겨준다.
@@ -504,9 +509,7 @@ void AMainCharacter::SetAimMode(EAimMode Mode)
 				CameraTPS->FieldOfView = 77.f;*/
 				LerpCamera(CameraTPS, MINCameraLength + 20.f, TPSCam_Aim_Rel_Location, 77.f);
 
-				bIsAim = true;
-				EquippedWeapon->bIsAiming = true;
-				GetCharacterMovement()->MaxWalkSpeed = MinWalkSpeed;
+			
 
 			}
 			else if ( CameraMode == ECameraMode::ECM_FPS )
@@ -529,9 +532,10 @@ void AMainCharacter::SetAimMode(EAimMode Mode)
 		}
 		case EAimMode::EAM_NotAim:
 		{
-			bIsAim = false;
+			//Super로 옮김
+			/*bIsAim = false;
 			EquippedWeapon->bIsAiming = false;
-			GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
+			GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;*/
 
 			if ( CameraMode == ECameraMode::ECM_TPS )
 			{

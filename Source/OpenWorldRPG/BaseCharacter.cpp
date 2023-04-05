@@ -150,6 +150,26 @@ void ABaseCharacter::SetTeamType(ETeamType Team)
 
 void ABaseCharacter::SetAimMode(EAimMode Mode)
 {
+	AimMode = Mode;
+	if ( EquippedWeapon == nullptr) return;
+
+	switch ( AimMode )
+	{
+		case EAimMode::EAM_Aim:
+			bIsAim = true;
+			EquippedWeapon->bIsAiming = true;
+			GetCharacterMovement()->MaxWalkSpeed = MinWalkSpeed;
+		break;
+		case EAimMode::EAM_NotAim:
+			bIsAim = false;
+			EquippedWeapon->bIsAiming = false;
+			GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
+
+		break;
+	}
+		
+	
+	
 
 }
 

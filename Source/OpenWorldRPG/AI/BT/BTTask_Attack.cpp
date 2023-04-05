@@ -1,7 +1,8 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "BTTask_Attack.h"
+#include "Perception/AISenseConfig_Sight.h"
 
 UBTTask_Attack::UBTTask_Attack()
 {
@@ -17,6 +18,11 @@ EBTNodeResult::Type UBTTask_Attack::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 	AICon = Cast<AEnemyAIController>(OwnerComp.GetAIOwner());
 	AIChar = Cast<AEnemyCharacter>(AICon->GetCharacter());
 
+
+	
+	
+	AIChar->SetAimMode(EAimMode::EAM_Aim);
+	
 
 	FiringWeapon();
 
