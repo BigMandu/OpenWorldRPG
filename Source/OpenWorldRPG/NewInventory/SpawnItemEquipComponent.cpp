@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "OpenWorldRPG/NewInventory/SpawnItemEquipComponent.h"
@@ -7,6 +7,7 @@
 #include "OpenWorldRPG/NewInventory/Library/ItemInterface.h"
 
 
+#include "OpenWorldRPG/Item/Equipment.h"
 #include "OpenWorldRPG/Item/CustomPDA.h"
 #include "OpenWorldRPG/Item/BasePDA.h"
 
@@ -75,6 +76,7 @@ void USpawnItemEquipComponent::SpawnItems()
 {
 	ABaseCharacter* OwnerBChar = Cast<ABaseCharacter>(GetOwner());
 	if(OwnerBChar == nullptr) return;
+	if(SpawnItemList.Num() == 0 ) return;
 
 	for (auto ItemType : SpawnItemList)
 	{		

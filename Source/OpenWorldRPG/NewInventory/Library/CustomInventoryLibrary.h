@@ -9,12 +9,15 @@
 /**
  * 
  */
+class UEquipmentComponent;
 class UNewItemObject;
 class UBasePDA;
 class UCustomPDA;
 class ABaseCharacter;
+class AWeapon;
 class AEquipment;
 class AItem;
+
 
 UCLASS()
 class OPENWORLDRPG_API UCustomInventoryLibrary : public UObject
@@ -32,7 +35,7 @@ public:
 	static AEquipment* SpawnEquipment(UWorld* World, UNewItemObject* ItemObj);
 	
 	/*ItemObj를 이용해 Equipment Class를 Spawn한다*/
-	static ABaseGrenade* SpawnGrenade(UWorld* World, UNewItemObject* ItemObj);
+	static class ABaseGrenade* SpawnGrenade(UWorld* World, UNewItemObject* ItemObj);
 
 
 	/*PDA를 이용해 Item class를 Spawn한다.*/
