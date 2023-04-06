@@ -300,6 +300,7 @@ void AEnemyAIController::LostTarget(ABaseCharacter* Target) //AActor* Target)
 	UpdateBBCompObjectKey(EnemyKey, nullptr);
 	UpdateBBCompVectorKey(TargetLocationKey, FVector::ZeroVector);
 	UpdateBBCompBoolKey(bWasEngageKey, false);
+	OwnerActor->SetAimMode(EAimMode::EAM_NotAim);
 }
 
 void AEnemyAIController::LostObject(AActor* InteractActor)

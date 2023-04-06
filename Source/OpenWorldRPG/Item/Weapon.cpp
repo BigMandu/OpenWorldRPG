@@ -52,16 +52,25 @@ void AWeapon::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	/* New Aim System, */
-	if ( MainCon != nullptr ) //if (OwningPlayer != nullptr)
+	if(AMainCharacter* Player = Cast<AMainCharacter>(OwningPlayer) )
 	{
-		if ( MainCon->Main->EquippedWeapon == this )
+		if ( Player->EquippedWeapon == this )
 		{
 			UpdateAim();
-			WeaponClipping();
-
-			//DrawDebugLine(GetWorld(), GetActorForwardVector(), GetActorLocation() + GetActorRotation().Vector() * 100.f, FColor::Cyan, false, 1.f, 0, 2.f);
 		}
 	}
+
+	WeaponClipping();
+
+	//if ( MainCon != nullptr ) //if (OwningPlayer != nullptr)
+	//{
+	//	if ( MainCon->Main->EquippedWeapon == this )
+	//	{
+	//		UpdateAim();
+	//		WeaponClipping();
+	//		//DrawDebugLine(GetWorld(), GetActorForwardVector(), GetActorLocation() + GetActorRotation().Vector() * 100.f, FColor::Cyan, false, 1.f, 0, 2.f);
+	//	}
+	//}
 }
 
 void AWeapon::PostInitializeComponents()
@@ -1150,23 +1159,42 @@ void AWeapon::WeaponClipping()
 {
 	FTransform CurrentMeshAttachTransform;
 	FVector CurrentMeshRightHand;
-	if ( ECameraMode::ECM_FPS == MainCon->Main->CameraMode )
-	{
-		CurrentMeshAttachTransform = WeaponDataAsset->FPMeshAttachTransform;
-		CurrentMeshRightHand = MainCon->Main->FPMesh->GetSocketLocation("Hand_R");
+	FVector RotVec;
+	//Player인 경우 FPS/TPS시점에 따라 HandIK를 다르게 적용한다.
 
-	}
-	else
+	if ( AMainCharacter* Player = Cast<AMainCharacter>(OwningPlayer) )
 	{
-		CurrentMeshAttachTransform = WeaponDataAsset->MeshAttachTransform;
-		CurrentMeshRightHand = MainCon->Main->GetMesh()->GetSocketLocation("hand_r");
+		//아래 EndLo Vec을 계산할때 사용할 방향벡터
+		RotVec = GetAimPosition().GetRotation().GetForwardVector();
+
+		switch ( Player->CameraMode )
+		{
+			case ECameraMode::ECM_FPS:
+				CurrentMeshAttachTransform = WeaponDataAsset->FPMeshAttachTransform;
+				CurrentMeshRightHand = MainCon->Main->FPMesh->GetSocketLocation("Hand_R");
+			break;
+			case ECameraMode::ECM_TPS:
+				CurrentMeshAttachTransform = WeaponDataAsset->MeshAttachTransform;
+				CurrentMeshRightHand = MainCon->Main->GetMesh()->GetSocketLocation("hand_r");
+			break;
+			
+		}
 	}
+	else if(OwningPlayer )
+	{
+		RotVec = OwningPlayer->GetActorForwardVector();
+
+		CurrentMeshAttachTransform = WeaponDataAsset->MeshAttachTransform;
+		CurrentMeshRightHand = OwningPlayer->GetMesh()->GetSocketLocation("hand_r");
+	}
+	
 
 	//LienTrace의 길이는 Weapon에 부착된 CapsuleComp길이
 	float Length = CapsuleComp->GetScaledCapsuleHalfHeight() * 4;
 
 	//방향벡터는 AimPosition으로 한다.
-	FVector EndLo = CurrentMeshRightHand + GetAimPosition().GetRotation().GetForwardVector() * Length;
+	//FVector EndLo = CurrentMeshRightHand + GetAimPosition().GetRotation().GetForwardVector() * Length;
+	FVector EndLo = CurrentMeshRightHand + RotVec * Length;
 	TArray<AActor*> IgnoreActorList;
 	IgnoreActorList.Add(GetInstigator());
 	FHitResult Hit;
