@@ -60,8 +60,10 @@ void AWeapon::Tick(float DeltaTime)
 		}
 	}
 
-	WeaponClipping();
-
+	if(OwningPlayer )
+	{
+		WeaponClipping();
+	}
 	//if ( MainCon != nullptr ) //if (OwningPlayer != nullptr)
 	//{
 	//	if ( MainCon->Main->EquippedWeapon == this )

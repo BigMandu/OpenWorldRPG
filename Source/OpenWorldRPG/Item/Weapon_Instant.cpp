@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 #pragma warning(disable : 4800)
 
 #include "Weapon_Instant.h"
@@ -63,7 +63,7 @@ void AWeapon_Instant::AIBulletOut()
 		float ConeHalfAngle = FMath::DegreesToRadians(LastSpread *0.5);
 
 
-		FVector Dir = GetInstigatorController()->GetControlRotation().Vector(); // = GetAimRotation();
+		FVector Dir = SKMesh->GetSocketRotation(MuzzleFlashSocketName).Vector();  //GetInstigatorController()->GetControlRotation().Vector();// = GetAimRotation();
 		FVector StartTrace = SKMesh->GetSocketLocation(MuzzleFlashSocketName); // GetTraceStartLocation(Dir);
 
 		// 이어서 새로추가. (RandomStream을 이용한 Weapon Spread)  
