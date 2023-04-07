@@ -621,19 +621,20 @@ void AWeapon::SetWeaponState(EWeaponState NewState)
 * 3. 탄약이 한발이상 있어야 한다.
 *
 * 4. 장착중이 아니어야 한다. //미구현.
-* 5. 스프린트 중이 아니어야 한다. //미구현
+* 5. 스프린트 중이 아니어야 한다.
 */
 bool AWeapon::CanFire()
 {
 	bool bCanFire = false;
-
 
 	//if (ItemObj->bIsDestoryed == false)
 	{
 		if ( WeaponFiringMode != EWeaponFiringMode::EWFM_Safe && CurrentWeaponState != EWeaponState::EWS_Reloading
 		&& OwningPlayer->bIsSprinting == false )
 		{
-			if ( !( WeaponFiringMode == EWeaponFiringMode::EWFM_SemiAuto && FireCount > 0 ) )
+			//SemiAuto에 한발 이상 사격한게 아닐때만 CheckAmmo && 사격 가능
+			// 왜 이렇게 했는지 모르겠다... 필요없어 보여서 뺐는데도 잘 된다.
+			//if ( !( WeaponFiringMode == EWeaponFiringMode::EWFM_SemiAuto && FireCount > 0 ) )
 			{
 				if ( CheckAmmo() )
 				{
@@ -793,7 +794,7 @@ void AWeapon::ControlFiring()
 	}
 
 	//마지막 발사시간과 총의 SPB (발사당 필요한 초)를 더한 값이 worldTime보다 크다면
-	// 아직 발사 할 수 없으므로 발사가능 시간을 구한다.
+	// 아직 발사 할 수 없으므로 발사가능 시간을 구한다.f
 
 	//점사모드면 발사 가능 시간을 늦춘 조건으로 검사한다.
 	if ( ( bIsBurstmode && LastFireTime > 0 && LastFireTime + WeaponDataAsset->WeaponStat.SecondPerBullet * 4 > WorldTime ) ||

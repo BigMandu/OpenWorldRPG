@@ -39,7 +39,7 @@ void UBTTask_Attack::FiringWeapon()
 
 void UBTTask_Attack::CheckWeapon()
 {
-	AIChar->EquippedWeapon->ChangeSafetyLeverForAI(EWeaponFiringMode::EWFM_SemiAuto);
+	AIChar->EquippedWeapon->ChangeSafetyLeverForAI(EWeaponFiringMode::EWFM_Burst);
 	AIChar->EquippedWeapon->bLMBDown = false;
 
 	if (AIChar->EquippedWeapon->AmmoLeftInMag <= 0)
