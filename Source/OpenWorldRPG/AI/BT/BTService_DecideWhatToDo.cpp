@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "OpenWorldRPG/AI/BT/BTService_DecideWhatToDo.h"
@@ -152,14 +152,14 @@ void UBTService_DecideWhatToDo::DecisionBranch()//UBehaviorTreeComponent& OwnerC
 	{
 		if (!bNoAmmo && (bLowHP || bLowAmmo))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("WasEngage && low hp, low ammo"));
+			UE_LOG(LogTemp, Warning, TEXT("UBTService_DecideWhatToDo::DecisionBranch/ WasEngage && low hp, low ammo"));
 			//Decide Closed battle  OR  Run
 		}
 		else
 		{
 			AIOpenFire();
 			
-			UE_LOG(LogTemp, Warning, TEXT("WasEngage"));
+			UE_LOG(LogTemp, Warning, TEXT("UBTService_DecideWhatToDo::DecisionBranch / WasEngage"));
 			//Keep Battle
 		}
 	}
@@ -167,14 +167,14 @@ void UBTService_DecideWhatToDo::DecisionBranch()//UBehaviorTreeComponent& OwnerC
 	{
 		if (!bNoAmmo && (bLowHP || bLowAmmo))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("In Enemy FOV && low hp, low ammo"));
+			UE_LOG(LogTemp, Warning, TEXT("UBTService_DecideWhatToDo::DecisionBranch / In Enemy FOV && low hp, low ammo"));
 			//Decide Closed battle  OR  Run
 		}
 		else
 		{
 			//Keep Battle
 			AICon->UpdateBBCompBoolKey(AICon->bCanAttackKey, true);
-			UE_LOG(LogTemp, Warning, TEXT("In Enemy FOV"));
+			UE_LOG(LogTemp, Warning, TEXT("UBTService_DecideWhatToDo::DecisionBranch /In Enemy FOV"));
 			
 		}
 	}
@@ -183,12 +183,12 @@ void UBTService_DecideWhatToDo::DecisionBranch()//UBehaviorTreeComponent& OwnerC
 		if (!bNoAmmo && (bLowHP || bLowAmmo))
 		{
 			//Decide Closed battle  OR  Run
-			UE_LOG(LogTemp, Warning, TEXT("bOnlyDetectHearing && low hp, low ammo"));
+			UE_LOG(LogTemp, Warning, TEXT("UBTService_DecideWhatToDo::DecisionBranch /bOnlyDetectHearing && low hp, low ammo"));
 		}
 		else
 		{
 			//AICon->UpdateBBCompBoolKey(AICon->bNeedToCheckKey,true);
-			UE_LOG(LogTemp, Warning, TEXT("bOnlyDetectHearing"));
+			UE_LOG(LogTemp, Warning, TEXT("UBTService_DecideWhatToDo::DecisionBranch / bOnlyDetectHearing"));
 			//Keep Battle
 		}
 	}
@@ -215,7 +215,7 @@ bool UBTService_DecideWhatToDo::IsThisAIinTargetFOV()//UBlackboardComponent* BBC
 		TargetLocation = EnemyPlayer->GetActorLocation();
 		TargetFowVec = EnemyPlayer->GetActorForwardVector();
 		TargetHalfFov = (Cast<AMainController>(EnemyPlayer->GetController())->PlayerCameraManager->GetFOVAngle() / 2.f);
-		UE_LOG(LogTemp, Warning, TEXT("targetfov : %f"), TargetHalfFov);
+		//UE_LOG(LogTemp, Warning, TEXT("UBTService_DecideWhatToDo::IsThisAIinTargetFOV /targetfov : %f"), TargetHalfFov);
 	}
 	else if (EnemyAI)
 	{

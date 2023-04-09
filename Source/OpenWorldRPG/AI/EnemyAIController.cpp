@@ -335,11 +335,11 @@ bool AEnemyAIController::CanInteraction(AActor* Object)
 	
 	//if (Equip && Equip->bIsPreOccupied == false)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("PreOccupied is false, Check Equip, Owning"));
+		UE_LOG(LogTemp, Warning, TEXT("AEnemyAIController::CanInteraction / PreOccupied is false, Check Equip, Owning"));
 		//AI가 해당 Equip을 장착하지 않았거나, OwningPlayer가 없다면
 		if (Equip && Equip->OwningPlayer != nullptr) //OwnerActor->CheckEquipped(Object) != true) || Equip && Equip->OwningPlayer == nullptr)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Can Interaction"));
+			UE_LOG(LogTemp, Warning, TEXT("AEnemyAIController::CanInteraction / Can Interaction"));
 			//Interact가 가능하다
 			//Equip->bIsPreOccupied = true;
 			bCanInteract = false;

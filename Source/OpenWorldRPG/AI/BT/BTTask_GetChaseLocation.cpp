@@ -62,6 +62,7 @@ EBTNodeResult::Type UBTTask_GetChaseLocation::ExecuteTask(UBehaviorTreeComponent
 		if (!FMath::IsNearlyEqual(CurrentTargetLocation.Z, LastSeenLocation.Z, 1.f) || !FMath::IsNearlyEqual(OwnerComp.GetOwner()->GetActorLocation().Z, LastSeenLocation.Z, 1.f) )
 		{
 			UE_LOG(LogTemp,Warning,TEXT("UBTTask_GetChaseLocation::ExecuteTask // Last Seen Location's Z value is different. Set FinalSerachLocation To Last Seen Location"));
+			UE_LOG(LogTemp, Warning, TEXT("CurrentTargetZ : %f, LastSeenZ : %f, ThisAI Z : %f ",CurrentTargetLocation.Z,LastSeenLocation.Z, OwnerComp.GetOwner()->GetActorLocation().Z));
 			FinalSearchLocation = LastSeenLocation;
 		}
 		//높이가 같은경우 == Target이 코너나, 장애물 사이로 들어가 숨은 경우임.
