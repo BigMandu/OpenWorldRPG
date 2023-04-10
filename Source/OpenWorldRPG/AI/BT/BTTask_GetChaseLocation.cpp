@@ -59,10 +59,11 @@ EBTNodeResult::Type UBTTask_GetChaseLocation::ExecuteTask(UBehaviorTreeComponent
 
 
 		//마지막 Target의 높이와 현재Target의 높이가 다른경우 수색 위치를 마지막 식별위치로 대입하고 끝낸다.
-		if (!FMath::IsNearlyEqual(CurrentTargetLocation.Z, LastSeenLocation.Z, 1.f) || !FMath::IsNearlyEqual(OwnerComp.GetOwner()->GetActorLocation().Z, LastSeenLocation.Z, 1.f) )
+		//Tolerance를 10으로 한 이유 : 뛸때 Anim에 의해 headsocket의 위치가 8이상 벌어짐.
+		if (!FMath::IsNearlyEqual(CurrentTargetLocation.Z, LastSeenLocation.Z, 10.f) || !FMath::IsNearlyEqual(OwnerComp.GetOwner()->GetActorLocation().Z, LastSeenLocation.Z, 10.f) )
 		{
 			UE_LOG(LogTemp,Warning,TEXT("UBTTask_GetChaseLocation::ExecuteTask // Last Seen Location's Z value is different. Set FinalSerachLocation To Last Seen Location"));
-			UE_LOG(LogTemp, Warning, TEXT("CurrentTargetZ : %f, LastSeenZ : %f, ThisAI Z : %f ",CurrentTargetLocation.Z,LastSeenLocation.Z, OwnerComp.GetOwner()->GetActorLocation().Z));
+			UE_LOG(LogTemp, Warning, TEXT("CurrentTargetZ : %f, LastSeenZ : %f, ThisAI Z : %f "),CurrentTargetLocation.Z,LastSeenLocation.Z, OwnerComp.GetOwner()->GetActorLocation().Z);
 			FinalSearchLocation = LastSeenLocation;
 		}
 		//높이가 같은경우 == Target이 코너나, 장애물 사이로 들어가 숨은 경우임.
