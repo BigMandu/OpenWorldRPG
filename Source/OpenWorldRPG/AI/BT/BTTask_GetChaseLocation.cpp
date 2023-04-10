@@ -8,6 +8,7 @@
 #include <DrawDebugHelpers.h>
 #include <OpenWorldRPG/BaseCharacter.h>
 #include <OpenWorldRPG/AI/EnemyAIController.h>
+#include "NavigationSystem.h"
 //#include "OpenWorldRPG/AI/EnemyAIController.h"
 
 UBTTask_GetChaseLocation::UBTTask_GetChaseLocation()
@@ -48,7 +49,6 @@ EBTNodeResult::Type UBTTask_GetChaseLocation::ExecuteTask(UBehaviorTreeComponent
 		ABaseCharacter* Target = Cast<ABaseCharacter>(BBComp->GetValueAsObject(AICon->EnemyKey));
 		if(Target == nullptr ) return EBTNodeResult::Failed;
 		FVector CurrentTargetLocation = Target->GetMesh()->GetSocketLocation(Target->HeadSocketName);
-
 		
 
 		FVector LastSeenLocation =BBComp->GetValue<UBlackboardKeyType_Vector>(BlackboardKey.GetSelectedKeyID());
@@ -58,6 +58,10 @@ EBTNodeResult::Type UBTTask_GetChaseLocation::ExecuteTask(UBehaviorTreeComponent
 		FVector FinalSearchLocation = FVector(0.f);
 
 
+
+				
+
+		/*
 		//마지막 Target의 높이와 현재Target의 높이가 다른경우 수색 위치를 마지막 식별위치로 대입하고 끝낸다.
 		//Tolerance를 10으로 한 이유 : 뛸때 Anim에 의해 headsocket의 위치가 8이상 벌어짐.
 		if (!FMath::IsNearlyEqual(CurrentTargetLocation.Z, LastSeenLocation.Z, 10.f) || !FMath::IsNearlyEqual(OwnerComp.GetOwner()->GetActorLocation().Z, LastSeenLocation.Z, 10.f) )
@@ -66,12 +70,34 @@ EBTNodeResult::Type UBTTask_GetChaseLocation::ExecuteTask(UBehaviorTreeComponent
 			UE_LOG(LogTemp, Warning, TEXT("CurrentTargetZ : %f, LastSeenZ : %f, ThisAI Z : %f "),CurrentTargetLocation.Z,LastSeenLocation.Z, OwnerComp.GetOwner()->GetActorLocation().Z);
 			FinalSearchLocation = LastSeenLocation;
 		}
+		*/
+
+		
+		UNavigationSystemV1* NavSys = UNavigationSystemV1::GetNavigationSystem(Target->GetWorld());
+		if ( NavSys == nullptr ) return EBTNodeResult::Failed;
+		FNavLocation NavLocation;
+
+		//LastSeenLocation에 AI가 도달할 수 없다면
+		if ( NavSys->GetRandomReachablePointInRadius(LastSeenLocation, 10.f, NavLocation) == false )
+		{
+			UE_LOG(LogTemp, Warning, TEXT("UBTTask_GetChaseLocation::ExecuteTask // Can't reach LastSeenLocation"));
+			//범위를 늘려 한번더 한다.
+			if ( NavSys->GetRandomReachablePointInRadius(LastSeenLocation, 250.f, NavLocation) )
+			{
+				FinalSearchLocation = NavLocation.Location;
+			}
+			else
+			{
+				//그래도 도달할 수 없다면.. 차후 생각해봄.
+			}
+		}
 		//높이가 같은경우 == Target이 코너나, 장애물 사이로 들어가 숨은 경우임.
 		//따라서 타겟의 마지막 식별 위치와, Target의 현재 위치의 거리값을 구해서 
 		//그 거리값을 최소 : 거리값/3,  최대 : 거리값  사이의 랜덤한 값을 구해
 		// 현재 OwnerAI의 위치에 Target의 마지막 식별 회전값 * 거리 랜덤값을 더해 최종 수색 위치를 구한다.
 		else
 		{
+			UE_LOG(LogTemp, Warning, TEXT("UBTTask_GetChaseLocation::ExecuteTask // Can reach LastSeenLocation"));
 			//Target의 현재 위치와 마지막 식별 위치의 거리를 구한다.
 			FVector LocationDist = FVector(FVector::Dist(LastSeenLocation, CurrentTargetLocation));
 
