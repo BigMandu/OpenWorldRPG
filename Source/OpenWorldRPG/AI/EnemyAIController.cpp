@@ -474,7 +474,6 @@ void AEnemyAIController::AttackMoving(const FVector LocationVec, FVector RightVe
 }
 
 
-
 /**************************************************************************/
 /******************  Black board Key Update Function***********************/
 /**************************************************************************/

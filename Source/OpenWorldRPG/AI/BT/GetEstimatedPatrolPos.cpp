@@ -29,14 +29,27 @@ EBTNodeResult::Type UGetEstimatedPatrolPos::ExecuteTask(UBehaviorTreeComponent& 
 		UNavigationSystemV1* NavSys = UNavigationSystemV1::GetNavigationSystem(Enemy->GetWorld());
 		if(NavSys == nullptr ) return Result;
 
-		const FVector InterestOriginPos = BBComp->GetValueAsVector(AIController->EstimatedLocationOfTargetKey);
+		const FVector InterestOriginPos = BBComp->GetValueAsVector(	AIController->EstimatedLocationOfTargetKey);
 		FNavLocation PatrolPos;
-		if ( NavSys->GetRandomReachablePointInRadius(InterestOriginPos, 100.f, PatrolPos) )
+		float sub = 0.f;
+		int32 loopcnt = 0;
+		while ( sub <= 120.f )
 		{
-			BBComp->SetValueAsVector(AIController->TargetLocationKey, PatrolPos.Location);
-			Result = EBTNodeResult::Succeeded;
+			if(loopcnt >= 10 ) break;
+			if ( NavSys->GetRandomReachablePointInRadius(InterestOriginPos, 200.f, PatrolPos) )
+			{
+				FVector FinalPatrolPos = PatrolPos.Location;
+				BBComp->SetValueAsVector(AIController->TargetLocationKey, FinalPatrolPos);
+
+				sub = abs(InterestOriginPos.Size() - FinalPatrolPos.Size());
+				
+			}
 		}
 
+		if ( loopcnt >= 10 || sub >= 80.f )
+		{
+			Result = EBTNodeResult::Succeeded;
+		}
 
 	}
 	return Result;
