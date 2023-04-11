@@ -40,24 +40,45 @@ void UBTService_Rotate::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 
 	DrawDebugLine(GetWorld(), LineTraceStartLoc, LineTraceStartLoc + RightRot.Vector() * AngleRecognizeDist,FColor::Magenta,false,1.f,0,2.f);
 	DrawDebugLine(GetWorld(), LineTraceStartLoc, LineTraceStartLoc + LeftRot.Vector() * AngleRecognizeDist,FColor::Magenta,false,1.f,0,2.f);
-	bool bRightHit = GetWorld()->LineTraceSingleByChannel(Hit,LineTraceStartLoc,LineTraceStartLoc+RightRot.Vector()*AngleRecognizeDist,ECollisionChannel::ECC_WorldStatic);
-	bool bLeftHit = GetWorld()->LineTraceSingleByChannel(Hit,LineTraceStartLoc,LineTraceStartLoc+ LeftRot.Vector()*AngleRecognizeDist,ECollisionChannel::ECC_WorldStatic);
+	bool bRightHit = GetWorld()->LineTraceSingleByChannel(Hit,LineTraceStartLoc,LineTraceStartLoc+RightRot.Vector()*AngleRecognizeDist,ECollisionChannel::ECC_Visibility);
+	bool bLeftHit = GetWorld()->LineTraceSingleByChannel(Hit,LineTraceStartLoc,LineTraceStartLoc+ LeftRot.Vector()*AngleRecognizeDist,ECollisionChannel::ECC_Visibility);
 
 	//Hitresult가 없는경우에 빈공간이며, 해당 방향으로 회전해야한다.
 	//둘 다 안맞은 경우 양쪽 모두 체크해야하며 오른쪽부터 체크 하기 위해 RightHit부터 검증한다.
-	
-	if ( bRightHit == false )
+
+	FTimerHandle RightHandle;
+	FTimerHandle LeftHandle;
+	if ( bRightHit == false && !GetWorld()->GetTimerManager().IsTimerActive(RightHandle))
 	{
+		GetWorld()->GetTimerManager().ClearTimer(RightHandle);
+		
 		//오른쪽으로 턴
 		const FRotator SetRot = AIChar->GetActorRotation().Add(0.f,90.f,0.f);
-		AIChar->SetActorRotation(SetRot);
+		
+		GetWorld()->GetTimerManager().SetTimer(RightHandle, [ = ] {
+			FRotator InterpRot = FMath::RInterpTo(AIChar->GetActorRotation(), RightRot/*SetRot*/, GetWorld()->GetDeltaSeconds(), 40.f);
+		AIChar->SetActorRotation(InterpRot);
+		},GetWorld()->GetDeltaSeconds(),true);
+		
 	}
-
-	if ( bLeftHit == false )
+	else if ( bLeftHit == false && !GetWorld()->GetTimerManager().IsTimerActive(LeftHandle))
 	{
 		//왼쪽으로 턴
+		float InterpSpeed = 40.f;
+
+		GetWorld()->GetTimerManager().ClearTimer(LeftHandle);
+		//RightTurn을 하고 있었다면, 왼쪽으로 도는
+		if ( GetWorld()->GetTimerManager().IsTimerActive(RightHandle) )
+		{
+			InterpSpeed = 60.f;
+		}
+
 		const FRotator SetRot = AIChar->GetActorRotation().Add(0.f, -90.f, 0.f);
-		AIChar->SetActorRotation(SetRot);
+		GetWorld()->GetTimerManager().SetTimer(LeftHandle, [ = ] {
+			FRotator InterpRot = FMath::RInterpTo(AIChar->GetActorRotation(), LeftRot , GetWorld()->GetDeltaSeconds(), InterpSpeed);
+		AIChar->SetActorRotation(InterpRot);
+		}, GetWorld()->GetDeltaSeconds(), true);
+		//AIChar->SetActorRotation(SetRot);
 	}
 
 
