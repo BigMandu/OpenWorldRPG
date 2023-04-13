@@ -16,10 +16,18 @@ class OPENWORLDRPG_API UBTService_Rotate : public UBTService
 public:
 	UBTService_Rotate();
 
-	float Distance;
+private:
+	FTimerHandle RightHandle;
+	FTimerHandle LeftHandle;
+
+	bool IsReachedTargetRightRot;
+	bool IsReachedTargetLeftRot;
+
 	float Alpha;
+	float Delta;
 
 protected:
 	virtual void TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
 
+	void CheckAndClearTimer();
 };

@@ -12,9 +12,8 @@ UBTService_Rotate::UBTService_Rotate()
 {
 	NodeName = TEXT("Rotate");
 	Interval = 0.0001;
-
-	//Distance = 100.f;
 	Alpha = 0.f;
+	Delta = 0.f;
 }
 
 void UBTService_Rotate::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
@@ -27,6 +26,22 @@ void UBTService_Rotate::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 	AEnemyCharacter* AIChar = Cast<AEnemyCharacter>(AICon->GetCharacter());
 	check(AIChar);
 
+	Delta += DeltaSeconds;
+	
+	Alpha = Delta/1.5f;
+	UE_LOG(LogTemp, Warning, TEXT("RotNode: Delta : %f"), Delta);
+	UE_LOG(LogTemp, Warning, TEXT("RotNode: Alpha : %f"), Alpha);
+
+	if ( Alpha >= 1.f )
+	{
+		UE_LOG(LogTemp, Warning, TEXT("RotNode: Alpha : %f"), Alpha);
+		UE_LOG(LogTemp, Warning, TEXT("RotNode: Alpha is Over 1.f clear Delta variable"));
+		Delta = 0.f;
+		AICon->ClearFocus(EAIFocusPriority::Default);
+		FMatrix Mat = FRotationMatrix::MakeFromX(AIChar->GetActorRotation().Vector());
+		AIChar->SetActorRotation(Mat.GetUnitAxis(EAxis::X).Rotation());
+	}
+	CheckAndClearTimer();
 
 	const FVector LineTraceStartLoc = AIChar->GetMesh()->GetSocketLocation(AIChar->HeadSocketName);
 	float SingleAngle = AICon->SightConfig->PeripheralVisionAngleDegrees;
@@ -35,52 +50,116 @@ void UBTService_Rotate::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 	const FRotator RightRot = AIChar->GetActorRotation().Add(0.f, SingleAngle, 0.f);
 	const FRotator LeftRot = AIChar->GetActorRotation().Add(0.f,-SingleAngle,0.f);
 
+	const FVector RightFocusLocation = LineTraceStartLoc + RightRot.Vector() * AngleRecognizeDist;
+	const FVector LeftFocusLocation = LineTraceStartLoc + LeftRot.Vector() * AngleRecognizeDist;
+
 	//Hit이 됐는지 안됐는지만 알면되니 HitResult를 공동변수로 사용한다.
 	FHitResult Hit;
 
-	DrawDebugLine(GetWorld(), LineTraceStartLoc, LineTraceStartLoc + RightRot.Vector() * AngleRecognizeDist,FColor::Magenta,false,1.f,0,2.f);
-	DrawDebugLine(GetWorld(), LineTraceStartLoc, LineTraceStartLoc + LeftRot.Vector() * AngleRecognizeDist,FColor::Magenta,false,1.f,0,2.f);
-	bool bRightHit = GetWorld()->LineTraceSingleByChannel(Hit,LineTraceStartLoc,LineTraceStartLoc+RightRot.Vector()*AngleRecognizeDist,ECollisionChannel::ECC_Visibility);
-	bool bLeftHit = GetWorld()->LineTraceSingleByChannel(Hit,LineTraceStartLoc,LineTraceStartLoc+ LeftRot.Vector()*AngleRecognizeDist,ECollisionChannel::ECC_Visibility);
+
+	DrawDebugLine(GetWorld(), LineTraceStartLoc, RightFocusLocation, FColor::Magenta,false,1.f,0,2.f);
+	DrawDebugLine(GetWorld(), LineTraceStartLoc, LeftFocusLocation,FColor::Magenta,false,1.f,0,2.f);
+	bool bRightHit = GetWorld()->LineTraceSingleByChannel(Hit,LineTraceStartLoc, RightFocusLocation, ECollisionChannel::ECC_Visibility);
+	bool bLeftHit = GetWorld()->LineTraceSingleByChannel(Hit,LineTraceStartLoc, LeftFocusLocation, ECollisionChannel::ECC_Visibility);
 
 	//Hitresult가 없는경우에 빈공간이며, 해당 방향으로 회전해야한다.
 	//둘 다 안맞은 경우 양쪽 모두 체크해야하며 오른쪽부터 체크 하기 위해 RightHit부터 검증한다.
 
-	FTimerHandle RightHandle;
-	FTimerHandle LeftHandle;
+	//양쪽 모두 뻥 뚫려있다면
+	if ( !bRightHit && !bLeftHit )
+	{
+		
+		float Judgevalue = FMath::FRandRange(0.f,2.f);
+		//1.8이하의 값이라면 왼/오 중에 택한다.
+		if ( Judgevalue <= 1.8f )
+		{
+			if ( Judgevalue >= 0.6 )
+			{
+				AICon->SetFocalPoint(LeftFocusLocation);
+			}
+			else
+			{
+				AICon->SetFocalPoint(RightFocusLocation);
+			}
+			
+		}
+		else
+		{
+			const FRotator Rot = AIChar->GetActorRotation().Add(0.f, 180.f, 0.f);
+			const FVector RearFocusLocation = LineTraceStartLoc + Rot.Vector() * AngleRecognizeDist;
+			AICon->SetFocalPoint(RearFocusLocation);
+		}
+	}
+	//오른쪽만 뚫려있는 경우
+	else if ( !bRightHit && bLeftHit )
+	{
+		AICon->SetFocalPoint(RightFocusLocation);
+	}
+	//왼쪽만 뚫려있는 경우
+	else if ( bRightHit && !bLeftHit )
+	{
+		AICon->SetFocalPoint(LeftFocusLocation);
+	}
+
+
+
+
+
+
+
+
+
+	//Old Version
+	/*
 	if ( bRightHit == false && !GetWorld()->GetTimerManager().IsTimerActive(RightHandle))
 	{
 		GetWorld()->GetTimerManager().ClearTimer(RightHandle);
 		
 		//오른쪽으로 턴
+		UE_LOG(LogTemp,Warning,TEXT("RotateTickNode// need to Turn Right."));
 		const FRotator SetRot = AIChar->GetActorRotation().Add(0.f,90.f,0.f);
+
+		AICon->SetFocalPoint(RightFocusLocation);
 		
-		GetWorld()->GetTimerManager().SetTimer(RightHandle, [ = ] {
-			FRotator InterpRot = FMath::RInterpTo(AIChar->GetActorRotation(), RightRot/*SetRot*/, GetWorld()->GetDeltaSeconds(), 40.f);
-		AIChar->SetActorRotation(InterpRot);
+		GetWorld()->GetTimerManager().SetTimer(RightHandle, [ = ] {		
+			FRotator InterpRot = FMath::RInterpTo(AIChar->GetActorRotation(), SetRot, GetWorld()->GetDeltaSeconds(), 20.f);
+			AIChar->SetActorRotation(InterpRot);
+			IsReachedTargetRightRot = ( InterpRot.Yaw >=  SetRot.Yaw)? true : false; 
+			UE_LOG(LogTemp, Warning, TEXT("RotateTickNode// TurnRight InterpRot : %s"),*InterpRot.ToString());
 		},GetWorld()->GetDeltaSeconds(),true);
 		
 	}
-	else if ( bLeftHit == false && !GetWorld()->GetTimerManager().IsTimerActive(LeftHandle))
-	{
-		//왼쪽으로 턴
-		float InterpSpeed = 40.f;
 
+	if ( bLeftHit == false && !GetWorld()->GetTimerManager().IsTimerActive(LeftHandle))
+	{
+		//Right로 돌아야 하는데, Right Rotation이 끝나지 않았다면 이 LeftTurn을 수행 않도록 한다.
+		//if(bRightHit == false && IsReachedTargetRightRot == false ) return;
+
+		//왼쪽으로 턴
+		float InterpSpeed = 20.f;
+		UE_LOG(LogTemp, Warning, TEXT("RotateTickNode// need to Turn Left."))
 		GetWorld()->GetTimerManager().ClearTimer(LeftHandle);
+
+		AICon->SetFocalPoint(LeftFocusLocation);
 		//RightTurn을 하고 있었다면, 왼쪽으로 도는
 		if ( GetWorld()->GetTimerManager().IsTimerActive(RightHandle) )
 		{
-			InterpSpeed = 60.f;
+			InterpSpeed += 20.f;
 		}
+		
 
 		const FRotator SetRot = AIChar->GetActorRotation().Add(0.f, -90.f, 0.f);
 		GetWorld()->GetTimerManager().SetTimer(LeftHandle, [ = ] {
-			FRotator InterpRot = FMath::RInterpTo(AIChar->GetActorRotation(), LeftRot , GetWorld()->GetDeltaSeconds(), InterpSpeed);
-		AIChar->SetActorRotation(InterpRot);
+			FRotator InterpRot = FMath::RInterpTo(AIChar->GetActorRotation(), SetRot, GetWorld()->GetDeltaSeconds(), InterpSpeed);
+			AIChar->SetActorRotation(InterpRot);
+
+			IsReachedTargetLeftRot = ( InterpRot.Yaw <= SetRot.Yaw ) ? true : false;
+			UE_LOG(LogTemp, Warning, TEXT("RotateTickNode//TurnLeft InterpRot : %s"), *InterpRot.ToString());
+
 		}, GetWorld()->GetDeltaSeconds(), true);
 		//AIChar->SetActorRotation(SetRot);
 	}
-
+	*/
 
 
 	/*코너 탐지후 회전 하는 코드*/
@@ -125,4 +204,19 @@ void UBTService_Rotate::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 	}*/
 	
 
+}
+
+
+void UBTService_Rotate::CheckAndClearTimer()
+{
+	if ( GetWorld()->GetTimerManager().IsTimerActive(RightHandle) && IsReachedTargetRightRot)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(RightHandle);
+	}
+
+	if ( GetWorld()->GetTimerManager().IsTimerActive(LeftHandle) && IsReachedTargetLeftRot )
+	{
+		GetWorld()->GetTimerManager().ClearTimer(LeftHandle);
+
+	}
 }

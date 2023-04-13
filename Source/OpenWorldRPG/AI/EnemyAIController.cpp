@@ -473,6 +473,28 @@ void AEnemyAIController::AttackMoving(const FVector LocationVec, FVector RightVe
 	}
 }
 
+/*SetFocus || SetFocalpoint를 이용해  AI가 Targeting을 할때 부드러운 회전을 하기 위함이다.*/
+void AEnemyAIController::UpdateControlRotation(float DeltaTime, bool bUpdatePawn)
+{
+	//bUpdatePawn은 false로 넘겨 부모 클래스의 아래 if(bUpdatePawn)부분을 실행하지 않도록 한다.
+	Super::UpdateControlRotation(DeltaTime,false);
+
+	if ( bUpdatePawn )
+	{
+		APawn* const MyPawn = GetPawn();
+		if(MyPawn == nullptr ) return;
+		const FRotator CurrentPawnRotation = MyPawn->GetActorRotation();
+
+		//AI Controller의 회전은 이미 Focus Location으로 향해 있기 때문에 목적 Rot은 ControlRotation으로 한다.
+		//ControlRotation의 값은 부모 클래스의 이 함수에서 이미 진행을 한 상태임.
+		const FRotator InterpRot = FMath::RInterpTo(MyPawn->GetActorRotation(),GetControlRotation(),DeltaTime,30.f);
+
+		if ( CurrentPawnRotation.Equals(InterpRot, 1e-3f) == false )
+		{
+			MyPawn->FaceRotation(InterpRot, DeltaTime);
+		}
+	}
+}
 
 /**************************************************************************/
 /******************  Black board Key Update Function***********************/

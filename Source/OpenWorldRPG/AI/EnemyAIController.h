@@ -107,6 +107,8 @@ public:
 	virtual void PostInitializeComponents() override;
 	virtual void OnPossess(APawn* InPawn) override;
 
+	/** Update direction AI is looking based on FocalPoint */
+	virtual void UpdateControlRotation(float DeltaTime, bool bUpdatePawn = true) override;
 
 	bool CheckIsEnemy(ABaseCharacter* Target);
 
