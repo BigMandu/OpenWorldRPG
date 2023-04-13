@@ -7,106 +7,69 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Perception/AISenseConfig_Sight.h"
 #include <DrawDebugHelpers.h>
+#include <NavigationSystem.h>
 
 UBTService_Rotate::UBTService_Rotate()
 {
 	NodeName = TEXT("Rotate");
 	Interval = 0.0001;
-	Alpha = 0.f;
-	Delta = 0.f;
+	RotateAlpha= 0.f;
+	RotateDeltaTime = 0.f;
+	TraceAlpha = 0.f;
+	TraceDeltaTime = 0.f;
+
+	//bCreateNodeInstance = true;
+}
+
+
+uint16 UBTService_Rotate::GetInstanceMemorySize() const
+{
+	return	sizeof(FBTRotateMemory);
+}
+
+
+void UBTService_Rotate::InitializeFromAsset(UBehaviorTree& Asset)
+{
+	Super::InitializeFromAsset(Asset);
+	
 }
 
 void UBTService_Rotate::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
 	Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
+
 	UBlackboardComponent* BBComp = OwnerComp.GetBlackboardComponent();
 	AEnemyAIController* AICon = Cast<AEnemyAIController>(OwnerComp.GetAIOwner());
 	check(BBComp);
 	check(AICon);
 	AEnemyCharacter* AIChar = Cast<AEnemyCharacter>(AICon->GetCharacter());
 	check(AIChar);
+	FBTRotateMemory* MyMemory = reinterpret_cast< FBTRotateMemory* >( NodeMemory );
+	if(MyMemory == nullptr ) return;
 
-	Delta += DeltaSeconds;
+
+	MyMemory->ClearDeltatime += DeltaSeconds;
+	MyMemory->ClearAlpha = MyMemory->ClearDeltatime / 3.f;
 	
-	Alpha = Delta/1.5f;
-	UE_LOG(LogTemp, Warning, TEXT("RotNode: Delta : %f"), Delta);
-	UE_LOG(LogTemp, Warning, TEXT("RotNode: Alpha : %f"), Alpha);
-
-	if ( Alpha >= 1.f )
+	if ( MyMemory->ClearAlpha >= 1.f )
 	{
-		UE_LOG(LogTemp, Warning, TEXT("RotNode: Alpha : %f"), Alpha);
-		UE_LOG(LogTemp, Warning, TEXT("RotNode: Alpha is Over 1.f clear Delta variable"));
-		Delta = 0.f;
-		AICon->ClearFocus(EAIFocusPriority::Default);
-		FMatrix Mat = FRotationMatrix::MakeFromX(AIChar->GetActorRotation().Vector());
-		AIChar->SetActorRotation(Mat.GetUnitAxis(EAxis::X).Rotation());
-	}
-	CheckAndClearTimer();
+		//UE_LOG(LogTemp, Warning, TEXT("RotNode: Alpha : %f"), MyMemory->TraceAlpha);
+		UE_LOG(LogTemp, Warning, TEXT("RotNode: DelAlpha is Over 1.f clear Focus"));
 
-	const FVector LineTraceStartLoc = AIChar->GetMesh()->GetSocketLocation(AIChar->HeadSocketName);
-	float SingleAngle = AICon->SightConfig->PeripheralVisionAngleDegrees;
-	float AngleRecognizeDist = 200.f;
-
-	const FRotator RightRot = AIChar->GetActorRotation().Add(0.f, SingleAngle, 0.f);
-	const FRotator LeftRot = AIChar->GetActorRotation().Add(0.f,-SingleAngle,0.f);
-
-	const FVector RightFocusLocation = LineTraceStartLoc + RightRot.Vector() * AngleRecognizeDist;
-	const FVector LeftFocusLocation = LineTraceStartLoc + LeftRot.Vector() * AngleRecognizeDist;
-
-	//Hit이 됐는지 안됐는지만 알면되니 HitResult를 공동변수로 사용한다.
-	FHitResult Hit;
-
-
-	DrawDebugLine(GetWorld(), LineTraceStartLoc, RightFocusLocation, FColor::Magenta,false,1.f,0,2.f);
-	DrawDebugLine(GetWorld(), LineTraceStartLoc, LeftFocusLocation,FColor::Magenta,false,1.f,0,2.f);
-	bool bRightHit = GetWorld()->LineTraceSingleByChannel(Hit,LineTraceStartLoc, RightFocusLocation, ECollisionChannel::ECC_Visibility);
-	bool bLeftHit = GetWorld()->LineTraceSingleByChannel(Hit,LineTraceStartLoc, LeftFocusLocation, ECollisionChannel::ECC_Visibility);
-
-	//Hitresult가 없는경우에 빈공간이며, 해당 방향으로 회전해야한다.
-	//둘 다 안맞은 경우 양쪽 모두 체크해야하며 오른쪽부터 체크 하기 위해 RightHit부터 검증한다.
-
-	//양쪽 모두 뻥 뚫려있다면
-	if ( !bRightHit && !bLeftHit )
-	{
-		
-		float Judgevalue = FMath::FRandRange(0.f,2.f);
-		//1.8이하의 값이라면 왼/오 중에 택한다.
-		if ( Judgevalue <= 1.8f )
-		{
-			if ( Judgevalue >= 0.6 )
-			{
-				AICon->SetFocalPoint(LeftFocusLocation);
-			}
-			else
-			{
-				AICon->SetFocalPoint(RightFocusLocation);
-			}
-			
-		}
-		else
-		{
-			const FRotator Rot = AIChar->GetActorRotation().Add(0.f, 180.f, 0.f);
-			const FVector RearFocusLocation = LineTraceStartLoc + Rot.Vector() * AngleRecognizeDist;
-			AICon->SetFocalPoint(RearFocusLocation);
-		}
-	}
-	//오른쪽만 뚫려있는 경우
-	else if ( !bRightHit && bLeftHit )
-	{
-		AICon->SetFocalPoint(RightFocusLocation);
-	}
-	//왼쪽만 뚫려있는 경우
-	else if ( bRightHit && !bLeftHit )
-	{
-		AICon->SetFocalPoint(LeftFocusLocation);
+		MyMemory->ClearDeltatime = 0.f;
+		ClearFocusAndChangeRot(AICon,AIChar);
 	}
 
+	MyMemory->TraceDeltatime += DeltaSeconds;
+	MyMemory->TraceAlpha = MyMemory->TraceDeltatime / 5.f;
 
+	if( MyMemory->TraceAlpha >= 1.f )
+	{
+		UE_LOG(LogTemp, Warning, TEXT("RotNode: RotAlpha is over 1.f fire LineTrace"));
 
-
-
-
-
+		MyMemory->TraceDeltatime = 0.f;
+		TraceAndSetFocus(AICon,AIChar);	
+	}
 
 
 	//Old Version
@@ -194,7 +157,6 @@ void UBTService_Rotate::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 	}
 */
 
-
 	/*PathFollowComp->GetNextPathIndex();
 
 	const FNavPathPoint& NextPathPt = Path->GetPathPoints()[ PathFollowComp->GetNextPathIndex()];
@@ -206,17 +168,101 @@ void UBTService_Rotate::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 
 }
 
-
-void UBTService_Rotate::CheckAndClearTimer()
+//Focus를 Clear해주고 AI의 방향을 진행방향으로 변경한다.
+void UBTService_Rotate::ClearFocusAndChangeRot(AEnemyAIController* AICon, AEnemyCharacter* AIChar)
 {
-	if ( GetWorld()->GetTimerManager().IsTimerActive(RightHandle) && IsReachedTargetRightRot)
+	AICon->ClearFocus(EAIFocusPriority::Gameplay);
+
+
+	UPathFollowingComponent* PathFollowComp = AICon->GetPathFollowingComponent();
+	if ( PathFollowComp == nullptr ) return;
+	const FNavPathSharedPtr Path = PathFollowComp->GetPath();
+	if ( Path.IsValid() == false ) return;
+
+	//PathPoint를 구해온다.
+	TArray<FNavPathPoint> PathPoint = Path->GetPathPoints();
+	//현재 AI의 방향을 구한다.
+	FVector CurrentLoc = AIChar->GetActorLocation();
+
+	//구한 PathPoint의 개수를 얻어온다, (경로 탐색이 끝난 경우 최대 2개이고, 이 경우는 무조건 경로탐색이 끝난 뒤다.)
+	//- 참고 : 경로탐색중엔 코너부분의 PathPoint는 3이상이 나올 수 있다.
+	//경로탐색이 끝난 PathPoint에는 시작점/끝점 두개만 존재한다.
+	int32 PathPointNum = PathPoint.Num();
+	if ( PathPointNum >= 2 )
 	{
-		GetWorld()->GetTimerManager().ClearTimer(RightHandle);
+		//시작지점에서 종료방향을 구한다.
+		FVector StartPathPointDir = ( PathPoint[ 1 ].Location - PathPoint[ 0 ].Location ).GetSafeNormal();
+		AIChar->SetActorRotation(StartPathPointDir.Rotation());
+	}
+}
+
+
+/**AI의 머리에서 Perception의 Sightconfig에서 지정한 시야각의 양 끝단에서 LineTrace를 쏘고
+ * LineTrace에 아무것도 맞지 않았을 경우에, 해당 방향으로 회전하는 함수
+ * 
+ */
+void UBTService_Rotate::TraceAndSetFocus(AEnemyAIController* AICon, AEnemyCharacter* AIChar)
+{
+	//LineTrace의 시작점을 머리에서 부터 하기위해 머리 head socket의 위치를 가져온다.
+	const FVector LineTraceStartLoc = AIChar->GetMesh()->GetSocketLocation(AIChar->HeadSocketName);
+	float SingleAngle = AICon->SightConfig->PeripheralVisionAngleDegrees;
+
+	//LineTrace의 길이를 정한다.
+	float AngleRecognizeDist = 200.f;
+
+	//AI의 현재 방향에서 시야각만큼의 Rot을 증감하여 라인트레이스의 방향을 정한다.
+	const FRotator RightRot = AIChar->GetActorRotation().Add(0.f, SingleAngle, 0.f);
+	const FRotator LeftRot = AIChar->GetActorRotation().Add(0.f, -SingleAngle, 0.f);
+
+	const FVector RightFocusLocation = LineTraceStartLoc + RightRot.Vector() * AngleRecognizeDist;
+	const FVector LeftFocusLocation = LineTraceStartLoc + LeftRot.Vector() * AngleRecognizeDist;
+
+	DrawDebugLine(GetWorld(), LineTraceStartLoc, RightFocusLocation, FColor::Magenta, false, 1.f, 0, 2.f);
+	DrawDebugLine(GetWorld(), LineTraceStartLoc, LeftFocusLocation, FColor::Magenta, false, 1.f, 0, 2.f);
+
+	//Hit이 됐는지 안됐는지만 알면되니 HitResult를 공동변수로 사용한다.
+	FHitResult Hit;
+	bool bRightHit = GetWorld()->LineTraceSingleByChannel(Hit, LineTraceStartLoc, RightFocusLocation, ECollisionChannel::ECC_Visibility);
+	bool bLeftHit = GetWorld()->LineTraceSingleByChannel(Hit, LineTraceStartLoc, LeftFocusLocation, ECollisionChannel::ECC_Visibility);
+
+	//Hitresult가 없는경우에 빈공간이며, 해당 방향으로 회전해야한다.
+	//둘 다 안맞은 경우 양쪽 모두 체크해야하며 오른쪽부터 체크 하기 위해 RightHit부터 검증한다.
+
+	//양쪽 모두 뻥 뚫려있다면
+	if ( !bRightHit && !bLeftHit )
+	{
+		//0.f~ 2.f값 사이의 랜덤값을 불러온다.
+		float Judgevalue = FMath::FRandRange(0.f, 2.f);
+		//1.8이하의 값이라면 왼/오 중에 택한다.
+		if ( Judgevalue <= 1.8f )
+		{
+			if ( Judgevalue >= 0.6 )
+			{
+				AICon->SetFocalPoint(LeftFocusLocation, EAIFocusPriority::Gameplay);
+			}
+			else
+			{
+				AICon->SetFocalPoint(RightFocusLocation, EAIFocusPriority::Gameplay);
+			}
+
+		}
+		//1.8 초과의 값이라면 뒤를 향하도록 한다.
+		else
+		{
+			const FRotator Rot = AIChar->GetActorRotation().Add(0.f, 180.f, 0.f);
+			const FVector RearFocusLocation = LineTraceStartLoc + Rot.Vector() * AngleRecognizeDist;
+			AICon->SetFocalPoint(RearFocusLocation);
+		}
+	}
+	//오른쪽만 뚫려있는 경우
+	else if ( !bRightHit && bLeftHit )
+	{
+		AICon->SetFocalPoint(RightFocusLocation, EAIFocusPriority::Gameplay);
+	}
+	//왼쪽만 뚫려있는 경우
+	else if ( bRightHit && !bLeftHit )
+	{
+		AICon->SetFocalPoint(LeftFocusLocation, EAIFocusPriority::Gameplay);
 	}
 
-	if ( GetWorld()->GetTimerManager().IsTimerActive(LeftHandle) && IsReachedTargetLeftRot )
-	{
-		GetWorld()->GetTimerManager().ClearTimer(LeftHandle);
-
-	}
 }

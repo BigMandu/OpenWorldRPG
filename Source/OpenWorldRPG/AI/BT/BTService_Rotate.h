@@ -23,11 +23,28 @@ private:
 	bool IsReachedTargetRightRot;
 	bool IsReachedTargetLeftRot;
 
-	float Alpha;
-	float Delta;
+	float TraceAlpha;
+	float TraceDeltaTime;
+
+	float RotateAlpha;
+	float RotateDeltaTime;
+
+
+	struct FBTRotateMemory
+	{
+		float ClearAlpha;
+		float ClearDeltatime;
+		float TraceAlpha;
+		float TraceDeltatime;
+	};
+	
 
 protected:
+	virtual void InitializeFromAsset(UBehaviorTree& Asset) override;
+	virtual uint16 GetInstanceMemorySize() const override;
 	virtual void TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
 
-	void CheckAndClearTimer();
+	
+	void ClearFocusAndChangeRot(class AEnemyAIController* AICon, class AEnemyCharacter* AIChar);
+	void TraceAndSetFocus(AEnemyAIController* AICon, AEnemyCharacter* AIChar);
 };
