@@ -104,9 +104,11 @@ EBTNodeResult::Type UBTTask_GetChaseLocation::ExecuteTask(UBehaviorTreeComponent
 			//위에서 구한 거리에서 무작위값 3으로 나눈값(최소) 과 원래값(최대)사이의 랜덤 거리 값을 구한다.
 			float RandDist = FMath::RandRange(LocationDist.Size() / 3, LocationDist.Size());
 
-			//Target의 마지막 식별 회전값에 위의 랜덤 거리float값을 곱해  추가적으로 얼만큼 더 나갈지 결정하는 Vector값을 구한다.
-			FVector PreCalc = FVector(RotationVec.X * RandDist, RotationVec.Y * RandDist, RotationVec.Z);
+			FVector RotVec = (CurrentTargetLocation - LastSeenLocation ).GetSafeNormal();
 
+			//Target의 마지막 식별 회전값에 위의 랜덤 거리float값을 곱해  추가적으로 얼만큼 더 나갈지 결정하는 Vector값을 구한다.
+			//FVector PreCalc = FVector(RotationVec.X * RandDist, RotationVec.Y * RandDist, RotationVec.Z);
+			FVector PreCalc = FVector(RotVec.X * RandDist, RotVec.Y * RandDist, RotVec.Z);
 
 			//현재 이 OwnerAI의 위치값에 위에서 구한 방향+거리벡터를 더해 최종 수색 위치를 결정한다.
 			FinalSearchLocation = OwnerComp.GetOwner()->GetActorLocation() + PreCalc;

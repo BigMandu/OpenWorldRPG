@@ -47,6 +47,7 @@ void UBTService_Rotate::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 	FBTRotateMemory* MyMemory = reinterpret_cast< FBTRotateMemory* >( NodeMemory );
 	if(MyMemory == nullptr ) return;
 
+	if(AIChar->AIStatus != EAIStatus::EAS_Patrol ) return;
 
 	MyMemory->ClearDeltatime += DeltaSeconds;
 	MyMemory->ClearAlpha = MyMemory->ClearDeltatime / 3.f;
@@ -192,7 +193,10 @@ void UBTService_Rotate::ClearFocusAndChangeRot(AEnemyAIController* AICon, AEnemy
 	{
 		//시작지점에서 종료방향을 구한다.
 		FVector StartPathPointDir = ( PathPoint[ 1 ].Location - PathPoint[ 0 ].Location ).GetSafeNormal();
-		AIChar->SetActorRotation(StartPathPointDir.Rotation());
+		FVector TargetFocusLoc = CurrentLoc + StartPathPointDir * 1000.f;
+		//경로방향으로 SetFocus를 해준뒤에 바로 ClearFocus를 해준다.
+		AICon->SetFocalPoint(TargetFocusLoc,EAIFocusPriority::Gameplay);
+		AICon->ClearFocus(EAIFocusPriority::Gameplay);
 	}
 }
 
@@ -232,7 +236,8 @@ void UBTService_Rotate::TraceAndSetFocus(AEnemyAIController* AICon, AEnemyCharac
 	if ( !bRightHit && !bLeftHit )
 	{
 		//0.f~ 2.f값 사이의 랜덤값을 불러온다.
-		float Judgevalue = FMath::FRandRange(0.f, 2.f);
+		float Judgevalue = FMath::FRandRange(0.f, 2.3f);
+		UE_LOG(LogTemp,Warning,TEXT("RotateNode:: JudgeValue is %f"), Judgevalue);
 		//1.8이하의 값이라면 왼/오 중에 택한다.
 		if ( Judgevalue <= 1.8f )
 		{

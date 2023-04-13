@@ -18,9 +18,7 @@ EBTNodeResult::Type UBTTask_Attack::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 	AICon = Cast<AEnemyAIController>(OwnerComp.GetAIOwner());
 	AIChar = Cast<AEnemyCharacter>(AICon->GetCharacter());
 
-
-	
-	
+	AIChar->SetAIStatus(EAIStatus::EAS_Attack);	
 	AIChar->SetAimMode(EAimMode::EAM_Aim);
 	
 

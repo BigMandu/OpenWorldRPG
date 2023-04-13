@@ -496,6 +496,24 @@ void AEnemyAIController::UpdateControlRotation(float DeltaTime, bool bUpdatePawn
 	}
 }
 
+//AAIController에 있는 함수를 override함.
+//Super::를 호출하지 않는다.
+//Focus를 Actor에 줄경우, 해당 Actor의 Head에 focus를 하기 위함.
+FVector AEnemyAIController::GetFocalPointOnActor(const AActor* Actor) const
+{
+	FVector FocusLocation;
+	if ( const ABaseCharacter* BChar = Cast<ABaseCharacter>(Actor) )
+	{
+		FocusLocation = BChar->GetMesh()->GetSocketLocation(OwnerActor->HeadSocketName);
+	}
+	else
+	{
+		FocusLocation = Actor->GetActorLocation();
+	}
+
+	return Actor != nullptr ? FocusLocation : FAISystem::InvalidLocation;
+}
+
 /**************************************************************************/
 /******************  Black board Key Update Function***********************/
 /**************************************************************************/

@@ -109,6 +109,7 @@ public:
 
 	/** Update direction AI is looking based on FocalPoint */
 	virtual void UpdateControlRotation(float DeltaTime, bool bUpdatePawn = true) override;
+	virtual FVector GetFocalPointOnActor(const AActor* Actor) const override;
 
 	bool CheckIsEnemy(ABaseCharacter* Target);
 
