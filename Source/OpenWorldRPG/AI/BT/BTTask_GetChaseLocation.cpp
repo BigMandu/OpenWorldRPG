@@ -77,42 +77,34 @@ EBTNodeResult::Type UBTTask_GetChaseLocation::ExecuteTask(UBehaviorTreeComponent
 		if ( NavSys == nullptr ) return EBTNodeResult::Failed;
 		FNavLocation NavLocation;
 
-		//LastSeenLocation에 AI가 도달할 수 없다면
-		if ( NavSys->GetRandomReachablePointInRadius(LastSeenLocation, 10.f, NavLocation) == false )
-		{
-			UE_LOG(LogTemp, Warning, TEXT("UBTTask_GetChaseLocation::ExecuteTask // Can't reach LastSeenLocation"));
-			//범위를 늘려 한번더 한다.
-			if ( NavSys->GetRandomReachablePointInRadius(LastSeenLocation, 250.f, NavLocation) )
-			{
-				FinalSearchLocation = NavLocation.Location;
-			}
-			else
-			{
-				//그래도 도달할 수 없다면.. 차후 생각해봄.
-			}
-		}
+
 		//높이가 같은경우 == Target이 코너나, 장애물 사이로 들어가 숨은 경우임.
 		//따라서 타겟의 마지막 식별 위치와, Target의 현재 위치의 거리값을 구해서 
 		//그 거리값을 최소 : 거리값/3,  최대 : 거리값  사이의 랜덤한 값을 구해
 		// 현재 OwnerAI의 위치에 Target의 마지막 식별 회전값 * 거리 랜덤값을 더해 최종 수색 위치를 구한다.
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("UBTTask_GetChaseLocation::ExecuteTask // Can reach LastSeenLocation"));
-			//Target의 현재 위치와 마지막 식별 위치의 거리를 구한다.
-			FVector LocationDist = FVector(FVector::Dist(LastSeenLocation, CurrentTargetLocation));
 
-			//위에서 구한 거리에서 무작위값 3으로 나눈값(최소) 과 원래값(최대)사이의 랜덤 거리 값을 구한다.
-			float RandDist = FMath::RandRange(LocationDist.Size() / 3, LocationDist.Size());
 
-			FVector RotVec = (CurrentTargetLocation - LastSeenLocation ).GetSafeNormal();
+		UE_LOG(LogTemp, Warning, TEXT("UBTTask_GetChaseLocation::ExecuteTask // Can reach LastSeenLocation"));
+		//Target의 현재 위치와 마지막 식별 위치의 거리를 구한다.
+		//FVector LocationDist = FVector(FVector::Dist(LastSeenLocation, CurrentTargetLocation));
+		float LocationDist = FVector::Dist(LastSeenLocation, CurrentTargetLocation);
 
-			//Target의 마지막 식별 회전값에 위의 랜덤 거리float값을 곱해  추가적으로 얼만큼 더 나갈지 결정하는 Vector값을 구한다.
-			//FVector PreCalc = FVector(RotationVec.X * RandDist, RotationVec.Y * RandDist, RotationVec.Z);
-			FVector PreCalc = FVector(RotVec.X * RandDist, RotVec.Y * RandDist, RotVec.Z);
+		//위에서 구한 거리에서 무작위값 3으로 나눈값(최소) 과 원래값(최대)사이의 랜덤 거리 값을 구한다.
+		//float RandDist = FMath::RandRange(LocationDist.Size() / 3, LocationDist.Size() * 1.05);
+		float RandDist = FMath::RandRange(LocationDist / 3, LocationDist * 1.05);
+		UE_LOG(LogTemp,Warning,TEXT("LocationDist : %f, RandDist : %f"), LocationDist, RandDist);
 
-			//현재 이 OwnerAI의 위치값에 위에서 구한 방향+거리벡터를 더해 최종 수색 위치를 결정한다.
-			FinalSearchLocation = OwnerComp.GetOwner()->GetActorLocation() + PreCalc;
-		}
+		FVector RotVec = (CurrentTargetLocation - LastSeenLocation ).GetSafeNormal();
+
+		DrawDebugSphere(GetWorld(), CurrentTargetLocation+RotVec*10.f, 20.f, 6, FColor::Purple, false, 10.f, 0, 3.f);
+		//Target의 마지막 식별 회전값에 위의 랜덤 거리float값을 곱해  추가적으로 얼만큼 더 나갈지 결정하는 Vector값을 구한다.
+		//FVector PreCalc = FVector(RotationVec.X * RandDist, RotationVec.Y * RandDist, RotationVec.Z);
+		FVector PreCalc = FVector(RotVec.X * RandDist, RotVec.Y * RandDist, RotVec.Z);
+
+		//현재 이 OwnerAI의 위치값에 위에서 구한 방향+거리벡터를 더해 최종 수색 위치를 결정한다.
+		//FinalSearchLocation = OwnerComp.GetOwner()->GetActorLocation() + PreCalc;
+		FinalSearchLocation = LastSeenLocation + PreCalc;
+		
 
 		DrawDebugSphere(GetWorld(), LastSeenLocation, 8.f, 6, FColor::Purple, false, 10.f, 0, 3.f);
 		DrawDebugSphere(GetWorld(), CurrentTargetLocation, 8.f, 6, FColor::Green, false, 10.f, 0, 3.f);

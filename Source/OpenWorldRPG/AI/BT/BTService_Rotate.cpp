@@ -47,15 +47,20 @@ void UBTService_Rotate::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 	FBTRotateMemory* MyMemory = reinterpret_cast< FBTRotateMemory* >( NodeMemory );
 	if(MyMemory == nullptr ) return;
 
-	if(AIChar->AIStatus != EAIStatus::EAS_Patrol ) return;
+	if(AIChar->AIStatus != EAIStatus::EAS_Patrol )
+	{
+		
+		return;
+	}
 
 	MyMemory->ClearDeltatime += DeltaSeconds;
 	MyMemory->ClearAlpha = MyMemory->ClearDeltatime / 3.f;
 	
 	if ( MyMemory->ClearAlpha >= 1.f )
 	{
+		//debug
 		//UE_LOG(LogTemp, Warning, TEXT("RotNode: Alpha : %f"), MyMemory->TraceAlpha);
-		UE_LOG(LogTemp, Warning, TEXT("RotNode: DelAlpha is Over 1.f clear Focus"));
+		//UE_LOG(LogTemp, Warning, TEXT("RotNode: DelAlpha is Over 1.f clear Focus"));
 
 		MyMemory->ClearDeltatime = 0.f;
 		ClearFocusAndChangeRot(AICon,AIChar);
@@ -66,7 +71,7 @@ void UBTService_Rotate::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 
 	if( MyMemory->TraceAlpha >= 1.f )
 	{
-		UE_LOG(LogTemp, Warning, TEXT("RotNode: RotAlpha is over 1.f fire LineTrace"));
+		//UE_LOG(LogTemp, Warning, TEXT("RotNode: RotAlpha is over 1.f fire LineTrace"));
 
 		MyMemory->TraceDeltatime = 0.f;
 		TraceAndSetFocus(AICon,AIChar);	
@@ -172,7 +177,7 @@ void UBTService_Rotate::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeM
 //Focus를 Clear해주고 AI의 방향을 진행방향으로 변경한다.
 void UBTService_Rotate::ClearFocusAndChangeRot(AEnemyAIController* AICon, AEnemyCharacter* AIChar)
 {
-	AICon->ClearFocus(EAIFocusPriority::Gameplay);
+	AICon->ClearFocus(EAIFocusPriority::Default);
 
 
 	UPathFollowingComponent* PathFollowComp = AICon->GetPathFollowingComponent();
@@ -194,7 +199,10 @@ void UBTService_Rotate::ClearFocusAndChangeRot(AEnemyAIController* AICon, AEnemy
 		//시작지점에서 종료방향을 구한다.
 		FVector StartPathPointDir = ( PathPoint[ 1 ].Location - PathPoint[ 0 ].Location ).GetSafeNormal();
 		FVector TargetFocusLoc = CurrentLoc + StartPathPointDir * 1000.f;
+
 		//경로방향으로 SetFocus를 해준뒤에 바로 ClearFocus를 해준다.
+		//만약 Defalt(우선순위가 제일 높음)으로 했을경우, 이 코드에 들어올때 Enemy가 Set이 되면
+		//Location에 Focus된게 Clear되지 않음.. 한단계 낮은 Gameplay로 하니 잘 풀어진다.
 		AICon->SetFocalPoint(TargetFocusLoc,EAIFocusPriority::Gameplay);
 		AICon->ClearFocus(EAIFocusPriority::Gameplay);
 	}
@@ -221,8 +229,8 @@ void UBTService_Rotate::TraceAndSetFocus(AEnemyAIController* AICon, AEnemyCharac
 	const FVector RightFocusLocation = LineTraceStartLoc + RightRot.Vector() * AngleRecognizeDist;
 	const FVector LeftFocusLocation = LineTraceStartLoc + LeftRot.Vector() * AngleRecognizeDist;
 
-	DrawDebugLine(GetWorld(), LineTraceStartLoc, RightFocusLocation, FColor::Magenta, false, 1.f, 0, 2.f);
-	DrawDebugLine(GetWorld(), LineTraceStartLoc, LeftFocusLocation, FColor::Magenta, false, 1.f, 0, 2.f);
+	/*DrawDebugLine(GetWorld(), LineTraceStartLoc, RightFocusLocation, FColor::Magenta, false, 1.f, 0, 2.f);
+	DrawDebugLine(GetWorld(), LineTraceStartLoc, LeftFocusLocation, FColor::Magenta, false, 1.f, 0, 2.f);*/
 
 	//Hit이 됐는지 안됐는지만 알면되니 HitResult를 공동변수로 사용한다.
 	FHitResult Hit;
@@ -243,11 +251,11 @@ void UBTService_Rotate::TraceAndSetFocus(AEnemyAIController* AICon, AEnemyCharac
 		{
 			if ( Judgevalue >= 0.6 )
 			{
-				AICon->SetFocalPoint(LeftFocusLocation, EAIFocusPriority::Gameplay);
+				AICon->SetFocalPoint(LeftFocusLocation, EAIFocusPriority::Default);
 			}
 			else
 			{
-				AICon->SetFocalPoint(RightFocusLocation, EAIFocusPriority::Gameplay);
+				AICon->SetFocalPoint(RightFocusLocation, EAIFocusPriority::Default);
 			}
 
 		}
@@ -262,12 +270,12 @@ void UBTService_Rotate::TraceAndSetFocus(AEnemyAIController* AICon, AEnemyCharac
 	//오른쪽만 뚫려있는 경우
 	else if ( !bRightHit && bLeftHit )
 	{
-		AICon->SetFocalPoint(RightFocusLocation, EAIFocusPriority::Gameplay);
+		AICon->SetFocalPoint(RightFocusLocation, EAIFocusPriority::Default);
 	}
 	//왼쪽만 뚫려있는 경우
 	else if ( bRightHit && !bLeftHit )
 	{
-		AICon->SetFocalPoint(LeftFocusLocation, EAIFocusPriority::Gameplay);
+		AICon->SetFocalPoint(LeftFocusLocation, EAIFocusPriority::Default);
 	}
 
 }

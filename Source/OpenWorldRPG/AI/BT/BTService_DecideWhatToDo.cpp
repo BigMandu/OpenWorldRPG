@@ -16,7 +16,7 @@
 #include "OpenWorldRPG/GameData/StatManagementComponent.h"
 
 
-
+#define DECISION_BRANCH_DEBUG 0
 #define BTSDEBUG 1
 
 UBTService_DecideWhatToDo::UBTService_DecideWhatToDo()
@@ -136,7 +136,7 @@ void UBTService_DecideWhatToDo::DecisionBranch()//UBehaviorTreeComponent& OwnerC
 	//BBComp->GetValueAsBool()
 	if (bNoAmmo || bNoWeapon)
 	{
-#if BTSDEBUG 
+#if DECISION_BRANCH_DEBUG
 		UE_LOG(LogTemp, Warning, TEXT("UBTService_DecideWhatToDo :: Run and Farming"));
 #endif
 		AIItemFarming();
@@ -152,29 +152,40 @@ void UBTService_DecideWhatToDo::DecisionBranch()//UBehaviorTreeComponent& OwnerC
 	{
 		if (!bNoAmmo && (bLowHP || bLowAmmo))
 		{
+#if DECISION_BRANCH_DEBUG
 			UE_LOG(LogTemp, Warning, TEXT("UBTService_DecideWhatToDo::DecisionBranch/ WasEngage && low hp, low ammo"));
+#endif
 			//Decide Closed battle  OR  Run
 		}
 		else
 		{
 			AIOpenFire();
-			
+#if DECISION_BRANCH_DEBUG
 			UE_LOG(LogTemp, Warning, TEXT("UBTService_DecideWhatToDo::DecisionBranch / WasEngage"));
+#endif
+			
 			//Keep Battle
 		}
 	}
+	//Target이 되는 Character의 FOV값에 현재 이 AI가 있는 경우(즉, Target이 이 AI를 식별 했을 경우)
 	else if(bInEnemyFOV)
 	{
 		if (!bNoAmmo && (bLowHP || bLowAmmo))
 		{
+#if DECISION_BRANCH_DEBUG
 			UE_LOG(LogTemp, Warning, TEXT("UBTService_DecideWhatToDo::DecisionBranch / In Enemy FOV && low hp, low ammo"));
+#endif
+			
 			//Decide Closed battle  OR  Run
 		}
 		else
 		{
+#if DECISION_BRANCH_DEBUG
+			UE_LOG(LogTemp, Warning, TEXT("UBTService_DecideWhatToDo::DecisionBranch /In Enemy FOV"));
+#endif
 			//Keep Battle
 			AICon->UpdateBBCompBoolKey(AICon->bCanAttackKey, true);
-			UE_LOG(LogTemp, Warning, TEXT("UBTService_DecideWhatToDo::DecisionBranch /In Enemy FOV"));
+			
 			
 		}
 	}
@@ -182,13 +193,19 @@ void UBTService_DecideWhatToDo::DecisionBranch()//UBehaviorTreeComponent& OwnerC
 	{
 		if (!bNoAmmo && (bLowHP || bLowAmmo))
 		{
-			//Decide Closed battle  OR  Run
+#if DECISION_BRANCH_DEBUG
 			UE_LOG(LogTemp, Warning, TEXT("UBTService_DecideWhatToDo::DecisionBranch /bOnlyDetectHearing && low hp, low ammo"));
+#endif
+			//Decide Closed battle  OR  Run
+			
 		}
 		else
 		{
-			//AICon->UpdateBBCompBoolKey(AICon->bNeedToCheckKey,true);
+#if DECISION_BRANCH_DEBUG
 			UE_LOG(LogTemp, Warning, TEXT("UBTService_DecideWhatToDo::DecisionBranch / bOnlyDetectHearing"));
+#endif
+			//AICon->UpdateBBCompBoolKey(AICon->bNeedToCheckKey,true);
+			
 			//Keep Battle
 		}
 	}
@@ -215,8 +232,9 @@ bool UBTService_DecideWhatToDo::IsThisAIinTargetFOV()//UBlackboardComponent* BBC
 		TargetLocation = EnemyPlayer->GetActorLocation();
 		TargetFowVec = EnemyPlayer->GetActorForwardVector();
 		TargetHalfFov = (Cast<AMainController>(EnemyPlayer->GetController())->PlayerCameraManager->GetFOVAngle() / 2.f);
-		//UE_LOG(LogTemp, Warning, TEXT("UBTService_DecideWhatToDo::IsThisAIinTargetFOV /targetfov : %f"), TargetHalfFov);
+		UE_LOG(LogTemp, Warning, TEXT("UBTService_DecideWhatToDo::IsThisAIinTargetFOV /targetfov : %f"), TargetHalfFov);
 	}
+	//If, Enemy Character is AI, branch this if statement
 	else if (EnemyAI)
 	{
 		TargetLocation = EnemyAI->GetActorLocation();
@@ -233,9 +251,11 @@ bool UBTService_DecideWhatToDo::IsThisAIinTargetFOV()//UBlackboardComponent* BBC
 		if (DotCalc > UKismetMathLibrary::Cos(TargetHalfFov))
 		{
 			bInFOV = false;
+			UE_LOG(LogTemp, Warning, TEXT("UBTService_DecideWhatToDo::IsThisAIinTargetFOV /Out FOV"));
 		}
 		else
 		{
+			UE_LOG(LogTemp, Warning, TEXT("UBTService_DecideWhatToDo::IsThisAIinTargetFOV /InFOV"));
 			bInFOV = true;
 		}
 	}
@@ -277,7 +297,7 @@ void UBTService_DecideWhatToDo::AIItemFarming()
 {
 	if (AICon->GetFocusActor() != nullptr)
 	{
-		AICon->ClearFocus(EAIFocusPriority::Gameplay);
+		AICon->ClearFocus(EAIFocusPriority::Default);
 	}
 
 	AICon->UpdateBBCompBoolKey(AICon->bTryFindObejctKey, true);

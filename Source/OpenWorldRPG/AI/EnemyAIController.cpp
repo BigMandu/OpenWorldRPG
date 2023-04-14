@@ -82,7 +82,7 @@ void AEnemyAIController::BeginPlay()
 void AEnemyAIController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	
 	//if (BBComp->GetValueAsBool(bSeeEnemyKey) == true)
 	//{
 	//	//Attack Distance가 된다면
@@ -245,7 +245,8 @@ void AEnemyAIController::DetectedEnemy(ABaseCharacter* Player, FAIStimulus Stimu
 		BBComp->SetValueAsRotator(LastTargetRotationKey, Player->GetActorRotation());
 
 		UpdateBBCompBoolKey(bSeeEnemyKey, false);
-		
+
+		ClearFocus(EAIFocusPriority::Default);
 		EnemyLostDelegate = FTimerDelegate::CreateUObject(this, &AEnemyAIController::LostTarget, Player); // Target);
 		GetWorldTimerManager().SetTimer(EnemyLostTimer, EnemyLostDelegate, SightConfig->GetMaxAge(), false); //특정초 이후에 LostTarget함수를 호출한다.
 
