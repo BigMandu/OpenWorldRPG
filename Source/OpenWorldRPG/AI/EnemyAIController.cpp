@@ -17,11 +17,13 @@
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "EnvironmentQuery/EnvQueryTypes.h"
 
 #include "OpenWorldRPG/Item/Equipment.h"
 #include "OpenWorldRPG/Item/Container.h"
 #include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
+
 
 
 AEnemyAIController::AEnemyAIController(const FObjectInitializer& ObjectInitializer)
@@ -513,6 +515,11 @@ FVector AEnemyAIController::GetFocalPointOnActor(const AActor* Actor) const
 	}
 
 	return Actor != nullptr ? FocusLocation : FAISystem::InvalidLocation;
+}
+
+void AEnemyAIController::HandleEQSResult(TSharedPtr<FEnvQueryResult> result)
+{
+	//추후에 진행.
 }
 
 /**************************************************************************/

@@ -104,7 +104,16 @@ void UBTService_DecideWhatToDo::SetDecisionValue()//UBehaviorTreeComponent & Own
 	/* 이 AI가 Target의 시야 안에 있는 경우*/
 	if (!BBComp->GetValueAsBool(AICon->bHearEnemyKey))
 	{
-		BBComp->SetValueAsBool(AICon->bInEnemyFOVKey, IsThisAIinTargetFOV());
+		bool bInFov = IsThisAIinTargetFOV();
+		BBComp->SetValueAsBool(AICon->bInEnemyFOVKey, bInFov);
+		if(bInFov )
+		{
+			AICon->UpdateBBCompBoolKey(AICon->bMovingBehindTargetKey, true);
+		}
+		else
+		{
+			AICon->UpdateBBCompBoolKey(AICon->bMovingBehindTargetKey, false);
+		}
 		//bInEnemyFOV = IsThisAIinTargetFOV();//(BBComp, AICon, AIChar);
 	}
 }
@@ -208,6 +217,14 @@ void UBTService_DecideWhatToDo::DecisionBranch()//UBehaviorTreeComponent& OwnerC
 			
 			//Keep Battle
 		}
+	}
+	else if (bInEnemyFOV == false)
+	{
+#if DECISION_BRANCH_DEBUG
+		UE_LOG(LogTemp, Warning, TEXT("UBTService_DecideWhatToDo::DecisionBranch / bInEnemyFOV is false"));
+#endif
+	
+	
 	}
 }
 

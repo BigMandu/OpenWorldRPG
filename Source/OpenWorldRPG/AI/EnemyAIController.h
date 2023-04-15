@@ -59,6 +59,9 @@ public:
 	UPROPERTY()
 	UBlackboardComponent* BBComp;
 
+	UPROPERTY(EditAnywhere,Category = AI)
+	class UEnvQuery* SneakUpOnTargetEQS;
+
 	/**********  Blackboard Key   **********/
 	//Object
 	const FName EnemyKey = FName("Enemy");
@@ -81,6 +84,7 @@ public:
 	const FName bHearEnemyKey = FName("HearEnemy");
 	const FName bCanAttackKey = FName("CanAttack");
 	const FName bHasPatrolPointsKey = FName("HasPatrolPoints");
+	const FName bMovingBehindTargetKey = FName("MovingBehindTarget");
 	
 	//DecideBranch boolean
 	const FName bOutOfAmmoKey = FName("OutOfAmmo");
@@ -134,6 +138,7 @@ public:
 	void CalcAttackDist(float DeltaTime);
 	void AttackMoving(const FVector Vec, FVector RightVec);
 
+	void HandleEQSResult(TSharedPtr<struct FEnvQueryResult> result);
 	
 	void DecideWhatToDoAfterDetected();
 
