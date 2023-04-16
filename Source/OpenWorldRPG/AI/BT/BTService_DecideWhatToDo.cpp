@@ -5,8 +5,10 @@
 
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Perception/AISenseConfig_Sight.h"
 
 #include "OpenWorldRPG/BaseCharacter.h"
+#include "OpenWorldRPG/MainCharacter.h"
 #include "OpenWorldRPG/MainController.h"
 #include "OpenWorldRPG/AI/EnemyCharacter.h"
 #include "OpenWorldRPG/AI/EnemyAIController.h"
@@ -244,27 +246,34 @@ bool UBTService_DecideWhatToDo::IsThisAIinTargetFOV()//UBlackboardComponent* BBC
 	AMainCharacter* EnemyPlayer = Cast<AMainCharacter>(BBComp->GetValueAsObject(AICon->EnemyKey));
 	AEnemyCharacter* EnemyAI = Cast<AEnemyCharacter>(BBComp->GetValueAsObject(AICon->EnemyKey));
 
+	//시야각은 절반으로 구한다.
 	if (EnemyPlayer)
 	{
 		TargetLocation = EnemyPlayer->GetActorLocation();
 		TargetFowVec = EnemyPlayer->GetActorForwardVector();
 		TargetHalfFov = (Cast<AMainController>(EnemyPlayer->GetController())->PlayerCameraManager->GetFOVAngle() / 2.f);
-		UE_LOG(LogTemp, Warning, TEXT("UBTService_DecideWhatToDo::IsThisAIinTargetFOV /targetfov : %f"), TargetHalfFov);
+		//UE_LOG(LogTemp, Warning, TEXT("UBTService_DecideWhatToDo::IsThisAIinTargetFOV /targetfov : %f"), TargetHalfFov);
 	}
 	//If, Enemy Character is AI, branch this if statement
 	else if (EnemyAI)
 	{
 		TargetLocation = EnemyAI->GetActorLocation();
 		TargetFowVec = EnemyAI->GetActorForwardVector();
-		//시야각 불러와야함.Perception ㅇㅇ
+		TargetHalfFov = Cast<AEnemyAIController>(EnemyAI->GetController())->SightConfig->PeripheralVisionAngleDegrees;
 	}
 
 
 	if (TargetHalfFov != 0.f && TargetLocation != FVector(0.f))
 	{
+		//AI를 기준으로 Target의 방향을 구한다.
 		FVector DirTowardThisAIVec = (TargetLocation - AIChar->GetActorLocation()).GetSafeNormal();
 
+		//AI에서의 Target 방향과 , Target의 ForwardVector를 내적하여 사이의 각을 구한다.
 		float DotCalc = FVector::DotProduct(TargetFowVec, DirTowardThisAIVec);
+
+		//Target의 시야각을 cos해서 바로 위에서 구한 타겟-AI간의 각도를 비교한다.
+		//cos는 -1~1사이의 값을 가지고 두 값이 같은 방향에 있다면 1, 다르면 -1가 되기때문에
+		//Target의 시야각이 사이각보다 크다면 볼 수 있는것.
 		if (DotCalc > UKismetMathLibrary::Cos(TargetHalfFov))
 		{
 			bInFOV = false;
