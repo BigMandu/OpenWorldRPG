@@ -14,6 +14,6 @@ class OPENWORLDRPG_API UEnvQueryGenerator_FindSneakUp : public UEnvQueryGenerato
 {
 	GENERATED_BODY()
 	UEnvQueryGenerator_FindSneakUp(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
-	//virtual void GenerateItems(FEnvQueryInstance& QueryInstance) const override;
+	virtual void GenerateItems(FEnvQueryInstance& QueryInstance) const override;
 	
 };

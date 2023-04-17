@@ -13,7 +13,7 @@ UEnvQueryGenerator_FindSneakUp::UEnvQueryGenerator_FindSneakUp(const FObjectInit
 	bIncludeContextLocation = false;
 }
 
-//void UEnvQueryGenerator_FindSneakUp::GenerateItems(FEnvQueryInstance& QueryInstance) const
-//{
-//	
-//}
+void UEnvQueryGenerator_FindSneakUp::GenerateItems(FEnvQueryInstance& QueryInstance) const
+{
+	Super::GenerateItems(QueryInstance);
+}
