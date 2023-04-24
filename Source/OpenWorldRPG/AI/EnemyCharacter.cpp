@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "EnemyCharacter.h"
@@ -31,6 +31,7 @@ AEnemyCharacter::AEnemyCharacter()
 
 	AIControllerClass = AEnemyAIController::StaticClass(); //AIController를 넣어주고
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned; //AIController의 소유시기를 정해줌.
+	SetAIStatus(EAIStatus::EAS_Normal);
 
 }
 
@@ -64,8 +65,8 @@ void AEnemyCharacter::SetAIStatus(EAIStatus Status)
 	case EAIStatus::EAS_Patrol:
 		GetCharacterMovement()->MaxWalkSpeed = MinWalkSpeed;
 		break;
-	case EAIStatus::EAS_Scout:
-		GetCharacterMovement()->MaxWalkSpeed = MinWalkSpeed;
+	/*case EAIStatus::EAS_Scout:
+		GetCharacterMovement()->MaxWalkSpeed = MinWalkSpeed;*/
 		break;
 	case EAIStatus::EAS_Normal:
 		GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;

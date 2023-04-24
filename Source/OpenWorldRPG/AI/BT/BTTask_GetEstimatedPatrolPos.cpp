@@ -1,19 +1,20 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "GetEstimatedPatrolPos.h"
+#include "BTTask_GetEstimatedPatrolPos.h"
 #include "NavigationSystem.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "OpenWorldRPG/AI/EnemyAIController.h"
 #include "OpenWorldRPG/AI/EnemyCharacter.h"
-#include "GetEstimatedPatrolPos.h"
+#include "BTTask_GetEstimatedPatrolPos.h"
 
-UGetEstimatedPatrolPos::UGetEstimatedPatrolPos()
+
+UBTTask_GetEstimatedPatrolPos::UBTTask_GetEstimatedPatrolPos()
 {
 	NodeName = TEXT("GetEstimatedPatrolPos");
 }
 
-EBTNodeResult::Type UGetEstimatedPatrolPos::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+EBTNodeResult::Type UBTTask_GetEstimatedPatrolPos::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	Super::ExecuteTask(OwnerComp,NodeMemory);
 	EBTNodeResult::Type Result = EBTNodeResult::Failed;

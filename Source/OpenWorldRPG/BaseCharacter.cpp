@@ -4,8 +4,10 @@
 #include "BaseCharacter.h"
 
 #include "Components/CapsuleComponent.h"
+#include "Components/SphereComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/AudioComponent.h"
+
 
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -71,11 +73,13 @@ ABaseCharacter::ABaseCharacter()
 	LootWidgetComp = CreateDefaultSubobject<ULootWidgetComponent>(TEXT("LootWidgetComp"));
 	SpawnItemEquipComp = CreateDefaultSubobject<USpawnItemEquipComponent>(TEXT("SpawnItemEquipComp"));
 	//AudioComp = CreateDefaultSubobject<UAudioComponent>(TEXT("AudioComp"));
-	//AudioComp->SetupAttachment(GetRootComponent());
+	//AudioComp->SetupAttachment(GetRootComponent());\
 
 	//decal을 무시한다.
 	GetMesh()->SetReceivesDecals(false);
 
+
+	//StimulusQParams = FCollisionQueryParams();
 }
 
 // Called when the game starts or when spawned
@@ -127,17 +131,16 @@ void ABaseCharacter::PostInitializeComponents()
 	TPAnimInstance = Cast<UMainAnimInstance>(GetMesh()->GetAnimInstance());
 
 	if (TPAnimInstance == nullptr) return;
-	
 
 	/* 사운드는 TP Animation을 기준으로 출력한다. */ //AnimInstance의 StepSound_Notify에서 호출.
 	TPAnimInstance->StepSound.AddUObject(this, &ABaseCharacter::StepSound);
 	TPAnimInstance->ThrowDelegate.AddUObject(this,&ABaseCharacter::DetachThrowingObject);
 
+
 	//TPAnimInstance->WeaponTypeNumber = 0;
 	ChangeWeaponTypeNumber(0);
 	
-	
-
+	SetCharacterStatus(ECharacterStatus::EPS_Normal);
 	SetTeamType(TeamType);
 	SettingStorage();
 
@@ -865,6 +868,7 @@ void ABaseCharacter::Die()
 			TPMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 			TPMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
 			TPMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Block);
+			SetCharacterStatus(ECharacterStatus::EPS_Dead);
 			//TPMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
 			
 			bIsDie = true;
@@ -895,13 +899,27 @@ bool ABaseCharacter::CanBeSeenFrom(const FVector& ObserverLocation, FVector& Out
 	else PlayerLocation = GetActorLocation(); //없으면 Actor의 위치를(정가운데)
 
 
+	//아래에 사용될 QueryParms, IgnoreActor는 AISense_Sight::Update에서 ListenerPtr->GetBodyActor()를 이용해 자동으로 들어간다.
+	
+	FCollisionQueryParams StimulusQParams = FCollisionQueryParams(FName(TEXT("SightSense")), true, IgnoreActor);
+
+
+	//OverlapSphereComp의 Perception Sight를 막는다.
+	// OverlapSphereComp의 Owner자체를 Block해버려서 원하는대로 되지 않음.
+	//StimulusQParams.AddIgnoredComponent(OverlapSphereComp);
+
+	//아래는 Victim Character가 장착중인 모든 Equip을 막기 위해 했는데 안된다? 뭐가 안되는듯?
+	for ( auto Equipped : Equipment->EquipmentItems )
+	{
+		StimulusQParams.AddIgnoredActor(Equipped->Equipment);
+	}
+
 	// FCollisionObjectQueryParams에는 	FCollisionObjectQueryParams(int32 InObjectTypesToQuery)를 사용할거다.
 	// 이를 사용하기 위해서는 To do this, use ECC_TO_BITFIELD to convert to bit field 이렇게 하라고 한다. 
-
-	//WorldDynamic, WorldStatic, IgnoreActor를 (관측자의 위치에서 Player의 위치의 범위) LineTrace로 감지. 
+	//WorldDynamic, WorldStatic, IgnoreActor를 (관측자의 위치에서 Player의 위치의 범위) LineTrace로 감지.
 	bool bHit = GetWorld()->LineTraceSingleByObjectType(HitResult, ObserverLocation, PlayerLocation
 		, FCollisionObjectQueryParams(ECC_TO_BITFIELD(ECC_WorldDynamic) | ECC_TO_BITFIELD(ECC_WorldStatic))
-		, FCollisionQueryParams(FName(TEXT("SightSense")), true, IgnoreActor));
+		, StimulusQParams/*FCollisionQueryParams(FName(TEXT("SightSense")), true, IgnoreActor)*/ );
 
 	NumberOfLoSChecksPerformed++;
 
@@ -922,8 +940,10 @@ bool ABaseCharacter::CanBeSeenFrom(const FVector& ObserverLocation, FVector& Out
 	return bResult;
 }
 
+void ABaseCharacter::ModQueryParam(FCollisionQueryParams QParam)
+{
 
-
+}
 
 /**********************************************************/
 /**************        Interaction        *****************/

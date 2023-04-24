@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "NiceCar.h"
@@ -21,6 +21,8 @@
 
 #include "WheeledVehicleMovementComponent.h"
 #include "WheeledVehicleMovementComponent4W.h"
+#include <OpenWorldRPG/NewInventory/Widget/NewInventory.h>
+#include <Kismet/GameplayStatics.h>
 
 PRAGMA_DISABLE_DEPRECATION_WARNINGS
 ANiceCar::ANiceCar()
@@ -334,7 +336,11 @@ void ANiceCar::Interaction(AActor* Actor)
 	{
 		if (bIsOverlapDoor)
 		{			
-			PlayerCon->ToggleCar(this);
+			if ( PlayerCon->ToggleCar(this) == false )
+			{
+				UnsetOutline();
+				return;
+			}
 			UnsetOutline();
 
 			UGameplayStatics::PlaySoundAtLocation(GetWorld(), VD.EngineStartSound, GetActorLocation());//EngineSoundComp->GetComponentLocation());

@@ -14,12 +14,10 @@ class OPENWORLDRPG_API UEnvQueryTest_FindSneakUpTo : public UEnvQueryTest
 {
 	GENERATED_BODY()
 
-		UEnvQueryTest_FindSneakUpTo(const FObjectInitializer& ObjectInitializer);
+	UEnvQueryTest_FindSneakUpTo(const FObjectInitializer& ObjectInitializer);
 
-	UPROPERTY(EditDefaultsOnly, Category=Trace)
+	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UEnvQueryContext> Context;
 
 	virtual void RunTest(FEnvQueryInstance& QueryInstance) const override;
-
-	FVector FindIdealSneakUpLocation(AActor* ContextObject, AActor* TargetActor) const;
 };

@@ -4,17 +4,17 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
-#include "GetEstimatedPatrolPos.generated.h"
+#include "BTTask_GetEstimatedPatrolPos.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class OPENWORLDRPG_API UGetEstimatedPatrolPos : public UBTTaskNode
+class OPENWORLDRPG_API UBTTask_GetEstimatedPatrolPos : public UBTTaskNode
 {
 	GENERATED_BODY()
 	public:
-		UGetEstimatedPatrolPos();
+		UBTTask_GetEstimatedPatrolPos();
 		virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 	
 };

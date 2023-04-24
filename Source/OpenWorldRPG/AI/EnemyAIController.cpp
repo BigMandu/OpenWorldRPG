@@ -23,6 +23,7 @@
 #include "OpenWorldRPG/Item/Container.h"
 #include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
+#include "../MainController.h"
 
 
 
@@ -74,6 +75,7 @@ void AEnemyAIController::PostInitializeComponents()
 	Super::PostInitializeComponents();
 
 	GetPerceptionComponent()->OnTargetPerceptionUpdated.AddDynamic(this, &AEnemyAIController::DetectedTarget);
+	
 }
 
 void AEnemyAIController::BeginPlay()
@@ -201,6 +203,19 @@ void AEnemyAIController::DetectedEnemy(ABaseCharacter* Player, FAIStimulus Stimu
 			//Enemy->bSeePlayer = true; //디버깅
 			//Enemy->bHearPlayer = false; //디버깅
 
+
+			//Car의 Controller를 가져와야함.
+			
+			
+			if ( AMainController* PlayerCon = Cast<AMainController>(GetWorld()->GetFirstPlayerController()))
+			{
+				if ( PlayerCon->bIsinCar )
+				{
+					return;
+				}
+				PlayerCon->AddToListTargetingThisActor(this);
+			}
+
 			UpdateBBCompBoolKey(bSeeEnemyKey, true);
 			UpdateBBCompBoolKey(bHearEnemyKey, false);
 			UpdateBBCompObjectKey(EnemyKey, Player);
@@ -298,11 +313,21 @@ void AEnemyAIController::LostTarget(ABaseCharacter* Target) //AActor* Target)
 	}
 
 	//새로 추가함.
-	GetPerceptionComponent()->ForgetActor(Target); //test
+	//GetPerceptionComponent()->ForgetActor(Target); //test
+	GetPerceptionComponent()->ForgetAll();
 
+	//BBComp의 블랙보드 키 값들을 초기화 한다.
 	UpdateBBCompObjectKey(EnemyKey, nullptr);
 	UpdateBBCompVectorKey(TargetLocationKey, FVector::ZeroVector);
+
 	UpdateBBCompBoolKey(bWasEngageKey, false);
+	UpdateBBCompBoolKey(bCanAttackKey, false);
+	UpdateBBCompBoolKey(bMovingBehindTargetKey, false);
+
+	if ( AMainController* PlayerCon = Cast<AMainController>(GetWorld()->GetFirstPlayerController()) )
+	{
+		PlayerCon->RemoveAtListTargetingThisActor(this);
+	}
 	OwnerActor->SetAimMode(EAimMode::EAM_NotAim);
 }
 
@@ -311,8 +336,9 @@ void AEnemyAIController::LostObject(AActor* InteractActor)
 	UpdateBBCompObjectKey(ObjectKey, nullptr);
 
 	//Perception에 Sight된 Log를 삭제하고
-	GetPerceptionComponent()->ForgetActor(InteractActor);
-	
+	//GetPerceptionComponent()->ForgetActor(InteractActor);
+	GetPerceptionComponent()->ForgetAll();
+
 	//Perception IgnoreActor에 추가한다.
 	//OwnerActor->PerceptionIgnoreActor.Add(InteractActor);
 }

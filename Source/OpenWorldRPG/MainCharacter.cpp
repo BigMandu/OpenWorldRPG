@@ -31,8 +31,10 @@
 
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "Components/PawnNoiseEmitterComponent.h"
 #include "Camera/CameraComponent.h"
+
+#include "Components/SphereComponent.h"
+#include "Components/PawnNoiseEmitterComponent.h"
 
 //#include "OpenWorldRPG/Item/Interactive_Interface.h"
 
@@ -40,6 +42,7 @@
 #include "Components/CapsuleComponent.h"
 
 #include "DrawDebugHelpers.h" //디버깅용
+#include "AI/EnemyCharacter.h"
 
 
 // Sets default values
@@ -130,8 +133,7 @@ void AMainCharacter::PostInitializeComponents()
 	//ShadowMesh->SetHiddenInGame(true);
 	//ShadowMesh->SetCastHiddenShadow(true);
 
-
-
+	CameraBoom->SetRelativeLocation(FVector(0.f, 40.f, 80.f));
 	CameraFPS->SetRelativeLocation(FVector(20.136719, -2.999939, 68.834351));
 	FPMesh->SetRelativeLocation(FVector(-15.128922, -3.533375, -150.495850));
 
@@ -151,7 +153,7 @@ void AMainCharacter::PostInitializeComponents()
 	//GetCapsuleComponent()->SetCollisionProfileName(FName("MainChar"));
 	GetCapsuleComponent()->SetCollisionObjectType(ECollisionChannel::ECC_GameTraceChannel2);
 	//GetCapsuleComponent()->SetCollisionProfileName("MainChar");
-
+	//GetCapsuleComponent()->SetCollisionProfileName("MainChar");
 
 	//FPMesh->HideBoneByName(FName("spine_02"));
 	/*FPLowerLegMesh->HideBoneByName(FName("neck_01"), EPhysBodyOp::PBO_None);
@@ -182,7 +184,7 @@ void AMainCharacter::BeginPlay()
 
 	MainController = Cast<AMainController>(GetController());
 
-
+	if(!MainController ) return;
 	/****** Main Hud의 Widget과 Event Bind ********/
 	UMainHud* MainHud = Cast<UMainHud>(MainController->MainHud);
 	if ( MainHud )
@@ -212,6 +214,8 @@ void AMainCharacter::BeginPlay()
 void AMainCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if(!MainController) return;
 
 	//bIsLookInput 세팅 (Aim Init을 위한것.)
 	float turnvalue = GetInputAxisValue("Turn");
@@ -251,6 +255,8 @@ void AMainCharacter::Tick(float DeltaTime)
 		}
 	}
 
+	//교전 중인지 Tick마다 확인한다.
+	bIsEngage = IsEngage();
 
 }
 
@@ -386,6 +392,35 @@ void AMainCharacter::InteractionLineTrace()
 	//InteractActor가 다를경우 UnsetInteractActor 호출하자. (Outline이 안없어지는 버그가 있음.) -> 해결함.
 }
 
+bool AMainCharacter::IsEngage()
+{
+	bool bReturn = false;
+		
+	//TArray<AActor*> OverlappingActors;
+	//OverlapSphereComp->GetOverlappingActors(OverlappingActors, ABaseCharacter::StaticClass());
+	//
+	//if ( OverlappingActors.Num() > 0 )
+	//{
+	//	for(auto OverlapActor : OverlappingActors )
+	//	{
+	//		if (AEnemyCharacter* AIChar = Cast<AEnemyCharacter>(OverlapActor) )
+	//		{
+	//			//if ( AIChar->AIStatus == EAIStatus::EAS_Attack )
+	//			{
+	//				UE_LOG(LogTemp, Warning, TEXT("AMainChar::IsEngage / Engage true"));
+	//				bReturn = true;
+	//				break;
+	//			}				
+	//		}			
+	//	}
+	//}
+	//else
+	//{
+	//	UE_LOG(LogTemp, Warning, TEXT("AMainChar::IsEngage / Engage false"));
+	//	bReturn = false;
+	//}
+	return bReturn;
+}
 /*
 void AMainCharacter::FPSAimLocationAdjust()
 {

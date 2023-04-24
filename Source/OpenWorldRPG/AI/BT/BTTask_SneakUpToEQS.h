@@ -3,18 +3,17 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BehaviorTree/BTTaskNode.h"
-#include "BTTask_SneakupOnTarget.generated.h"
+#include "BehaviorTree/Tasks/BTTask_RunEQSQuery.h"
+#include "BTTask_SneakUpToEQS.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class OPENWORLDRPG_API UBTTask_SneakupOnTarget : public UBTTaskNode
+class OPENWORLDRPG_API UBTTask_SneakUpToEQS : public UBTTask_RunEQSQuery
 {
 	GENERATED_BODY()
 
+	UBTTask_SneakUpToEQS(const FObjectInitializer& ObjectInitializer);
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
-
-	FVector FindSneakUpLocation(AEnemyAIController* AICon, const FVector& AILocation, const FVector& AIToTargetUnitVec);
 };

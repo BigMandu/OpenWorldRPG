@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -14,7 +14,7 @@ enum class EAIStatus : uint8
 	EAS_Dead		UMETA(DisplayName = "Dead"),
 	EAS_Patrol		UMETA(DisplayName = "Patrol"),//Patrol 상태 -> 최저 이동속도.
 	EAS_Normal		UMETA(DisplayName = "Normal"), //Peace상태.
-	EAS_Scout		UMETA(DisplayName = "Scout"), //뭔가를 듣거나, Player를 수색중일때 ->최저 이동속도
+	//EAS_Scout		UMETA(DisplayName = "Scout"), //뭔가를 듣거나, Player를 수색중일때 ->최저 이동속도
 	EAS_Attack		UMETA(DisplayName = "Attack"), //Player가 시야에 보일때
 
 	EAS_MAX		UMETA(DisplayName = "DefaultMAX")

@@ -108,13 +108,15 @@ void UBTService_DecideWhatToDo::SetDecisionValue()//UBehaviorTreeComponent & Own
 	{
 		bool bInFov = IsThisAIinTargetFOV();
 		BBComp->SetValueAsBool(AICon->bInEnemyFOVKey, bInFov);
+
+		//Target의 FOV안에 있다면 SneakUpToTarget을 실행하지 않도록 false를 준다.
 		if(bInFov )
 		{
-			AICon->UpdateBBCompBoolKey(AICon->bMovingBehindTargetKey, true);
+			AICon->UpdateBBCompBoolKey(AICon->bMovingBehindTargetKey, false);
 		}
 		else
 		{
-			AICon->UpdateBBCompBoolKey(AICon->bMovingBehindTargetKey, false);
+			AICon->UpdateBBCompBoolKey(AICon->bMovingBehindTargetKey, true);
 		}
 		//bInEnemyFOV = IsThisAIinTargetFOV();//(BBComp, AICon, AIChar);
 	}
@@ -220,14 +222,6 @@ void UBTService_DecideWhatToDo::DecisionBranch()//UBehaviorTreeComponent& OwnerC
 			//Keep Battle
 		}
 	}
-	else if (bInEnemyFOV == false)
-	{
-#if DECISION_BRANCH_DEBUG
-		UE_LOG(LogTemp, Warning, TEXT("UBTService_DecideWhatToDo::DecisionBranch / bInEnemyFOV is false"));
-#endif
-	
-	
-	}
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -251,7 +245,16 @@ bool UBTService_DecideWhatToDo::IsThisAIinTargetFOV()//UBlackboardComponent* BBC
 	{
 		TargetLocation = EnemyPlayer->GetActorLocation();
 		TargetFowVec = EnemyPlayer->GetActorForwardVector();
-		TargetHalfFov = (Cast<AMainController>(EnemyPlayer->GetController())->PlayerCameraManager->GetFOVAngle() / 2.f);
+		//Debug용으로 이렇게 함
+				
+		if (AMainController* PlayerCon = Cast<AMainController>(EnemyPlayer->GetController()))
+		{
+			TargetHalfFov = PlayerCon->PlayerCameraManager->GetFOVAngle() / 2.f ;
+		}
+		else
+		{
+			TargetHalfFov = 40.f;
+		}
 		//UE_LOG(LogTemp, Warning, TEXT("UBTService_DecideWhatToDo::IsThisAIinTargetFOV /targetfov : %f"), TargetHalfFov);
 	}
 	//If, Enemy Character is AI, branch this if statement

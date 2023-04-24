@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -17,6 +17,9 @@ UCLASS()
 class OPENWORLDRPG_API AMainController : public APlayerController
 {
 	GENERATED_BODY()
+
+	UPROPERTY()
+	TArray<class AEnemyAIController*> TargetAIList;
 public:
 
 	AMainController();
@@ -71,10 +74,28 @@ public:
 	void Respawn();
 
 	/*************Vehicle *********/
-	void ToggleCar(class ANiceCar* vCar, FVector OutPos = FVector(0.f));
-	void GetIntheCar(ANiceCar* vCar);
+	bool ToggleCar(class ANiceCar* vCar, FVector OutPos = FVector(0.f));
+	bool GetIntheCar(ANiceCar* vCar);
 	void GetOuttheCar(FVector OutPos);//ANiceCar* Car);
 
+
+	/* 아래 함수 3개는 AI가 이 Player를 식별 했을 때
+	* Player의 특정 행동에 제약을 주기 위해
+	* 
+	* 현재 이 제약을 적용한 행동리스트
+	* - 교전중 차량 탑승 불가,
+	*
+	* 이 Player를 식별한 AI를 관리한다.
+	*/
+
+	/*AI가 이 Controller의 OwnerActor를 식별하면
+	* 리스트에 해당 AI를 추가한다.* */
+	void AddToListTargetingThisActor(class AEnemyAIController* AICon);
+	void RemoveAtListTargetingThisActor(AEnemyAIController* AICon);
+
+	/*이 Controller의 OwnerActor를 식별한 AI의 목록을 얻는다.* */
+	//TArray<AEnemyAIController> GetListTargetingThisActor();
+	bool bIsthisTargetForAI();
 
 	//void UseQuickSlotItem(EQuickSlotNumber QuickSlotNum);
 };

@@ -68,9 +68,6 @@ UCLASS()
 class OPENWORLDRPG_API ABaseCharacter : public ACharacter, public IAISightTargetInterface, public IInteractive_Interface
 {
 	GENERATED_BODY()
-
-	
-
 public:
 	// Sets default values for this character's properties
 	ABaseCharacter();
@@ -79,6 +76,7 @@ public:
 	FOnGetAmmo OnGetAmmo;
 	FOnChangeMode OnChangeMode;
 
+	
 
 	/* Socket Name */
 	const FName HeadSocketName = FName("headsocket");
@@ -344,6 +342,7 @@ public:
 	virtual void UnsetOutline() override;
 	/********** Perception ********/
 	virtual bool CanBeSeenFrom(const FVector& ObserverLocation, FVector& OutSeenLocation, int32& NumberOfLoSChecksPerformed, float& OutSightStrength, const AActor* IgnoreActor, const bool* bWasVisible, int32* UserData) const;
-
+	//for Child class
+	void ModQueryParam(struct FCollisionQueryParams QParam);
 
 };

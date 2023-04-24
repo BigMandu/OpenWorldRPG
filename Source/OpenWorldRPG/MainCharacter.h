@@ -49,6 +49,8 @@ UCLASS()
 class OPENWORLDRPG_API AMainCharacter : public ABaseCharacter
 {
 	GENERATED_BODY()
+private:
+	bool bIsEngage = false;
 public:
 	AMainCharacter();
 
@@ -75,6 +77,8 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Character)
 	UCraftSystemComponent* CraftSysComp;
+
+	
 
 	UPROPERTY()
 	float TempVar_OriginInputYawScale;
@@ -174,6 +178,9 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+private:
+	bool IsEngage();
 
 public:	
 	// Called every frame

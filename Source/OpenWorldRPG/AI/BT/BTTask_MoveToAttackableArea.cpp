@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "BTTask_MoveToAttackableArea.h"
@@ -15,11 +15,20 @@ EBTNodeResult::Type UBTTask_MoveToAttackableArea::ExecuteTask(UBehaviorTreeCompo
 	EBTNodeResult::Type Result = Super::ExecuteTask(OwnerComp, NodeMemory);
 	bUsePathfinding = true;
 
+	
+	return Result;
+}
+
+void UBTTask_MoveToAttackableArea::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, EBTNodeResult::Type TaskResult)
+{
+	Super::OnTaskFinished(OwnerComp,NodeMemory,TaskResult);
+
 	AEnemyAIController* AICon = Cast<AEnemyAIController>(OwnerComp.GetAIOwner());
 	check(AICon);
-	AEnemyCharacter* Enemy = Cast<AEnemyCharacter>(AICon->GetCharacter());
-	check(Enemy);
+	AEnemyCharacter* AIChar = Cast<AEnemyCharacter>(AICon->GetPawn());
+	check(AIChar);
 
-	Enemy->SetAIStatus(EAIStatus::EAS_Attack);
-	return Result;
+	//도착한 뒤에 사격할 수 있도록 한다.
+	AICon->UpdateBBCompBoolKey(AICon->bCanAttackKey,true);
+	AIChar->SetAIStatus(EAIStatus::EAS_Attack);
 }

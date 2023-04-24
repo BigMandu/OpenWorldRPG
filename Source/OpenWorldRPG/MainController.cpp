@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "MainController.h"
@@ -89,6 +89,7 @@ void AMainController::ControlCoreUsableWidget(bool bIsTPSMode)
 void AMainController::SetInputAndFocus(bool bIsShow)
 {
 	if (bIsShow) //Set To UI Mode
+
 	{
 		//Show 일때 InputMode는 MainHud에서 직접해준다.
 
@@ -155,8 +156,9 @@ void AMainController::Respawn()
 PRAGMA_ENABLE_DEPRECATION_WARNINGS
 
 /*********** Vehicle ***********/
-void AMainController::ToggleCar(ANiceCar* vCar, FVector OutPos)
+bool AMainController::ToggleCar(ANiceCar* vCar, FVector OutPos)
 {
+	bool Returnvalue = true;
 	bool bNewState = !bIsinCar;
 	if (bNewState != bIsinCar)
 	{		
@@ -164,22 +166,23 @@ void AMainController::ToggleCar(ANiceCar* vCar, FVector OutPos)
 		{
 		case true:
 			//Get out car
-			Main->bDisableInteractionLineTrace = false;
 			GetOuttheCar(OutPos);
 			break;
 		case false:
 			//Get in car			
-			Main->bDisableInteractionLineTrace = true;
-			GetIntheCar(vCar);
+			Returnvalue = GetIntheCar(vCar);
 			break;
 		}
 	}
+	return Returnvalue;
 }
 
-void AMainController::GetIntheCar(ANiceCar* vCar)
+bool AMainController::GetIntheCar(ANiceCar* vCar)
 {
-	if (vCar)
+	//이 Owner를 타겟팅한 AI가 없어야 차를 탑승할 수 있도록 한다.
+	if (vCar && bIsthisTargetForAI() == false)
 	{
+		
 		Car = vCar;
 		bIsinCar = true;
 		FAttachmentTransformRules Rules(EAttachmentRule::SnapToTarget,false);
@@ -188,7 +191,10 @@ void AMainController::GetIntheCar(ANiceCar* vCar)
 		Main->AttachToActor(vCar,Rules,vCar->SeatSocketName);
 		this->Possess(vCar);
 
+		Main->bDisableInteractionLineTrace = true;
+		return true;
 	}
+	return false;
 }
 
 void AMainController::GetOuttheCar(FVector OutPos)//AVehicle* Car)
@@ -202,9 +208,40 @@ void AMainController::GetOuttheCar(FVector OutPos)//AVehicle* Car)
 	Main->SetActorLocation(OutPos);
 	Main->SetActorRotation(FRotator::ZeroRotator);
 	Main->GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	
+
+	Main->bDisableInteractionLineTrace = false;
 	
 }
+
+
+void AMainController::AddToListTargetingThisActor(class AEnemyAIController* AICon)
+{
+	if(AICon)
+	{
+		TargetAIList.Add(AICon);
+	}
+}
+
+void AMainController::RemoveAtListTargetingThisActor(AEnemyAIController* AICon)
+{
+	if (AICon && TargetAIList.Find(AICon) != INDEX_NONE)
+	{
+		TargetAIList.Remove(AICon);
+	}
+}
+
+bool AMainController::bIsthisTargetForAI()
+{
+	//이 Controller의 Owner를 Targeting한 AI가 목록에 있다면 true를 리턴한다.
+	if ( TargetAIList.Num() > 0 )
+	{
+		UE_LOG(LogTemp,Warning,TEXT("AMainController::bIsthisTargetForAI// Can't Take Car"));
+		return true;
+	}
+	UE_LOG(LogTemp, Warning, TEXT("AMainController::bIsthisTargetForAI// Can Take Car"));
+	return false;
+}
+
 
 //void AMainController::UseQuickSlotItem(EQuickSlotNumber QuickSlotNum)
 //{

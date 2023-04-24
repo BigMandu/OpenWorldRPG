@@ -1135,7 +1135,7 @@ void AWeapon::UpdateAim()
 	FTransform AimPos = GetAimPosition();
 	FVector EndVec = AimPos.GetLocation() + AimPos.GetRotation().Vector() * 3000.f;
 	FHitResult Hit = BulletTrace(AimPos.GetLocation(), EndVec);
-
+	if(!MainCon || !MainCon->Main->CameraFPS) return;
 
 	if ( Hit.bBlockingHit )
 	{
@@ -1167,6 +1167,7 @@ void AWeapon::WeaponClipping()
 
 	if ( AMainCharacter* Player = Cast<AMainCharacter>(OwningPlayer) )
 	{
+		if(!MainCon) return;
 		//아래 EndLo Vec을 계산할때 사용할 방향벡터
 		RotVec = GetAimPosition().GetRotation().GetForwardVector();
 
