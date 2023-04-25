@@ -57,10 +57,10 @@ void AWeapon::Tick(float DeltaTime)
 		if ( Player->EquippedWeapon == this )
 		{
 			UpdateAim();
+			WeaponClipping();
 		}
 	}
-
-	if(OwningPlayer )
+	else if(OwningPlayer )
 	{
 		WeaponClipping();
 	}
@@ -436,8 +436,8 @@ void AWeapon::Remove()
 	if ( OwningPlayer->EquippedWeapon == this )
 	{
 		OwningPlayer->ChangeWeapon(0);
-		OwningPlayer->EquippedWeapon = nullptr;
-		//Main->SetEquippedWeapon(nullptr);
+		//OwningPlayer->EquippedWeapon = nullptr;
+		OwningPlayer->SetEquippedWeapon(nullptr);
 		UE_LOG(LogTemp, Warning, TEXT("AWeapon::Remove , Remove RifleAssign"));
 	}
 
@@ -1165,6 +1165,8 @@ void AWeapon::WeaponClipping()
 	FVector RotVec;
 	//Player인 경우 FPS/TPS시점에 따라 HandIK를 다르게 적용한다.
 
+	if(!OwningPlayer ) return;
+
 	if ( AMainCharacter* Player = Cast<AMainCharacter>(OwningPlayer) )
 	{
 		if(!MainCon) return;
@@ -1213,6 +1215,11 @@ void AWeapon::WeaponClipping()
 	//Weapon의 Roll을 수정해 위쪽으로 회전시킨다. 'HighReady형태로'
 	if ( Hit.bBlockingHit )
 	{
+		//Aim상태 였다면 Aim을 풀어준다.
+		if ( OwningPlayer->AimMode == EAimMode::EAM_Aim )
+		{
+			OwningPlayer->SetAimMode(EAimMode::EAM_NotAim);
+		}
 		FVector CurVec = CurrentMeshAttachTransform.GetTranslation();
 		//FVector CalcVec = CurrentMeshAttachTransform.GetTranslation() - (NewY * 50.f);
 

@@ -293,11 +293,17 @@ void ABaseCharacter::SetCharacterStatus(ECharacterStatus Type)
 
 void ABaseCharacter::SetEquippedWeapon(AWeapon* Weapon)
 {
-	if (Weapon)
+	EquippedWeapon = Weapon;
+	if ( Weapon )
 	{
-		EquippedWeapon = Weapon;
 		TPAnimInstance->SetLeftHandIKAlpha(1.f);
 	}
+	else
+	{
+		TPAnimInstance->SetLeftHandIKAlpha(0.f);
+	}
+	
+	
 }
 
 
@@ -319,7 +325,10 @@ void ABaseCharacter::Sprint()
 void ABaseCharacter::UnSprint()
 {
 	TPAnimInstance->bIsSprint = false;
-	TPAnimInstance->SetLeftHandIKAlpha(1.f);
+	if(EquippedWeapon)
+	{
+		TPAnimInstance->SetLeftHandIKAlpha(1.f);
+	}
 	//TPAnimInstance->LeftHandAlpha = 1.f;
 }
 
@@ -526,12 +535,13 @@ void ABaseCharacter::SetWeaponAssign(AWeapon* Weapon, ERifleSlot RifleSlot)
 			SubWeapon = Weapon;
 		break;
 		}
-		Weapon->RifleAssign = RifleSlot;
 	}
 	else if (Weapon->WeaponDataAsset->EquipmentType == EEquipmentType::EET_Pistol)
 	{
 		PistolWeapon = Weapon;
 	}
+
+	Weapon->RifleAssign = RifleSlot;
 
 	
 	//if (Weapon->ItemObj)

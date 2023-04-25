@@ -39,6 +39,8 @@ UNewItemObject* UCustomInventoryLibrary::CreateObject(FItemSetting ItemStruct, b
 		//ReturnObj->ItemInfo = FItemSetting(ItemStruct.DataAsset, 1, 0);
 		ReturnObj->ItemInfo = ItemStruct;
 
+		
+
 		bIsCreated = true;
 		return ReturnObj;
 	}
@@ -48,6 +50,25 @@ UNewItemObject* UCustomInventoryLibrary::CreateObject(FItemSetting ItemStruct, b
 		return nullptr;
 	}
 
+}
+
+void UCustomInventoryLibrary::RemoveFromPreviousMotherContainer(UNewItemObject* Obj)
+{
+	if ( Obj->MotherStorage )
+	{
+		Obj->MotherStorage->RemoveItem(Obj);
+		Obj->MotherStorage = nullptr;
+	}
+	else if ( Obj->MotherEquipComp )
+	{
+		Obj->MotherEquipComp->RemoveEquipment(Obj);
+		Obj->MotherEquipComp = nullptr;
+	}
+	//해당 Item이 이전에 WPM에 있던 Item이면 거기서 지워준다.
+	else if ( Obj->WeaponPartsManager )
+	{
+		Obj->WeaponPartsManager->RemoveParts(Obj);
+	}
 }
 
 /*ItemObj를 이용해 Item class를 Spawn한다.*/
@@ -122,7 +143,12 @@ AEquipment* UCustomInventoryLibrary::SpawnEquipment(UWorld* World, UNewItemObjec
 				UItemStorageObject* StorageObj = Cast<UItemStorageObject>(ItemObj);
 				if ( StorageObj )
 				{
-					Equipment->ItemSetting.Inventory = StorageObj->Inventory;
+					//Inventory를 넘기지 않고, Object를 통째로 넘겨
+					//장착 해제후 재장착시 Inventory를 그대로 불러온다.
+					Equipment->ItemObj = StorageObj;
+
+					//아래 방식으로 하면 ItemObj를 생성하는 과정중에 날아감.
+					//Equipment->ItemSetting.Inventory = StorageObj->Inventory;
 				}
 			}
 

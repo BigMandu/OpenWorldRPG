@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -17,7 +17,7 @@ class OPENWORLDRPG_API UResourceStatusWidgetInInventory : public UUserWidget
 {
 	GENERATED_BODY()
 public:
-	TWeakObjectPtr<UStatManagementComponent> StatManager;
+	TWeakObjectPtr<class UStatManagementComponent> StatManager;
 
 	UPROPERTY(meta = (bindwidget))
 	UProgressBar* HPProgress;

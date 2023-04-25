@@ -254,10 +254,6 @@ void AMainCharacter::Tick(float DeltaTime)
 			GetWorldTimerManager().ClearTimer(EquippedWeapon->RecoilHandle);
 		}
 	}
-
-	//교전 중인지 Tick마다 확인한다.
-	bIsEngage = IsEngage();
-
 }
 
 // Called to bind functionality to input
@@ -392,35 +388,6 @@ void AMainCharacter::InteractionLineTrace()
 	//InteractActor가 다를경우 UnsetInteractActor 호출하자. (Outline이 안없어지는 버그가 있음.) -> 해결함.
 }
 
-bool AMainCharacter::IsEngage()
-{
-	bool bReturn = false;
-		
-	//TArray<AActor*> OverlappingActors;
-	//OverlapSphereComp->GetOverlappingActors(OverlappingActors, ABaseCharacter::StaticClass());
-	//
-	//if ( OverlappingActors.Num() > 0 )
-	//{
-	//	for(auto OverlapActor : OverlappingActors )
-	//	{
-	//		if (AEnemyCharacter* AIChar = Cast<AEnemyCharacter>(OverlapActor) )
-	//		{
-	//			//if ( AIChar->AIStatus == EAIStatus::EAS_Attack )
-	//			{
-	//				UE_LOG(LogTemp, Warning, TEXT("AMainChar::IsEngage / Engage true"));
-	//				bReturn = true;
-	//				break;
-	//			}				
-	//		}			
-	//	}
-	//}
-	//else
-	//{
-	//	UE_LOG(LogTemp, Warning, TEXT("AMainChar::IsEngage / Engage false"));
-	//	bReturn = false;
-	//}
-	return bReturn;
-}
 /*
 void AMainCharacter::FPSAimLocationAdjust()
 {
@@ -760,9 +727,15 @@ void AMainCharacter::LookUpAtRate(float Rate)
 void AMainCharacter::MoveForward(float Value)
 {
 	bMoveForward = false;
+	bMovingStraightForward = false;
 	if ( MainController != NULL && Value != 0.f )
 	{
 		bMoveForward = true;
+		/* for Sprint*/
+		if ( Value > 0.f )
+		{
+			bMovingStraightForward = true;
+		}
 		//어느방향으로 갈지 찾고
 		FRotator Rotation = MainController->GetControlRotation();
 		FRotator YawRotation = FRotator(0.f, Rotation.Yaw, 0.f);
@@ -775,12 +748,13 @@ void AMainCharacter::MoveForward(float Value)
 		/*UE_LOG(LogTemp, Warning, TEXT("my  ForVec = %s"), *Direction.ToString());
 		UE_LOG(LogTemp, Warning, TEXT("Actor::ForVec = %s"), *GetActorForwardVector().ToString());*/
 	}
+
+	
 }
 
 void AMainCharacter::MoveRight(float Value)
 {
 	bMoveRight = false;
-
 	//bBlockMoveRight는 Sprint함수에서 제어한다.
 	if ( MainController != NULL && Value != 0.f && bBlockMoveRight == false)
 	{
@@ -795,13 +769,13 @@ void AMainCharacter::MoveRight(float Value)
 		/*UE_LOG(LogTemp, Warning, TEXT("my  RigVec = %s"), *Direction.ToString());
 		UE_LOG(LogTemp, Warning, TEXT("Actor::RigVec = %s"), *GetActorRightVector().ToString());*/
 	}
+	//UE_LOG(LogTemp, Warning, TEXT("bMovingStraightForward : %s"), bMovingStraightForward ? "True" : "False");
 }
 
 void AMainCharacter::Sprint()
 {
 	//FTimerHandle Timer;
-	if ( GetWorldTimerManager().IsTimerActive(T_SprintKeyDown) == false &&
-	bIsCrouched == false && bDisableInput == false && GetCharacterMovement()->IsFalling() == false && bIsAim == false )
+	if (CanSprint())
 	{
 		Super::Sprint();
 
@@ -825,7 +799,15 @@ void AMainCharacter::Sprint()
 		GetWorldTimerManager().ClearTimer(T_SprintKeyUp);
 		GetWorldTimerManager().SetTimer(T_SprintKeyDown, [ & ]
 		{
-			StatManagementComponent->StaminaManage(bSprintKeyDown);
+			if(CanSprint())
+			{
+				StatManagementComponent->StaminaManage(bSprintKeyDown);
+			}
+			else
+			{
+				UnSprint();
+			}
+			
 		}, GetWorld()->GetDeltaSeconds(), true);
 	}
 }
@@ -836,8 +818,12 @@ void AMainCharacter::UnSprint()
 	{
 		Super::UnSprint();
 		FPAnimInstance->bIsSprint = false;
-		//HandIK를 재설정한다.
-		FPAnimInstance->SetLeftHandIKAlpha(1.f);
+		//장착한 EquippedWeapon이 있다면 HandIK를 재설정한다.
+		if ( EquippedWeapon )
+		{
+			FPAnimInstance->SetLeftHandIKAlpha(1.f);
+		}
+		
 		//FPAnimInstance->LeftHandAlpha = 1.f;
 
 		//TPAnimInstance->bIsSprint = false;
@@ -863,6 +849,15 @@ void AMainCharacter::ClearSprintUpTimer()
 	GetWorldTimerManager().ClearTimer(T_SprintKeyUp);
 }
 
+bool AMainCharacter::CanSprint()
+{
+	if ( bIsCrouched == false && bDisableInput == false && GetCharacterMovement()->IsFalling() == false && bIsAim == false
+&& bMovingStraightForward )
+	{
+		return true;
+	}
+	return false;
+}
 
 void AMainCharacter::MyJump()
 {
@@ -1130,7 +1125,15 @@ void AMainCharacter::EKeyDown()
 void AMainCharacter::SetEquippedWeapon(AWeapon* Weapon)
 {
 	Super::SetEquippedWeapon(Weapon);
-	FPAnimInstance->SetLeftHandIKAlpha(1.f);
+	if ( Weapon )
+	{
+		FPAnimInstance->SetLeftHandIKAlpha(1.f);
+	}
+	else
+	{
+		FPAnimInstance->SetLeftHandIKAlpha(0.f);
+	}
+	
 }
 
 void AMainCharacter::ChangeWeaponTypeNumber(int32 number)

@@ -299,8 +299,9 @@ void AItem::AttachToHand(ABaseCharacter* Actor, UNewItemObject* Obj, bool bIsNee
 
 		//재장착을 위해 임시저장한다.
 		BeforeEquipppedWeapon = Actor->EquippedWeapon;
+		Actor->SetEquippedWeapon(nullptr);
 
-		Actor->EquippedWeapon = nullptr;
+		Actor->ChangeWeapon(0);
 	}
 	//이미 다른 HoldingItem이 있다면 비교한다.
 	else if (Actor->HoldingItem)
@@ -335,7 +336,7 @@ void AItem::AttachToHand(ABaseCharacter* Actor, UNewItemObject* Obj, bool bIsNee
 
 	//MainChar의 LMBDown, Up을 위해 EquippedGrenade변수를 선언, 대입한다.
 	Actor->SetHoldingItem(this);//HoldingItem = this;
-	
+
 	AttachToHand_Step(Actor);
 }
 

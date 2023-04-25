@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -76,8 +76,8 @@ public:
 	FOnHPChange	OnHPChange;
 	FOnHPZero OnHPZero;
 
-	UPROPERTY(EditInstanceOnly, Category = "Stats")
-	float MaxHealth;
+	UPROPERTY(EditDefaultsOnly, Category = "Stats")
+	float MaxHealth = 100.f;
 
 	UPROPERTY(EditAnywhere, Category = "Sound | Breath")
 	USoundCue* Stam_BelowMinimumSound;

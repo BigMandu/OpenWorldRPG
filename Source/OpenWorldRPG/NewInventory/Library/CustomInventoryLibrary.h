@@ -28,6 +28,8 @@ public:
 
 	static UNewItemObject* CreateObject(FItemSetting ItemStruct, bool& bIsCreated);
 
+	static void RemoveFromPreviousMotherContainer(UNewItemObject* Obj);
+
 	/*ItemObj를 이용해 Item class를 Spawn한다.*/
 	static AItem* SpawnItem(UWorld* World, UNewItemObject* ItemObj);
 

@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "OpenWorldRPG/NewInventory/Widget/NewInventory.h"
@@ -101,7 +101,7 @@ void UNewInventory::ChangeRightSwitcher()
 			else
 			{
 				SetRightWidget(nullptr);
-				RightWidgetSwitcher->SetActiveWidgetIndex(0);
+				RightWidgetSwitcher->SetActiveWidgetIndex(2);
 			}
 		}
 	}
@@ -409,7 +409,7 @@ void UNewInventory::ChangeMainSwitchToStatus()
 void UNewInventory::ChangeMainSwitchToInventory()
 {
 	MainInventorySwitcher->SetActiveWidgetIndex(1);
-	RightWidgetSwitcher->SetActiveWidgetIndex(0);
+	RightWidgetSwitcher->SetActiveWidgetIndex(2);
 	if (ResourceStatusWidget)
 	{
 		ResourceStatusWidget->SetVisibility(ESlateVisibility::Visible);

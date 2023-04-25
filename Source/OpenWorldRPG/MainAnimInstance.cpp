@@ -121,7 +121,7 @@ void UMainAnimInstance::SetHandIK()
 
 void UMainAnimInstance::SetLeftHandIKAlpha(float Alpha)
 {
-	if(Player->EquippedWeapon )
+	//if(Player->EquippedWeapon )
 	{
 		LeftHandAlpha = Alpha;
 		UE_LOG(LogTemp, Warning, TEXT("UMainAnimInstance::SetLeftHandIKAlpha, Alpha  = %f"), LeftHandAlpha);

@@ -24,9 +24,9 @@ void UBTTask_MoveToAttackableArea::OnTaskFinished(UBehaviorTreeComponent& OwnerC
 	Super::OnTaskFinished(OwnerComp,NodeMemory,TaskResult);
 
 	AEnemyAIController* AICon = Cast<AEnemyAIController>(OwnerComp.GetAIOwner());
-	check(AICon);
+	if(!AICon ) return;
 	AEnemyCharacter* AIChar = Cast<AEnemyCharacter>(AICon->GetPawn());
-	check(AIChar);
+	if(!AIChar ) return;
 
 	//도착한 뒤에 사격할 수 있도록 한다.
 	AICon->UpdateBBCompBoolKey(AICon->bCanAttackKey,true);

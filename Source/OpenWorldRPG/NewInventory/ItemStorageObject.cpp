@@ -151,21 +151,22 @@ bool UItemStorageObject::TryAddItemStep(UNewItemObject* ItemObj)
 void UItemStorageObject::AddItemAtIndex(UNewItemObject* ItemObj, int32 Index)
 {
 	//Add하기 전에, 이전에 MotherStorage가 있다면 거기서 지워준다.
-	if (ItemObj->MotherStorage)
-	{
-		ItemObj->MotherStorage->RemoveItem(ItemObj);
-		ItemObj->MotherStorage = nullptr;
-	}
-	else if (ItemObj->MotherEquipComp)
-	{
-		ItemObj->MotherEquipComp->RemoveEquipment(ItemObj);
-		ItemObj->MotherEquipComp = nullptr;
-	}
-	//해당 Item이 이전에 WPM에 있던 Item이면 거기서 지워준다.
-	else if (ItemObj->WeaponPartsManager)
-	{
-		ItemObj->WeaponPartsManager->RemoveParts(ItemObj);
-	}
+	UCustomInventoryLibrary::RemoveFromPreviousMotherContainer(ItemObj);
+	//if (ItemObj->MotherStorage)
+	//{
+	//	ItemObj->MotherStorage->RemoveItem(ItemObj);
+	//	ItemObj->MotherStorage = nullptr;
+	//}
+	//else if (ItemObj->MotherEquipComp)
+	//{
+	//	ItemObj->MotherEquipComp->RemoveEquipment(ItemObj);
+	//	ItemObj->MotherEquipComp = nullptr;
+	//}
+	////해당 Item이 이전에 WPM에 있던 Item이면 거기서 지워준다.
+	//else if (ItemObj->WeaponPartsManager)
+	//{
+	//	ItemObj->WeaponPartsManager->RemoveParts(ItemObj);
+	//}
 	 
 	//Item이 회전했다면 삭제후 적용한다.
 	ItemObj->SetItemRotate();

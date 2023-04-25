@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -35,6 +35,7 @@ public:
 	/*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WidgetVariable")
 	EEquipmentType SlotType;*/
 
+	//UNewInventory에서 Bind한다.
 	FOpenAdditionalWidget_Equip OpenAdditionalWidget_Equip;
 
 	UPROPERTY()

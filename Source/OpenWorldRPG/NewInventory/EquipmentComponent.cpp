@@ -215,8 +215,16 @@ bool UEquipmentComponent::AddEquipment(FItemSetting ItemSetting, AEquipment* Wan
 	{
 		EquipObj = UCustomInventoryLibrary::CreateObject(ItemSetting, bCreated); //CreateObject(ItemSetting, bCreated);
 		if ( bCreated == false ) return false;
-		//생성한걸 할당한다.
-		WantToEquip->ItemObj = EquipObj;
+		
+		if ( UItemStorageObject* T_Obj = Cast<UItemStorageObject>(EquipObj) )
+		{
+			//Inventory에 Item이 있었다면 넘겨준다.
+			if ( ItemSetting.Inventory.Num() > 0 )
+			{
+				T_Obj->ItemInfo.Inventory = ItemSetting.Inventory;
+			}
+		}
+
 	}
 	else
 	{
@@ -229,18 +237,19 @@ bool UEquipmentComponent::AddEquipment(FItemSetting ItemSetting, AEquipment* Wan
 
 	if ( EquipObj && CPDA )
 	{
-		//Equip->OwningEquipment = this;
-		if ( EquipObj->MotherStorage )
-		{
-			EquipObj->MotherStorage->RemoveItem(EquipObj);
-			EquipObj->MotherStorage = nullptr;
-		}
-		else if ( EquipObj->MotherEquipComp )
-		{
-			EquipObj->MotherEquipComp->RemoveEquipment(EquipObj);
-			EquipObj->MotherEquipComp = nullptr;
-		}
-
+		UCustomInventoryLibrary::RemoveFromPreviousMotherContainer(EquipObj);
+		//if ( EquipObj->MotherStorage )
+		//{
+		//	EquipObj->MotherStorage->RemoveItem(EquipObj);
+		//	EquipObj->MotherStorage = nullptr;
+		//}
+		//else if ( EquipObj->MotherEquipComp )
+		//{
+		//	EquipObj->MotherEquipComp->RemoveEquipment(EquipObj);
+		//	EquipObj->MotherEquipComp = nullptr;
+		//}
+		//
+		// 
 		//장착할때는 무조건 ItemRotate를 false시킨다.
 		EquipObj->bTempRotate = false;
 		EquipObj->bRotated = false;

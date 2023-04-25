@@ -49,8 +49,7 @@ UCLASS()
 class OPENWORLDRPG_API AMainCharacter : public ABaseCharacter
 {
 	GENERATED_BODY()
-private:
-	bool bIsEngage = false;
+
 public:
 	AMainCharacter();
 
@@ -130,6 +129,9 @@ public:
 	bool bMoveForward = false;
 	bool bMoveRight = false;
 
+	//for Sprint
+	bool bMovingStraightForward = false;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement)
 	bool bSprintKeyDown;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement)
@@ -174,13 +176,12 @@ public:
 	float CamTime;
 	float CamAlphaTime;
 
+private:
+	bool CanSprint();
 	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-private:
-	bool IsEngage();
 
 public:	
 	// Called every frame
