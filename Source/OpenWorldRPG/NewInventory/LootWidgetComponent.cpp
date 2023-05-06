@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "OpenWorldRPG/NewInventory/LootWidgetComponent.h"
@@ -38,11 +38,13 @@ void ULootWidgetComponent::CreateInteractionWidget(AMainController* MainCon, AAc
 					UContainerWidget* RWidget = CreateWidget<UContainerWidget>(MainCon, WBPWidget);
 					if (RWidget)
 					{
-						RWidget->InitContainerWidget(actor);
-						MainInventory->SetRightWidget(RWidget);
-
 						//NewInventory의 오른쪽 위젯에 LootBoxWidget을 넣어준다.
+						RWidget->InitContainerWidget(actor);
 
+						//LootBox 형식일때만 GridWidget을 넘겨준다. 아래는 EquipStorageWidget에서 자동으로 bind함
+						MainInventory->BindInteractLootBox(RWidget->ContainerGridwidget);
+
+						MainInventory->SetRightWidget(RWidget);
 					}
 				}
 				break;
@@ -54,10 +56,13 @@ void ULootWidgetComponent::CreateInteractionWidget(AMainController* MainCon, AAc
 				{
 					//for Delegate, CharLootWidget에 있는 EquipStorageWidget의 OpenAdditional bind를 위함
 					RWidget->EquipStorageWidget->MainWidget = MainInventory;
-					RWidget->InitCharLootWidget(BChar);					
-					//ABaseCharacter* BChar = Cast<ABaseCharacter>(actor);
-					//Widget->EquipInitialize(BChar->Equipment);
+					RWidget->InitCharLootWidget(BChar);
+					
+					MainInventory->BindInteractCharLoot(RWidget->EquipWidget);
+					MainInventory->BindInteractLootBox(RWidget->EquipStorageWidget->PocketWidget);
 					MainInventory->SetRightWidget(RWidget);
+					
+
 				}
 			}
 				break;

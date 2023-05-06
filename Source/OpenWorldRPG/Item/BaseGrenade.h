@@ -9,6 +9,10 @@
 /**
  * 
  */
+
+ /* Grenade가 터진걸 AICon에 알리기 위한 Delegate*/
+ DECLARE_MULTICAST_DELEGATE_OneParam(FOnGrenadeDestroy, ABaseGrenade*);
+
 UCLASS()
 class OPENWORLDRPG_API ABaseGrenade : public AWeapon
 {
@@ -16,6 +20,7 @@ class OPENWORLDRPG_API ABaseGrenade : public AWeapon
 private:
 	FTimerHandle EffectTriggerTimerHandle;
 	FTimerHandle EffectDurationTimerHandle;
+
 
 
 	//TWeakObjectPtr<class AWeapon> BeforeEquipppedWeapon = nullptr;
@@ -31,10 +36,14 @@ private:
 	//Niagara Effect
 	class UNiagaraComponent* Ni_ParticleComp;
 
-	class UAudioComponent* AudioComp;
+	class UAudioComponent* EffectAudioComp;
+
+	class UAudioComponent* BounceAudioComp;
 
 public:
 	ABaseGrenade();
+
+	FOnGrenadeDestroy OnGrenadeDestroy;
 
 	UPROPERTY(BlueprintReadOnly)
 	bool bReadyToThrow;
@@ -43,15 +52,17 @@ public:
 	bool bThrow;
 
 	virtual void OnConstruction(const FTransform& Transform) override;
+
+	UFUNCTION()
+	void OnCapsuleComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
+
 	void AttachToHand(class ABaseCharacter* Actor, class UNewItemObject* Obj, bool bIsNeedToDestory = true) override;
 
-	void ReadyToThrow();
 
+	void ReadyToThrow();
 	//called when LMB up
 	void ThrowGrenade(ABaseCharacter* Actor);
-
-	
-
 	void DetectThrow(ABaseCharacter* Actor);
 private:
 	//void EquipBeforeWeapon(ABaseCharacter* Actor);

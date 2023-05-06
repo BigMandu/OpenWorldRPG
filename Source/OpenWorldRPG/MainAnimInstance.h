@@ -98,6 +98,16 @@ public:
 	UFUNCTION()
 	void AnimNotify_throw();
 
+	UFUNCTION()
+	void AnimNotify_EndReload();
+
+	UFUNCTION()
+	void AnimNotify_EndEquipping();
+
+	UFUNCTION()
+	void AnimNotify_AttachWeapon();
+
+
 	/*UFUNCTION()
 	void AnimNotify_ADS();*/
 
@@ -106,6 +116,8 @@ public:
 	void SetHighReady();
 
 	void SetLeftHandIKAlpha(float Alpha);
+
+	void SetWeaponTypeNumber(int32 number);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, meta = (BlueprintThreadSafe))
 	bool IsReadyToThrow();

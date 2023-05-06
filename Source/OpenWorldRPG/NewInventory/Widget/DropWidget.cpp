@@ -8,6 +8,8 @@
 #include "Components/Border.h"
 #include "Components/TextBlock.h"
 #include "DrawDebugHelpers.h"
+#include "OpenWorldRPG/Item/Item.h"
+#include "OpenWorldRPG/Item/Weapon.h"
 #include <OpenWorldRPG/NewInventory/CustomDDOperation.h>
 #include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
 #include <OpenWorldRPG/NewInventory/Library/CustomInventoryLibrary.h>
@@ -35,12 +37,16 @@ bool UDropWidget::NativeOnDrop(const FGeometry & InGeometry, const FDragDropEven
 		form.SetLocation(DropLocation);
 		DrawDebugSphere(World, DropLocation, 10.f, 6, FColor::Green, false, 3.f,(uint8)0U, 5.f);
 
-		AActor* DropItem = nullptr;
+		bool bIsNeedToUpdateWeaponParts = false;
+		AItem* DropItem = nullptr;
 		
 		if ( UCustomPDA* EquipPDA = Cast<UCustomPDA>(DDOper->ItemObj->ItemInfo.DataAsset) )
 		{
 			DropItem = UCustomInventoryLibrary::SpawnEquipment(World,DDOper->ItemObj);
-			
+			if(UWeaponPDA* WeapPDA = Cast<UWeaponPDA>(EquipPDA) )
+			{
+				bIsNeedToUpdateWeaponParts = true;
+			}			
 		}
 		else if ( UBasePDA* BasePDA = Cast<UBasePDA>(DDOper->ItemObj->ItemInfo.DataAsset) )
 		{
@@ -48,41 +54,25 @@ bool UDropWidget::NativeOnDrop(const FGeometry & InGeometry, const FDragDropEven
 		}
 
 		UCustomInventoryLibrary::RemoveFromPreviousMotherContainer(DDOper->ItemObj);
-		if(!DropItem ) return false;
-		
-		//World->SpawnActor<AActor>(DropItem->GetClass(), form);
-		DropItem->SetActorLocation(DropLocation);
 
+		if(!DropItem ) return false;
+
+		//WeaponType이라면 WPM을 생성하고 update해준다.
+		if ( bIsNeedToUpdateWeaponParts )
+		{
+			AWeapon* Weapon = Cast<AWeapon>(DropItem);
+			Weapon->WeaponDataAsset = Cast<UWeaponPDA>(DDOper->ItemObj->ItemInfo.DataAsset);
+			Weapon->SettingWeaponPartsManager();
+			UCustomInventoryLibrary::SetWeaponPartsManager(DDOper->ItemObj, Weapon);
+			Weapon->UpdateWeaponParts();
+		}
+		DropItem->SetActorLocation(DropLocation);
+		
 
 		ChangeState();
 		return true;
 	}
 	return false;
-	//UNewItemObject* Obj = Cast<UNewItemObject>(InOperation->Payload);
-	//if (Obj)
-	//{
-	//	bReturnNormal = true;
-
-	//	UWorld* World = GetWorld();
-	//	FTransform form;
-
-	//	FVector OwnerLocation = GetOwningPlayerPawn()->GetActorLocation();
-	//	FVector OwnerForwardLo = GetOwningPlayerPawn()->GetActorForwardVector();
-	//	const FVector DropLocation = OwnerLocation + OwnerForwardLo * 120.f;
-	//	
-	//	form.SetLocation(DropLocation);
-	//	DrawDebugSphere(World, DropLocation, 10.f, 6, FColor::Green, false, 3.f,(uint8)0U, 5.f);
-
-	//	
-	//	AActor* DropItem = World->SpawnActor<AActor>(Obj->GetItemClass(), form);
-	//	
-	//	//World->SpawnActor(Obj->GetItemClass(), DropLocation);
-	//	
-	//	ChangeState();
-	//	UE_LOG(LogTemp, Warning, TEXT("Drop item name : %s"), *DropItem->GetFName().ToString());
-	//	return true;
-	//}
-	//return false;
 }
 
 void UDropWidget::ChangeState()

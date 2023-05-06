@@ -62,10 +62,14 @@ public:
 	UPROPERTY(EditAnywhere,Category = AI)
 	class UEnvQuery* SneakUpOnTargetEQS;
 
+
+	TArray<TWeakObjectPtr<class ABaseGrenade>> DetectedGrenadeList;
+
 	/**********  Blackboard Key   **********/
 	//Object
 	const FName EnemyKey = FName("Enemy");
 	const FName ObjectKey = FName("Object");
+	const FName DetectedGrenadeKey = FName("DetectedGrenade");
 
 	//FVector
 	const FName PatrolPointIndexKey = FName("PatrolPointIndex");
@@ -74,12 +78,14 @@ public:
 	const FName LastTargetLocationKey = FName("LastTargetLocation");
 	const FName LastTargetRotationKey = FName("LastTargetRotation");
 	const FName EstimatedLocationOfTargetKey = FName("EstimatedLocation");
+	const FName DetectGrenadeLocationKey = FName("DetectGrenadeLocation");
 	//const FName PatrolPosKey = FName("PatrolPos");
 	//const FName HearLocation = FName("HearLocation");
 	//const FName AttackableLocationKey = FName("AttackableLocation");
 	//const FName LootingLocationKey = FName("LootingLocation");
 
 	//Boolean
+	const FName bDetectGrenade = FName("DetectGrenade");
 	const FName bSeeEnemyKey = FName("SeeEnemy");
 	const FName bHearEnemyKey = FName("HearEnemy");
 	const FName bCanAttackKey = FName("CanAttack");
@@ -115,8 +121,14 @@ public:
 	virtual void UpdateControlRotation(float DeltaTime, bool bUpdatePawn = true) override;
 	virtual FVector GetFocalPointOnActor(const AActor* Actor) const override;
 
-	bool CheckIsEnemy(ABaseCharacter* Target);
+	bool IsGrenade(AActor* DetectActor);
+	bool CheckIsEnemy(ABaseCharacter* Target);	
+	bool CanInteraction(AActor* Object);
 
+
+	void DetectedGrenade(AActor* DetectTarget, FAIStimulus Stimulus);
+	UFUNCTION()
+	void GrenadeEffectIsEnd(ABaseGrenade* ExplodedGrenade);
 	UFUNCTION()
 	void DetectedTarget(AActor* Target, FAIStimulus Stimulus);
 
@@ -130,13 +142,16 @@ public:
 	//UFUNCTION()
 	void LostObject(AActor* InteractActor);
 
-	bool CanInteraction(AActor* Object);
+	
 
 	void ItemFarming(AActor* InteractActor);
 	void ItemChoice(UNewInventoryComponent* GiverInvComp);
 
 	void CalcAttackDist(float DeltaTime);
+	void CalcGrenadeLocation();
+
 	void AttackMoving(const FVector Vec, FVector RightVec);
+	
 
 	void HandleEQSResult(TSharedPtr<struct FEnvQueryResult> result);
 	

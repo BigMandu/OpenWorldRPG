@@ -259,10 +259,8 @@ public:
 	void FPSAimLocationAdjust();
 
 	
-
-	virtual void PlayAttachItemAnim(AItem* Item) override;
-	virtual void PlayUseItemAnim(AItem* Item) override;
-	virtual void StopUseItemAnim() override;
+	virtual void PlayAnimation(UAnimMontage* TPAnim, UAnimMontage* FPAnim) override;
+	virtual void StopAnimation() override;
 
 
 	/* bind function. CompassBeginUse, EndUse*/
@@ -288,6 +286,7 @@ public:
 
 	
 	FTransform LeftHandik();
+	virtual void SetLeftHandIK(float Alpha);
 
 
 	/* Quick Slot */

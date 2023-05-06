@@ -16,6 +16,7 @@
 #include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
 #include "OpenWorldRPG/NewInventory/ItemStorageObject.h"
+#include "OpenWorldRPG/NewInventory/LootWidgetComponent.h"
 
 #include "OpenWorldRPG/Item/BasePDA.h"
 #include "OpenWorldRPG/Item/CustomPDA.h"
@@ -396,6 +397,28 @@ void UNewInventory::CloseAllAdditionalWidget(int32 ArrayNum)
 	);
 
 }
+
+void UNewInventory::BindInteractLootBox(UNewInventoryGrid* LootBoxInvGrid)
+{
+	if ( LootBoxInvGrid )
+	{
+		//InteractLootBoxInvGrid = LootBoxInvGrid;
+		LootBoxInvGrid->OpenAdditionalWidget.Clear();
+		LootBoxInvGrid->OpenAdditionalWidget.AddDynamic(this, &UNewInventory::BindingOpenWidgetFunc);
+	}
+}
+
+void UNewInventory::BindInteractCharLoot(UEquipWidget* CharLoot)
+{
+	if ( CharLoot )
+	{
+		CharLoot->OpenAdditionalWidget_Equip.Clear();
+		CharLoot->OpenAdditionalWidget_Equip.AddDynamic(this, &UNewInventory::BindingOpenWidgetFunc);
+	}
+
+}
+
+
 
 void UNewInventory::ChangeMainSwitchToStatus()
 {

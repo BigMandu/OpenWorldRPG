@@ -47,6 +47,7 @@ UENUM(BlueprintType)
 enum class EWeaponState : uint8
 {
 	EWS_Idle		UMETA(DisplayName = "Idle"),
+	EWS_Equipping	UMETA(DisplayName = "Eqiupping"),
 	EWS_Reloading	UMETA(DisplayName = "Reloading"),
 	EWS_Firing		UMETA(DisPlayName = "Firing"),
 	
@@ -249,9 +250,13 @@ public:
 	void StartFire();
 	void StopFire();
 
+	void Equipping();
+	void EndEquipping();
 
+	bool CheckCanReload();
 	void Reload();
 	void ReloadEnd();
+
 
 	virtual void Old_BulletOut() PURE_VIRTUAL(AWeapon::BulletOut);
 	virtual void New_BulletOut() PURE_VIRTUAL(AWeapon::New_BulletOut);

@@ -517,11 +517,11 @@ void AMainCharacter::SetAimMode(EAimMode Mode)
 			else if ( CameraMode == ECameraMode::ECM_FPS )
 			{
 				//idle anim에 의해 Socket의 WorldTF값이 틀어지는걸 방지하기 위해 정지Anim을 재생한다.
-				if ( EquippedWeapon->WeaponDataAsset->Animaton.FPS_ADS_Anim )
+				if ( EquippedWeapon->WeaponDataAsset->WeaponAnimaton.FPS_ADS_Anim )
 				{
 					//below is using Blend.
-					FPAnimInstance->Montage_Play(EquippedWeapon->WeaponDataAsset->Animaton.FPS_ADS_Anim, 1.f, EMontagePlayReturnType::MontageLength, 0.f, true);
-					FPAnimInstance->Montage_JumpToSection(FName("Default"), EquippedWeapon->WeaponDataAsset->Animaton.FPS_ADS_Anim);
+					FPAnimInstance->Montage_Play(EquippedWeapon->WeaponDataAsset->WeaponAnimaton.FPS_ADS_Anim, 1.f, EMontagePlayReturnType::MontageLength, 0.f, true);
+					FPAnimInstance->Montage_JumpToSection(FName("Default"), EquippedWeapon->WeaponDataAsset->WeaponAnimaton.FPS_ADS_Anim);
 
 					//FPMesh->bPauseAnims = true;
 					LerpCamera(CameraFPS, 60.f);
@@ -781,7 +781,8 @@ void AMainCharacter::Sprint()
 
 		FPAnimInstance->bIsSprint = true;
 		//HandIK를 해제한다.
-		FPAnimInstance->SetLeftHandIKAlpha(0.f);
+		SetLeftHandIK(0.f);
+		//FPAnimInstance->SetLeftHandIKAlpha(0.f);
 
 		bSprintKeyDown = true;
 
@@ -821,7 +822,8 @@ void AMainCharacter::UnSprint()
 		//장착한 EquippedWeapon이 있다면 HandIK를 재설정한다.
 		if ( EquippedWeapon )
 		{
-			FPAnimInstance->SetLeftHandIKAlpha(1.f);
+			SetLeftHandIK(1.f);
+			//FPAnimInstance->SetLeftHandIKAlpha(1.f);
 		}
 		
 		//FPAnimInstance->LeftHandAlpha = 1.f;
@@ -1127,10 +1129,12 @@ void AMainCharacter::SetEquippedWeapon(AWeapon* Weapon)
 	Super::SetEquippedWeapon(Weapon);
 	if ( Weapon )
 	{
-		FPAnimInstance->SetLeftHandIKAlpha(1.f);
+		SetLeftHandIK(1.f);
+		//FPAnimInstance->SetLeftHandIKAlpha(1.f);
 	}
 	else
 	{
+		SetLeftHandIK(0.f);
 		FPAnimInstance->SetLeftHandIKAlpha(0.f);
 	}
 	
@@ -1142,8 +1146,9 @@ void AMainCharacter::ChangeWeaponTypeNumber(int32 number)
 	UMainAnimInstance* ShadowAnim = Cast<UMainAnimInstance>(ShadowMesh->GetAnimInstance());
 	if ( FPAnimInstance == nullptr || ShadowAnim == nullptr) return;
 
-	FPAnimInstance->WeaponTypeNumber = number;
-	ShadowAnim->WeaponTypeNumber = number;
+	FPAnimInstance->SetWeaponTypeNumber(number); //WeaponTypeNumber = number;
+	ShadowAnim->SetWeaponTypeNumber(number);// WeaponTypeNumber = number;
+	UE_LOG(LogTemp,Warning,TEXT("AMainChar::ChangeWeaponTypeNum"));
 }
 /*******************************  Vehicle 관련 ************************************************/
 
@@ -1163,30 +1168,31 @@ void AMainCharacter::ChangeWeaponTypeNumber(int32 number)
 //}
 
 /*************************  Weapon, Item 관련 ***************************************************/
-void AMainCharacter::PlayAttachItemAnim(AItem* Item)
-{
-	Super::PlayAttachItemAnim(Item);
 
-	if ( Item )
-	{
-		FPAnimInstance->Montage_Play(Item->ItemSetting.DataAsset->FPS_AttachAnimMontage);
-	}
+void AMainCharacter::PlayAnimation(UAnimMontage* TPAnim, UAnimMontage* FPAnim)
+{
+	UMainAnimInstance* ShadowAnim = Cast<UMainAnimInstance>(ShadowMesh->GetAnimInstance());
+	if(!TPAnim || !FPAnim || !FPAnimInstance || !ShadowAnim) return;	
+	
+	Super::PlayAnimation(TPAnim, nullptr);
+	ShadowAnim->Montage_Play(TPAnim);
+	FPAnimInstance->Montage_Play(FPAnim);
+	
 }
 
-void AMainCharacter::PlayUseItemAnim(AItem* Item)
+void AMainCharacter::StopAnimation()
 {
-	Super::PlayUseItemAnim(Item);
-	if(Item )
+	UMainAnimInstance* ShadowAnim = Cast<UMainAnimInstance>(ShadowMesh->GetAnimInstance());
+	if ( !TPAnimInstance || !FPAnimInstance || !ShadowAnim ) return;
+		
+	UAnimMontage* TPMontageToStop = GetCurrentMontage();
+	UAnimMontage* FPMontageToStop = FPAnimInstance->GetCurrentActiveMontage();
+	if ( FPMontageToStop && TPMontageToStop )
 	{
-		//FPMesh의 Anim도 재생한다.
-		FPAnimInstance->Montage_Play(Item->ItemSetting.DataAsset->FPS_UseAnimMontage);
+		ShadowAnim->Montage_Stop(TPMontageToStop->BlendOut.GetBlendTime(), TPMontageToStop);
+		FPAnimInstance->Montage_Stop(FPMontageToStop->BlendOut.GetBlendTime(), FPMontageToStop);
+		Super::StopAnimation();
 	}
-}
-
-void AMainCharacter::StopUseItemAnim()
-{
-	Super::StopUseItemAnim();
-	FPAnimInstance->Montage_Stop(0.f, nullptr);
 }
 
 //CameraMode에 따라 HoldingItem을 Attach시킨다.
@@ -1242,6 +1248,7 @@ bool AMainCharacter::ChangeWeapon(int32 index)
 {
 	Super::ChangeWeapon(index);
 
+	/*
 	//FPMode +Shadow Mesh의 AnimUpdate를 위해 갱신한다.
 	UMainAnimInstance* ShadowAnim = Cast<UMainAnimInstance>(ShadowMesh->GetAnimInstance());
 	check(ShadowAnim);
@@ -1281,6 +1288,7 @@ bool AMainCharacter::ChangeWeapon(int32 index)
 		}
 		break;
 	}
+	*/
 
 	//For WeaponStatus Widget
 	OnChangeWeapon.Broadcast(EquippedWeapon);
@@ -1431,6 +1439,17 @@ FTransform AMainCharacter::LeftHandik()
 	}
 
 	return Transform;
+}
+
+void AMainCharacter::SetLeftHandIK(float Alpha)
+{
+	UMainAnimInstance* ShadowAnim = Cast<UMainAnimInstance>(ShadowMesh->GetAnimInstance());
+	if ( !TPAnimInstance || !FPAnimInstance || !ShadowAnim ) return;
+
+	Super::SetLeftHandIK(Alpha);
+	ShadowAnim->SetLeftHandIKAlpha(Alpha);
+	FPAnimInstance->SetLeftHandIKAlpha(Alpha);
+
 }
 
 void AMainCharacter::QuickSlotNum4()

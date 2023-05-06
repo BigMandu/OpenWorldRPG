@@ -289,12 +289,18 @@ void AItem::Drop()
 }
 
 
-//Remove Weapon Or Item before Attached, And Change Holding Item.
+//Remove Weapon Or Item before Attached.
+// And Change Holding Item.
 //Attach하기 전 과정
 void AItem::AttachToHand(ABaseCharacter* Actor, UNewItemObject* Obj, bool bIsNeedToDestory)
 {
 	if (Actor->EquippedWeapon)
 	{
+		//AimMode 였다면 Aim을 풀어준다.
+		if ( Actor->bIsAim )
+		{
+			Actor->SetAimMode(EAimMode::EAM_NotAim);
+		}
 		Actor->EquippedWeapon->GunAttachToSubSocket(Actor);
 
 		//재장착을 위해 임시저장한다.
@@ -383,14 +389,16 @@ void AItem::AttachToHand_Step(ABaseCharacter* Actor)
 		}
 	}
 
-	if ( Player )
+	Actor->PlayAnimation(this->ItemSetting.DataAsset->TPS_AttachAnimMontage, this->ItemSetting.DataAsset->FPS_AttachAnimMontage);
+
+	/*if ( Player )
 	{
 		Player->PlayAttachItemAnim(this);
 	}
 	else
 	{
 		Actor->PlayAttachItemAnim(this);
-	}
+	}*/
 
 }
 
@@ -414,11 +422,12 @@ void AItem::Use(ABaseCharacter* Char, UNewItemObject* Obj)
 	check(Char)
 	UE_LOG(LogTemp, Warning, TEXT("AItem::Use"));
 	
-	
-	Char->PlayUseItemAnim(this);
+	//Char->PlayUseItemAnim(this);
 
 	if (ItemSetting.DataAsset->ItemType == EItemType::EIT_Food || ItemSetting.DataAsset->ItemType == EItemType::EIT_Medical)
-	{			
+	{
+		Char->PlayAnimation(this->ItemSetting.DataAsset->TPS_UseAnimMontage, this->ItemSetting.DataAsset->FPS_UseAnimMontage);
+
 		UConsumePDA* ConsumablePDA = Cast<UConsumePDA>(ItemSetting.DataAsset);		
 		if (ConsumablePDA->bIsHPRecovery)
 		{			
@@ -430,11 +439,13 @@ void AItem::Use(ABaseCharacter* Char, UNewItemObject* Obj)
 			Char->RecoveryStaminaDelegate(ConsumablePDA->RecoveryTime, ConsumablePDA->RecoveryAmount, this);
 			UE_LOG(LogTemp, Warning, TEXT("AItem::Use // Stamina Recovery "));
 		}
+
+		RemoveCountAtIventory(Char, 1);
+		Destroy();
 	}
 	
 	
-	RemoveCountAtIventory(Char,1);
-	Destroy();
+	
 	
 	
 }

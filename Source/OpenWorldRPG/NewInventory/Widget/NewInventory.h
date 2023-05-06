@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -84,7 +84,6 @@ public:
 	//Widget Container (Z-Order and prevent duplicate)
 	UPROPERTY()
 	TArray<UDraggInventoryWindow*> OpenedWindowArray;
-	
 
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"))
 	//TSubclassOf<class UWeaponPartsWidget> WWeaponPartsWindow;
@@ -138,6 +137,11 @@ public:
 
 
 	void CloseAllAdditionalWidget(int32 ArrayNum);
+
+	//Container || NiceCar의 LootWidget과 bind하기 위한 함수
+	void BindInteractLootBox(UNewInventoryGrid* LootBoxInvGrid);
+
+	void BindInteractCharLoot(UEquipWidget* CharLoot);
 
 	/*UFUNCTION()
 	void ReleaseWindow();*/

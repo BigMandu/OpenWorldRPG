@@ -183,11 +183,13 @@ AEquipment* UEquipmentSlot::SpawnEquipment(UNewItemObject* Obj)
 	}
 	else
 	{
-		ReturnEquip = Obj->Equipment;
+		//ReturnEquip = Obj->Equipment;
 		if (Obj->MotherEquipComp)
 		{
 			Obj->MotherEquipComp->RemoveEquipment(Obj);
 			Obj->MotherEquipComp = nullptr;
+
+			//이거 왜했지?
 			ReturnEquip = UCustomInventoryLibrary::SpawnEquipment(GetWorld(), Obj);
 		}
 	}

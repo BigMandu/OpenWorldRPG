@@ -26,6 +26,7 @@
 #include "DrawDebugHelpers.h" //디버깅용
 //#include "Components/SphereComponent.h"
 #include "Components/CapsuleComponent.h"
+#include <OpenWorldRPG/NewInventory/Library/CustomInventoryLibrary.h>
 
 
 #define WeaponDEBUG 0
@@ -144,6 +145,9 @@ bool AWeapon::StepEquip(AActor* Char, ERifleSlot RifleSlot)
 	//들고 있는 무기가 없을 경우 지금 Weapon을 들도록 한다.
 	if ( BChar->EquippedWeapon == nullptr )
 	{
+		GunAttachToMesh(BChar);
+		CurrentWeaponState = EWeaponState::EWS_Idle;
+
 		if ( WeaponDataAsset->EquipmentType == EEquipmentType::EET_Rifle )
 		{
 			if ( BChar->PrimaryWeapon )
@@ -154,11 +158,17 @@ bool AWeapon::StepEquip(AActor* Char, ERifleSlot RifleSlot)
 			{
 				BChar->ChangeWeapon(2);
 			}
+
+			BChar->ChangeWeaponTypeNumber(1);
 		}
 		else
 		{
 			BChar->ChangeWeapon(3);
+			BChar->ChangeWeaponTypeNumber(2);
 		}
+
+		//바로 장착하는 경우, Anim재생이 없으므로 바로 Attach한다.
+		
 	}
 	//들고있는 무기가 있는 경우, 지금 Weapon을 SubSocket으로 옮긴다.
 	else
@@ -172,7 +182,7 @@ bool AWeapon::StepEquip(AActor* Char, ERifleSlot RifleSlot)
 
 
 	//모든 세팅이 끝나고 AddEquipment를 호출하기 위해 나중에 호출했다.
-	Super::StepEquip(Char);
+	Super::StepEquip(BChar);
 
 	/* 아래는 AddEquipment 이후에 진행 해야할 함수들을 호출..
 	* 아래함수들은 ItemObj가 필요함.
@@ -323,7 +333,7 @@ FTransform AWeapon::GetSightSocketTransform()
 	FTransform ReturnTransform;
 	bool bHasSight = false;
 
-	if ( ItemObj->WeaponPartsManager )
+	if ( ItemObj && ItemObj->WeaponPartsManager )
 	{
 		if ( AEquipment* A_Scope = ItemObj->WeaponPartsManager->GetWeaponParts(EWeaponPartsType::EWPT_Scope) )
 		{
@@ -406,8 +416,9 @@ void AWeapon::AddSpawnParts(TArray<UCustomPDA*>SpawnParts)
 
 void AWeapon::UpdateWeaponParts()
 {
-	if(WeaponDataAsset->EquipmentType == EEquipmentType::EET_Rifle ||
-	WeaponDataAsset->EquipmentType == EEquipmentType::EET_Pistol )
+	
+	if(WeaponDataAsset && (WeaponDataAsset->EquipmentType == EEquipmentType::EET_Rifle ||
+	WeaponDataAsset->EquipmentType == EEquipmentType::EET_Pistol ))
 	{
 		if ( ItemObj && ItemObj->WeaponPartsManager )
 		{
@@ -436,8 +447,6 @@ void AWeapon::Remove()
 	if ( OwningPlayer->EquippedWeapon == this )
 	{
 		OwningPlayer->ChangeWeapon(0);
-		//OwningPlayer->EquippedWeapon = nullptr;
-		OwningPlayer->SetEquippedWeapon(nullptr);
 		UE_LOG(LogTemp, Warning, TEXT("AWeapon::Remove , Remove RifleAssign"));
 	}
 
@@ -617,10 +626,9 @@ void AWeapon::SetWeaponState(EWeaponState NewState)
 /*
 * 쏠 수 있는 조건
 * 1. 조정간 안전이 아니어야한다.
-* 2. 장전중, 사격중이 아니어야 한다.
+* 2. 장전중, 장착중이 아니어야 한다.
 * 3. 탄약이 한발이상 있어야 한다.
-*
-* 4. 장착중이 아니어야 한다. //미구현.
+* 
 * 5. 스프린트 중이 아니어야 한다.
 */
 bool AWeapon::CanFire()
@@ -630,7 +638,7 @@ bool AWeapon::CanFire()
 	//if (ItemObj->bIsDestoryed == false)
 	{
 		if ( WeaponFiringMode != EWeaponFiringMode::EWFM_Safe && CurrentWeaponState != EWeaponState::EWS_Reloading
-		&& OwningPlayer->bIsSprinting == false )
+		&& CurrentWeaponState != EWeaponState::EWS_Equipping && OwningPlayer->bIsSprinting == false )
 		{
 			//SemiAuto에 한발 이상 사격한게 아닐때만 CheckAmmo && 사격 가능
 			// 왜 이렇게 했는지 모르겠다... 필요없어 보여서 뺐는데도 잘 된다.
@@ -682,40 +690,100 @@ void AWeapon::UseAmmo()
 	OwningPlayer->OnGetAmmo.Broadcast(this);
 }
 
+void AWeapon::Equipping()
+{
+	if(!WeaponDataAsset || !OwningPlayer ) return;
 
+	CurrentWeaponState = EWeaponState::EWS_Equipping;
+
+	if(WeaponDataAsset->WeaponAnimaton.TPS_Actor_EquipAnim && WeaponDataAsset->WeaponAnimaton.FPS_Actor_EquipAnim )
+	{
+		OwningPlayer->PlayAnimation(WeaponDataAsset->WeaponAnimaton.TPS_Actor_EquipAnim, WeaponDataAsset->WeaponAnimaton.FPS_Actor_EquipAnim);
+	}
+
+	if ( WeaponDataAsset->WeaponSound.EquipSound)
+	{
+		UGameplayStatics::SpawnSoundAttached(WeaponDataAsset->WeaponSound.EquipSound, OwningPlayer->GetRootComponent());
+	}
+
+}
+
+void AWeapon::EndEquipping()
+{
+	CurrentWeaponState = EWeaponState::EWS_Idle;
+
+}
+
+bool AWeapon::CheckCanReload()
+{
+	//Idle상태가 아닌 상태인 경우 장전 불가.
+	if ( CurrentWeaponState != EWeaponState::EWS_Idle )
+	{
+		return false;
+	}
+
+	return true;
+}
+
+//Reload는 단순히 Animation을 진행하도록 한다.
 void AWeapon::Reload()
 {
-	SetWeaponState(EWeaponState::EWS_Reloading);
+	if ( CheckCanReload() == false )
+	{
+		UE_LOG(LogTemp,Warning,TEXT("AWeapon::Reload// 장전할 수 없습니다."
+		"이미 장전중이거나, Weapon이 다른 동작을 진행중입니다."));
+		return;
+	}
+
+	
 	bool bHasAmmo = OwningPlayer->CheckAmmo();
 	CntAmmoSameType = 0;
-	if ( bHasAmmo )
-	{
-		//Current 잔탄에 장전 가능한 탄약을 더한다.
-		AmmoLeftInMag += OwningPlayer->GetNumberofCanReload();
 
-		//잔여 ammo를 업데이트 한다.
-		CntAmmoSameType = OwningPlayer->GetTotalNumberofSameTypeAmmo();
-		if ( ItemObj )
+	//Player가 Ammo를 갖고 있고 && Mag에 남은 Ammo가 최대 APM보다 적은 경우에만 장전 가능
+	if ( bHasAmmo && AmmoLeftInMag < WeaponDataAsset->WeaponStat.AmmoPerMag )
+	{
+		CurrentWeaponState = EWeaponState::EWS_Reloading;
+
+		OwningPlayer->SetLeftHandIK(0.f);
+
+		//Animation 재생
+		if ( WeaponDataAsset->WeaponAnimaton.TPS_Actor_ReloadAnim && WeaponDataAsset->WeaponAnimaton.FPS_Actor_ReloadAnim )
 		{
-			ItemObj->SetAmmoLeftInMag(AmmoLeftInMag);
+			if(OwningPlayer->TPAnimInstance->LeftHandAlpha != 0.f ) return;
+
+			OwningPlayer->PlayAnimation(WeaponDataAsset->WeaponAnimaton.TPS_Actor_ReloadAnim, WeaponDataAsset->WeaponAnimaton.FPS_Actor_ReloadAnim);
 		}
 
+		//Sound 재생
+		if ( WeaponDataAsset->WeaponSound.ReloadSound)
+		{
+			UGameplayStatics::SpawnSoundAttached(WeaponDataAsset->WeaponSound.ReloadSound, OwningPlayer->GetRootComponent());
+		}
 	}
 	else
 	{
-		//Ammo가 없다면 reload 실패.
-	}
-
-	OwningPlayer->OnGetAmmo.Broadcast(this);
+		UE_LOG(LogTemp,Warning,TEXT("AWeapon::Reload// 장전 실패! : 탄약이 주머니 또는 조끼에 없거나 / Mag에 탄이 꽉 찼습니다."));
+	}	
 }
-
+//AnimNotify를 통해 이 함수를 호출하면
+//탄약을 갱신한다.
 void AWeapon::ReloadEnd()
 {
-	SetWeaponState(EWeaponState::EWS_Idle);
+	//Current 잔탄에 장전 가능한 탄약을 더한다.
+	AmmoLeftInMag += OwningPlayer->GetNumberofCanReload();
 
+	//잔여 ammo를 업데이트 한다.
+	CntAmmoSameType = OwningPlayer->GetTotalNumberofSameTypeAmmo();
+	if ( ItemObj )
+	{
+		ItemObj->SetAmmoLeftInMag(AmmoLeftInMag);
+	}
 
-	//AmmoLeftInMag = WeaponDataAsset->WeaponStat.AmmoPerMag;
-	//ConsumeAmmoCnt = 0;
+	OwningPlayer->SetLeftHandIK(1.f);
+	CurrentWeaponState = EWeaponState::EWS_Idle;
+	
+
+	OwningPlayer->OnGetAmmo.Broadcast(this);
 }
 
 
@@ -1055,9 +1123,9 @@ FHitResult AWeapon::BulletTrace(FVector StartTrace, FVector EndTrace)
 void AWeapon::WeaponFX()
 {
 	//사운드
-	if ( WeaponDataAsset->FireSound )
+	if ( WeaponDataAsset->WeaponSound.FireSound )
 	{
-		UGameplayStatics::SpawnSoundAttached(WeaponDataAsset->FireSound, OwningPlayer->GetRootComponent());
+		UGameplayStatics::SpawnSoundAttached(WeaponDataAsset->WeaponSound.FireSound, OwningPlayer->GetRootComponent());
 	}
 
 	//총구 이펙트

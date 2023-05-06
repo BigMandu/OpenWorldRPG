@@ -90,7 +90,7 @@ public:
 
 	/* Enums */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Enums")
-	ECharacterStatus ChracterStatus;
+	ECharacterStatus CharacterStatus;
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Enums")
@@ -242,7 +242,8 @@ public:
 	FORCEINLINE ETeamType GetTeamType() { return TeamType; }
 	virtual void SetAimMode(EAimMode Mode);
 
-
+	
+	bool CanSprint();
 	virtual void Sprint();
 	virtual void UnSprint();
 
@@ -263,16 +264,22 @@ public:
 	UFUNCTION()
 	void SetWeaponAssign(AWeapon* Weapon, ERifleSlot RifleSlot);
 
+	bool CanReload();
 	void ReloadWeapon();
+	void EndReload();
+
 	void ChangePrimaryWeapon();
 	void ChangeSubWeapon();
 	void ChangePistolWeapon();
 
 	virtual void ChangeWeaponTypeNumber(int32 number);
+	virtual bool ChangeWeapon(int32 index);
+
+	void AttachWeaponToActor();
+	virtual void EndEquipped();
+
 	/* Change Weapon Firing Mode*/
 	void ChangeSafetyLever();
-
-	virtual bool ChangeWeapon(int32 index);	
 
 	/* Weapon Ammo */
 	bool CheckAmmo();
@@ -301,17 +308,19 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FTransform LeftHandik();
 
+	virtual void SetLeftHandIK(float Alpha);
+
 	void SetHoldingItem(AItem* WantToHolding);
 
 	//called from AnimMontage Notify (UMainAnim)
 	UFUNCTION()
 	void DetachThrowingObject();//ABaseCharacter* Actor);
 
-	virtual void PlayAttachItemAnim(AItem* Item);
-	virtual void PlayUseItemAnim(AItem* Item);
+	virtual void PlayAnimation(UAnimMontage* TPAnim, UAnimMontage* FPAnim);
+	
 	
 	UFUNCTION()
-	virtual void StopUseItemAnim();
+	virtual void StopAnimation();
 
 	void DetachCoreUsableItem();
 

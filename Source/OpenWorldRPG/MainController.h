@@ -89,8 +89,12 @@ public:
 	*/
 
 	/*AI가 이 Controller의 OwnerActor를 식별하면
-	* 리스트에 해당 AI를 추가한다.* */
+	* 리스트에 해당 AI를 추가한다.*
+	* AIController::DetectEnemy에서 호출
+	*/
 	void AddToListTargetingThisActor(class AEnemyAIController* AICon);
+
+	//AIController::LostTarget, BaseChar::Die에서 호출됨
 	void RemoveAtListTargetingThisActor(AEnemyAIController* AICon);
 
 	/*이 Controller의 OwnerActor를 식별한 AI의 목록을 얻는다.* */

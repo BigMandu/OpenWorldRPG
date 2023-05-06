@@ -187,9 +187,9 @@ void AWeapon_Instant::CheckHit(const FHitResult& Hit, const FVector Dir)
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponDataAsset->BulletHitEffect, Hit.Location, Hit.ImpactNormal.Rotation());
 		}
 
-		if (WeaponDataAsset->BulletHitSound)
+		if (WeaponDataAsset->WeaponSound.BulletHitSound )
 		{
-			UGameplayStatics::PlaySoundAtLocation(GetWorld(), WeaponDataAsset->BulletHitSound, Hit.Location);
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), WeaponDataAsset->WeaponSound.BulletHitSound, Hit.Location);
 		}
 	}
 

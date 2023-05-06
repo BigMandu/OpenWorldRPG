@@ -69,7 +69,8 @@ void ACoreUsableItem::ToggleOn(AMainCharacter* Actor, UNewItemObject* Obj)
 
 	Obj->bIsUsing = true;
 	//BaseCharacter의 PlayUseItemAnim func 호출
-	Actor->PlayUseItemAnim(this);
+	Actor->PlayAnimation(this->ItemSetting.DataAsset->TPS_UseAnimMontage, this->ItemSetting.DataAsset->FPS_UseAnimMontage);
+	//Actor->PlayUseItemAnim(this);
 	
 	Actor->CompassBeginUse.Broadcast();
 

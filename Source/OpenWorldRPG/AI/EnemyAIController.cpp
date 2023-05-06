@@ -24,6 +24,9 @@
 #include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
 #include "../MainController.h"
+#include <OpenWorldRPG/Item/BaseGrenade.h>
+#include <OpenWorldRPG/Item/GrenadePDA.h>
+#include <DrawDebugHelpers.h>
 
 
 
@@ -125,6 +128,24 @@ void AEnemyAIController::OnPossess(APawn* InPawn)
 	}	
 }
 
+/* Fragmentation Type의 수류탄이 던져진 상태면
+* BBComp의 DetectGrenade를 true로 변경한다.
+*/
+bool AEnemyAIController::IsGrenade(AActor* DetectActor)
+{
+	if ( ABaseGrenade* Grenade = Cast<ABaseGrenade>(DetectActor) )
+	{
+		if ( UGrenadePDA* GPDA = Cast< UGrenadePDA>(Grenade->ItemSetting.DataAsset) )
+		{
+			if ( GPDA->GrenadeType == EGrenadeType::EGT_Fragment && Grenade->bThrow )
+			{
+				return true;
+			}
+		}		
+	}
+	return false;
+}
+
 
 //BaseCharacter에 설정한 TeamType을 비교해서 적을 판별한다.
 bool AEnemyAIController::CheckIsEnemy(ABaseCharacter* Target)
@@ -140,16 +161,58 @@ bool AEnemyAIController::CheckIsEnemy(ABaseCharacter* Target)
 	return bIsEnemy;
 }
 
+/*
+ * Interactable class의 Interaction함수에서 각각의 Object마다 호출.
+ * ex) Equipment의 Equip함수에서 호출
+*/
+
+//True - Interact가능, false - 불가능
+bool AEnemyAIController::CanInteraction(AActor* Object)
+{
+	bool bCanInteract = true;
+
+	AEquipment* Equip = Cast<AEquipment>(Object);
+
+	//AI가 장착한 장비거나, 다른 캐릭터가 장착중인 장비는 Interaction이 불가능하다.
+	//여기서 추가해야할것 -> 다른 AI가 이미 먼저 식별했을 경우의 조건도 추가해야함.
+	//Equip에 boolean 변수를 하나 추가해서. OtherCharacter의 occupy선점 여부를 확인 하는거 ㄹ추가하면 될듯?
+
+
+	//if (Equip && Equip->bIsPreOccupied == false)
+	{
+		//UE_LOG(LogTemp, Warning, TEXT("AEnemyAIController::CanInteraction / PreOccupied is false, Check Equip, Owning"));
+		//AI가 해당 Equip을 장착하지 않았거나, OwningPlayer가 없다면
+		if ( Equip && Equip->OwningPlayer != nullptr ) //OwnerActor->CheckEquipped(Object) != true) || Equip && Equip->OwningPlayer == nullptr)
+		{
+			//UE_LOG(LogTemp, Warning, TEXT("AEnemyAIController::CanInteraction / Can Interaction"));
+			//Interact가 가능하다
+			//Equip->bIsPreOccupied = true;
+			bCanInteract = false;
+		}
+	}
+
+	return bCanInteract;
+}
+
 
 void AEnemyAIController::DetectedTarget(AActor* Target, FAIStimulus Stimulus)
 {
 	if (Target)
 	{
 		ABaseCharacter* Char = Cast<ABaseCharacter>(Target);
-		//AInteractable* Object = Cast<AInteractable>(Target);
+		
+		/*중요한 순서대로 배치하자.
+		* 1순위 던져진 수류탄
+		* 2순위 Target(Enemy)
+		* 3순위 Object(장비,무기,Lootbox,,etc)
+		*/
 
+		if( IsGrenade(Target))
+		{
+			DetectedGrenade(Target, Stimulus);
+		}
 		//Character를 감지했을 경우 Enemy인지 확인한다.
-		if (Char && CheckIsEnemy(Char))
+		else if (Char && CheckIsEnemy(Char))
 		{
 			DetectedEnemy(Char, Stimulus);
 			//UE_LOG(LogTemp, Warning, TEXT("AI Found Player!"));
@@ -170,6 +233,56 @@ void AEnemyAIController::DetectedTarget(AActor* Target, FAIStimulus Stimulus)
 /**************************************************/
 /***********    Detected Type         ************/
 /**************************************************/
+void AEnemyAIController::DetectedGrenade(AActor* DetectTarget, FAIStimulus Stimulus)
+{
+	if ( ABaseGrenade* Grenade = Cast<ABaseGrenade>(DetectTarget) )
+	{
+		//Grenade List에 없다면 추가 단계를 진행한다.
+		if (DetectedGrenadeList.Num() == 0 || DetectedGrenadeList.Find(Grenade) == INDEX_NONE )
+		{
+			UE_LOG(LogTemp, Warning, TEXT("AICon::DetectGrenade // Detect Grenade!!!! "));
+
+			UpdateBBCompBoolKey(bDetectGrenade, true);
+			DetectedGrenadeList.Add(Grenade);
+			//Grenade가 터졌을때 BB key를 update해주기 위해
+			//bind 해준다. (BaseGrenade::EndEffect에서 broadcast 됨.)
+			Grenade->OnGrenadeDestroy.AddUFunction(this, FName("GrenadeEffectIsEnd"));
+
+			//위치를 갱신한다.
+			CalcGrenadeLocation();
+		}
+		//이미 detect한걸 재식별 했을 경우 위치만 갱신한다.
+		else if ( DetectedGrenadeList.Find(Grenade) != INDEX_NONE)
+		{
+			CalcGrenadeLocation();
+		}
+	}
+}
+
+void AEnemyAIController::GrenadeEffectIsEnd(ABaseGrenade* ExplodedGrenade)
+{
+	
+	if ( DetectedGrenadeList.Find(ExplodedGrenade) != INDEX_NONE )
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AICon::GrenadeEffectIsEnd// grenade  was exploded , remove at list"));
+		DetectedGrenadeList.Remove(ExplodedGrenade);
+		
+	}
+
+	//DetectedList가 비어있다면 인식되었던 Grenade가 없으므로
+	//detect bool key를 false한다.
+	if ( DetectedGrenadeList.Num() <= 0 )
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AICon::GrenadeEffectIsEnd// There is no more Detect grenade"));
+		UpdateBBCompBoolKey(bDetectGrenade, false);
+
+		//식별된 수류탄의 위치값도 0.f로 초기화 한다.
+		UpdateBBCompVectorKey(DetectGrenadeLocationKey, FVector(0.f));
+	}
+
+}
+
+
 //Sight와 Hearing을 구분한다.
 void AEnemyAIController::DetectedEnemy(ABaseCharacter* Player, FAIStimulus Stimulus)
 {
@@ -345,39 +458,6 @@ void AEnemyAIController::LostObject(AActor* InteractActor)
 
 /********************************************************************/
 
-/*
- * Interactable class의 Interaction함수에서 각각의 Object마다 호출.
- * ex) Equipment의 Equip함수에서 호출
-*/
-
-//True - Interact가능, false - 불가능
-bool AEnemyAIController::CanInteraction(AActor* Object)
-{
-	bool bCanInteract = true;
-
-	AEquipment* Equip = Cast<AEquipment>(Object);
-
-	//AI가 장착한 장비거나, 다른 캐릭터가 장착중인 장비는 Interaction이 불가능하다.
-	//여기서 추가해야할것 -> 다른 AI가 이미 먼저 식별했을 경우의 조건도 추가해야함.
-	//Equip에 boolean 변수를 하나 추가해서. OtherCharacter의 occupy선점 여부를 확인 하는거 ㄹ추가하면 될듯?
-
-	
-	//if (Equip && Equip->bIsPreOccupied == false)
-	{
-		//UE_LOG(LogTemp, Warning, TEXT("AEnemyAIController::CanInteraction / PreOccupied is false, Check Equip, Owning"));
-		//AI가 해당 Equip을 장착하지 않았거나, OwningPlayer가 없다면
-		if (Equip && Equip->OwningPlayer != nullptr) //OwnerActor->CheckEquipped(Object) != true) || Equip && Equip->OwningPlayer == nullptr)
-		{
-			//UE_LOG(LogTemp, Warning, TEXT("AEnemyAIController::CanInteraction / Can Interaction"));
-			//Interact가 가능하다
-			//Equip->bIsPreOccupied = true;
-			bCanInteract = false;
-		}
-	}
-
-	return bCanInteract;
-}
-
 //LootBox의 OpenBox함수에서 ItemFarming함수 호출
 void AEnemyAIController::ItemFarming(AActor* InteractActor)
 {
@@ -483,6 +563,70 @@ void AEnemyAIController::CalcAttackDist(float DeltaTime)
 			bUpdateEnemyLo = false;
 		}
 	}
+}
+
+
+/* 위치값을 저장하는 이유는
+* EQS를 돌리기 위함이다.
+*/
+void AEnemyAIController::CalcGrenadeLocation()
+{
+	if(!BBComp ) return;
+	if( DetectedGrenadeList.Num() <= 0 ) return;
+	
+	const FVector AILoc = OwnerActor->GetActorLocation();
+	//const FVector SavedGrenadeLoc = BBComp->GetValueAsVector(DetectGrenadeLocationKey);
+	ABaseGrenade* SavedGrenade = Cast<ABaseGrenade>(BBComp->GetValueAsObject(DetectedGrenadeKey));
+	FVector SavedGrenadeLoc = FVector(0.f);
+
+	ABaseGrenade* ShortDistGrenade = nullptr;
+
+	//이미 Detect된 Grenade가 있었다면 비교를 위해 저장해둔다.
+	if(SavedGrenade )
+	{
+		SavedGrenadeLoc = SavedGrenade->GetActorLocation();
+		ShortDistGrenade = SavedGrenade;
+	}
+	//저장된 Grenade가 없다면
+	else
+	{
+		ShortDistGrenade = DetectedGrenadeList[ 0 ].Get();
+		SavedGrenadeLoc = ShortDistGrenade->GetActorLocation();
+		
+	}
+
+	//저장된 GrenadeLocation과 AI와 거리를 측정한 값을 저장해둔다.
+	const float SavedDist = FVector::Dist(SavedGrenadeLoc, AILoc);
+	
+
+	//기저장된 Dist를 ShortestDist에 대입해 이 값을 첫 시작점으로 잡는다.
+	float ShortestDist = SavedDist;
+
+	for ( auto Grenade : DetectedGrenadeList )
+	{
+		if ( Grenade.IsValid() )
+		{
+			//식별된GL에 있는 Grenade의 위치와 AI와 거리를 측정한다.
+			const FVector DetectGrenadeLoc = Grenade.Get()->GetActorLocation();
+			const float NewDist = FVector::Dist(DetectGrenadeLoc, AILoc);
+
+			//ShortestDist보다 짧은 Dist면 저장하면서 loop를 돈다.
+			if ( NewDist < ShortestDist )
+			{
+				ShortestDist = NewDist;
+				ShortDistGrenade = Grenade.Get();
+			}
+		}
+	
+	}
+
+	DrawDebugSphere(GetWorld(), ShortDistGrenade->GetActorLocation(), 10.f,8,FColor::Green,false, 5.f);
+	//loop가 끝나면 ShortDistGrenade의 위치값을 BBComp에 넘겨준다.
+	//UpdateBBCompVectorKey(DetectGrenadeLocationKey, ShortDistGrenade->GetActorLocation());
+	UpdateBBCompObjectKey(DetectedGrenadeKey, ShortDistGrenade);
+	
+	
+	
 }
 
 void AEnemyAIController::AttackMoving(const FVector LocationVec, FVector RightVec)

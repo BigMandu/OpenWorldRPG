@@ -180,6 +180,7 @@ void UStatManagementComponent::StaminaManage(bool bIsSprintKeyDown)
 		{
 			CurrentStat.Stamina = 0.f;
 			Player->SetCharacterStatus(ECharacterStatus::EPS_Normal);
+			Player->UnSprint();
 		}
 		else
 		{

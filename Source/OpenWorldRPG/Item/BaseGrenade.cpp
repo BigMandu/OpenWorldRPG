@@ -4,6 +4,7 @@
 #include "OpenWorldRPG/Item/BaseGrenade.h"
 #include "OpenWorldRPG/Item/GrenadePDA.h"
 #include "OpenWorldRPG/BaseCharacter.h"
+#include "OpenWorldRPG/MainCharacter.h"
 #include "OpenWorldRPG/MainAnimInstance.h"
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
 #include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
@@ -16,6 +17,8 @@
 #include "Sound/SoundCue.h"
 #include "Particles/ParticleSystem.h"
 #include "Particles/ParticleSystemComponent.h"
+
+#include "Perception/AISense_Hearing.h"
 
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
@@ -34,6 +37,7 @@ ABaseGrenade::ABaseGrenade()
 	//ProjectileMovementComp->Bounciness = 0.5f;
 
 	Mesh->SetSimulatePhysics(true);
+	
 	bReadyToThrow = false;
 	bThrow = false;
 
@@ -43,10 +47,15 @@ ABaseGrenade::ABaseGrenade()
 	Ni_ParticleComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraParticleComp"));
 	Ni_ParticleComp->SetupAttachment(GetRootComponent());
 
-	AudioComp = CreateDefaultSubobject<UAudioComponent>(TEXT("AudioComp"));
-	AudioComp->SetupAttachment(GetRootComponent());
-	//AudioComp->SetAutoActivate(false);
-	//AudioComp->Deactivate();
+	EffectAudioComp = CreateDefaultSubobject<UAudioComponent>(TEXT("EffectAudioComp"));
+	EffectAudioComp->SetupAttachment(GetRootComponent());
+
+	BounceAudioComp = CreateDefaultSubobject<UAudioComponent>(TEXT("BounceAudioComp"));
+	BounceAudioComp->SetupAttachment(GetRootComponent());
+	
+	Mesh->OnComponentHit.AddDynamic(this, &ABaseGrenade::OnCapsuleComponentHit);
+	//CapsuleComp->OnComponentHit.AddDynamic(this,&ABaseGrenade::OnCapsuleComponentHit);
+	
 
 }
 
@@ -58,20 +67,33 @@ void ABaseGrenade::OnConstruction(const FTransform& Transform)
 	{
 		//FVector Sizebox = this->GetComponentsBoundingBox().GetSize();
 		//CapsuleComp->SetCapsuleSize(Sizebox.Y, Sizebox.Z);
-		CapsuleComp->SetCapsuleSize(5.f, 5.f);
+		CapsuleComp->SetCapsuleSize(2.f, 2.f);
 		CapsuleComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 		Mesh->SetSimulatePhysics(true);
 		//선형제동, 선형이동에 가해지는 'Drag(제동력)'이다.
-		Mesh->SetLinearDamping(0.1f);//100.f);
+		Mesh->SetLinearDamping(0.2f);//100.f);
 
 		//회전제동, 회전 이동을 줄이기 위해 더해진'Drag(제동력)'이다.
-		Mesh->SetAngularDamping(0.f);//100.f);
-	
+		Mesh->SetAngularDamping(0.2f);//100.f);
+
+		
+			
 		Mesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
 		Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
 		Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic, ECollisionResponse::ECR_Block);
-		Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Block);		
+		Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Block);
+
+
+		if ( UGrenadePDA* GPDA = Cast< UGrenadePDA>(this->ItemSetting.DataAsset) )
+		{
+			if ( GPDA->GrenadeBounceSound )
+			{
+				BounceAudioComp->SetSound(GPDA->GrenadeBounceSound);
+			}
+			
+		}
+		
 	}
 	/*if (SKMesh)
 	{
@@ -102,14 +124,26 @@ void ABaseGrenade::ReadyToThrow()
 	
 	bReadyToThrow = true;
 
-	if ( AMainCharacter* Player = Cast<AMainCharacter>(this->OwningPlayer) )
+	
+	if(OwningPlayer)
 	{
-		Player->ChangeWeaponTypeNumber(3);
+		//if ( AMainCharacter* Player = Cast<AMainCharacter>(OwningPlayer) )
+		//{
+		//	//FPMesh도 끌수 있도록 커스텀 함수를 호출한다..
+		//	//여기서 좀 헤맴.
+		//	Player->StooopAnimMontage();
+		//	//Player->StopAnimMontage(nullptr);
+		//	Player->ChangeWeaponTypeNumber(3);
+		//}
+		//else
+		{
+			//다른 AnimMontage가 재생중이면 Stop시켜서
+			//AnimBP의 Anim을 재생 할 수 있도록 한다.
+			OwningPlayer->StopAnimation();
+			OwningPlayer->ChangeWeaponTypeNumber(3);
+		}
 	}
-	else if(OwningPlayer )
-	{		
-		OwningPlayer->ChangeWeaponTypeNumber(3);		
-	}
+
 
  	GetWorldTimerManager().SetTimer(EffectTriggerTimerHandle, this, &ABaseGrenade::BeginEffect, GPDA->EffectDelayTime, false);
 
@@ -124,18 +158,20 @@ void ABaseGrenade::ThrowGrenade(ABaseCharacter* Actor)
 	// 
 	//UGrenadePDA* GPDA = Cast<UGrenadePDA>(this->ItemSetting.DataAsset);
 	//Actor->PlayAnimMontage(GPDA->ThrowingAnimMontage);
-		
-	if ( AMainCharacter* Player = Cast<AMainCharacter>(Actor) )
-	{
-		Player->PlayUseItemAnim(this);
-	}
-	else
-	{
-		Actor->PlayUseItemAnim(this);
-	}	
+
+
+	Actor->PlayAnimation(this->ItemSetting.DataAsset->TPS_UseAnimMontage, this->ItemSetting.DataAsset->FPS_UseAnimMontage);
 	
 	
-	Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Block);
+	//Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Block);
+	//Mesh->BodyInstance.SetCollisionProfileName("Projectile");
+
+	/*CapsuleComp->SetGenerateOverlapEvents(true);
+	CapsuleComp->BodyInstance.SetCollisionProfileName("BlockAllDynamic");
+	CapsuleComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	CapsuleComp->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);*/
+
+
 	
 	//던지고 난 이후엔 Interaction이 불가능하도록 한다.
 	bCanNotInteractable = true;
@@ -157,12 +193,12 @@ void ABaseGrenade::DetectThrow(ABaseCharacter* Actor)
 	////Detach를 한다.
 	DetachFromHand(Actor, GPDA->bIsNeedToAttachHandBeforeUse);
 
+	//Hit Event를 발생시키기 위함.
+	Mesh->SetNotifyRigidBodyCollision(true);
 
-	if (Mesh)
-	{
-		Mesh->SetSimulatePhysics(true);
-	}
-
+	Mesh->SetSimulatePhysics(true);
+	Mesh->SetCollisionProfileName("BlockAllDynamic");
+	
 	Mesh->SetLinearDamping(2.f);
 	Mesh->SetAngularDamping(1.f);
 
@@ -221,13 +257,14 @@ void ABaseGrenade::BeginEffect()
 	}
 
 	
-	AudioComp->SetAutoActivate(true);	
+	EffectAudioComp->SetAutoActivate(true);
 	Ca_ParticleComp->SetWorldRotation(FRotator(0.f, 0.f, 1.f));
-	AudioComp->SetSound(GPDA->GrenadeEffectSound);
+	EffectAudioComp->SetSound(GPDA->GrenadeEffectSound);
 	
 	
-	AudioComp->Activate();
-	
+	EffectAudioComp->Activate();
+	//AI가 인식할 수 있도록 함.
+	UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), 1.f, this);
 
 	switch (GPDA->GrenadeType)
 	{
@@ -243,8 +280,11 @@ void ABaseGrenade::BeginEffect()
 	if (bThrow == false)
 	{
 		ABaseCharacter* BChar = Cast<ABaseCharacter>(GetOwningPlayer());
-		DetachFromHand(BChar, false);
-		
+		DetachFromHand(BChar, true);
+		RemoveCountAtIventory(BChar, 1);
+		bThrow = true;
+		bCanNotInteractable = true;
+
 		/*
 		BChar->HoldingItem = nullptr;
 		EquipBeforeWeapon(BChar);*/
@@ -322,6 +362,33 @@ void ABaseGrenade::FragmentEffect(UGrenadePDA* gPDA)
 	
 }
 
+
+void ABaseGrenade::OnCapsuleComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{	
+	if ( Hit.bBlockingHit )
+	{
+		if ( UGrenadePDA* GPDA = Cast< UGrenadePDA>(this->ItemSetting.DataAsset) )
+		{
+			if ( GPDA->GrenadeBounceSound )
+			{
+				BounceAudioComp->SetSound(GPDA->GrenadeBounceSound);
+			}
+
+		}
+
+		if ( BounceAudioComp)
+		{
+			//UE_LOG(LogTemp, Warning, TEXT("ABaseGrenade:: playsound"));
+			
+			BounceAudioComp->Activate();
+
+			//AI가 인식할 수 있도록 함.
+			UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), 1.f, this);
+		}
+	}
+}
+
+
 void ABaseGrenade::SmokeEffect(UGrenadePDA* gPDA)
 {
 	if (gPDA == nullptr) return;
@@ -339,40 +406,17 @@ void ABaseGrenade::EndEffect()
 	{
 		Ca_ParticleComp->DeactivateSystem(); //Deactivate();
 	}
-	if (AudioComp->IsActive())
+	if ( EffectAudioComp->IsActive())
 	{
-		AudioComp->Stop();// Deactivate();
+		EffectAudioComp->Stop();// Deactivate();
 	}
 
 	//GetWorldTimerManager().RemoveTimer
 	
 	GetWorldTimerManager().ClearTimer(EffectDurationTimerHandle);
+	OnGrenadeDestroy.Broadcast(this);
 
 	//던지고 나서 Effect이후 Destroy를 해준다.
 	OwningPlayer = nullptr;
 	Destroy();
 }
-
-//void ABaseGrenade::EquipBeforeWeapon(ABaseCharacter* Actor)
-//{
-//	if (Actor->TPAnimInstance)
-//	{
-//		Actor->TPAnimInstance->WeaponTypeNumber = 0;
-//	}
-//
-//	if (BeforeEquipppedWeapon.IsValid())
-//	{
-//		if (Actor->PrimaryWeapon == BeforeEquipppedWeapon)
-//		{
-//			Actor->ChangePrimaryWeapon();
-//		}
-//		else if (Actor->SubWeapon == BeforeEquipppedWeapon)
-//		{
-//			Actor->ChangeSubWeapon();
-//		}
-//		else if (Actor->PistolWeapon == BeforeEquipppedWeapon)
-//		{
-//			Actor->ChangePistolWeapon();
-//		}
-//	}
-//}

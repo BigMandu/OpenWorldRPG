@@ -362,7 +362,6 @@ void ANiceCar::OpenTrunk()
 		PlayerCon->bIsInteractLootBox = this;
 		LootWidgetComp->CreateInteractionWidget(PlayerCon, this); //새로추가
 	}
-
 }
 
 void ANiceCar::GetoutCar()

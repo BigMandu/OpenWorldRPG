@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -106,6 +106,7 @@ enum class EWeaponPartsType : uint8
 	EWPT_Muzzle		UMETA(DisplayName = "Muzzle"),
 	EWPT_Tactical	UMETA(DisplayName = "Tactical"),
 	EWPT_Scope		UMETA(DisplayName = "Scope"),
+	
 
 
 	EWPT_MAX = 3	UMETA(Hidden)

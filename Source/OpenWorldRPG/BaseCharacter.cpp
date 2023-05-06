@@ -227,7 +227,7 @@ void ABaseCharacter::ApplyFallingDamage(FHitResult& _FallHit)
 
 void ABaseCharacter::SetCharacterStatus(ECharacterStatus Type)
 {
-	ChracterStatus = Type;
+	CharacterStatus = Type;
 
 	/*Aim mode인 경우 아래를 수행 않고 바로 return한다.
 	* SetAimmode에서 별도로 이동속도를 제한 하기 때문이다.
@@ -236,7 +236,7 @@ void ABaseCharacter::SetCharacterStatus(ECharacterStatus Type)
 	* */
 	if (AimMode == EAimMode::EAM_Aim) return;
 
-	switch (ChracterStatus)
+	switch ( CharacterStatus )
 	{
 	case ECharacterStatus::EPS_Normal:
 		//StatManagementComponent->
@@ -291,20 +291,6 @@ void ABaseCharacter::SetCharacterStatus(ECharacterStatus Type)
 //}
 
 
-void ABaseCharacter::SetEquippedWeapon(AWeapon* Weapon)
-{
-	EquippedWeapon = Weapon;
-	if ( Weapon )
-	{
-		TPAnimInstance->SetLeftHandIKAlpha(1.f);
-	}
-	else
-	{
-		TPAnimInstance->SetLeftHandIKAlpha(0.f);
-	}
-	
-	
-}
 
 
 void ABaseCharacter::UseItem(class AActor* Item)
@@ -315,11 +301,32 @@ void ABaseCharacter::UseItem(class AActor* Item)
 	}
 }
 
+bool ABaseCharacter::CanSprint()
+{
+	bool bReturn = true;
+	if ( EquippedWeapon )
+	{
+		//Idle상태가 아닌 Reload, Firing, Equiping상태면 sprint불가.
+		if ( EquippedWeapon->CurrentWeaponState != EWeaponState::EWS_Idle )
+		{
+			bReturn = false;
+		}
+	}
+
+	return bReturn;
+}
 void ABaseCharacter::Sprint()
 {
-	TPAnimInstance->bIsSprint = true;
-	TPAnimInstance->SetLeftHandIKAlpha(0.f);
-	//TPAnimInstance->LeftHandAlpha = 0.f;
+	if(CanSprint() )
+	{
+		TPAnimInstance->bIsSprint = true;
+		SetLeftHandIK(0.f);
+	}
+	else
+	{
+		UE_LOG(LogTemp,Warning,TEXT("ABaseCharacter::Sprint// Sprint실패! , Weapon이 장전중이거나, 장착중 또는 사격중일땐 스프린트가 불가능합니다."))
+	}
+	
 }
 
 void ABaseCharacter::UnSprint()
@@ -327,7 +334,7 @@ void ABaseCharacter::UnSprint()
 	TPAnimInstance->bIsSprint = false;
 	if(EquippedWeapon)
 	{
-		TPAnimInstance->SetLeftHandIKAlpha(1.f);
+		SetLeftHandIK(1.f);
 	}
 	//TPAnimInstance->LeftHandAlpha = 1.f;
 }
@@ -384,14 +391,39 @@ UNewInventoryComponent* ABaseCharacter::GetAllInvComp(int32 index)
 	return nullptr;
 }
 
+bool ABaseCharacter::CanReload()
+{
+	bool bReturn = true;
+	if ( CharacterStatus == ECharacterStatus::EPS_Dead || CharacterStatus == ECharacterStatus::EPS_Sprint)
+	{
+		bReturn = false;
+	}
+	return bReturn;
+}
 void ABaseCharacter::ReloadWeapon()
 {
 	if (EquippedWeapon)
 	{
-		EquippedWeapon->Reload();
+		if ( CanReload() )
+		{
+			EquippedWeapon->Reload();
+		}
+		else
+		{
+			UE_LOG(LogTemp,Warning, TEXT("ABaseCharacter::ReloadWeapon// 장전 실패! Sprint상태에선 장전할 수 없습니다."));
+		}		
+	}
+}
+
+//called from AnimInst::AnimNotify
+void ABaseCharacter::EndReload()
+{
+	if ( EquippedWeapon )
+	{
 		EquippedWeapon->ReloadEnd();
 	}
 }
+
 
 /* AmmoPerMag에서 남은 잔탄을 뺀, 장전 가능한 탄약 개수를 리턴한다. */
 int32 ABaseCharacter::GetNumberofCanReload()
@@ -561,6 +593,46 @@ void ABaseCharacter::ChangeSafetyLever()
 	}
 }
 
+
+void ABaseCharacter::SetEquippedWeapon(AWeapon* Weapon)
+{
+	EquippedWeapon = Weapon;
+	if ( Weapon )
+	{
+		SetLeftHandIK(0.f);
+		StopAnimation();
+		EquippedWeapon->Equipping();
+
+
+	}
+	else
+	{
+		SetLeftHandIK(0.f);
+	}
+
+}
+
+//called from MainAnimInstance, AnimNotify
+void ABaseCharacter::EndEquipped()
+{
+	if ( EquippedWeapon )
+	{
+		EquippedWeapon->EndEquipping();
+
+		switch ( EquippedWeapon->WeaponDataAsset->EquipmentType )
+		{
+		case EEquipmentType::EET_Rifle:
+			ChangeWeaponTypeNumber(1);
+			break;
+		case EEquipmentType::EET_Pistol:
+			ChangeWeaponTypeNumber(2);
+			break;
+		}
+
+		SetLeftHandIK(1.f);
+	}
+}
+
 bool ABaseCharacter::ChangeWeapon(int32 index)
 {
 	//for BTService_DecideWhatToDo.
@@ -572,8 +644,7 @@ bool ABaseCharacter::ChangeWeapon(int32 index)
 	{
 	case 0:
 		ChangeWeaponTypeNumber(0);
-		//TPAnimInstance->WeaponTypeNumber = 0;
-		//FPAnimInstance->WeaponTypeNumber = 0;
+		SetEquippedWeapon(nullptr);
 		break;
 	case 1:
 		// 현재 장착하고 있는 무기가 Primary와 다를경우에만 변경. 일치하면 똑같은걸 장착할 필요가 없음.
@@ -586,12 +657,10 @@ bool ABaseCharacter::ChangeWeapon(int32 index)
 			{
 				EquippedWeapon->GunAttachToSubSocket(this);
 			}
-			PrimaryWeapon->GunAttachToMesh(this);
+			//PrimaryWeapon->GunAttachToMesh(this);
 
-			ChangeWeaponTypeNumber(1);
-			//TPAnimInstance->WeaponTypeNumber = 1;
+			//ChangeWeaponTypeNumber(1);
 			SetEquippedWeapon(PrimaryWeapon);
-			//EquippedWeapon = PrimaryWeapon;	
 
 			bSuccessChangeWeapon = true;
 		}
@@ -605,14 +674,11 @@ bool ABaseCharacter::ChangeWeapon(int32 index)
 			{
 				EquippedWeapon->GunAttachToSubSocket(this);
 			}
-			SubWeapon->GunAttachToMesh(this);
-			ChangeWeaponTypeNumber(1);
-			//TPAnimInstance->WeaponTypeNumber = 1;
-
-			SetEquippedWeapon(SubWeapon);
-			//EquippedWeapon = SubWeapon;
+			//SubWeapon->GunAttachToMesh(this);
+			//ChangeWeaponTypeNumber(1);
 			
-
+			SetEquippedWeapon(SubWeapon);
+			
 			bSuccessChangeWeapon = true;
 		}
 		break;
@@ -624,24 +690,31 @@ bool ABaseCharacter::ChangeWeapon(int32 index)
 				EquippedWeapon->GunAttachToSubSocket(this);
 			}				
 
-			PistolWeapon->GunAttachToMesh(this);
-			ChangeWeaponTypeNumber(2);
-			//TPAnimInstance->WeaponTypeNumber = 2;
-			//FPAnimInstance->WeaponTypeNumber = 2;
-
+			//PistolWeapon->GunAttachToMesh(this);
+			//ChangeWeaponTypeNumber(2);
 			SetEquippedWeapon(PistolWeapon);
-			//EquippedWeapon = PistolWeapon;			
 			bSuccessChangeWeapon = true;
 		}
 		break;
 	}
 	if (bSuccessChangeWeapon)
 	{
-		if (HoldingItem)
+		//무기를 변경했을때 기존에 ADS상태 였다면 Aim을 풀어준다.
+		if ( bIsAim )
 		{
+			SetAimMode(EAimMode::EAM_NotAim);
+		}
+
+		//만약 다른 Item을 들고 있었다면 초기화 시켜준다.
+		if ( HoldingItem )
+		{
+			//Attach Animation을 멈춘다.
+			StopAnimation();
+			HoldingItem->BeforeEquipppedWeapon = nullptr;
 			HoldingItem->Destroy();
 			SetHoldingItem(nullptr);
-		}
+		}	
+		
 	}
 	
 	return bSuccessChangeWeapon;
@@ -664,8 +737,33 @@ void ABaseCharacter::ChangeWeaponTypeNumber(int32 number)
 {
 	if(TPAnimInstance == nullptr ) return;
 
-	TPAnimInstance->WeaponTypeNumber = number;
+	TPAnimInstance->SetWeaponTypeNumber(number);// WeaponTypeNumber = number;
 }
+
+//called from AnimNotify
+void ABaseCharacter::AttachWeaponToActor()
+{
+	if ( EquippedWeapon )
+	{
+		EquippedWeapon->GunAttachToMesh(this);
+	}
+	
+}
+
+
+
+void ABaseCharacter::DetachCoreUsableItem()
+{
+	if ( HoldingItem )
+	{
+		ACoreUsableItem* CoreItem = Cast<ACoreUsableItem>(HoldingItem);
+		if ( CoreItem )
+		{
+			CoreItem->Use(this, CoreItem->ItemObj);
+		}
+	}
+}
+
 
 void ABaseCharacter::SetHoldingItem(AItem* WantToHolding)
 {	
@@ -678,29 +776,21 @@ void ABaseCharacter::SetHoldingItem(AItem* WantToHolding)
 			HoldingItem->ItemUseEnd.Clear();
 		}		
 		
-		HoldingItem->ItemUseEnd.AddDynamic(this, &ABaseCharacter::StopUseItemAnim);
+		HoldingItem->ItemUseEnd.AddDynamic(this, &ABaseCharacter::StopAnimation);
 		
 	}
 	
 }
 
-void ABaseCharacter::PlayAttachItemAnim(AItem* Item)
+void ABaseCharacter::PlayAnimation(UAnimMontage* TPAnim, UAnimMontage* FPAnim)
 {
-	if ( Item )
+	if ( TPAnim )
 	{
-		PlayAnimMontage(Item->ItemSetting.DataAsset->TPS_AttachAnimMontage);
+		PlayAnimMontage(TPAnim);
 	}
 }
 
-void ABaseCharacter::PlayUseItemAnim(AItem* Item)
-{
-	if (Item)
-	{	
-		PlayAnimMontage(Item->ItemSetting.DataAsset->TPS_UseAnimMontage);
-	}
-}
-
-void ABaseCharacter::StopUseItemAnim()
+void ABaseCharacter::StopAnimation()
 {
 	GetMesh()->GetAnimInstance()->Montage_Stop(0.f,nullptr);
 }
@@ -717,17 +807,12 @@ FTransform ABaseCharacter::LeftHandik()
 	return Transform;
 }
 
-void ABaseCharacter::DetachCoreUsableItem()
+
+void ABaseCharacter::SetLeftHandIK(float Alpha)
 {
-	if(HoldingItem)
-	{
-		ACoreUsableItem* CoreItem = Cast<ACoreUsableItem>(HoldingItem);
-		if(CoreItem )
-		{
-			CoreItem->Use(this,CoreItem->ItemObj);
-		}
-	}
+	TPAnimInstance->SetLeftHandIKAlpha(Alpha);
 }
+
 
 
 
@@ -879,6 +964,11 @@ void ABaseCharacter::Die()
 			TPMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
 			TPMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Block);
 			SetCharacterStatus(ECharacterStatus::EPS_Dead);
+
+			if ( AMainController* PlayerCon = Cast<AMainController>(GetWorld()->GetFirstPlayerController()) )
+			{
+				PlayerCon->RemoveAtListTargetingThisActor(AICon);
+			}
 			//TPMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
 			
 			bIsDie = true;

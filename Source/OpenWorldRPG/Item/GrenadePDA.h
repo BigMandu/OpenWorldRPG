@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -35,6 +35,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Grenade | FX")
 	class USoundCue* GrenadeEffectSound;
+
+		UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Grenade | FX")
+	USoundCue* GrenadeBounceSound;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Grenade | Animation")
 	class UAnimMontage* ThrowingAnimMontage;

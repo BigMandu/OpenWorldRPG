@@ -78,6 +78,7 @@ void UWeaponPartsManagerObject::RemoveParts(UNewItemObject* Parts)
 	UCustomPDA* PartsPDA = Cast<UCustomPDA>(Parts->ItemInfo.DataAsset);
 	if ( PartsPDA )
 	{
+		if(PartsPDA->EquipmentType != EEquipmentType::EET_WeaponParts) return;
 		switch ( PartsPDA->WeaponPartsType )
 		{
 		case EWeaponPartsType::EWPT_Muzzle:

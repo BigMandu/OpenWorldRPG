@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -16,12 +16,46 @@ struct FWeaponAnim
 	GENERATED_BODY()
 
 	UPROPERTY(EditDefaultsOnly, Category = "Fire Animation")
-	UAnimMontage* FPSAnim;
-	UPROPERTY(EditDefaultsOnly, Category = "Fire Animation")
-	UAnimMontage* TPSAnim;
+	class UAnimMontage* FPS_Actor_FireAnim;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Fire Animation")
+	UAnimMontage* TPS_Actor_FireAnim;
+	UPROPERTY(EditDefaultsOnly, Category = "Reload Animation")
+	UAnimMontage* FPS_Actor_ReloadAnim;
+	UPROPERTY(EditDefaultsOnly, Category = "Reload Animation")
+	UAnimMontage* TPS_Actor_ReloadAnim;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Equip Animation")
+	UAnimMontage* FPS_Actor_EquipAnim;
+	UPROPERTY(EditDefaultsOnly, Category = "Equip Animation")
+	UAnimMontage* TPS_Actor_EquipAnim;
+
+	
 	UPROPERTY(EditDefaultsOnly, Category = "ADS Animation")
 	UAnimMontage* FPS_ADS_Anim;
+
+};
+
+USTRUCT()
+struct FWeaponSound
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon | FX")
+	class USoundCue* FireSound;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon | FX")
+	USoundCue* BulletHitSound;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon | FX")
+	USoundCue* ReloadSound;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon | FX")
+	USoundCue* EquipSound;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon | FX")
+	USoundCue* ClickSound;
+
 
 };
 
@@ -147,12 +181,6 @@ public:
 
 	/* FX */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon | FX")
-	class USoundCue* FireSound;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon | FX")
-	USoundCue* BulletHitSound;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon | FX")
 	class UParticleSystem* FireMuzzleEffect;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon | FX")
@@ -161,8 +189,10 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon | FX")
 	TSubclassOf<UCameraShakeBase> CamShake;	
 
-	/* Animation */
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Animation")
-	FWeaponAnim Animaton;
+	FWeaponAnim WeaponAnimaton;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon | Sound")
+	FWeaponSound WeaponSound;
 
 };

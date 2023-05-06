@@ -17,6 +17,7 @@
 #include "OpenWorldRPG/Item/CoreUsableItem.h"
 #include "OpenWorldRPG/Item/Equipment.h"
 #include "OpenWorldRPG/Item/Container.h"
+#include "OpenWorldRPG/Item/WeaponPartsManagerObject.h"
 #include "OpenWorldRPG/BaseCharacter.h"
 
 #include "Kismet/KismetMathLibrary.h"

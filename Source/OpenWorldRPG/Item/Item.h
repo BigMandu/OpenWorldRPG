@@ -49,9 +49,9 @@ class OPENWORLDRPG_API AItem : public AInteractable //, public IItemInterface
 {
 	GENERATED_BODY()
 	//GENERATED_UCLASS_BODY()
-protected:
 
-	TWeakObjectPtr<class AWeapon> BeforeEquipppedWeapon = nullptr;
+
+
 
 public:
 
@@ -65,6 +65,8 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Item)
 	EItemState ItemState;
 
+
+	TWeakObjectPtr<class AWeapon> BeforeEquipppedWeapon = nullptr;
 	/*
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Item)
 	UMaterialInterface* Icon;

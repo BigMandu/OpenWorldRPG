@@ -81,7 +81,7 @@ void UMainAnimInstance::UpdateAnimationProperties()
 //Called from AnimBP::Throw state machine
 bool UMainAnimInstance::IsReadyToThrow()
 {
-	if (Player->HoldingItem)
+	if ( Player && Player->HoldingItem)
 	{
 		ABaseGrenade* Grenade = Cast<ABaseGrenade>(Player->HoldingItem);
 		if (Grenade)
@@ -121,11 +121,15 @@ void UMainAnimInstance::SetHandIK()
 
 void UMainAnimInstance::SetLeftHandIKAlpha(float Alpha)
 {
-	//if(Player->EquippedWeapon )
-	{
-		LeftHandAlpha = Alpha;
-		UE_LOG(LogTemp, Warning, TEXT("UMainAnimInstance::SetLeftHandIKAlpha, Alpha  = %f"), LeftHandAlpha);
-	}
+	LeftHandAlpha = Alpha;
+	UE_LOG(LogTemp, Warning, TEXT("UMainAnimInstance::SetLeftHandIKAlpha, Alpha  = %f"), LeftHandAlpha);	
+}
+
+void UMainAnimInstance::SetWeaponTypeNumber(int32 number)
+{
+	UE_LOG(LogTemp,Warning,TEXT("UMainAnimInstance::SetWeaponTypeNumber// %s"), *this->GetFName().ToString());
+	WeaponTypeNumber = number;
+
 }
 
 void UMainAnimInstance::AnimNotify_StepSound()
@@ -142,6 +146,29 @@ void UMainAnimInstance::AnimNotify_throw()
 	ThrowDelegate.Broadcast();
 }
 
+void UMainAnimInstance::AnimNotify_EndReload()
+{
+	if ( Player )
+	{
+		Player->EndReload();
+	}
+}
+
+void UMainAnimInstance::AnimNotify_AttachWeapon()
+{
+	if ( Player )
+	{
+		Player->AttachWeaponToActor();
+	}
+}
+
+void UMainAnimInstance::AnimNotify_EndEquipping()
+{
+	if ( Player )
+	{
+		Player->EndEquipped();
+	}
+}
 //
 //void UMainAnimInstance::AnimNotify_ADS()
 //{
