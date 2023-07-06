@@ -37,9 +37,9 @@ void AWeapon_Instant::New_BulletOut()
 	//FHitResult Hit = BulletTrace(StartTrace, WorldAimPosition + AimPos.Rotator().Vector() * 30.f);
 	FHitResult Hit = BulletTrace(StartTrace, EndTrace);
 
-	DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor::Green, false, 2.f, (uint8)nullptr, 2.f);
+	//DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor::Green, false, 2.f, (uint8)nullptr, 2.f);
 
-	if (Hit.bBlockingHit)
+	if (Hit.IsValidBlockingHit())
 	{
 		DrawDebugPoint(GetWorld(), Hit.Location, 10.f, FColor::Blue, false, 5.f);
 		CheckHit(Hit, AimPos.Rotator().Vector());
@@ -172,12 +172,11 @@ void AWeapon_Instant::ApplyRecoil()
 
 void AWeapon_Instant::CheckHit(const FHitResult& Hit, const FVector Dir)
 {
-	if (Hit.bBlockingHit)
+	if (Hit.IsValidBlockingHit())
 	{
 		if (Hit.GetActor())
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Hit Actor name : %s"), *Hit.GetActor()->GetFName().ToString());
-
 			ApplyDamage(Hit, Dir);
 		}
 
@@ -186,11 +185,14 @@ void AWeapon_Instant::CheckHit(const FHitResult& Hit, const FVector Dir)
 			
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponDataAsset->BulletHitEffect, Hit.Location, Hit.ImpactNormal.Rotation());
 		}
-
-		if (WeaponDataAsset->WeaponSound.BulletHitSound )
+		
+		
+		if (USoundCue* Sound = WeaponDataAsset->WeaponSound.BulletHitSound )
 		{
-			UGameplayStatics::PlaySoundAtLocation(GetWorld(), WeaponDataAsset->WeaponSound.BulletHitSound, Hit.Location);
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), Sound, Hit.Location);
 		}
+		
+		
 	}
 
 }
@@ -198,10 +200,15 @@ void AWeapon_Instant::CheckHit(const FHitResult& Hit, const FVector Dir)
 void AWeapon_Instant::ApplyDamage(const FHitResult& Hit, const FVector Dir)
 {
 	FPointDamageEvent PointDmgEvt;
+	PointDmgEvt.DamageTypeClass = UDamageType::StaticClass();
 	PointDmgEvt.HitInfo = Hit;
 	PointDmgEvt.ShotDirection = Dir.GetSafeNormal();
 	PointDmgEvt.Damage = 90.f; //임시 원래는 WeaponDataAsset-> 이거 써야됨
-		
+
+
+	FString HitBoneName = Hit.BoneName.ToString();
+
+	
 	Hit.GetActor()->TakeDamage(PointDmgEvt.Damage, PointDmgEvt, OwningPlayer->GetController(), this);
 	//TakeDamage(10.f, PointDmgEvent, OwningPlayer->GetInstigatorController(), this);
 }

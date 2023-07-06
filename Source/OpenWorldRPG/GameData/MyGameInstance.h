@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -11,19 +11,24 @@
  * 
  */
 USTRUCT(BlueprintType)
-struct FStrengthStats : public FTableRowBase
+struct FCurrentMAXStats : public FTableRowBase
 {
 	GENERATED_BODY()
 public:	
-	FStrengthStats() :StrengthLevel(1), Stamina(100.f), JumpZ(400.f) {}
+	FCurrentMAXStats() :Level(1), Stamina(100.f), JumpZ(400.f) {}
 
-	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Stats | Strength")
-	int32 StrengthLevel;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats | Strength")
+	UPROPERTY(VisibleAnywhere,BlueprintReadWrite,Category = "Stats | Level")
+	int32 Level;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Stats | Level")
 	float Stamina;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats | Strength")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Stats | Level")
+	float StaminaDrainRate;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Stats | Level")
+	float AimInitializeRate;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Stats | Level")
 	float JumpZ;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats | Strength")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Stats | Level")
 	float NextExp;
 };
 
@@ -35,14 +40,28 @@ public:
 	UMyGameInstance();
 
 	UPROPERTY()
-	class UDataTable* STRLevelDataTable;
+	class UDataTable* LevelDataTable;
 
 	UPROPERTY()
 	UDataTable* CraftRecipeDataTable;
 
+	UPROPERTY()
+	UDataTable* FootStepDataTable;
+
+
+private:
+	
+	
+
+public:
+	void PlayLoadingScreen();
+	void StopLoadingScreen();
+
 	/** virtual function to allow custom GameInstances an opportunity to set up what it needs */
 	virtual void Init() override;
-	FStrengthStats* GetStrengthStats(int32 Level);
+	FCurrentMAXStats* GetLevelStats(int32 Level);
+
+	class USoundCue* GetFootStepSound(TWeakObjectPtr<class UPhysicalMaterial> PhysMat);
 
 	//int32 GetCraftRecipeCount();
 

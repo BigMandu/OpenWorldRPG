@@ -10,6 +10,8 @@
 DECLARE_MULTICAST_DELEGATE(FStepSoundDelegate);
 //DECLARE_MULTICAST_DELEGATE_OneParam(FThrowDelegate,ABaseCharacter*);
 DECLARE_MULTICAST_DELEGATE(FThrowDelegate);
+
+//Notify Class를 따로 만들었다.
 //DECLARE_MULTICAST_DELEGATE(FStartADS);
 
 /**
@@ -107,15 +109,16 @@ public:
 	UFUNCTION()
 	void AnimNotify_AttachWeapon();
 
-
+	//NotifyClass를 따로 만들었다.
 	/*UFUNCTION()
-	void AnimNotify_ADS();*/
+	void AnimNotify_StartFPADS();*/
 
 	void SetHandIK();
 
 	void SetHighReady();
 
 	void SetLeftHandIKAlpha(float Alpha);
+	FORCEINLINE float GetLeftHandIKAlpha() { return LeftHandAlpha; }
 
 	void SetWeaponTypeNumber(int32 number);
 

@@ -50,6 +50,8 @@ private:
 
 public:
 
+	virtual void Serialize(FArchive& Ar) override;
+
     void SetOwnerWeapon(AWeapon* Weapon);
     AWeapon* GetOwnerWeapon();
 

@@ -6,6 +6,15 @@
 #include "OpenWorldRPG/NewInventory/Library/CustomInventoryLibrary.h"
 #include "OpenWorldRPG/NewInventory/Widget/WeaponPartsWidget.h"
 
+void UItemStorageObject::Serialize(FArchive& Ar)
+{
+	Super::Serialize(Ar);
+	Ar << Columns;
+	Ar << Rows;
+	Ar << TileSize;
+	Ar << Inventory;
+}
+
 FTile UItemStorageObject::IndexToTile(int32 index)
 {
 	FTile tile;
@@ -262,4 +271,15 @@ const TMap<UNewItemObject*, FTile> UItemStorageObject::GetAllItems()
 		}
 	}
 	return InventoryStoredInfo;
+}
+
+void UItemStorageObject::UpdateInventory(TArray<UNewItemObject*> SavedInventory)
+{
+	
+	if( Inventory.Num() < 1) return;
+	for ( auto Item : Inventory )
+	{
+		if(Item == nullptr ) continue;
+		TryAddItem(Item);		
+	}
 }

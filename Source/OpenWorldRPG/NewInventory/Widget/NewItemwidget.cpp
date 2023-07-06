@@ -17,12 +17,17 @@
 
 
 #include "Blueprint/WidgetBlueprintLibrary.h"
+#include "Sound/SoundCue.h"
+#include "Styling/SlateBrush.h"
+#include "Kismet/GameplayStatics.h"
+
 #include "Components/CanvasPanelSlot.h"
 #include "Components/SizeBox.h"
 #include "Components/Border.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
-#include "Styling/SlateBrush.h"
+
+
 
 
 bool UNewItemwidget::Initialize() 
@@ -225,7 +230,13 @@ void UNewItemwidget::NativeOnDragDetected(const FGeometry& InGeometry, const FPo
 	if (ItemObj && DDOper && DragWidget)
 	{
 		ItemObj->bIsDragging = true;
-		
+
+		//Drag가 시작되면 SlotDragSound를 재생한다.
+		if ( ItemObj->ItemInfo.DataAsset->SlotDragSound )
+		{
+			UE_LOG(LogTemp, Warning, TEXT("NewItemwidget::DragDetect// Play UI sound"));
+			UGameplayStatics::PlaySound2D(GetWorld(), ItemObj->ItemInfo.DataAsset->SlotDragSound);
+		}
 
 		DDOper->DefaultDragVisual = DragWidget;
 		DDOper->DragWidget = DragWidget;

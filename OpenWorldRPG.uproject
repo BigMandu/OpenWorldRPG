@@ -16,6 +16,11 @@
 				"PhysXVehicles",
 				"ChaosVehicles"
 			]
+		},
+		{
+			"Name": "OpenWorldRPGLoadingScreen",
+			"Type": "ClientOnly",
+			"LoadingPhase": "PreLoadingScreen"
 		}
 	],
 	"Plugins": [
@@ -47,6 +52,14 @@
 			"SupportedTargetPlatforms": [
 				"Win64"
 			]
+		},
+		{
+			"Name": "ModelingToolsEditorMode",
+			"Enabled": true
+		},
+		{
+			"Name": "HDRIBackdrop",
+			"Enabled": true
 		}
 	]
 }

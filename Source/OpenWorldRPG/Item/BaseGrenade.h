@@ -34,6 +34,7 @@ private:
 	class UParticleSystemComponent* Ca_ParticleComp;
 
 	//Niagara Effect
+	UPROPERTY(EditDefaultsOnly)
 	class UNiagaraComponent* Ni_ParticleComp;
 
 	class UAudioComponent* EffectAudioComp;

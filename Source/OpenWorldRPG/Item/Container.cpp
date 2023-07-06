@@ -94,7 +94,7 @@ void AContainer::SpawnItem()
 		AItem* Item = GetWorld()->SpawnActor<AItem>(AddItem);
 		if (Item)
 		{
-			if (ContainerInventoryComp->TryAddItem(ContainerStorage,Item->ItemSetting,nullptr,Item,true))
+			if (ContainerInventoryComp->TryAddItem(ContainerStorage,Item->ItemSetting,Item,nullptr,true))
 			{
 				Item->SetItemState(EItemState::EIS_Pickup);
 				//Item->ItemObj->bIsDestoryed = true;

@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -49,11 +49,13 @@ struct FItemSetting
 	GENERATED_BODY()
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	class UBasePDA* DataAsset;
+	UBasePDA* DataAsset;
 
 
 	// Create Obj할때 Data를 넘겨주기 위함.
+	UPROPERTY()
 	TArray<class UNewItemObject*> Inventory;
+
 	class UItemStorageObject* MotherStorage;
 
 	
@@ -64,17 +66,65 @@ public:
 	int32 TopLeftIndex;
 
 	FItemSetting()
+	:DataAsset(nullptr), Count(1), TopLeftIndex(0)
 	{
-		DataAsset = nullptr;
+		/*DataAsset = nullptr;
 		Count = 1;
-		TopLeftIndex = 0;
+		TopLeftIndex = 0;*/
 	}
 
 	FItemSetting(UBasePDA* Var_PDA, int32 Var_Cnt, int32 Var_TpLeftInd)
+	:DataAsset(Var_PDA), Count(Var_Cnt), TopLeftIndex(Var_TpLeftInd)
 	{
-		DataAsset = Var_PDA;
+		/*DataAsset = Var_PDA;
 		Count = Var_Cnt;
-		TopLeftIndex = Var_TpLeftInd;
+		TopLeftIndex = Var_TpLeftInd;*/
+	}
+
+	void Serialize(FArchive& Ar)
+	{
+		Ar << DataAsset;
+		//Ar << Inventory;
+		//Ar << MotherStorage;
+		Ar << Count;
+		Ar << TopLeftIndex;
+	}
+
+};
+
+
+//저장할때 필요한 것만 저장하기 위한 Struct.
+USTRUCT(BlueprintType)
+struct FSaveItem
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY()
+	FString PDAID;
+
+	UPROPERTY()
+	int32 Count;
+
+	UPROPERTY()
+	int32 TopLeftIndex;
+
+
+	FSaveItem()
+		:Count(0), TopLeftIndex(0)
+	{
+
+	}
+
+	FSaveItem(FString Var_PDA, int32 Var_Cnt, int32 Var_TpLeftInd)
+		:PDAID(Var_PDA), Count(Var_Cnt), TopLeftIndex(Var_TpLeftInd)
+	{
+	}
+
+	void Serialize(FArchive& Ar)
+	{
+		Ar << PDAID;
+		Ar << Count;
+		Ar << TopLeftIndex;
 	}
 
 };

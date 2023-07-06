@@ -62,6 +62,10 @@ public:
 
 	const FName WeaponFPSLeftHandSocketName = FName("FPSLeftHandPos");
 
+
+	UPROPERTY(EditAnywhere)
+	class USceneCaptureComponent2D* CharacterCapture;
+
 	/* Anim Instance */
 	UMainAnimInstance* FPAnimInstance;
 
@@ -77,7 +81,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Character)
 	UCraftSystemComponent* CraftSysComp;
 
-	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Character)
+	USkeletalMeshComponent* CharacterMaskClothes;
+	const FName MaskSocketName = FName("MaskClothes");
 
 	UPROPERTY()
 	float TempVar_OriginInputYawScale;
@@ -134,8 +140,8 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement)
 	bool bSprintKeyDown;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement)
-	bool bIsJumpKeyDown;
+	/*UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement)
+	bool bIsJumpKeyDown;*/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement)
 	bool bIsLookInput;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Input)
@@ -198,6 +204,8 @@ public:
 	void LookUpAtRate(float Rate);
 	
 
+	
+
 	/***** Timer 관련 ******/
 	void ClearSprintUpTimer();
 	
@@ -218,8 +226,6 @@ public:
 	void Walk();
 	void UnWalk();
 	//here
-
-
 	void ScrollDN();
 	void ScrollUP();
 
@@ -288,6 +294,7 @@ public:
 	FTransform LeftHandik();
 	virtual void SetLeftHandIK(float Alpha);
 
+	virtual void Die() override;
 
 	/* Quick Slot */
 	void QuickSlotNum4();

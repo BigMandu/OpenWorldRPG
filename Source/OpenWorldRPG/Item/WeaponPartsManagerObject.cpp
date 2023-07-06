@@ -4,8 +4,17 @@
 #include "OpenWorldRPG/Item/WeaponPartsManagerObject.h"
 #include "OpenWorldRPG/Item/Weapon.h"
 #include "OpenWorldRPG/Item/WeaponPDA.h"
+#include "OpenWorldRPG/Item/WeaponPartsPDA.h"
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
 #include "OpenWorldRPG/NewInventory/Library/CustomInventoryLibrary.h"
+
+void UWeaponPartsManagerObject::Serialize(FArchive& Ar)
+{
+	Super::Serialize(Ar);
+	Ar << MuzzleParts;
+	Ar << ScopeParts;
+	Ar << TacticalParts;
+}
 
 void UWeaponPartsManagerObject::SetOwnerWeapon(AWeapon* Weapon)
 {
@@ -27,7 +36,7 @@ void UWeaponPartsManagerObject::AddParts(UNewItemObject* Parts)
 {
 	if ( Parts->ItemInfo.DataAsset == nullptr ) return;
 	bool bIsSuccess = false;
-	UCustomPDA* PartsPDA = Cast<UCustomPDA>(Parts->ItemInfo.DataAsset);
+	UWeaponPartsPDA* PartsPDA = Cast<UWeaponPartsPDA>(Parts->ItemInfo.DataAsset);
 	if ( PartsPDA )
 	{
 		switch ( PartsPDA->WeaponPartsType )
@@ -66,7 +75,7 @@ void UWeaponPartsManagerObject::AddParts(UNewItemObject* Parts)
 	}
 	/**WeaponPartsWidget, Weapon에서 Bind된다
 	 * WeaponPartsWidget의 Widget을 update하고
-	 * Weapon에서 이 class의 함수인 partsUpdate를 호출한다.
+	 * Weapon에서 이 class의 함수인 UpdateParts를 호출한다.
 	 */
 	OnChangeParts.Broadcast();
 }
@@ -75,7 +84,7 @@ void UWeaponPartsManagerObject::RemoveParts(UNewItemObject* Parts)
 {
 	if ( Parts->ItemInfo.DataAsset == nullptr ) return;
 	bool bSuccessRemove = false;
-	UCustomPDA* PartsPDA = Cast<UCustomPDA>(Parts->ItemInfo.DataAsset);
+	UWeaponPartsPDA* PartsPDA = Cast<UWeaponPartsPDA>(Parts->ItemInfo.DataAsset);
 	if ( PartsPDA )
 	{
 		if(PartsPDA->EquipmentType != EEquipmentType::EET_WeaponParts) return;
@@ -168,6 +177,12 @@ void UWeaponPartsManagerObject::UpdateParts(UWorld* World, AWeapon* VarWeapon)
 			{
 				Parts = ScopeParts;
 				SpawnAndAttachParts(World, Parts, EWeaponPartsType::EWPT_Scope);
+
+				if ( OwnerWeapon->OptionalStaticMesh->GetStaticMesh() )
+				{
+					OwnerWeapon->OptionalStaticMesh->SetVisibility(false, false);
+				}
+
 			}
 			break;
 		case EWeaponPartsType::EWPT_Tactical:
@@ -184,8 +199,11 @@ void UWeaponPartsManagerObject::UpdateParts(UWorld* World, AWeapon* VarWeapon)
 
 void UWeaponPartsManagerObject::SpawnAndAttachParts(UWorld* World, UNewItemObject* PartsObj, EWeaponPartsType VarPartsType)// AWeapon* VarWeapon)
 {
-	if ( AEquipment* Parts = UCustomInventoryLibrary::SpawnEquipment(World, PartsObj) )
+	if ( AEquipment* EquipmentParts = UCustomInventoryLibrary::SpawnEquipment(World, PartsObj) )
 	{
+		AWeaponParts* Parts = Cast<AWeaponParts>(EquipmentParts);
+		if(Parts == nullptr) return;
+
 		const USkeletalMeshSocket* WeaponSocket = nullptr;
 		bool bSKMeshAttach = false;
 		FName SKSocketName = NAME_None;
@@ -215,7 +233,8 @@ void UWeaponPartsManagerObject::SpawnAndAttachParts(UWorld* World, UNewItemObjec
 			{
 				Parts->SKMesh->SetHiddenInGame(false);
 				Parts->SKMesh->SetSimulatePhysics(false);
-				
+				Parts->SKMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
 				bSKMeshAttach = true;
 			}
 			//Mesh Setting
@@ -233,17 +252,25 @@ void UWeaponPartsManagerObject::SpawnAndAttachParts(UWorld* World, UNewItemObjec
 			}
 
 
+			//Attach 작업
 			if ( bSKMeshAttach )
 			{
 				FMatrix SocketTM;
 				if (WeaponSocket->GetSocketMatrix(SocketTM, OwnerWeapon->SKMesh))
 				{
-					Parts->Modify();
+					UCustomPDA* PartsPDA = Cast<UCustomPDA>(Parts->ItemSetting.DataAsset);
+					if ( PartsPDA == nullptr ) return;
 
+					//왜 해놓은건지 모르겠다.
+					/*Parts->Modify();
 					Parts->SetActorLocation(SocketTM.GetOrigin(), false);
-					Parts->SetActorRotation(SocketTM.Rotator());
-					Parts->SKMesh->AttachToComponent(OwnerWeapon->SKMesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale, SKSocketName);
+					Parts->SetActorRotation(SocketTM.Rotator());					
+					Parts->SKMesh->AttachToComponent(OwnerWeapon->SKMesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale, SKSocketName);*/					
 
+
+					WeaponSocket->AttachActor(Parts, OwnerWeapon->SKMesh);
+					//Parts->SetActorRelativeTransform(PartsPDA->MeshAttachTransform);
+					Parts->SetOwnerWeapon(OwnerWeapon);
 					Parts->SetActorEnableCollision(false);
 				}
 			}
@@ -251,6 +278,7 @@ void UWeaponPartsManagerObject::SpawnAndAttachParts(UWorld* World, UNewItemObjec
 			{
 				if ( WeaponSocket->AttachActor(Parts, OwnerWeapon->SKMesh) )
 				{
+					Parts->SetOwnerWeapon(OwnerWeapon);
 					Parts->SetActorEnableCollision(false);
 				}
 			}
@@ -280,6 +308,11 @@ void UWeaponPartsManagerObject::DestroyAllAttachParts(AWeapon* VarWeapon)
 		TArray<AActor*> AttachedParts;
 		OwnerWeapon->GetAttachedActors(AttachedParts);
 
+		if ( OwnerWeapon->OptionalStaticMesh->GetStaticMesh() )
+		{
+			OwnerWeapon->OptionalStaticMesh->SetVisibility(true, false);
+		}
+
 		if ( AttachedParts.Num() > 0 )
 		{
 			for ( auto* Parts : AttachedParts )
@@ -290,6 +323,21 @@ void UWeaponPartsManagerObject::DestroyAllAttachParts(AWeapon* VarWeapon)
 					{
 						PartsActor->ItemObj->bIsDestoryed = true;
 					}
+					A_MuzzleParts = nullptr;
+					A_ScopeParts = nullptr;
+					A_TacticalParts = nullptr;
+					/*switch ( Cast<UWeaponPartsPDA>(PartsActor->ItemSetting.DataAsset)->WeaponPartsType )
+					{
+						case EWeaponPartsType::EWPT_Muzzle:
+							A_MuzzleParts = nullptr;
+							break;
+						case EWeaponPartsType::EWPT_Scope:
+							A_ScopeParts = nullptr;
+							break;
+						case EWeaponPartsType::EWPT_Tactical:
+							A_TacticalParts = nullptr;
+							break;
+					}*/
 					PartsActor->Destroy();
 				}
 			}

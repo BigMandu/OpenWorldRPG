@@ -57,13 +57,18 @@ bool UDropWidget::NativeOnDrop(const FGeometry & InGeometry, const FDragDropEven
 
 		if(!DropItem ) return false;
 
-		//WeaponType이라면 WPM을 생성하고 update해준다.
+		//WeaponType이라면 WPM을 update해준다.
 		if ( bIsNeedToUpdateWeaponParts )
 		{
 			AWeapon* Weapon = Cast<AWeapon>(DropItem);
 			Weapon->WeaponDataAsset = Cast<UWeaponPDA>(DDOper->ItemObj->ItemInfo.DataAsset);
-			Weapon->SettingWeaponPartsManager();
+
+			//아래는 WPM을 무조건 생성하는건데, 버그를 유발하는거 같아 주석처리함 //WPMO bug fix
+			//사실, 위에서 SpawnEquipment 함수내부에서 이미 WPM을 생성한다. 즉, 중복 생성 하고 있었던것..
+			//Weapon->SettingWeaponPartsManager();
 			UCustomInventoryLibrary::SetWeaponPartsManager(DDOper->ItemObj, Weapon);
+
+			//Parts를 Update만 해준다.
 			Weapon->UpdateWeaponParts();
 		}
 		DropItem->SetActorLocation(DropLocation);

@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -32,10 +32,10 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Equipment")
 	class USoundCue* EquippedSound;
+	
 
-
-	UPROPERTY(EditAnywhere, Category = "Item | Info")
-	EWeaponPartsType WeaponPartsType;
+	UPROPERTY(EditAnywhere, Category = "Parts")
+	EWeaponPartsLimitationType WeaponPartsLimitationType;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment | Widget")
 	bool bHasWidget;

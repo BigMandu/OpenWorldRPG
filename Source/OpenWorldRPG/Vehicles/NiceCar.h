@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -80,6 +80,7 @@ public:
 
 	void ChangeCamera();
 
+	void TrySave();
 
 	virtual void Interaction(AActor* Actor) override;
 	void GetoutCar();
@@ -101,6 +102,8 @@ public:
 	UFUNCTION()
 	void TrunkOnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
+
+
 private:
 	void VehicleSetting(struct FVehicleDataTable Data);
 	void TWDSetting(FVehicleDataTable Data);
@@ -109,6 +112,9 @@ private:
 	void StorageSetting(FVehicleDataTable Data);
 
 	bool CanGetout(const FVector DoorOrigin, const FVector WantToGetOutPos, FVector HalfBoxSize);
+
+	bool CheckThreeSurfaceHit();
+	
 };
 
 PRAGMA_ENABLE_DEPRECATION_WARNINGS

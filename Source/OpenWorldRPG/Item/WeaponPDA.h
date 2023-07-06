@@ -17,9 +17,13 @@ struct FWeaponAnim
 
 	UPROPERTY(EditDefaultsOnly, Category = "Fire Animation")
 	class UAnimMontage* FPS_Actor_FireAnim;
-
+	UPROPERTY(EditDefaultsOnly, Category = "Fire Animation")
+	class UAnimMontage* FPS_ADS_Actor_FireAnim;
 	UPROPERTY(EditDefaultsOnly, Category = "Fire Animation")
 	UAnimMontage* TPS_Actor_FireAnim;
+	UPROPERTY(EditDefaultsOnly, Category = "Fire Animation")
+	UAnimMontage* TPS_ADS_Actor_FireAnim;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Reload Animation")
 	UAnimMontage* FPS_Actor_ReloadAnim;
 	UPROPERTY(EditDefaultsOnly, Category = "Reload Animation")
@@ -43,6 +47,9 @@ struct FWeaponSound
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon | FX")
 	class USoundCue* FireSound;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon | FX")
+	USoundCue* MuzzleParts_FireSound;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon | FX")
 	USoundCue* BulletHitSound;
@@ -131,12 +138,18 @@ class OPENWORLDRPG_API UWeaponPDA : public UCustomPDA
 {
 	GENERATED_BODY()
 public:
+
+	UPROPERTY(EditDefaultsOnly, Category = "Parts")
+	EWeaponName WeaponName;
+
 	UPROPERTY(EditAnywhere, Category = "Weapon | WeaponStat")
 	FWeaponStat WeaponStat;
 	
 	UPROPERTY(EditAnywhere, Category = "Weapon | IMG")
 	UTexture2D* WeaponVectorIMG;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	TSubclassOf<class UDamageType> DmgType;
 
 	/* FPS Aim 모드일때 위치값 저장 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon | Aim Transform")

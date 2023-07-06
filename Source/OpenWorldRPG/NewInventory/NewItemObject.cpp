@@ -16,6 +16,17 @@ UNewItemObject::UNewItemObject()
 	//ObjInvComp = CreateDefaultSubobject<UNewInventoryComponent>(TEXT("EquipInventoryComp"));
 }
 
+//void UNewItemObject::Serialize(FArchive& Ar)
+//{
+//	Super::Serialize(Ar);
+//
+//	Ar << ItemInfo;
+//	Ar << TopLeftIndex;
+//	Ar << RifleAssign;
+//	Ar << WeaponPartsManager;
+//	Ar << AmmoLeftInMag;
+//}
+
 FIntPoint UNewItemObject::GetTempItemSize()
 {
 	FIntPoint ItemSize;

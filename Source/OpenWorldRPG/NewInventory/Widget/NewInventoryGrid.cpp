@@ -11,17 +11,10 @@
 #include "OpenWorldRPG/NewInventory/ItemStorageObject.h"
 #include "OpenWorldRPG/NewInventory/CustomDDOperation.h"
 
-//#include "OpenWorldRPG/NewInventory/EquipmentSlot.h"
-//#include "OpenWorldRPG/MainCharacter.h"
 #include "OpenWorldRPG/UI/QuickSlotWidget.h"
 #include "OpenWorldRPG/MainHud.h"
 #include "OpenWorldRPG/MainController.h"
-#include "GameFramework/HUD.h"
 
-//#include "UObject/ConstructorHelpers.h"
-//#include "Input/DragAndDrop.h"
-//#include "Layout/Geometry.h"
-#include "Slate/SlateBrushAsset.h"
 #include "Blueprint/SlateBlueprintLibrary.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Blueprint/UserWidget.h"
@@ -32,7 +25,10 @@
 #include "Components/Border.h"
 #include "Components/LineBatchComponent.h"
 
-
+#include "GameFramework/HUD.h"
+#include "Slate/SlateBrushAsset.h"
+#include "Sound/SoundCue.h"
+#include <Kismet/GameplayStatics.h>
 
 
 UNewInventoryGrid::UNewInventoryGrid(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
@@ -83,7 +79,7 @@ void UNewInventoryGrid::GridInit()
 		FVector2D Size = FVector2D(tempColumns * StorageObj->TileSize, tempRows * StorageObj->TileSize);
 		CanvasSlot->SetSize(Size);
 
-		//StorageObj->OnInventoryAdd.Clear();
+		StorageObj->OnInventoryAdd.Clear(); //새로 추가함
 		StorageObj->OnInventoryAdd.AddUFunction(this, FName("RefreshInventory"));
 
 		CreateLineSegments(tempRows, tempColumns);
@@ -355,7 +351,15 @@ bool UNewInventoryGrid::NativeOnDrop(const FGeometry& InGeometry, const FDragDro
 		}
 
 		if (BaseInvComp->IsAvailableSpace(StorageObj, DDOper->ItemObj, ind))
-		{
+		{	
+			//Drop시에 DropSound를 재생한다.
+			if ( DDOper->ItemObj->ItemInfo.DataAsset->SlotDropSound )
+			{
+				UE_LOG(LogTemp,Warning,TEXT("NewInvGrid::OnDrop// Play UI sound"));
+				UGameplayStatics::PlaySound2D(GetWorld(), DDOper->ItemObj->ItemInfo.DataAsset->SlotDropSound);
+			}
+			DDOper->ItemObj->bIsDragging = false;
+
 			BaseInvComp->AddItemAtIndex(StorageObj, DDOper->ItemObj, ind);
 		}
 		else

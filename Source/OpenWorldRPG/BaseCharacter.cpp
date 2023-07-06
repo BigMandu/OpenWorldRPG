@@ -8,7 +8,6 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/AudioComponent.h"
 
-
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Perception/AISense_Hearing.h"
@@ -18,6 +17,8 @@
 #include "AI/EnemyAIController.h"
 #include "MainAnimInstance.h"
 
+
+#include "OpenWorldRPGGameModeBase.h"
 #include "OpenWorldRPG/GameData/StatManagementComponent.h"
 
 #include "OpenWorldRPG/NewInventory/LootWidgetComponent.h"
@@ -62,6 +63,7 @@ ABaseCharacter::ABaseCharacter()
 	GetCharacterMovement()->MaxWalkSpeedCrouched = 300.f;
 	GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
 	bIsWalking = false; //걷기 기본설정은 false
+	bIsJumpKeyDown = false;
 
 	FallingHighestZ = -999.f;
 
@@ -152,10 +154,11 @@ void ABaseCharacter::SetTeamType(ETeamType Team)
 }
 
 void ABaseCharacter::SetAimMode(EAimMode Mode)
-{
-	AimMode = Mode;
+{	
 	if ( EquippedWeapon == nullptr) return;
+	if ( EquippedWeapon->CurrentWeaponState != EWeaponState::EWS_Idle ) return;
 
+	AimMode = Mode;
 	switch ( AimMode )
 	{
 		case EAimMode::EAM_Aim:
@@ -206,7 +209,7 @@ void ABaseCharacter::CalcFallingDistance(FHitResult& _FallHit)
 	GetWorld()->LineTraceSingleByChannel(_FallHit, FallStartTrace, FallEndTrace, ECollisionChannel::ECC_Visibility, QParams);
 	
 	FallingHighestZ = (FallingHighestZ < FallStartTrace.Z) ? FallStartTrace.Z : FallingHighestZ;
-	UE_LOG(LogTemp, Warning, TEXT("BaseChar::CalcFallingDistance // HighestZ : %f"), FallingHighestZ);
+	//UE_LOG(LogTemp, Warning, TEXT("BaseChar::CalcFallingDistance // HighestZ : %f"), FallingHighestZ);
 
 }
 
@@ -219,7 +222,17 @@ void ABaseCharacter::ApplyFallingDamage(FHitResult& _FallHit)
 		if (FallingDistance >= GetDefaultHalfHeight() * 3.f)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("BaseChar::ApplyFallingDamage // Fall Damage : %f"), FallingDistance*0.05f);
-			StatManagementComponent->DamageApply(FallingDistance*0.05f); //FallingDamage는 떨어진 높이의 5%로 한다.
+			if ( AOpenWorldRPGGameModeBase* GMode = Cast<AOpenWorldRPGGameModeBase>(UGameplayStatics::GetGameMode(GetWorld())))
+			{
+				if ( GMode->FallingDmgType )
+				{
+					FDamageEvent DmgEve;
+					DmgEve.DamageTypeClass = GMode->FallingDmgType;
+					TakeDamage(FallingDistance * 0.05f, DmgEve, nullptr, nullptr);
+					//StatManagementComponent->DamageApply(); //FallingDamage는 떨어진 높이의 5%로 한다.
+				}
+				
+			}			
 		}
 		FallingHighestZ = -999.f;
 	}
@@ -299,6 +312,21 @@ void ABaseCharacter::UseItem(class AActor* Item)
 	{
 		//Item->Use(this);
 	}
+}
+
+void ABaseCharacter::MyJump()
+{
+	bIsJumpKeyDown = true;
+
+	TPAnimInstance->bIsJumpkeyDown = true;
+}
+
+void ABaseCharacter::MyStopJumping()
+{
+	bIsJumpKeyDown = false;
+	TPAnimInstance->bIsJumpkeyDown = false;
+
+	Super::StopJumping();
 }
 
 bool ABaseCharacter::CanSprint()
@@ -394,10 +422,12 @@ UNewInventoryComponent* ABaseCharacter::GetAllInvComp(int32 index)
 bool ABaseCharacter::CanReload()
 {
 	bool bReturn = true;
+
 	if ( CharacterStatus == ECharacterStatus::EPS_Dead || CharacterStatus == ECharacterStatus::EPS_Sprint)
 	{
 		bReturn = false;
 	}
+
 	return bReturn;
 }
 void ABaseCharacter::ReloadWeapon()
@@ -583,6 +613,14 @@ void ABaseCharacter::SetWeaponAssign(AWeapon* Weapon, ERifleSlot RifleSlot)
 	
 }
 
+void ABaseCharacter::ToggleTacticalEquip()
+{
+	if ( EquippedWeapon )
+	{
+		EquippedWeapon->ToggleTacticalEquip();
+	}
+}
+
 void ABaseCharacter::ChangeSafetyLever()
 {
 	if (EquippedWeapon)
@@ -636,8 +674,10 @@ void ABaseCharacter::EndEquipped()
 bool ABaseCharacter::ChangeWeapon(int32 index)
 {
 	//for BTService_DecideWhatToDo.
+	
 	bool bSuccessChangeWeapon = false;
 
+	if ( bIsDie ) return false;
 	if(TPAnimInstance == nullptr) return false;
 		
 	switch (index)
@@ -812,6 +852,11 @@ void ABaseCharacter::SetLeftHandIK(float Alpha)
 {
 	TPAnimInstance->SetLeftHandIKAlpha(Alpha);
 }
+	
+float ABaseCharacter::GetLeftHandIK()
+{
+	return TPAnimInstance->GetLeftHandIKAlpha();
+}
 
 
 
@@ -834,11 +879,32 @@ void ABaseCharacter::SpeakSound(USoundCue* Sound)
 
 void ABaseCharacter::StepSound()
 {
-	if (StepSoundCue)
+	FHitResult SurfaceHit;
+	FVector ActorLo = GetActorLocation();
+	FCollisionQueryParams QParams(FName("FootStepTrace"),false, this);
+	QParams.bReturnPhysicalMaterial = true; //필수임.. Staticmesh Collision에도 Return Material On Move flag를 on해야함.
+
+	GetWorld()->LineTraceSingleByChannel(SurfaceHit, ActorLo, ActorLo-FVector(0.f,0.f,200.f),ECollisionChannel::ECC_Visibility,QParams);
+	if ( SurfaceHit.IsValidBlockingHit() )
+	{
+		//if ( SurfaceHit.PhysMaterial.IsValid() )
+		{
+			if ( UMyGameInstance* Inst = Cast<UMyGameInstance>(GetGameInstance()) )
+			{
+				if ( USoundCue* Sc = Inst->GetFootStepSound(SurfaceHit.PhysMaterial) )
+				{
+					UGameplayStatics::SpawnSoundAttached(Sc, this->GetMesh());
+				}
+				
+			}
+			
+		}
+	}
+	/*if (StepSoundCue)
 	{
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), StepSoundCue, GetActorLocation());
 		UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), 1.f, this);
-	}
+	}*/
 }
 
 
@@ -926,59 +992,76 @@ void ABaseCharacter::HaltRecoveryTimer(FTimerHandle WantToStop)
 
 
 float ABaseCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,	AActor* DamageCauser)
-{
-	float ApplyDmg = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+{	
 
-	if(ApplyDmg > 0.f)
+	//Damage를 공식에 적용시킨다.(헤드샷보너스, 체스트 보너스 데미지 등 적용).
+	AOpenWorldRPGGameModeBase* GMode = Cast<AOpenWorldRPGGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+	float FinalDmg = GMode ? GMode->ModifyApplyDamage(DamageAmount, DamageEvent, this, EventInstigator, DamageCauser) : 0.f;
+
+	float ApplyingDmg = Super::TakeDamage(FinalDmg, DamageEvent, EventInstigator, DamageCauser);
+
+	UE_LOG(LogTemp, Warning, TEXT("BChar::TakeDamage : %f "), ApplyingDmg);
+	if( ApplyingDmg > 0.f)
 	{
-		StatManagementComponent->DamageApply(ApplyDmg);
+		StatManagementComponent->DamageApply(ApplyingDmg, DamageEvent, EventInstigator, DamageCauser);
 	}
-	return ApplyDmg;
+
+	return ApplyingDmg;
 }
 
 void ABaseCharacter::Die()
 {
 	AEnemyAIController* AICon = Cast<AEnemyAIController>(GetController());
-	AMainController* PCon = Cast<AMainController>(GetController());
+	//AMainController* PCon = Cast<AMainController>(GetController());
+	/* set Ragdoll */
+	USkeletalMeshComponent* TPMesh = GetMesh();
+	if(!TPMesh) return;
+	SetCharacterStatus(ECharacterStatus::EPS_Dead);
+
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		
+	TPMesh->SetCollisionProfileName(FName("RagDoll"));
+	//SetActorEnableCollision(true);
+	//TPMesh->SetAllBodiesSimulatePhysics(true);
+	TPMesh->SetSimulatePhysics(true);
+	TPMesh->WakeAllRigidBodies();
+	TPMesh->bBlendPhysics = true;
+
+	TPMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	TPMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
+	TPMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Block);
+	
+	
+	bIsDie = true;
+
+	
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
+	GetCharacterMovement()->StopMovementImmediately();
+	GetCharacterMovement()->DisableMovement();
+	GetCharacterMovement()->SetComponentTickEnabled(false);
+
+	//SetLifeSpan(60.f);
+
+
 	if(AICon)
 	{
-		//AICon->UnPossess();
-		DetachFromControllerPendingDestroy();
-		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-		GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
-
-		GetCharacterMovement()->StopMovementImmediately();
-		GetCharacterMovement()->DisableMovement();
-		GetCharacterMovement()->SetComponentTickEnabled(false);
 		
-		/* set Ragdoll */
-		USkeletalMeshComponent* TPMesh = GetMesh();
-		if(TPMesh)
+		//AICon->UnPossess();
+
+		DetachFromControllerPendingDestroy();
+
+		//Player의 Controller에서 해당 AI를 삭제한다.
+		//AI가 식별한 Player가 있으면, 그 Player는 차량 탑승 불가 기능을 추가 했기때문에, 죽으면 List에서 삭제 해줘야함.
+		if ( AMainController* PlayerCon = Cast<AMainController>(GetWorld()->GetFirstPlayerController()) )
 		{
-			TPMesh->SetCollisionProfileName(FName("RagDoll"));
-
-			TPMesh->SetSimulatePhysics(true);
-			TPMesh->WakeAllRigidBodies();
-			TPMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-			TPMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
-			TPMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Block);
-			SetCharacterStatus(ECharacterStatus::EPS_Dead);
-
-			if ( AMainController* PlayerCon = Cast<AMainController>(GetWorld()->GetFirstPlayerController()) )
-			{
-				PlayerCon->RemoveAtListTargetingThisActor(AICon);
-			}
-			//TPMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
-			
-			bIsDie = true;
+			PlayerCon->RemoveAtListTargetingThisActor(AICon);
 		}
+		//TPMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+			
+		
+		
 	}
-	else if(PCon)
-	{
-		PCon->Die();
-	}
-
 }
 
 /* Perception */

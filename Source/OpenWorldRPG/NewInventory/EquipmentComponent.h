@@ -76,4 +76,7 @@ public:
 	bool RemoveEquipment(UNewItemObject* EquipObj);
 
 	UNewItemObject* GetEquippedWeaponSameType(EEquipmentType EquipType, UNewItemObject* Object, ERifleSlot RifleSlot = ERifleSlot::ERS_MAX);
+
+	void UpdateEquipment(TArray<UNewItemObject*>& SavedEquipment);
+
 };

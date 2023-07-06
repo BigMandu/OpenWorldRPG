@@ -67,6 +67,14 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Item | Info")
 	EAmmoType AmmoType;
 
+
+	/* Sound */
+	UPROPERTY(EditAnywhere, Category = "Item | Sound")
+	class USoundCue* SlotDragSound;
+
+	UPROPERTY(EditAnywhere, Category = "Item | Sound")
+	USoundCue* SlotDropSound;
+
 	/***** Hand Attach Transform ******/
 	UPROPERTY(EditAnywhere, Category = "Item | Attach")
 	bool bIsNeedToAttachHandBeforeUse;

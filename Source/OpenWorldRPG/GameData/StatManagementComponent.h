@@ -24,11 +24,14 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnStaminaChange);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHPChange);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHPZero);
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnLevelUp);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnExpPointChange);
+
 class AMainController;
 class ABaseCharacter;
 
 class USoundCue;
-struct FStrengthStats;
+struct FCurrentMAXStats;
 
 
 USTRUCT(BlueprintType)
@@ -38,16 +41,26 @@ struct FCharacterCurrentStat
 public:
 	// Stats
 	//체력은 일단 100고정이고/ 체력을 제외한 스텟은 DataTable에서 가져온다.
-
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stats")
 	float Health = 100.f;
-
-	float Stamina = 100.f;
-	float StaminaDrainRate = 70.f;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stats")
 	float StaminaRecoveryRate = 70.f;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stats")
 	float StaminaDrainLine = 75.f;
+
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stats")
+	float Stamina = 100.f;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stats")
+	float StaminaDrainRate = 70.f;
+
+	float AimInitrate = 0.f;
+	float JumpMaximum = 400.f;
+	float ExperiencePoint = 0.f;
+	
 	/*float RunningSpeed = 300.f;
 	float SprintingSpeed = 500.f;
-	float JumpMaximum = 400.f;*/
+	*/
 };
 
 
@@ -76,8 +89,13 @@ public:
 	FOnHPChange	OnHPChange;
 	FOnHPZero OnHPZero;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Stats")
-	float MaxHealth = 100.f;
+	FOnLevelUp OnLevelUp;
+	FOnExpPointChange OnExpPointChange;
+
+	UPROPERTY(EditAnywhere, Category = "Stats")
+	bool bIsGodMode;
+	UPROPERTY(EditAnywhere, Category = "Stats")
+	float MaxHealth;
 
 	UPROPERTY(EditAnywhere, Category = "Sound | Breath")
 	USoundCue* Stam_BelowMinimumSound;
@@ -90,18 +108,24 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Sound | Damage")
 	USoundCue* HurtSound;
 
-
-	FStrengthStats* CurrentMAXStrengthStats;
+	
+	FCurrentMAXStats* CurrentMAXStats;	
+	FCurrentMAXStats* NextMAXStats;
 
 
 
 	float TestHPRecPts;
 
+
+	UPROPERTY(VisibleAnywhere, Category = "Stats | Level")
+	FCharacterCurrentStat CurrentStat;
+
+	UPROPERTY(VisibleAnywhere, Category = "Stats | Level")
+	int32 Level;
+
 private:
 	
-	FCharacterCurrentStat CurrentStat;
-	UPROPERTY(EditInstanceOnly, Category = "Stats | Strength")
-	int32 StrengthLevel = 1;
+	
 	//UPROPERTY(Transient, VisibleInstanceOnly, Category = "Stats | Strength")
 	//float CurrentMAXStamina;
 	//UPROPERTY(Transient, VisibleInstanceOnly, Category = "Stats | Strength")
@@ -123,23 +147,38 @@ public:
 	* Requires component to be registered, and bWantsInitializeComponent to be true. */
 	virtual void InitializeComponent() override;
 
-	void StrengthLevelUp(int32 SetLevel);
+	void SetLevel(int32 SetLevel);
+	FORCEINLINE	 int32 GetLevel(){ return Level; }
+
 	FORCEINLINE EStaminaStatus GetStaminaStatus() {return StaminaStatus;}
 	void StaminaManage(bool bIsSprintKeyDown);
 
 	FORCEINLINE float GetCurrentHealth() { return CurrentStat.Health; }
 	FORCEINLINE float GetCurrentStamina() { return CurrentStat.Stamina; }
 
+	UFUNCTION()
 	float GetStaminaRatio();
+	UFUNCTION()
 	float GetHealthRatio();
 
-	void DamageApply(float Damage);
+	void DamageApply(float Damage, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser);
 	
 	void AddHPPoint(float RecoveryPoint);
 	void AddStaminaPoint(float RecoveryPoint);
 
 	void AddCurrentHPRecoveryPoint(float Points);
 	void RemoveCurrentHPRecoveryPoint(float Points);
+
+	//Called from LoadGame
+	void UpdateCurrentStats(FCharacterCurrentStat Stats);
+
+	//Called from MyPlayerState
+	void AddExpPoint(int32 ExpPoint);
+	FORCEINLINE float GetExpPoint() {return CurrentStat.ExperiencePoint; }
+
+	FORCEINLINE float GetAimInitRate() {return CurrentStat.AimInitrate; }
+	//FORCEINLINE float GetExpRatio()	{return }
+
 
 private:
 	//FORCEINLINE void SetStaminaStatus(EStaminaStatus SetStatus) { StaminaStatus = SetStatus; }

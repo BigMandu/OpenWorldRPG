@@ -8,12 +8,33 @@ public class OpenWorldRPG : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "AIModule", "GameplayTasks", "NavigationSystem", "UMG", "AnimGraphRuntime", "Niagara" });
+		PublicDependencyModuleNames.AddRange(
+			new string[] {
+				"Core",
+				"CoreUObject",
+				"Engine",
+				"InputCore",
+				"AIModule",
+				"GameplayTasks",
+				"NavigationSystem",
+				"UMG",
+				"AnimGraphRuntime",
+				"Niagara" 
+			}
+		);
 
-		PrivateDependencyModuleNames.AddRange(new string[] {  });
+		PrivateDependencyModuleNames.AddRange(
+			new string[] {
+                "Slate",
+                "SlateCore",
+                "OpenWorldRPGLoadingScreen",
+				"MoviePlayer",
+                "PhysicsCore"                
+            }
+		);
 
 		// Uncomment if you are using Slate UI
-		 PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
+		 //PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
 		
 		// Uncomment if you are using online features
 		// PrivateDependencyModuleNames.Add("OnlineSubsystem");

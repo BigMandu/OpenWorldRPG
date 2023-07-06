@@ -111,8 +111,6 @@ AEquipment* UCustomInventoryLibrary::SpawnEquipment(UWorld* World, UNewItemObjec
 	{
 		AEquipment* Equipment = nullptr;
 
-
-
 		UCustomPDA* CPDA = Cast<UCustomPDA>(ItemObj->ItemInfo.DataAsset);
 		check(CPDA);
 
@@ -126,6 +124,10 @@ AEquipment* UCustomInventoryLibrary::SpawnEquipment(UWorld* World, UNewItemObjec
 			{
 				Cast<AWeapon>(Equipment)->WeaponPartsManager = ItemObj->WeaponPartsManager.Get();
 			}*/
+		}
+		else if ( CPDA->EquipmentType == EEquipmentType::EET_WeaponParts )
+		{
+			Equipment = Cast<AWeaponParts>(World->SpawnActor<AActor>(AWeaponParts::StaticClass()));
 		}
 		else
 		{
@@ -360,6 +362,22 @@ void UCustomInventoryLibrary::ShowAllEquipment(UEquipmentComponent* EComp)
   * 생성된 OBJ에 WPM이 없다면 기존걸 대입하고, 있다면 SetOwnerWeap을 해주면될거같다.
   * 
   */
+
+  /* 예외의 경우.
+  *  "Weapon을 버릴때"
+  *  - Weapon을 버릴때는 Dropwidget에서 진행되는 경우 밖에 없는데,
+  *   이때도 두 경우로 나뉜다.
+  *  1. 장착중인 (Destroy가 되지 않은) Weapon을 버릴때
+  *  2. 장착 중이지 않은 (Destory가 된) Inventory에 있는 Weapon을 버릴때
+  * 인데,
+  *  두 경우를 따로 나눠서 하기 보다는, 1번인 경우 역시 Destory한상태에서 진행하기로 했다.
+  * 때문에 두 경우 모두 Obj에만 WPM이 있는것으로 가정을했기 때문에
+  * 새로운 Weapon을 Spawn하고 WPM을 Weapon에 대입하는 과정을 거치게 된다.
+  * 또, 이 새로운 Weapon에 Attach된 WPM에 OBJ의 WPM data를 넘겨주고,
+  * 
+  * ** 중요 ***
+    마지막으로 OBJ의 WPM weapon owner를 Weapon에 Attach된 WPM의 WeaponOwner로 지정해야한다.
+  */
 void UCustomInventoryLibrary::SetWeaponPartsManager(UNewItemObject* Obj, AWeapon* Weapon)
 {
 	/*Obj에 이미 WPM이 있다면
@@ -369,21 +387,32 @@ void UCustomInventoryLibrary::SetWeaponPartsManager(UNewItemObject* Obj, AWeapon
 	{
 		if ( Obj->WeaponPartsManager->MuzzleParts )
 		{
+			//이미 없지만 안전하게 지워준다.
 			Obj->WeaponPartsManager->A_MuzzleParts = nullptr;
+
+			// Parts의 WPM을 Weapon의 WPM을 가리키도록 한다.
+			Obj->WeaponPartsManager->MuzzleParts->WeaponPartsManager = Weapon->WeaponPartsManager;
+
+			// OBJ의 WPM data를 Weapon의 WPM에 넘겨준다.
 			Weapon->WeaponPartsManager->MuzzleParts = Obj->WeaponPartsManager->MuzzleParts;
 		}
 		if ( Obj->WeaponPartsManager->ScopeParts )
 		{
 			Obj->WeaponPartsManager->A_ScopeParts = nullptr;
+			Obj->WeaponPartsManager->ScopeParts->WeaponPartsManager = Weapon->WeaponPartsManager;
 			Weapon->WeaponPartsManager->ScopeParts = Obj->WeaponPartsManager->ScopeParts;
 		}
 		if ( Obj->WeaponPartsManager->TacticalParts )
 		{
 			Obj->WeaponPartsManager->A_TacticalParts = nullptr;
+			Obj->WeaponPartsManager->TacticalParts->WeaponPartsManager = Weapon->WeaponPartsManager;
 			Weapon->WeaponPartsManager->TacticalParts = Obj->WeaponPartsManager->TacticalParts;
 		}
-
-		Obj->WeaponPartsManager->SetOwnerWeapon(Weapon->WeaponPartsManager->GetOwnerWeapon());
+		//data를 다 넘겼으면
+		//Obj의 WPM을 아예 갈아끼운다.
+		Obj->WeaponPartsManager = nullptr;
+		Obj->WeaponPartsManager = Weapon->WeaponPartsManager;
+		//Obj->WeaponPartsManager->SetOwnerWeapon(Weapon->WeaponPartsManager->GetOwnerWeapon());
 	}
 	//Obj에 WPM이 없다면 Weapon의 Data를 그대로 대입해주고 끝낸다.
 	else
@@ -393,6 +422,19 @@ void UCustomInventoryLibrary::SetWeaponPartsManager(UNewItemObject* Obj, AWeapon
 }
 
 
+
+
+void UCustomInventoryLibrary::CopyItem(UItemStorageObject& To, UItemStorageObject& From)
+{
+	for ( int32 index = 0; index < From.Inventory.Num(); ++index )
+	{
+		if(From.Inventory[index] == nullptr ) continue;
+
+		To.Inventory[index] = From.Inventory[index];
+		//To.Inventory[index]->MotherStorage = &To;
+	}
+
+}
 
 /////////////////////////////////////////////////////////////////////////
 /**********************   이하 사용하지 않는 함수들 **********************/

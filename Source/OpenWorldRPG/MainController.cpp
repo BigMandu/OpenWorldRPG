@@ -6,12 +6,23 @@
 #include "Item/Container.h"
 #include "GameFramework/PlayerController.h"
 #include "Blueprint/UserWidget.h"
+#include "Kismet/GameplayStatics.h"
+
+#include "OpenWorldRPG/NewInventory/ItemStorageObject.h"
+#include "OpenWorldRPG/NewInventory/EquipmentComponent.h"
 #include "OpenWorldRPG/NewInventory/Widget/NewInventory.h"
+#include "OpenWorldRPG/NewInventory/Library/CustomInventoryLibrary.h"
+
 #include "OpenWorldRPG/UI/QuickSlotWidget.h"
 #include "OpenWorldRPG/UI/CompassWidget.h"
 
 #include "OpenWorldRPG/MainHud.h"
 #include "OpenWorldRPG/Vehicles/NiceCar.h"
+
+#include "OpenWorldRPG/Save/SavePlayer.h"
+#include "OpenWorldRPG/OpenWorldRPGGameModeBase.h"
+
+
 
 
 
@@ -19,16 +30,31 @@ AMainController::AMainController()
 {
 	bIsInventoryVisible = false;
 
+	
+
+}
+
+void AMainController::SetupInputComponent()
+{
+	Super::SetupInputComponent();
+	
+	InputComponent->BindAction("testSave", IE_Pressed, this, &AMainController::SaveGame);
+	InputComponent->BindAction("testLoad", IE_Pressed, this, &AMainController::LoadGame);
+
 }
 
 void AMainController::BeginPlay()
 {
 	Super::BeginPlay();
-	Main = Cast<AMainCharacter>(GetCharacter());
+	Main = Cast<AMainCharacter>(GetPawn());
 
 	if (WMainHud)
 	{
-		MainHud = CreateWidget<UMainHud>(this,WMainHud);
+		if (!MainHud )
+		{
+			MainHud = CreateWidget<UMainHud>(this, WMainHud);
+		}
+		
 		MainHud->AddToViewport();
 		MainHud->SetVisibility(ESlateVisibility::Visible);
 		MainHud->MainCon = this;
@@ -118,14 +144,16 @@ void AMainController::SetInputAndFocus(bool bIsShow)
 
 void AMainController::Die()
 {
-	if (WDeathWidget == nullptr)
+	if (!WDeathWidget )	return;
+
+	if(!DeathWidget )
 	{
-		return;
+		DeathWidget = CreateWidget<UUserWidget>(this,WDeathWidget);
 	}
 
-	DeathWidget = CreateWidget<UUserWidget>(this,WDeathWidget);
 	if (DeathWidget)
 	{
+		SetInputAndFocus(true);
 		DeathWidget->AddToViewport();
 	}
 }
@@ -243,8 +271,174 @@ bool AMainController::bIsthisTargetForAI()
 }
 
 
+
 //void AMainController::UseQuickSlotItem(EQuickSlotNumber QuickSlotNum)
 //{
 //	OnQuickSlotUse.Broadcast(QuickSlotNum);
 //	//MainHud->QuickSlot->UseItemInQuickSlot(QuickSlotNum);
 //}
+
+/* Save and Load game*/
+void AMainController::LoadingProcessCompleted()
+{
+	if ( LoadingWidget && LoadingWidget->IsInViewport() )
+	{
+		LoadingWidget->SetVisibility(ESlateVisibility::Collapsed);
+		GetWorldTimerManager().ClearTimer(LoadingwidgetTimer);
+	}
+}
+void AMainController::SaveGame()
+{
+	UE_LOG(LogTemp, Warning, TEXT("AMainController::SaveGame// try saving "));
+
+	if(!WLoadingWidget ) return;
+
+	if ( !LoadingWidget )
+	{
+		LoadingWidget = CreateWidget<UUserWidget>(this, WLoadingWidget);		
+	}
+	if ( LoadingWidget )
+	{
+		if ( !LoadingWidget->IsInViewport() )
+		{
+			LoadingWidget->AddToViewport();
+		}
+		LoadingWidget->SetVisibility(ESlateVisibility::Visible);
+		
+		FTimerDelegate TimerCallFunc;
+		TimerCallFunc.BindUFunction(this, FName("LoadingProcessCompleted"));
+
+		GetWorldTimerManager().SetTimer(LoadingwidgetTimer, TimerCallFunc, 2.f, true);
+	}
+
+
+	SavePlayerStatus();
+
+	AOpenWorldRPGGameModeBase* Gamemode = Cast<AOpenWorldRPGGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+	if ( Gamemode )
+	{
+		Gamemode->SaveWorldStatus();
+	}
+	
+
+}
+
+void AMainController::LoadGame()
+{
+	UE_LOG(LogTemp, Warning, TEXT("AMainController::LoadGame// try loading "));
+	LoadPlayerStatus();
+
+	AOpenWorldRPGGameModeBase* Gamemode = Cast<AOpenWorldRPGGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+	if ( Gamemode )
+	{
+		Gamemode->LoadWorldStatus();
+	}
+}
+
+void AMainController::SavePlayerStatus()
+{
+	FString SlotName = TEXT("SavePlayer");
+	int32 Index = 0;
+	if ( UGameplayStatics::DoesSaveGameExist(SlotName, Index) == false )
+	{
+		SaveGame_Player = Cast<USavePlayer>(UGameplayStatics::CreateSaveGameObject(USavePlayer::StaticClass()));
+	}
+	else
+	{
+		SaveGame_Player = Cast<USavePlayer>(UGameplayStatics::LoadGameFromSlot(SlotName, Index));
+	}
+
+
+	if ( SaveGame_Player == nullptr || Main == nullptr ) return;
+
+	SaveGame_Player->PlayerEquipment.Empty(0);
+	SaveGame_Player->SavedPocketItems.Empty(0);
+	SaveGame_Player->SavedSecureItems.Empty(0);
+	
+	SaveGame_Player->PlayerLevel = Main->StatManagementComponent->GetLevel();
+	SaveGame_Player->PlayerStat = Main->StatManagementComponent->CurrentStat;
+
+	
+	OriginalToCopy(Main->Equipment->EquipmentItems, SaveGame_Player->PlayerEquipment);
+	OriginalToCopy(Main->PocketStorage->Inventory, SaveGame_Player->SavedPocketItems);
+	OriginalToCopy(Main->SecureBoxStorage->Inventory, SaveGame_Player->SavedSecureItems);
+
+	/*SaveGame_Player->PlayerEquipment = Main->Equipment->EquipmentItems;
+	SaveGame_Player->SavedPocketItems = Main->PocketStorage->Inventory;
+	SaveGame_Player->SavedSecureItems = Main->SecureBoxStorage->Inventory;*/
+
+
+	if ( UGameplayStatics::SaveGameToSlot(SaveGame_Player, SlotName, Index) )
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AMainController::SaveGame// Success Save!"));
+	}
+}
+
+void AMainController::LoadPlayerStatus()
+{
+	FString SlotName = TEXT("SavePlayer");
+	int32 Index = 0;
+	if(UGameplayStatics::DoesSaveGameExist(SlotName, Index) == false)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AMainController::LoadGame// Load fail!"));
+		return;
+	}
+
+	USavePlayer* LoadGame_Player = Cast<USavePlayer>(UGameplayStatics::LoadGameFromSlot(SlotName, Index));
+
+	if ( LoadGame_Player == nullptr || Main == nullptr ) return;
+	UE_LOG(LogTemp, Warning, TEXT("AMainController::LoadGame// Load Success!"));
+
+	Main->StatManagementComponent->SetLevel(LoadGame_Player->PlayerLevel);
+	//Main->StatManagementComponent->StrengthLevel = LoadGame_Player->PlayerLevel;
+	Main->StatManagementComponent->UpdateCurrentStats(LoadGame_Player->PlayerStat);
+
+	TArray<UNewItemObject*> LoadObjArr;
+	CopyToOriginal(LoadObjArr, LoadGame_Player->PlayerEquipment);
+	Main->Equipment->UpdateEquipment(LoadObjArr);
+
+	CopyToOriginal(LoadObjArr, LoadGame_Player->SavedPocketItems);
+	Main->PocketStorage->UpdateInventory(LoadObjArr);
+
+	CopyToOriginal(LoadObjArr, LoadGame_Player->SavedSecureItems);
+	Main->SecureBoxStorage->UpdateInventory(LoadObjArr);
+}
+
+
+void AMainController::OriginalToCopy(TArray<UNewItemObject*>&Original, TArray<FSaveItem>& Copy)
+{
+	for ( UNewItemObject* ItemObj : Original )
+	{
+		if(ItemObj == nullptr || ItemObj->ItemInfo.DataAsset == nullptr) continue;
+
+		//DataAsset 객체의 경로를 FString형태로 저장한다.
+		FString PDAID = ItemObj->ItemInfo.DataAsset->GetPathName();
+		
+		FSaveItem SaveItemInfo(PDAID, ItemObj->ItemInfo.Count, ItemObj->ItemInfo.TopLeftIndex);
+		Copy.Add(SaveItemInfo);
+
+		//객체 저장
+		//UBasePDA* PDA = LoadObject<UBasePDA>(nullptr, *PDAPN);
+		//Copy.Add(ItemObj);
+	}
+}
+
+void AMainController::CopyToOriginal(TArray<class UNewItemObject*>& Original, TArray<FSaveItem>& Copy)
+{
+	Original.Empty();
+	for ( FSaveItem stct : Copy )
+	{
+		//PDAID에 저장된 경로로 해당하는 PDA를 찾는다.
+		//첫 매개변수는 부모객체인데, nullptr을 넘겨줘 기본 Outer를 사용하도록함.
+		//두번째 매개변수는 찾을 PDA의 경로.
+		UBasePDA* LoadPDA = LoadObject<UBasePDA>(nullptr, *stct.PDAID);
+		if(!LoadPDA ) continue;
+		FItemSetting ItemSet(LoadPDA,stct.Count, stct.TopLeftIndex);
+		bool bIsCreated = false;
+		UNewItemObject* ItemObj = UCustomInventoryLibrary::CreateObject(ItemSet, bIsCreated);
+
+		if(!bIsCreated) continue;
+
+		Original.Add(ItemObj);
+	}
+}

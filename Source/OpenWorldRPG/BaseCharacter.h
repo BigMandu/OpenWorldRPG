@@ -116,9 +116,13 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement)
 	bool bIsSprinting;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement)
+	bool bIsJumpKeyDown;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Input)
 	bool bIsAim;
 
+	
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Sounds)
 	USoundCue* StepSoundCue;
@@ -242,6 +246,8 @@ public:
 	FORCEINLINE ETeamType GetTeamType() { return TeamType; }
 	virtual void SetAimMode(EAimMode Mode);
 
+	void MyJump();
+	void MyStopJumping();
 	
 	bool CanSprint();
 	virtual void Sprint();
@@ -278,6 +284,8 @@ public:
 	void AttachWeaponToActor();
 	virtual void EndEquipped();
 
+	void ToggleTacticalEquip();
+
 	/* Change Weapon Firing Mode*/
 	void ChangeSafetyLever();
 
@@ -309,6 +317,7 @@ public:
 	FTransform LeftHandik();
 
 	virtual void SetLeftHandIK(float Alpha);
+	float GetLeftHandIK();
 
 	void SetHoldingItem(AItem* WantToHolding);
 
@@ -338,7 +347,9 @@ public:
 	void HaltRecoveryTimer(FTimerHandle WantToStop);
 
 	UFUNCTION()
-	void Die();
+	virtual void Die();
+
+	
 
 	void CalcFallingDistance(FHitResult& _FallHit);
 	void ApplyFallingDamage(FHitResult& _FallHit);

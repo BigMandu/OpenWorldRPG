@@ -245,7 +245,7 @@ void UBTService_Rotate::TraceAndSetFocus(AEnemyAIController* AICon, AEnemyCharac
 	{
 		//0.f~ 2.f값 사이의 랜덤값을 불러온다.
 		float Judgevalue = FMath::FRandRange(0.f, 2.3f);
-		UE_LOG(LogTemp,Warning,TEXT("RotateNode:: JudgeValue is %f"), Judgevalue);
+		//UE_LOG(LogTemp,Warning,TEXT("RotateNode:: JudgeValue is %f"), Judgevalue);
 		//1.8이하의 값이라면 왼/오 중에 택한다.
 		if ( Judgevalue <= 1.8f )
 		{

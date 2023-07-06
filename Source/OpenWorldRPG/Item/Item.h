@@ -92,7 +92,10 @@ public:
 	bool bCanEquip;*/
 
 	UPROPERTY(EditDefaultsOnly, Category = AI)
-	UAIPerceptionStimuliSourceComponent* StimuliComp;	
+	UAIPerceptionStimuliSourceComponent* StimuliComp;
+
+	UPROPERTY()
+	TWeakObjectPtr<class ASpawnVolume> OwningVolume;
 
 
 protected:

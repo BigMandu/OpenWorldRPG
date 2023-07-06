@@ -65,6 +65,9 @@ public:
 	class UResourceStatusWidgetInInventory* ResourceStatusWidget;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	class UCharacterStatusWidget* CharacterStatusWidget;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	class UEquipStorageWidget* EquipmentStorageWidget;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UEquipWidget* EquipmentWidget;	

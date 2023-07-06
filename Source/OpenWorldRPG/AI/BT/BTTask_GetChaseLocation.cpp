@@ -84,7 +84,9 @@ EBTNodeResult::Type UBTTask_GetChaseLocation::ExecuteTask(UBehaviorTreeComponent
 		// 현재 OwnerAI의 위치에 Target의 마지막 식별 회전값 * 거리 랜덤값을 더해 최종 수색 위치를 구한다.
 
 
-		UE_LOG(LogTemp, Warning, TEXT("UBTTask_GetChaseLocation::ExecuteTask // Can reach LastSeenLocation"));
+		//UE_LOG(LogTemp, Warning, TEXT("UBTTask_GetChaseLocation::ExecuteTask // Can reach LastSeenLocation"));
+
+
 		//Target의 현재 위치와 마지막 식별 위치의 거리를 구한다.
 		//FVector LocationDist = FVector(FVector::Dist(LastSeenLocation, CurrentTargetLocation));
 		float LocationDist = FVector::Dist(LastSeenLocation, CurrentTargetLocation);
@@ -92,7 +94,10 @@ EBTNodeResult::Type UBTTask_GetChaseLocation::ExecuteTask(UBehaviorTreeComponent
 		//위에서 구한 거리에서 무작위값 3으로 나눈값(최소) 과 원래값(최대)사이의 랜덤 거리 값을 구한다.
 		//float RandDist = FMath::RandRange(LocationDist.Size() / 3, LocationDist.Size() * 1.05);
 		float RandDist = FMath::RandRange(LocationDist / 3, LocationDist * 1.05);
-		UE_LOG(LogTemp,Warning,TEXT("LocationDist : %f, RandDist : %f"), LocationDist, RandDist);
+
+
+		//UE_LOG(LogTemp,Warning,TEXT("UBTTask_GetChaseLocation// LocationDist : %f, RandDist : %f"), LocationDist, RandDist);
+
 
 		FVector RotVec = (CurrentTargetLocation - LastSeenLocation ).GetSafeNormal();
 

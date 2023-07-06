@@ -25,6 +25,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Grenade | CommonStat")
 	float EffectRadius;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Grenade | CommonStat")
+	TSubclassOf<class UDamageType> DmgType;
+
 	//Cascade Effect
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Grenade | FX")
 	class UParticleSystem* Ca_GrenadeEffect;
@@ -42,8 +45,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Grenade | Animation")
 	class UAnimMontage* ThrowingAnimMontage;
 
-	/*UPROPERTY(EditDefaultsOnly, Category = "Grenade | CommonStat")
-	TSubclassOf<class UDamageType> DmgType;*/
+	
 
 	UPROPERTY(EditDefaultsOnly, Category = "Grenade | Fragmentation")
 	float Damage;

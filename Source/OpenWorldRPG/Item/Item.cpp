@@ -6,9 +6,11 @@
 #include "OpenWorldRPG/Item/CustomPDA.h"
 #include "OpenWorldRPG/Item/ConsumePDA.h"
 #include "OpenWorldRPG/Item/Weapon.h"
+#include "OpenWorldRPG/Item/WeaponPartsManagerObject.h"
 
 #include "OpenWorldRPG/BaseCharacter.h"
 #include "OpenWorldRPG/MainCharacter.h"
+#include "OpenWorldRPG/SpawnVolume.h"
 #include "OpenWorldRPG/NewInventory/EquipmentComponent.h"
 #include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
@@ -159,7 +161,7 @@ bool AItem::Pickup(class AActor* Actor, UNewItemObject* obj)
 				UItemStorageObject* ItemStorage = Cast<UItemStorageObject>(TempObj);
 				if(ItemStorage == nullptr) continue;
 
-				bFlag = BChar->BaseInventoryComp->TryAddItem(ItemStorage,ItemSetting, obj, this);
+				bFlag = BChar->BaseInventoryComp->TryAddItem(ItemStorage,ItemSetting, this, obj);
 				if (bFlag) break;
 			}
 
@@ -188,10 +190,29 @@ bool AItem::Pickup(class AActor* Actor, UNewItemObject* obj)
 				}
 			}
 
+			//추가 했다면 나머지 정리를 한다.
 			if (bFlag)
 			{
 				SetItemState(EItemState::EIS_Pickup);
 				//ItemObj->bIsDestoryed = true;
+
+				//Player가 이 Item을 습득하면 SpawnVolume의 destorycount를 증가시킨다.
+				if ( OwningVolume.IsValid() )
+				{
+					OwningVolume->IncreaseDestroyCount();
+				}
+
+
+				//Weapon이었다면 부착된 Parts Actor또한 destory시켜준다.
+				if (AWeapon* WeapDest = Cast<AWeapon>(this))
+				{
+					if(WeapDest->WeaponPartsManager)
+					{
+						WeapDest->WeaponPartsManager->DestroyAllAttachParts(WeapDest);
+					}
+				}
+				
+
 				Destroy();
 			}
 

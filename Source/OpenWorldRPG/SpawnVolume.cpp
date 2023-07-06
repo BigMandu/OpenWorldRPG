@@ -3,6 +3,7 @@
 
 #include "SpawnVolume.h"
 #include "OpenWorldRPG/NewInventory/Library/CustomInventoryLibrary.h"
+#include "OpenWorldRPG/Item/Item.h"
 
 #include "Components/BoxComponent.h"
 #include "Components/BillboardComponent.h"
@@ -53,19 +54,38 @@ void ASpawnVolume::BeginPlay()
 {
 	Super::BeginPlay();
 
-
-
-
-	switch (SpawnType)
+	bool bNeedToSpawnItem = true;
+	if ( DestoryCount > 0 )
 	{
-	case ESpawnType::EST_Volume:
-		StartVolumeSpawn();
-	break;
-	case ESpawnType::EST_Point:
-		StartPointSpawn();
-	break;
+		//Load한 DestoryCount가 Spawncount이상이라면 더이상 spawn할 필요 없음. (player가 이미 다먹음)
+		if ( DestoryCount >= SpawnCount )
+		{
+			bNeedToSpawnItem = false;
+			RemainingCount = 0;
+		}
+		else
+		{
+			//Player가 먹은개수를 뺀 숫자만큼 spawn한다.
+			RemainingCount = SpawnCount - DestoryCount;
+		}
 	}
-	
+	else
+	{
+		RemainingCount = SpawnCount;
+	}
+
+	if(bNeedToSpawnItem )
+	{
+		switch (SpawnType)
+		{
+		case ESpawnType::EST_Volume:
+			StartVolumeSpawn();
+		break;
+		case ESpawnType::EST_Point:
+			StartPointSpawn();
+		break;
+		}
+	}
 }
 
 
@@ -92,7 +112,7 @@ void ASpawnVolume::StartVolumeSpawn()
 	while (loop < DTCount)
 	{
 		//ActualSpawncount가 SpawnCount이상이면 while문을 빠져 나간다.
-		if (ActualSpawnCount >= SpawnCount)
+		if (ActualSpawnCount >= RemainingCount)
 		{
 			break;
 		}
@@ -124,12 +144,15 @@ void ASpawnVolume::StartVolumeSpawn()
 
 				//Adjust Item Location,
 				WantToSpawn->SetActorLocation(SpawnVector);
+				WantToSpawn->OwningVolume = this;
+				
+
 				UE_LOG(LogTemp, Warning, TEXT("SpawnVolume::StartVolumeSpawn // ActualCount ; %d"), ActualSpawnCount);
 			}
 			//스폰 불가할 경우
 			else
 			{
-				if (loop >= DTCount -1 && ActualSpawnCount < SpawnCount)
+				if (loop >= DTCount -1 && ActualSpawnCount < RemainingCount )
 				{
 					//Spawn할 수 없을때, 0이 아닌 Spawn가능한 가장 최소 DT부터 시작하기 위해 대입한다.
 					loop = SaveMinDTTableindex;
@@ -305,6 +328,12 @@ AItem* ASpawnVolume::GetSpawnItem(const int32 TableTypeNumber)
 	return ReturnItem;
 }
 
+void ASpawnVolume::IncreaseDestroyCount()
+{	
+	++DestoryCount;
+	UE_LOG(LogTemp, Warning, TEXT("ASpawnVolume::IncreaseDestroyCount //DestCnt : %d"), DestoryCount);
+}
+
 
 /************************************************************************/
 /*                        for Volume Spawn                              */
@@ -411,7 +440,12 @@ bool ASpawnVolume::CheckLimitZ(FHitResult HitResult)
 			break;
 		}
 
-
+		//맞은 Actor의 가로,세로, 높이를 고려해 각 길이를 반을 나눠 각 면으로 부터 수직하는 아래에 lay를 4방향으로 쏜다.
+		//ex) 만약 맞은 Actor의 Up이나 Down인 경우 해당하는 Actor가 바닥에서 얼마만큼 높이 있는가를 측정하기 위해서
+		// 박스의 X, Y길이를 반으로 나눈 값을 넘겨준다.
+		// 그리고 이 값들을 고려하지 않고 4번씩 lay를 쏘도록 한다.
+		//(이 Actor의 중앙에서 부터 아주 살짝 벗어난 경계지점이 x/2, y/2값이 되므로.)
+		//lay의 길이가 character의 높이보다 길다면 spawn불가.
 		bCanSpawn = StepCheckLimit_Loop1(HitResult, CharHeight, SpawnLocation, Calc1, FColor::Green);
 		
 		if (bCanSpawn == false)

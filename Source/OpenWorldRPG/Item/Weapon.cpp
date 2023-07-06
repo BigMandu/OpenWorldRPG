@@ -14,6 +14,8 @@
 #include "OpenWorldRPG/NewInventory/Library/InventoryStruct.h"
 
 #include "OpenWorldRPG/Item/WeaponPartsManagerObject.h"
+#include "OpenWorldRPG/Item/WeaponParts.h"
+
 
 #include "Engine/SkeletalMeshSocket.h"
 #include "Camera/CameraComponent.h"
@@ -38,6 +40,9 @@ AWeapon::AWeapon() : Super()
 	CapsuleComp = CreateDefaultSubobject<UCapsuleComponent>(TEXT("CapsuleComponent"));
 	CapsuleComp->SetupAttachment(RootComponent);
 
+	OptionalStaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("OptionalMesh"));
+	OptionalStaticMesh->SetupAttachment(GetRootComponent());
+
 	WeaponFiringMode = EWeaponFiringMode::EWFM_SemiAuto;
 	CurrentWeaponState = EWeaponState::EWS_Idle;
 	RifleAssign = ERifleSlot::ERS_MAX;
@@ -46,6 +51,7 @@ AWeapon::AWeapon() : Super()
 	bLMBDown = false;
 	bDetectLookInput = false;
 
+	bIsTacticalDevEmit = false;
 }
 
 void AWeapon::Tick(float DeltaTime)
@@ -95,6 +101,18 @@ void AWeapon::BeginPlay()
 		UpdateWeaponParts();
 	}
 	
+}
+
+void AWeapon::SetMesh()
+{
+	Super::SetMesh();
+
+	if ( ItemSetting.DataAsset->Mesh_Optional )
+	{
+		OptionalStaticMesh->SetStaticMesh(ItemSetting.DataAsset->Mesh_Optional);
+		OptionalStaticMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
+
 }
 
 bool AWeapon::StepEquip(AActor* Char, ERifleSlot RifleSlot)
@@ -525,6 +543,54 @@ void AWeapon::FPS_AimAttachToMesh(AActor* Actor)
 //	
 //	
 //}
+void AWeapon::ToggleTacticalEquip()
+{
+	if ( WeaponDataAsset )
+	{
+		if ( CurrentWeaponState == EWeaponState::EWS_Idle )
+		{
+			AWeaponParts* TacticalParts = nullptr;
+			if ( ItemObj && ItemObj->WeaponPartsManager )
+			{
+				if ( AEquipment* A_Tactical = ItemObj->WeaponPartsManager->GetWeaponParts(EWeaponPartsType::EWPT_Tactical) )
+				{
+					//ReturnTransform = A_Scope->SKMesh->GetSocketTransform(SightSocketName, ERelativeTransformSpace::RTS_World);
+					//bHasSight = true;
+					TacticalParts = Cast<AWeaponParts>(A_Tactical);
+				}
+			}
+			else if ( WeaponPartsManager )
+			{
+				if ( AEquipment* A_Tactical = WeaponPartsManager->GetWeaponParts(EWeaponPartsType::EWPT_Tactical) )
+				{
+					//ReturnTransform = A_Scope->SKMesh->GetSocketTransform(SightSocketName, ERelativeTransformSpace::RTS_World);
+					//bHasSight = true;
+					TacticalParts = Cast<AWeaponParts>(A_Tactical);
+				}
+
+			}
+
+			if(TacticalParts == nullptr ) return;
+
+			if ( bIsTacticalDevEmit )
+			{
+				//off
+				bIsTacticalDevEmit = false;
+				TacticalParts->SetEmitValue(false);
+				
+				
+			}
+			else
+			{
+				//on
+				bIsTacticalDevEmit = true;
+				TacticalParts->SetEmitValue(true);
+			}
+
+
+		}
+	}
+}
 
 void AWeapon::ChangeSafetyLever()
 {
@@ -765,6 +831,7 @@ void AWeapon::Reload()
 		UE_LOG(LogTemp,Warning,TEXT("AWeapon::Reload// 장전 실패! : 탄약이 주머니 또는 조끼에 없거나 / Mag에 탄이 꽉 찼습니다."));
 	}	
 }
+
 //AnimNotify를 통해 이 함수를 호출하면
 //탄약을 갱신한다.
 void AWeapon::ReloadEnd()
@@ -887,6 +954,7 @@ void AWeapon::ControlFiring()
 
 }
 
+//Actual Fire
 void AWeapon::Firing()
 {
 	/* ControlFiring, ReFiring에서 호출됨. */
@@ -974,8 +1042,17 @@ void AWeapon::EndFiring()
 
 	RecoilTime = 0.f;
 
-	// 사격을 끝냈을때 첫 사격 에임으로 되돌아 오는 기능 ,,, test를 위해 잠시 기능을 off.
-	//AimInitialize();
+
+	// 사격을 끝냈을때 첫 사격 에임으로 되돌아 오는 기능
+	if ( AMainCharacter* Player = Cast<AMainCharacter>(OwningPlayer) )
+	{
+		if ( Player->EquippedWeapon == this )
+		{
+			GetWorldTimerManager().ClearTimer(AimInitHandle);
+			AimInitialize();
+		}
+	}
+
 }
 
 //Refire가 가능한지 체크한다.
@@ -1111,7 +1188,14 @@ FHitResult AWeapon::BulletTrace(FVector StartTrace, FVector EndTrace)
 	FHitResult Hit;
 
 	FCollisionQueryParams params(NAME_None, true, GetInstigator()); //Instigator를 IgnoreActor로 하면된다.
+	params.AddIgnoredActor(this);
+	params.AddIgnoredActor(OwningPlayer);
+	params.AddIgnoredComponent(CapsuleComp);
 
+	if ( AMainCharacter* Player = Cast<AMainCharacter>(OwningPlayer) )
+	{
+		params.AddIgnoredActor(Player);
+	}
 	GetWorld()->LineTraceSingleByChannel(Hit, StartTrace, EndTrace, COLLISION_WEAPON_INST, params);
 
 	//DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor::Green,false,2.f,(uint8)nullptr,2.f);
@@ -1122,26 +1206,49 @@ FHitResult AWeapon::BulletTrace(FVector StartTrace, FVector EndTrace)
 /* 사운드와 총구 이펙트 */
 void AWeapon::WeaponFX()
 {
-	//사운드
-	if ( WeaponDataAsset->WeaponSound.FireSound )
+	//소음기가 있을때
+	if ( WeaponPartsManager->MuzzleParts )
 	{
-		UGameplayStatics::SpawnSoundAttached(WeaponDataAsset->WeaponSound.FireSound, OwningPlayer->GetRootComponent());
-	}
-
-	//총구 이펙트
-	if ( WeaponDataAsset->FireMuzzleEffect )
-	{
-		const USkeletalMeshSocket* MuzzleSocket = SKMesh->GetSocketByName(MuzzleFlashSocketName);
-
-		if ( MuzzleSocket )
+		//사운드만 재생
+		if ( WeaponDataAsset->WeaponSound.MuzzleParts_FireSound)
 		{
-			FVector MuzzleLocation = SKMesh->GetSocketLocation(MuzzleFlashSocketName);
-			FRotator MuzzleRotation = SKMesh->GetSocketRotation(MuzzleFlashSocketName);
+			UGameplayStatics::SpawnSoundAttached(WeaponDataAsset->WeaponSound.FireSound, this->SKMesh);
+		}
+	}
+	//소음기가 없을때
+	else
+	{
+		//사운드
+		if ( WeaponDataAsset->WeaponSound.FireSound )
+		{
+			UGameplayStatics::SpawnSoundAttached(WeaponDataAsset->WeaponSound.FireSound, this->SKMesh);
+		}
 
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponDataAsset->FireMuzzleEffect, MuzzleLocation, MuzzleRotation);
+		//총구 이펙트
+		if ( WeaponDataAsset->FireMuzzleEffect )
+		{
+			const USkeletalMeshSocket* MuzzleSocket = SKMesh->GetSocketByName(MuzzleFlashSocketName);
+
+			if ( MuzzleSocket )
+			{
+				FVector MuzzleLocation = SKMesh->GetSocketLocation(MuzzleFlashSocketName);
+				FRotator MuzzleRotation = SKMesh->GetSocketRotation(MuzzleFlashSocketName);
+
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponDataAsset->FireMuzzleEffect, MuzzleLocation, MuzzleRotation);
+			}
 		}
 	}
 
+	if ( OwningPlayer->AimMode == EAimMode::EAM_Aim )
+	{
+		OwningPlayer->StopAnimMontage(nullptr);
+		OwningPlayer->PlayAnimation(WeaponDataAsset->WeaponAnimaton.TPS_ADS_Actor_FireAnim, WeaponDataAsset->WeaponAnimaton.FPS_ADS_Actor_FireAnim);
+	}
+	else
+	{
+		OwningPlayer->StopAnimMontage(nullptr);
+		OwningPlayer->PlayAnimation(WeaponDataAsset->WeaponAnimaton.TPS_Actor_FireAnim,WeaponDataAsset->WeaponAnimaton.FPS_Actor_FireAnim);
+	}
 	//Animatoin 재생.
 	//PlayWeaponAnimAndCamShake(FireAnimaton);
 }
@@ -1188,7 +1295,7 @@ void AWeapon::AimInitialize()
 	GetWorldTimerManager().SetTimer(AimInitHandle, [ = ] {
 
 		Time += GetWorld()->GetDeltaSeconds();
-	AlphaTime = Time / 0.8f; // : Time/되돌아오는 시간  (스텟)
+		AlphaTime = Time / OwningPlayer->StatManagementComponent->GetAimInitRate();//0.8f; // : Time/되돌아오는 시간  (스텟)
 
 	//FRotator LerpAimRotation = FMath::RInterpTo(EndFiringRotation, StartFiringRotation, GetWorld()->GetDeltaSeconds(), 20.f);
 	FRotator LerpAimRotation = FMath::Lerp(EndFiringRotation, StartFiringRotation, AlphaTime);

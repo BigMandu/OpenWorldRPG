@@ -19,7 +19,6 @@
 
 
 #define DECISION_BRANCH_DEBUG 0
-#define BTSDEBUG 1
 
 UBTService_DecideWhatToDo::UBTService_DecideWhatToDo()
 {
@@ -95,11 +94,22 @@ void UBTService_DecideWhatToDo::SetDecisionValue()//UBehaviorTreeComponent & Own
 
 
 	/* 교전하던 중이었던 경우*/
+	//타겟이 죽으면 Key를 풀어주고, 타겟이 죽지 않은 상태면 교전중 키를 설정한다.
 	if (BBComp->GetValueAsBool(AICon->bCanAttackKey))
 	{
-		BBComp->SetValueAsBool(AICon->bWasEngageKey, true);
-		//bWasEngage = true;
-		
+		if(ABaseCharacter* Target = Cast<ABaseCharacter>(BBComp->GetValueAsObject(AICon->EnemyKey)))
+		{			
+			if(Target->CharacterStatus == ECharacterStatus::EPS_Dead )
+			{
+				BBComp->SetValueAsObject(AICon->EnemyKey,nullptr);
+				BBComp->SetValueAsBool(AICon->bCanAttackKey, false);
+
+			}
+			else
+			{
+				BBComp->SetValueAsBool(AICon->bWasEngageKey, true);
+			}		
+		}
 	}
 
 
@@ -258,7 +268,7 @@ bool UBTService_DecideWhatToDo::IsThisAIinTargetFOV()//UBlackboardComponent* BBC
 		//UE_LOG(LogTemp, Warning, TEXT("UBTService_DecideWhatToDo::IsThisAIinTargetFOV /targetfov : %f"), TargetHalfFov);
 	}
 	//If, Enemy Character is AI, branch this if statement
-	else if (EnemyAI)
+	else if (EnemyAI && EnemyAI->GetController())
 	{
 		TargetLocation = EnemyAI->GetActorLocation();
 		TargetFowVec = EnemyAI->GetActorForwardVector();
@@ -280,11 +290,15 @@ bool UBTService_DecideWhatToDo::IsThisAIinTargetFOV()//UBlackboardComponent* BBC
 		if (DotCalc > UKismetMathLibrary::Cos(TargetHalfFov))
 		{
 			bInFOV = false;
+#if DECISION_BRANCH_DEBUG
 			UE_LOG(LogTemp, Warning, TEXT("UBTService_DecideWhatToDo::IsThisAIinTargetFOV /Out FOV"));
+#endif
 		}
 		else
 		{
+#if DECISION_BRANCH_DEBUG
 			UE_LOG(LogTemp, Warning, TEXT("UBTService_DecideWhatToDo::IsThisAIinTargetFOV /InFOV"));
+#endif
 			bInFOV = true;
 		}
 	}

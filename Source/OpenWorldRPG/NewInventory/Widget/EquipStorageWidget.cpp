@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "OpenWorldRPG/NewInventory/Widget/EquipStorageWidget.h"
@@ -155,6 +155,7 @@ void UEquipStorageWidget::SettingStorageWidget(UOverlay* EquipOverlay, UItemStor
 		GridInv->StorageObj = Var_StorageObj;
 		GridInv->GridInit();
 
+		GridInv->OpenAdditionalWidget.Clear(); //새로 추가함.
 		GridInv->OpenAdditionalWidget.AddDynamic(MainWidget, &UNewInventory::BindingOpenWidgetFunc);
 		EquipOverlay->AddChild(GridInv);
 

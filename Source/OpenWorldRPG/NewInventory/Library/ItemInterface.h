@@ -33,6 +33,18 @@ enum class EInteractType : uint8
 	EIT_MAX			UMETA(DisplayName = "DefaultMAX")
 };
 
+
+//this is for WeaponPartsClass, Adjust attach location along this name.
+UENUM()
+enum class EWeaponName : uint8
+{
+	EWN_M4	UMETA(DisplayName = "M4"),
+	EWN_AK	UMETA(DisplayName = "AK"),
+	EWN_M9	UMETA(DisplayName = "M9"),
+
+	EWN_MAX	UMETA(DisplayName = "DefaultsMAX")
+};
+
 UENUM()
 enum class ERifleSlot :uint8
 {
@@ -106,10 +118,18 @@ enum class EWeaponPartsType : uint8
 	EWPT_Muzzle		UMETA(DisplayName = "Muzzle"),
 	EWPT_Tactical	UMETA(DisplayName = "Tactical"),
 	EWPT_Scope		UMETA(DisplayName = "Scope"),
-	
-
 
 	EWPT_MAX = 3	UMETA(Hidden)
+};
+
+UENUM(BlueprintType)
+enum class EWeaponPartsLimitationType : uint8
+{
+	EWPLT_RifleONLY		UMETA(DisplayName = "Rifle_ONLY"),
+	EWPT_PistolONLY		UMETA(DisplayName = "Pistol_ONLY"),
+	EWPT_UnLimited		UMETA(DisplayName = "Unlimited"),
+
+	EWPT_MAX			UMETA(DisplayName = "DefaultsMAX")
 };
 
 

@@ -127,6 +127,8 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UCapsuleComponent* CapsuleComp;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UStaticMeshComponent* OptionalStaticMesh;
 
 	UPROPERTY()
 	FTransform OriginalWeaponTransform;
@@ -137,6 +139,8 @@ public:
 
 	bool bIsFiring;
 	bool bIsAiming; //Main에서 값을 단순히 넣어주기만 한다.
+
+	bool bIsTacticalDevEmit;
 
 	//Clipping을 하고있을때 Aim을 막고, BulletOut의 Trace를 수정하기 위한 boolean
 	bool bIsHighReady;
@@ -226,7 +230,8 @@ protected:
 public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void PostInitializeComponents() override;
-		
+
+	void SetMesh() override;
 	void GunAttachToMesh(AActor* Actor);
 	void GunAttachToSubSocket(AActor* Actor);
 
@@ -242,6 +247,9 @@ public:
 	void GetTotalAmmo();
 	
 	int32 GetCurrentAmmoInMag();
+
+
+	void ToggleTacticalEquip();
 
 	void ChangeSafetyLever();
 	void ChangeSafetyLeverForAI(EWeaponFiringMode FiringMode);

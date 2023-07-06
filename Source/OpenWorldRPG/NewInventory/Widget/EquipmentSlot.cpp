@@ -11,19 +11,22 @@
 #include "OpenWorldRPG/NewInventory/Library/CustomInventoryLibrary.h"
 #include "OpenWorldRPG/NewInventory/Library/InventoryStruct.h"
 
-
 #include "OpenWorldRPG/Item/BasePDA.h"
 #include "OpenWorldRPG/Item/CustomPDA.h"
-//#include "OpenWorldRPG/NewInventory/NewInventoryGrid.h"
-//#include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
+#include "OpenWorldRPG/Item/WeaponPartsPDA.h"
 
 #include "OpenWorldRPG/Item/Equipment.h"
 #include "OpenWorldRPG/Item/Weapon.h"
 #include "OpenWorldRPG/BaseCharacter.h"
-#include "Components/Border.h"
-#include "Components/Image.h"
+
 #include "Blueprint/DragDropOperation.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
+
+#include "Components/Border.h"
+#include "Components/Image.h"
+
+#include "Kismet/GameplayStatics.h"
+#include "Sound/SoundCue.h"
 
 
 void UEquipmentSlot::NativeOnDragEnter(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
@@ -94,16 +97,28 @@ bool UEquipmentSlot::IsSupportedEquip(UNewItemObject* ItemObj)
 	
 	if(CPDA == nullptr) return false;
 
+	//WeaponParts용
 	if (bIsforWeaponParts)
 	{
-		if (WeaponPartsType == CPDA->WeaponPartsType)
+		UWeaponPartsPDA* WPPDA = Cast<UWeaponPartsPDA>(CPDA);
+
+		if ( WPPDA && WeaponPartsType == WPPDA->WeaponPartsType)
 		{
-			if (IsEmpty())
+			if ( OwnerWeaponObj == nullptr ) return false;
+			//Parts의 limit추가.
+			//Parts의 limit이 제한없음 이거나 Parts의 limit와 weapon의 limit이 같다면 추가가능
+			if ( ( WPPDA->WeaponPartsLimitationType == EWeaponPartsLimitationType::EWPT_UnLimited) ||
+			( WPPDA->WeaponPartsLimitationType == Cast<UCustomPDA>(OwnerWeaponObj->ItemInfo.DataAsset)->WeaponPartsLimitationType/* OwnerWeaponPDA->WeaponPartsLimitationType*/) )
 			{
-				bReturn = true;
+				if ( IsEmpty() )
+				{
+					bReturn = true;
+				}
 			}
+			
 		}
 	}
+	//그냥 일반 장착 장비용
 	else if (CPDA->InteractType == EInteractType::EIT_Equipment &&
 		CPDA->EquipmentType == SlotType)
 	{
@@ -114,14 +129,6 @@ bool UEquipmentSlot::IsSupportedEquip(UNewItemObject* ItemObj)
 			bReturn = true;
 		}
 	}
-	//else if (CPDA->InteractType == EInteractType::EIT_Equipment &&
-	//	bIsforWeaponParts && WeaponPartsType == CPDA->WeaponPartsType)
-	//{
-	//	if (IsEmpty())
-	//	{
-	//		bReturn = true;
-	//	}
-	//}
 
 
 	return bReturn;
@@ -150,8 +157,6 @@ bool UEquipmentSlot::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEv
 
 		if (DDOper->ItemObj->bIsDragging && !SettedObj)// != DDOper->ItemObj)
 		{
-			DDOper->ItemObj->bIsDragging = false;
-
 			//EquipSlot으로 작동할 때
 			if (bIsforWeaponParts == false)
 			{
@@ -230,6 +235,13 @@ bool UEquipmentSlot::TrySlotEquip(UNewItemObject* Var_ItemObj)
 
 				if (Equipment != nullptr)
 				{
+					//Drop시에 DropSound를 재생한다.
+					if ( Var_ItemObj->ItemInfo.DataAsset->SlotDropSound )
+					{
+						UE_LOG(LogTemp, Warning, TEXT("EqiupSlot::OnDrop// Play UI sound"));
+						UGameplayStatics::PlaySound2D(GetWorld(), Var_ItemObj->ItemInfo.DataAsset->SlotDropSound);
+					}
+
 					Var_ItemObj->bIsDestoryed = false;
 					Equipment->ItemObj = Var_ItemObj;
 					UCustomPDA* CPDA = Cast<UCustomPDA>(Equipment->ItemSetting.DataAsset);
@@ -257,7 +269,13 @@ bool UEquipmentSlot::TrySlotParts(UNewItemObject* PartsObj)
 	//if( OwnerWeaponObj == nullptr || WeaponPartsPDA == nullptr) return false;
 	if( WeaponPartsPDA == nullptr) return false;
 	if (OwnerWeaponObj.IsValid() == false) return false;
-	
+
+	//Drop시에 DropSound를 재생한다.
+	if ( PartsObj->ItemInfo.DataAsset->SlotDropSound )
+	{
+		UE_LOG(LogTemp, Warning, TEXT("EqiupSlot::OnDrop// Play UI sound"));
+		UGameplayStatics::PlaySound2D(GetWorld(), PartsObj->ItemInfo.DataAsset->SlotDropSound);
+	}
 		
 		
 		/*OnEquipWeaponParts.Broadcast(PartsObj);

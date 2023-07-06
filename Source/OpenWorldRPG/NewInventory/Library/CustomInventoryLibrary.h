@@ -11,6 +11,7 @@
  */
 class UEquipmentComponent;
 class UNewItemObject;
+class UItemStorageObject;
 class UBasePDA;
 class UCustomPDA;
 class ABaseCharacter;
@@ -67,6 +68,8 @@ public:
 	 * From의 OwnerWeapon을 To의 OwnerWeapon으로 변경한다.
      */    
     static void SetWeaponPartsManager(UNewItemObject* Obj, AWeapon* Weapon);
+
+	static void CopyItem(UItemStorageObject& To, UItemStorageObject& From);
 
 
 	/// 이하 사용하지 않는 함수들

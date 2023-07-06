@@ -125,6 +125,7 @@ void UMainAnimInstance::SetLeftHandIKAlpha(float Alpha)
 	UE_LOG(LogTemp, Warning, TEXT("UMainAnimInstance::SetLeftHandIKAlpha, Alpha  = %f"), LeftHandAlpha);	
 }
 
+
 void UMainAnimInstance::SetWeaponTypeNumber(int32 number)
 {
 	UE_LOG(LogTemp,Warning,TEXT("UMainAnimInstance::SetWeaponTypeNumber// %s"), *this->GetFName().ToString());
@@ -169,8 +170,8 @@ void UMainAnimInstance::AnimNotify_EndEquipping()
 		Player->EndEquipped();
 	}
 }
-//
-//void UMainAnimInstance::AnimNotify_ADS()
+
+//void UMainAnimInstance::AnimNotify_StartFPADS()
 //{
 //	UE_LOG(LogTemp, Warning, TEXT("UMainAnimInstance::AnimNotify_ADS"));
 //	StartADS.Broadcast();

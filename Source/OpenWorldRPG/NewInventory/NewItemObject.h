@@ -44,10 +44,13 @@ class OPENWORLDRPG_API UNewItemObject : public UObject, public IItemInterface
 public:
 	UNewItemObject();
 
-
+	UPROPERTY()
 	FItemSetting ItemInfo;
+	UPROPERTY()
 	FIntPoint ItemRotateSize;
+	UPROPERTY()
 	EEquipmentType EquipmentType;
+	UPROPERTY()
 	EInteractType InteractType;
 
 
@@ -55,7 +58,7 @@ public:
 	AItem* item;
 	AEquipment* Equipment;
 
-
+	UPROPERTY()
 	int32 TopLeftIndex;
 	UItemStorageObject* MotherStorage;
 	UEquipmentComponent* MotherEquipComp;
@@ -63,12 +66,14 @@ public:
 	
 	UEquipmentSlot* SettedSlot;
 
+	UPROPERTY()
 	ERifleSlot RifleAssign;
 
 	UPROPERTY()
 	class UWeaponPartsManagerObject* WeaponPartsManager;
 
 	//for Weapon
+	UPROPERTY()
 	int32 AmmoLeftInMag = 0;
 
 	/* boolean value */
@@ -107,7 +112,7 @@ public:
 	////////////////////////////////////////////////////////////
 
 
-
+	//virtual void Serialize(FArchive& Ar) override;
 
 	//GridWidget에서 On-Drop시에 Rotate값을 확정한다. (TempRotate값을 Rotate값으로 넣어주기만 한다.)
 	void SetItemRotate();

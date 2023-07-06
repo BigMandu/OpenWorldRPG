@@ -22,6 +22,8 @@ AInteractable::AInteractable()
 
 	SetRootComponent(Mesh);
 	SKMesh->SetupAttachment(GetRootComponent());
+
+	bCanNotInteractable = false;
 	
 }
 
@@ -77,6 +79,7 @@ void AInteractable::SetMesh()
 	if ( ItemSetting.DataAsset->Mesh && !ItemSetting.DataAsset->SKMesh )
 	{
 		Mesh->SetStaticMesh(ItemSetting.DataAsset->Mesh);
+		SKMesh->SetSkeletalMesh(nullptr);
 		if ( !ItemSetting.DataAsset->ReSizeScale.IsZero() )
 		{
 			Mesh->SetWorldScale3D(ItemSetting.DataAsset->ReSizeScale);

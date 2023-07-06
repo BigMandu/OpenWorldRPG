@@ -345,35 +345,42 @@ void UNewInventoryComponent::AddItemAtIndex(UItemStorageObject* StorageObj, UNew
 	StorageObj->AddItemAtIndex(ItemObj, Index);
 }
 
-bool UNewInventoryComponent::TryAddItem(UItemStorageObject* StorageObj, FItemSetting ItemSetting, UNewItemObject* Obj, AItem* WantToAddItem, bool bWantToGenerateRandomCount)
+bool UNewInventoryComponent::TryAddItem(UItemStorageObject* StorageObj, FItemSetting ItemSetting, AItem* WantToAddItem, UNewItemObject* Obj, bool bWantToGenerateRandomCount)
 {
 	bool bCreated = false;
 	bool bAddCount = false;
 	UNewItemObject* ItemObj = nullptr;
 
-	if(Obj == nullptr)
-	{
-#ifdef DEBUG_INVCOMP
-		//UE_LOG(LogTemp,Warning,TEXT("InvComp::TryAddItem / No Obj, call CreateObj func "));
-#endif
-		ItemObj = UCustomInventoryLibrary::CreateObject(ItemSetting, bCreated); //CreateObject(ItemSetting, bCreated);
-	}
-	else
+
+	if ( (WantToAddItem && WantToAddItem->ItemObj) || Obj )
 	{
 #ifdef DEBUG_INVCOMP
 		//UE_LOG(LogTemp, Warning, TEXT("InvComp::TryAddItem / already has Obj"));
 #endif
-		ItemObj = Obj;
+		if ( WantToAddItem->ItemObj )
+		{
+			ItemObj = WantToAddItem->ItemObj;
+		}
+		else if ( Obj )
+		{
+			ItemObj = Obj;
+		}
 		bCreated = true;
+	}
+	else
+	{
+#ifdef DEBUG_INVCOMP
+		//UE_LOG(LogTemp,Warning,TEXT("InvComp::TryAddItem / No Obj, call CreateObj func "));
+#endif
+		ItemObj = UCustomInventoryLibrary::CreateObject(ItemSetting, bCreated);
 	}
 
 
 	if (bCreated)
 	{
-		
+		//LootBox(Chest)에 Item을 Spawn시, 또는 World에 뿌려진 Backpack, EnemyAI Character에 Item을 Spawn시 수량을 랜덤하게 준다.
 		if (bWantToGenerateRandomCount)
-		{
-			//LootBox(Chest)에 Item을 Spawn시, 또는 World에 뿌려진 Backpack, EnemyAI Character에 Item을 Spawn시 수량을 랜덤하게 준다.
+		{			
 			UCustomInventoryLibrary::GenerateRandomCount(ItemObj);
 		}
 		else if (ItemObj->ItemInfo.DataAsset->bCanStack)
@@ -395,14 +402,13 @@ bool UNewInventoryComponent::TryAddItem(UItemStorageObject* StorageObj, FItemSet
 				}
 			}
 		}
-
-
-		//ItemObj가 Weapon인 경우 && WPM이 없는 경우  WPM을 생성 해주고 Data를 넘겨준다.
+		//ItemObj가 Weapon의 OBJ이고 && WPM이 없는 경우  WPM을 생성 해주고 Data를 넘겨준다.
 		if ( UWeaponPDA* WeapPDA = Cast<UWeaponPDA>(ItemObj->ItemInfo.DataAsset))
 		{
 			if ( (WeapPDA->EquipmentType == EEquipmentType::EET_Rifle || WeapPDA->EquipmentType == EEquipmentType::EET_Pistol) &&
 			WantToAddItem != nullptr )
 			{
+				
 				UCustomInventoryLibrary::SetWeaponPartsManager(ItemObj, Cast<AWeapon>(WantToAddItem));
 				if ( ItemObj->WeaponPartsManager )
 				{
@@ -411,6 +417,20 @@ bool UNewInventoryComponent::TryAddItem(UItemStorageObject* StorageObj, FItemSet
 				}
 			}
 		}
+		////만약 새로 생성한(INV에 ADD할) obj가 storage타입이라면, World에 배치된 Item의 StorageInventory를 그대로 넘겨준다.
+		//else if ( UItemStorageObject* HasStorage = Cast<UItemStorageObject>(ItemObj))
+		//{
+		//	if ( UItemStorageObject* AddItemsStorage = Cast<UItemStorageObject>(WantToAddItem->ItemObj))
+		//	{
+		//		if ( AddItemsStorage->Inventory.Num() > 0 )
+		//		{
+		//			UCustomInventoryLibrary::CopyItem(*HasStorage,*AddItemsStorage);
+		//			
+		//			//HasStorage = AddItemsStorage;
+		//			//HasStorage->Inventory = AddItemsStorage->Inventory;
+		//		}				
+		//	}			
+		//}
 
 
 #ifdef DEBUG_INVCOMP

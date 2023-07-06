@@ -22,6 +22,8 @@
 
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
+#include "NiagaraCollision.h"
+#include "NiagaraEmitterInstance.h"
 
 #include "Kismet/GameplayStatics.h"
 
@@ -252,8 +254,20 @@ void ABaseGrenade::BeginEffect()
 	{
 		Ni_ParticleComp->SetAutoActivate(true);
 		Ni_ParticleComp->SetAsset(GPDA->Ni_GrenadeEffect);
-		Ni_ParticleComp->Activate();
 
+		Ni_ParticleComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		Ni_ParticleComp->SetGenerateOverlapEvents(true);
+		//Ni_ParticleComp->SetCollisionObjectType()		
+		
+		Ni_ParticleComp->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		//Ni_ParticleComp->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
+		Ni_ParticleComp->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
+		Ni_ParticleComp->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Ignore);
+
+
+		
+		//FNiagaraDICollisionQueryBatch.
+		
 	}
 
 	

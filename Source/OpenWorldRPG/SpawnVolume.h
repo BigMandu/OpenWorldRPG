@@ -123,6 +123,19 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "SpawnVolume | Settings")
 	class UBillboardComponent* Billboard;
 
+
+	/*This Array is for a 'Save And Load' System.
+	//StartVolumeSpawn일 때 DestoryCount는 ActualspawnCount값을 가지게 된다.
+	//이후 게임세션이 살아있을 동안, 해당 spawnvolume에서 spawn된 item을
+	//player가 습득하게 된 경우 DestoryCount를 증가시킨다.
+	//저장할때는 이 DestroyCount를 저장하게되고, load시에 이 DestoryCount를 비교하여
+	해당 volume의 spawn 여부와 spawn개수를 결정한다.
+	*/
+	UPROPERTY(VisibleAnywhere, Category = "SpawnVolume | SpawnActorManager")
+	int32 DestoryCount = 0;
+
+	UPROPERTY(VisibleAnywhere, Category = "SpawnVolume | SpawnActorManager")
+	int32 RemainingCount;
 	
 
 
@@ -148,6 +161,8 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+public:
+	void IncreaseDestroyCount();
 
 	
 

@@ -4,13 +4,16 @@
 #include "NiceCar.h"
 #include "FrontWheel.h"
 #include "RearWheel.h"
+
 #include "OpenWorldRPG/MainCharacter.h"
 #include "OpenWorldRPG/MainController.h"
 #include "OpenWorldRPG/GameData/VehicleDataTable.h"
 
 #include "OpenWorldRPG/NewInventory/LootWidgetComponent.h"
 #include "OpenWorldRPG/NewInventory/ItemStorageObject.h"
+#include "OpenWorldRPG/NewInventory/Widget/NewInventory.h"
 
+#include "GameFramework/Character.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 
@@ -18,11 +21,14 @@
 #include "Components/InputComponent.h"
 #include "Components/BoxComponent.h"
 #include "Components/AudioComponent.h"
+#include "Components/CapsuleComponent.h"
 
 #include "WheeledVehicleMovementComponent.h"
 #include "WheeledVehicleMovementComponent4W.h"
-#include <OpenWorldRPG/NewInventory/Widget/NewInventory.h>
-#include <Kismet/GameplayStatics.h>
+
+#include "Kismet/GameplayStatics.h"
+#include "DrawDebugHelpers.h"
+
 
 PRAGMA_DISABLE_DEPRECATION_WARNINGS
 ANiceCar::ANiceCar()
@@ -139,6 +145,8 @@ void ANiceCar::SetupPlayerInputComponent(UInputComponent* InputComp)
 
 	InputComp->BindAction("Jump", IE_Pressed, this, &ANiceCar::PressHandbrake);
 	InputComp->BindAction("Jump", IE_Released, this, &ANiceCar::ReleaseHandbrake);
+	InputComp->BindAction("Reload", IE_Pressed, this, &ANiceCar::TrySave);
+
 
 }
 
@@ -369,17 +377,18 @@ void ANiceCar::GetoutCar()
 	AMainController* PlayerCon = Cast<AMainController>(GetWorld()->GetFirstPlayerController());
 	if (PlayerCon)
 	{
-
-		FVector CarRightVec = GetActorRightVector();
-		FVector DoorBoxLo = DoorCollision->GetComponentLocation();
-		float Ylength = DoorCollision->GetScaledBoxExtent().Y;	
-
-		FVector YOpSide = DoorBoxLo + CarRightVec * Ylength;
-		FVector YNeSide = DoorBoxLo + CarRightVec * Ylength * -1.f;
-
 		float CapsuleRad;
 		float CapsuleHH;
 		PlayerCon->Main->GetCapsuleComponent()->GetScaledCapsuleSize(CapsuleRad, CapsuleHH);
+
+		FVector CarRightVec = GetActorRightVector();
+		FVector DoorBoxLo = DoorCollision->GetComponentLocation();
+		float Tracelength = DoorCollision->GetScaledBoxExtent().Y;	
+
+		FVector YOpSide = DoorBoxLo + CarRightVec * Tracelength;
+		FVector YNeSide = DoorBoxLo + CarRightVec * Tracelength * -1.f;
+
+		
 
 		FVector CharacterHalfBounding = FVector(CapsuleRad, CapsuleRad, CapsuleHH);
 
@@ -465,7 +474,83 @@ bool ANiceCar::CanGetout(const FVector DoorOrigin, const FVector WantToGetOutPos
 	return bReturn;
 }
 
+void ANiceCar::TrySave()
+{
+	//움직임이 없을때만 저장을 시도함.
+	if ( GetVelocity().Size() > 0.f )
+	{
+		UE_LOG(LogTemp,Warning,TEXT("ANiceCar::TrySave// 차량이 완전히 멈춰야 저장할 수 있습니다."));
+	}
+	else
+	{
+		if(CheckThreeSurfaceHit())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("ANiceCar::TrySave// Controller Name : %s"), *GetController()->GetFName().ToString());
+			//Playercontroller를 불러와서 저장을 시작함.
+			if (AMainController* PlayerCon = Cast<AMainController>(GetController()))
+			{
+				PlayerCon->SaveGame();
+			}
+			
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("ANiceCar::TrySave// 차량의 3면이상이 벽에 닿는곳에서만 주차할 수 있습니다."));
+			UE_LOG(LogTemp, Warning, TEXT("ANiceCar::TrySave// 또는 너무 벽에 붙었습니다."));
+		}
 
+	}
+
+}
+
+
+bool ANiceCar::CheckThreeSurfaceHit()
+{
+	
+	FVector CarLocation = GetActorLocation();
+	FVector BoxExt = GetMesh()->GetPhysicsAsset()->CalcAABB(GetMesh(), FTransform::Identity).GetExtent();
+
+	//CarLocation의 Z축을 살짝 올린다.
+	FVector AdjustCarLocation(CarLocation.X, CarLocation.Y, CarLocation.Z + BoxExt.Z);
+	
+	FRotator CarRotation = GetActorRotation();
+	FVector FowVector = GetActorForwardVector(); //CarRotation.RotateVector(FVector::ForwardVector);
+	FVector RigVector = GetActorRightVector(); //CarRotation.RotateVector(FVector::RightVector);
+
+	TArray<FVector> OriginLineTrace;
+	OriginLineTrace.Add(AdjustCarLocation + FowVector * (BoxExt.X - 10.f));
+	OriginLineTrace.Add(AdjustCarLocation + FowVector * (BoxExt.X - 10.f) * -1.f);
+	OriginLineTrace.Add(AdjustCarLocation + RigVector * (BoxExt.Y - 10.f));
+	OriginLineTrace.Add(AdjustCarLocation + RigVector * (BoxExt.Y - 10.f) * -1.f);
+
+	int32 HitCount = 0;
+	for (FVector Origin : OriginLineTrace)
+	{
+		FHitResult Hit;
+		//FVector RotVec = (Origin - AdjustCarLocation).Rotation().Vector();
+		FVector RotVec = (Origin - AdjustCarLocation).GetSafeNormal();
+		FCollisionQueryParams Params(FName("CarTrace"), false, this);
+		GetWorld()->LineTraceSingleByChannel(Hit, Origin, Origin+RotVec*200.f, ECollisionChannel::ECC_Visibility, Params);
+
+		if ( Hit.IsValidBlockingHit() )
+		{
+			++HitCount;
+		}
+
+		if ( HitCount >= 3 )
+		{
+			break;
+		}
+		DrawDebugLine(GetWorld(),Origin, Origin + RotVec * 200.f, FColor::Green,false, 5.f, 0, 3.f);
+		
+	}
+
+	if ( HitCount >= 3 )
+	{
+		return true;
+	}
+	return false;
+}
 
 
 void ANiceCar::DoorOnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)

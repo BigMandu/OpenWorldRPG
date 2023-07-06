@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -46,7 +46,7 @@ public:
 	USkeletalMeshComponent* SKMesh;
 
 	//If true, This Actor Can't Interact.
-	bool bCanNotInteractable = false;
+	bool bCanNotInteractable;
 
 	//AI끼리 충돌방지, 먼저 선점(인식) 했는지 여부.
 	bool bIsPreOccupied;

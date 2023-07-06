@@ -51,7 +51,8 @@ void UNewInventory::NativeConstruct()
 		EquipmentStorageWidget->InitializeInventory(Main);
 		EquipmentStorageWidget->EquipInitialize(EquipComp);		
 		EquipmentStorageWidget->MainWidget = this;
-		
+
+		//아래 event는 실제로 NewItemwidget class에서 broadcast 된다.
 		EquipmentStorageWidget->PocketWidget->OpenAdditionalWidget.AddDynamic(this, &UNewInventory::BindingOpenWidgetFunc);
 		EquipmentStorageWidget->SecureBoxWidget->OpenAdditionalWidget.AddDynamic(this, &UNewInventory::BindingOpenWidgetFunc);
 

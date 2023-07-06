@@ -171,25 +171,28 @@ bool AEnemyAIController::CanInteraction(AActor* Object)
 {
 	bool bCanInteract = true;
 
-	AEquipment* Equip = Cast<AEquipment>(Object);
-
 	//AI가 장착한 장비거나, 다른 캐릭터가 장착중인 장비는 Interaction이 불가능하다.
 	//여기서 추가해야할것 -> 다른 AI가 이미 먼저 식별했을 경우의 조건도 추가해야함.
 	//Equip에 boolean 변수를 하나 추가해서. OtherCharacter의 occupy선점 여부를 확인 하는거 ㄹ추가하면 될듯?
-
-
-	//if (Equip && Equip->bIsPreOccupied == false)
+	
+	//UE_LOG(LogTemp, Warning, TEXT("AEnemyAIController::CanInteraction / PreOccupied is false, Check Equip, Owning"));
+	//AI가 해당 Equip을 장착하지 않았거나, OwningPlayer가 없다면
+	if ( AEquipment* Equip = Cast<AEquipment>(Object))
 	{
-		//UE_LOG(LogTemp, Warning, TEXT("AEnemyAIController::CanInteraction / PreOccupied is false, Check Equip, Owning"));
-		//AI가 해당 Equip을 장착하지 않았거나, OwningPlayer가 없다면
-		if ( Equip && Equip->OwningPlayer != nullptr ) //OwnerActor->CheckEquipped(Object) != true) || Equip && Equip->OwningPlayer == nullptr)
+		//UE_LOG(LogTemp, Warning, TEXT("AEnemyAIController::CanInteraction / Can Interaction"));
+		if ( Equip->OwningPlayer != nullptr )
 		{
-			//UE_LOG(LogTemp, Warning, TEXT("AEnemyAIController::CanInteraction / Can Interaction"));
-			//Interact가 가능하다
-			//Equip->bIsPreOccupied = true;
 			bCanInteract = false;
 		}
+			
 	}
+	else if ( ABaseCharacter* BChar = Cast<ABaseCharacter>(Object) )
+	{
+		if ( BChar->CharacterStatus != ECharacterStatus::EPS_Dead )
+		{
+			bCanInteract = false;
+		}
+	}	
 
 	return bCanInteract;
 }
@@ -212,7 +215,7 @@ void AEnemyAIController::DetectedTarget(AActor* Target, FAIStimulus Stimulus)
 			DetectedGrenade(Target, Stimulus);
 		}
 		//Character를 감지했을 경우 Enemy인지 확인한다.
-		else if (Char && CheckIsEnemy(Char))
+		else if (Char && CheckIsEnemy(Char) && Char->CharacterStatus != ECharacterStatus::EPS_Dead )
 		{
 			DetectedEnemy(Char, Stimulus);
 			//UE_LOG(LogTemp, Warning, TEXT("AI Found Player!"));
@@ -311,6 +314,7 @@ void AEnemyAIController::DetectedEnemy(ABaseCharacter* Player, FAIStimulus Stimu
 		if (Stimulus.Type == SightSenseID)// && Stimulus.Strength >= 1.f) //Sight를 감지했을때
 		{
 			//Sight로 적이라는걸 식별했을때만 실행한다.
+
 			
 			OwnerActor->GetCharacterMovement()->MaxWalkSpeed = OwnerActor->MaxWalkSpeed;
 			//Enemy->bSeePlayer = true; //디버깅
@@ -332,6 +336,11 @@ void AEnemyAIController::DetectedEnemy(ABaseCharacter* Player, FAIStimulus Stimu
 			UpdateBBCompBoolKey(bSeeEnemyKey, true);
 			UpdateBBCompBoolKey(bHearEnemyKey, false);
 			UpdateBBCompObjectKey(EnemyKey, Player);
+
+			if ( Player->CharacterStatus == ECharacterStatus::EPS_Dead )
+			{
+				UpdateBBCompObjectKey(EnemyKey, nullptr);
+			}
 			//UpdateSeePlayerKey(true);
 			//UpdateHearPlayerKey(false);
 			//UpdatePlayerKey(Player); //Player를 Setting해준다.

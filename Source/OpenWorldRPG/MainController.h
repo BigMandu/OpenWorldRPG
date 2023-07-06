@@ -17,8 +17,9 @@ UCLASS()
 class OPENWORLDRPG_API AMainController : public APlayerController
 {
 	GENERATED_BODY()
+private:
+	
 
-	UPROPERTY()
 	TArray<class AEnemyAIController*> TargetAIList;
 public:
 
@@ -44,6 +45,12 @@ public:
 	TSubclassOf<UUserWidget> WDeathWidget;
 	UUserWidget* DeathWidget;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets | Loading")
+	TSubclassOf<UUserWidget> WLoadingWidget;
+	UUserWidget* LoadingWidget;
+
+	FTimerHandle LoadingwidgetTimer;
+
 	bool bIsInteractLootBox;
 	bool bIsInteractCharacterLoot;
 	bool bIsInventoryVisible;
@@ -53,10 +60,16 @@ public:
 	bool bIsinCar;
 	TWeakObjectPtr<class ANiceCar> Car;
 
+	/* Save */
+	UPROPERTY()
+	class USavePlayer* SaveGame_Player;
+
 protected:
 	virtual void BeginPlay() override;
+	virtual void SetupInputComponent() override;
 
-public:
+public:	
+
 	void ToggleInventory();
 
 	void ControlInteractText(bool bIsInteract);
@@ -102,4 +115,20 @@ public:
 	bool bIsthisTargetForAI();
 
 	//void UseQuickSlotItem(EQuickSlotNumber QuickSlotNum);
+
+
+	/* Save And Load Game */
+	void SaveGame();
+	void LoadGame();
+
+
+	void SavePlayerStatus();
+	void LoadPlayerStatus();
+
+	void OriginalToCopy(TArray<class UNewItemObject*> &Original, TArray<struct FSaveItem> &Copy);
+	void CopyToOriginal(TArray<class UNewItemObject*> &Original, TArray<struct FSaveItem> &Copy);
+
+	UFUNCTION()
+	void LoadingProcessCompleted();
+
 };

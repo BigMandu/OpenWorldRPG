@@ -10,18 +10,18 @@
 #include "OpenWorldRPG/Item/Weapon.h"
 #include "OpenWorldRPG/Item/CustomPDA.h"
 #include "OpenWorldRPG/Item/BaseGrenade.h"
-#include "OpenWorldRPG/GameData/StatManagementComponent.h"
 #include "OpenWorldRPG/NewInventory/EquipmentComponent.h"
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
 #include "OpenWorldRPG/NewInventory/Widget/NewInventory.h"
 
 #include "OpenWorldRPG/MainHud.h"
+#include "OpenWorldRPG/GameData/StatManagementComponent.h"
 #include "OpenWorldRPG/UI/ResourceStatusWidgetInInventory.h"
 #include "OpenWorldRPG/UI/ResourceStatusWidget.h"
 #include "OpenWorldRPG/UI/WeaponStatusWidget.h"
 #include "OpenWorldRPG/UI/QuickSlotWidget.h"
 #include "OpenWorldRPG/UI/CompassWidget.h"
-
+#include "OpenWorldRPG/UI/CharacterStatusWidget.h"
 
 #include "Engine/SkeletalMeshSocket.h"
 #include "Engine/EngineTypes.h"
@@ -35,10 +35,7 @@
 
 #include "Components/SphereComponent.h"
 #include "Components/PawnNoiseEmitterComponent.h"
-
-//#include "OpenWorldRPG/Item/Interactive_Interface.h"
-
-
+#include "Components/SceneCaptureComponent2D.h"
 #include "Components/CapsuleComponent.h"
 
 #include "DrawDebugHelpers.h" //디버깅용
@@ -60,6 +57,10 @@ AMainCharacter::AMainCharacter() : Super()
 	bTabKeyDown = false;
 	bIsLookInput = false;
 	ActiveInteractDistance = 200.f; //상호작용 아이템이 표시되는 최대거리.
+
+
+	CharacterCapture = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("CharacterCaptureComp"));
+	CharacterCapture->SetupAttachment(RootComponent);
 
 	/* 카메라 관련 */
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
@@ -92,6 +93,9 @@ AMainCharacter::AMainCharacter() : Super()
 	CameraFPS->SetRelativeTransform(CameraFPSTransform);//SetRelativeLocationAndRotation(FVector(0.f, 8.f, 0.f), FRotator(-90.f, 0.f, 90.f));
 	CameraFPS->SetOrthoNearClipPlane(0.f);
 
+	CharacterMaskClothes = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("MaskClothes"));
+	CharacterMaskClothes->SetupAttachment(GetRootComponent());
+
 	FPMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FPMesh"));
 	FPMesh->SetupAttachment(CameraFPS);
 
@@ -106,10 +110,11 @@ void AMainCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
+	
 	/* Player의 AnimInstance를 불러온다. */
 	//TPAnimInstance = Cast<UMainAnimInstance>(GetMesh()->GetAnimInstance()); 
 	FPAnimInstance = Cast<UMainAnimInstance>(FPMesh->GetAnimInstance());
-
+	
 	//if ( FPAnimInstance )//TPAnimInstance && FPAnimInstance)
 	//{
 		/* 사운드는 TP Animation을 기준으로 출력한다. */ //AnimInstance의 StepSound_Notify에서 호출.
@@ -142,6 +147,11 @@ void AMainCharacter::PostInitializeComponents()
 	FPMesh->SetCastShadow(false);
 	GetMesh()->SetCastShadow(false);
 
+
+	/* Mask의류 입기 */
+	FAttachmentTransformRules Rules(EAttachmentRule::KeepRelative, EAttachmentRule::KeepRelative, EAttachmentRule::KeepRelative,true);
+	CharacterMaskClothes->AttachToComponent(GetMesh(),Rules, MaskSocketName);
+	CharacterMaskClothes->SetRelativeTransform(FTransform(FRotator(-90.f, 0.f,0.f), FVector(-168.f, 2.3f, 0.f)));
 
 
 	/* FPS Aim관련 기본 설정 값 저장*/
@@ -194,6 +204,7 @@ void AMainCharacter::BeginPlay()
 		{
 			MainHud->ResourceWidget->BindStatManager(StatManagementComponent);
 			MainHud->NewInventoryWidget->ResourceStatusWidget->BindStatManager(StatManagementComponent);
+			MainHud->NewInventoryWidget->CharacterStatusWidget->BindStatManager(StatManagementComponent);
 		}
 
 
@@ -277,20 +288,21 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAction("RMB", IE_Pressed, this, &AMainCharacter::RMBDown);
 	PlayerInputComponent->BindAction("RMB", IE_Released, this, &AMainCharacter::RMBUp);
 
-	PlayerInputComponent->BindAction("ChangeSafetyLever", IE_Pressed, this, &ABaseCharacter::ChangeSafetyLever);
-	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &ABaseCharacter::ReloadWeapon);
+	PlayerInputComponent->BindAction("TacticalToggle", IE_Pressed, this, &ABaseCharacter::ToggleTacticalEquip); //F key
+	PlayerInputComponent->BindAction("ChangeSafetyLever", IE_Pressed, this, &ABaseCharacter::ChangeSafetyLever); //T key
+	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &ABaseCharacter::ReloadWeapon); //R key
 
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &AMainCharacter::MyJump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &AMainCharacter::MyStopJumping);
 
-	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &AMainCharacter::MyCrouch);
+	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &AMainCharacter::MyCrouch); //C key
 	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &AMainCharacter::MyUnCrouch);
 
-	PlayerInputComponent->BindAction("Walk", IE_Pressed, this, &AMainCharacter::Walk);
+	PlayerInputComponent->BindAction("Walk", IE_Pressed, this, &AMainCharacter::Walk); //Ctrl key
 	PlayerInputComponent->BindAction("Walk", IE_Released, this, &AMainCharacter::UnWalk);
 
 
-	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &AMainCharacter::Sprint);
+	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &AMainCharacter::Sprint); //Shift key
 	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &AMainCharacter::UnSprint);
 
 	PlayerInputComponent->BindAction("QSlot_4", IE_Pressed, this, &AMainCharacter::QuickSlotNum4);
@@ -318,6 +330,11 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAction("Tab", IE_Pressed, this, &AMainCharacter::TabKeyDown);
 
 	PlayerInputComponent->BindAction("Interactive", IE_Pressed, this, &AMainCharacter::EKeyDown);
+
+
+	/***************** Test save and load *********************/
+	
+	
 
 }
 
@@ -443,6 +460,7 @@ void AMainCharacter::SetCameraMode(ECameraMode Type)
 		}
 
 		UCustomInventoryLibrary::ShowAllEquipment(Equipment);
+		CharacterMaskClothes->SetRenderInMainPass(true);
 
 		break;
 
@@ -474,6 +492,7 @@ void AMainCharacter::SetCameraMode(ECameraMode Type)
 
 		//장착중인 장비를 모두 hide한다.
 		UCustomInventoryLibrary::HideAllEquipment(Equipment);
+		CharacterMaskClothes->SetRenderInMainPass(false);
 
 		break;
 	}
@@ -490,118 +509,103 @@ void AMainCharacter::SetAimMode(EAimMode Mode)
 {
 	Super::SetAimMode(Mode);
 	//AimMode = Mode;
-	if ( EquippedWeapon )
+	if ( EquippedWeapon == nullptr ) return;
+	if ( EquippedWeapon->CurrentWeaponState != EWeaponState::EWS_Idle ) return;
+
+	switch ( AimMode )
 	{
-
-		switch ( AimMode )
-		{
-		case EAimMode::EAM_Aim:
-		{
-			//Super로 옮김
-			/*bIsAim = true;
-			EquippedWeapon->bIsAiming = true;
-			GetCharacterMovement()->MaxWalkSpeed = MinWalkSpeed;*/
-			if ( CameraMode == ECameraMode::ECM_TPS )
-			{
-				//TPS모드 + Aim상태일때는 카메라를 살짝 앞으로 땡겨준다.
-				//현재 SpringArm의 길이를 저장한다.
-				/*BeforeCameraLength = CameraBoom->TargetArmLength;
-				CameraBoom->TargetArmLength = MINCameraLength + 20.f;
-				CameraTPS->SetRelativeLocation(TPSCam_Aim_Rel_Location);
-				CameraTPS->FieldOfView = 77.f;*/
-				LerpCamera(CameraTPS, MINCameraLength + 20.f, TPSCam_Aim_Rel_Location, 77.f);
-
+	case EAimMode::EAM_Aim:
+	{
+		//Idle 상태가 아니면 ADS를 하지 못하게 막는다.
+		
 			
-
-			}
-			else if ( CameraMode == ECameraMode::ECM_FPS )
-			{
-				//idle anim에 의해 Socket의 WorldTF값이 틀어지는걸 방지하기 위해 정지Anim을 재생한다.
-				if ( EquippedWeapon->WeaponDataAsset->WeaponAnimaton.FPS_ADS_Anim )
-				{
-					//below is using Blend.
-					FPAnimInstance->Montage_Play(EquippedWeapon->WeaponDataAsset->WeaponAnimaton.FPS_ADS_Anim, 1.f, EMontagePlayReturnType::MontageLength, 0.f, true);
-					FPAnimInstance->Montage_JumpToSection(FName("Default"), EquippedWeapon->WeaponDataAsset->WeaponAnimaton.FPS_ADS_Anim);
-
-					//FPMesh->bPauseAnims = true;
-					LerpCamera(CameraFPS, 60.f);
-				}
-			}
-			break;
-
-
-
+		if ( CameraMode == ECameraMode::ECM_TPS )
+		{			
+			LerpCamera(CameraTPS, MINCameraLength + 20.f, TPSCam_Aim_Rel_Location, 77.f);
 		}
-		case EAimMode::EAM_NotAim:
+		else if ( CameraMode == ECameraMode::ECM_FPS )
 		{
-			//Super로 옮김
-			/*bIsAim = false;
-			EquippedWeapon->bIsAiming = false;
-			GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;*/
-
-			if ( CameraMode == ECameraMode::ECM_TPS )
+			//idle anim에 의해 Socket의 WorldTF값이 틀어지는걸 방지하기 위해 정지Anim을 재생한다.
+			if ( EquippedWeapon->WeaponDataAsset->WeaponAnimaton.FPS_ADS_Anim )
 			{
-				//땡긴 카메라를 다시 원복 시킨다.
-				/*float CurrentLength = CameraBoom->TargetArmLength;
-				float CameraLength = FMath::FInterpTo(CurrentLength, BeforeCameraLength, GetWorld()->GetDeltaSeconds(), 15.f);*/
-				/*CameraBoom->TargetArmLength = BeforeCameraLength;
-				CameraTPS->SetRelativeLocation(TPSCam_Rel_Location);
-				CameraTPS->FieldOfView = BaseCamTPSfov;*/
-				LerpCamera(CameraTPS, MAXCameraLength - 20.f, TPSCam_Rel_Location, BaseCamTPSfov);
-
+				//sFPMesh->bPauseAnims = true;
+				//below is using Blend.
+				FPAnimInstance->Montage_Play(EquippedWeapon->WeaponDataAsset->WeaponAnimaton.FPS_ADS_Anim, 1.f, EMontagePlayReturnType::MontageLength, 0.f, true);
+				FPAnimInstance->Montage_JumpToSection(FName("ADS"), EquippedWeapon->WeaponDataAsset->WeaponAnimaton.FPS_ADS_Anim);
+				LerpCamera(CameraFPS, 60.f);
 			}
-			else if ( CameraMode == ECameraMode::ECM_FPS )
-			{
-				//FPAnimInstance->StopAllMontages(0.f);//Montage_Stop( (0.f);
-				FPSnotADS();
+		}
+		break;
 
-				FPMesh->bPauseAnims = false;
-				//FPMesh->SetRelativeTransform(FPMeshOriginTransform);
-				//CameraFPS->FieldOfView = BaseCamFPSfov;
-				LerpCamera(CameraFPS, BaseCamFPSfov);
-			}
-			break;
-		}
-		default:
-			break;
-		}
+
+
 	}
+	case EAimMode::EAM_NotAim:
+	{
+		if ( CameraMode == ECameraMode::ECM_TPS )
+		{
+			LerpCamera(CameraTPS, MAXCameraLength - 20.f, TPSCam_Rel_Location, BaseCamTPSfov);
+		}
+		else if ( CameraMode == ECameraMode::ECM_FPS )
+		{
+			//FPAnimInstance->StopAllMontages(0.f);//Montage_Stop( (0.f);
+			FPSnotADS();
+			LerpCamera(CameraFPS, BaseCamFPSfov);
+			FPMesh->bPauseAnims = false;
+			//FPMesh->SetRelativeTransform(FPMeshOriginTransform);
+			//CameraFPS->FieldOfView = BaseCamFPSfov;
+				
+		}
+		break;
+	}
+	default:
+		break;
+	}
+	
 }
 
 //called from StartFPADS class (Anim Notify)
 void AMainCharacter::FPSADS()
 {
 	UE_LOG(LogTemp, Warning, TEXT("AMainCharacter::FPSADS called"));
+
 	//FPMesh (Arm Mesh)가 이동할 위치값을 가져온다.
 	FTransform ADSPos = GetFpsAdsPosition();
 
-	bIsAim = true;
-	EquippedWeapon->bIsAiming = true;
-	GetCharacterMovement()->MaxWalkSpeed = MinWalkSpeed;
-
 	ADSTime = 0.f;
 	ADSAlphaTime = 0.f;
-
-
-	GetWorldTimerManager().SetTimer(T_ADSTimerHandle, [ = ] {
+	//FPMesh->bPauseAnims = true;
+	
+	GetWorldTimerManager().SetTimer(T_ADSTimerHandle, [=] {
 		FTransform OriginPos = FPMesh->GetRelativeTransform();
-	if ( ADSAlphaTime >= 1.1f )
-	{
-		GetWorldTimerManager().ClearTimer(T_ADSTimerHandle);
-	}
-	ADSTime += GetWorld()->GetDeltaSeconds();
-	ADSAlphaTime = ADSTime / 1.f;
 
-	FTransform LerpPos = UKismetMathLibrary::TLerp(OriginPos, ADSPos, ADSAlphaTime);
+	//FPMesh를 중앙으로 옮기는 시간을 0.8초로 정한다.
+	ADSTime += GetWorld()->GetDeltaSeconds();
+	ADSAlphaTime = ADSTime / .8f; //.8f;
+
+	FTransform LerpPos = UKismetMathLibrary::TLerp(OriginPos, ADSPos, ADSAlphaTime,ELerpInterpolationMode::QuatInterp);
 
 	//FPMesh를 해당 Offset만큼 이동, Camera의 중앙에 오도록 한다.
 	FPMesh->SetRelativeTransform(LerpPos);//OffsetWithoutX);
+	UE_LOG(LogTemp,Warning,TEXT("AMainCharacter::FPSADS // ADSTime = %f, ADSAlphaTime = %f"),ADSTime,ADSAlphaTime);
+	//LerpCamera 함수와 시간을 맞춰주자.
+	if ( FPMesh->GetRelativeTransform().Equals(ADSPos) || ADSAlphaTime >= 0.99f)//0.4f )
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AMainCharacter::FPSADS Time 0.99f!!!!~!!! Try ClearTimer // ADSAlphaTime = %f"), ADSAlphaTime);
+		FPMesh->bPauseAnims = false;
+		//FPMesh->SetRelativeTransform(ADSPos);
+		//FPAnimInstance->StopAllMontages(0.1f);
+		GetWorldTimerManager().ClearTimer(T_ADSTimerHandle);
+
+	}
 
 		}, GetWorld()->GetDeltaSeconds(), true);
 
 	//모든 세팅이 끝나면 AnimMontage를 해제해서 Locomotion Anim을 이어나가도록 한다.
-	FPAnimInstance->StopAllMontages(0.f);
-
+	FPMesh->bPauseAnims = true;
+	/*FPAnimInstance->StopAllMontages(0.1f);
+	*/
+	
 	//CameraFPS->SetWorldTransform(SightTransform);
 }
 
@@ -613,12 +617,13 @@ void AMainCharacter::FPSnotADS()
 
 	GetWorldTimerManager().SetTimer(T_ADSTimerHandle, [ = ] {
 		FTransform CurrentFPPos = FPMesh->GetRelativeTransform();
-	if ( ADSAlphaTime >= 1.1f )
+		//LerpCamera 함수와 시간을 맞춰주자.
+	if ( FPMesh->GetRelativeTransform().Equals(FPMeshOriginTransform) || ADSAlphaTime >= 0.99f )
 	{
 		GetWorldTimerManager().ClearTimer(T_ADSTimerHandle);
 	}
 	ADSTime += GetWorld()->GetDeltaSeconds();
-	ADSAlphaTime = ADSTime / 1.f;
+	ADSAlphaTime = ADSTime / .8f;
 
 	FTransform LerpPos = UKismetMathLibrary::TLerp(CurrentFPPos, FPMeshOriginTransform, ADSAlphaTime);
 
@@ -649,6 +654,7 @@ FTransform AMainCharacter::GetFpsAdsPosition()
 	 */
 	FTransform Offset = FPMeshWorld.GetRelativeTransform(SightTransform);//.Inverse();
 
+	//DrawDebugSphere(GetWorld(),Offset.GetTranslation(),6.f,6, FColor::Cyan,false,10.f,0,3.f);
 	// Weapon의 Clipping을 위한 Trace를 FPMesh일때 Aim, NotAim을 보완하기 위해 Aim일때 Mesh를 앞으로 좀 나가게 한다.
 	// (기존 Aim때는 FPMesh가 뒤로 들어가버려 Clipping문제가 안일어 났음.)
 	//FTransform OffsetWithoutX = FTransform(Offset.GetRotation(), FVector(-10.f, Offset.GetTranslation().Y, Offset.GetTranslation().Z));
@@ -668,7 +674,8 @@ void AMainCharacter::LerpCamera(UCameraComponent* VarTPScam, float TargetBoomLen
 	float  BoomCurrentLen = CameraBoom->TargetArmLength;
 
 	CamTime += GetWorld()->GetDeltaSeconds();
-	CamAlphaTime = CamTime / 1.f;
+	//ADS함수와 시간을 맞춰주자.
+	CamAlphaTime = CamTime / .8f;
 
 	FVector SetCamLo = UKismetMathLibrary::VLerp(CamCurrentLo, TargetCamRelativeLocation, CamAlphaTime);
 	float SetFOV = UKismetMathLibrary::Lerp(CamCurrentFOV, TargetFOV, CamAlphaTime);
@@ -678,7 +685,7 @@ void AMainCharacter::LerpCamera(UCameraComponent* VarTPScam, float TargetBoomLen
 	VarTPScam->SetFieldOfView(SetFOV);
 	CameraBoom->TargetArmLength = SetBomLength;
 
-	if ( CamAlphaTime >= 1.1f )
+	if ( CamAlphaTime >= 1.0f )
 	{
 		GetWorldTimerManager().ClearTimer(T_CameraHandle);
 	}
@@ -696,12 +703,13 @@ void AMainCharacter::LerpCamera(UCameraComponent* VarFPScam, float TargetFOV)
 		float CamCurrentFOV = VarFPScam->FieldOfView;
 
 	CamTime += GetWorld()->GetDeltaSeconds();
-	CamAlphaTime = CamTime / 1.f;
+	//ADS함수와 시간을 맞춰주자.
+	CamAlphaTime = CamTime / .8f;
 	float SetFOV = UKismetMathLibrary::Lerp(CamCurrentFOV, TargetFOV, CamAlphaTime);
 
 	VarFPScam->SetFieldOfView(SetFOV);
 
-	if ( CamAlphaTime >= 1.1f )
+	if ( CamAlphaTime >= 1.0f )
 	{
 		GetWorldTimerManager().ClearTimer(T_CameraHandle);
 	}
@@ -854,20 +862,24 @@ void AMainCharacter::ClearSprintUpTimer()
 bool AMainCharacter::CanSprint()
 {
 	if ( bIsCrouched == false && bDisableInput == false && GetCharacterMovement()->IsFalling() == false && bIsAim == false
-&& bMovingStraightForward )
+&& bMovingStraightForward)
 	{
+		if ( EquippedWeapon && EquippedWeapon->CurrentWeaponState != EWeaponState::EWS_Idle )
+		{
+			return false;
+		}
+
 		return true;
 	}
 	return false;
 }
 
 void AMainCharacter::MyJump()
-{
+{	
 	if ( bDisableInput == false )
 	{
-		bIsJumpKeyDown = true;
-
-		TPAnimInstance->bIsJumpkeyDown = true;
+		Super::MyJump();
+		
 		FPAnimInstance->bIsJumpkeyDown = true;
 		Cast<UMainAnimInstance>(ShadowMesh->GetAnimInstance())->bIsJumpkeyDown = true;
 		//Cast<UMainAnimInstance>(GetMesh()->GetAnimInstance())->bIsJumpkeyDown = true;
@@ -875,13 +887,13 @@ void AMainCharacter::MyJump()
 	}
 }
 void AMainCharacter::MyStopJumping()
-{
-	bIsJumpKeyDown = false;
-	TPAnimInstance->bIsJumpkeyDown = false;
+{	
 	FPAnimInstance->bIsJumpkeyDown = false;
 	Cast<UMainAnimInstance>(ShadowMesh->GetAnimInstance())->bIsJumpkeyDown = false;
 	//Cast<UMainAnimInstance>(GetMesh()->GetAnimInstance())->bIsJumpkeyDown = false;
-	Super::StopJumping();
+
+	Super::MyStopJumping();
+	
 }
 
 void AMainCharacter::MyCrouch()
@@ -1109,6 +1121,8 @@ void AMainCharacter::RMBUp()
 
 void AMainCharacter::TabKeyDown()
 {
+	if(bIsDie) return;
+
 	bTabKeyDown = true;
 	UE_LOG(LogTemp, Warning, TEXT("Tab key down"));
 
@@ -1118,7 +1132,7 @@ void AMainCharacter::TabKeyDown()
 
 void AMainCharacter::EKeyDown()
 {
-	if ( bDisableInput == false )
+	if ( bDisableInput == false && bIsDie == false)
 	{
 		Interactive();
 	}
@@ -1452,33 +1466,53 @@ void AMainCharacter::SetLeftHandIK(float Alpha)
 
 }
 
+void AMainCharacter::Die()
+{
+	Super::Die();
+
+	//죽으면 TPS cam으로 변경한다.
+	SetCameraMode(ECameraMode::ECM_TPS);
+
+	ShadowMesh->SetCollisionProfileName(FName("RagDoll"));
+	FPMesh->SetCollisionProfileName(FName("RagDoll"));
+	//DisableInput(MainController);
+
+	MainController->Die();
+}
+
 void AMainCharacter::QuickSlotNum4()
 {
+	if ( bIsDie ) return;
 	OnQuickSlotUse.Broadcast(EQuickSlotNumber::EQSN_N4);
 	//MainController->UseQuickSlotItem(EQuickSlotNumber::EQSN_N4);
 }
 void AMainCharacter::QuickSlotNum5()
 {
+	if ( bIsDie ) return;
 	OnQuickSlotUse.Broadcast(EQuickSlotNumber::EQSN_N5);
 	//MainController->UseQuickSlotItem(EQuickSlotNumber::EQSN_N5);
 }
 void AMainCharacter::QuickSlotNum6()
 {
+	if ( bIsDie ) return;
 	OnQuickSlotUse.Broadcast(EQuickSlotNumber::EQSN_N6);
 	//MainController->UseQuickSlotItem(EQuickSlotNumber::EQSN_N6);
 }
 void AMainCharacter::QuickSlotNum7()
 {
+	if ( bIsDie ) return;
 	OnQuickSlotUse.Broadcast(EQuickSlotNumber::EQSN_N7);
 	//MainController->UseQuickSlotItem(EQuickSlotNumber::EQSN_N7);
 }
 void AMainCharacter::QuickSlotNum8()
 {
+	if ( bIsDie ) return;
 	OnQuickSlotUse.Broadcast(EQuickSlotNumber::EQSN_N8);
 	//MainController->UseQuickSlotItem(EQuickSlotNumber::EQSN_N8);
 }
 void AMainCharacter::QuickSlotNum9()
 {
+	if ( bIsDie ) return;
 	OnQuickSlotUse.Broadcast(EQuickSlotNumber::EQSN_N9);
 	//MainController->UseQuickSlotItem(EQuickSlotNumber::EQSN_N9);
 }

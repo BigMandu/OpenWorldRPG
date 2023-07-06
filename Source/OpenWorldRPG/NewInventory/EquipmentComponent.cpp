@@ -232,25 +232,12 @@ bool UEquipmentComponent::AddEquipment(FItemSetting ItemSetting, AEquipment* Wan
 	}
 
 
-
 	UCustomPDA* CPDA = Cast<UCustomPDA>(EquipObj->ItemInfo.DataAsset);
 
 	if ( EquipObj && CPDA )
 	{
 		UCustomInventoryLibrary::RemoveFromPreviousMotherContainer(EquipObj);
-		//if ( EquipObj->MotherStorage )
-		//{
-		//	EquipObj->MotherStorage->RemoveItem(EquipObj);
-		//	EquipObj->MotherStorage = nullptr;
-		//}
-		//else if ( EquipObj->MotherEquipComp )
-		//{
-		//	EquipObj->MotherEquipComp->RemoveEquipment(EquipObj);
-		//	EquipObj->MotherEquipComp = nullptr;
-		//}
-		//
-		// 
-		//장착할때는 무조건 ItemRotate를 false시킨다.
+
 		EquipObj->bTempRotate = false;
 		EquipObj->bRotated = false;
 
@@ -272,6 +259,8 @@ bool UEquipmentComponent::AddEquipment(FItemSetting ItemSetting, AEquipment* Wan
 			OnWeaponSetSlot.Broadcast(EquipObj);
 		}
 
+
+
 		//Backpack, Vest의 장착 여부를 확인한다., Enum Range iter를 위해 Obj를 저장해둔다.
 		if ( CPDA->EquipmentType == EEquipmentType::EET_Backpack )
 		{
@@ -282,8 +271,9 @@ bool UEquipmentComponent::AddEquipment(FItemSetting ItemSetting, AEquipment* Wan
 			VestObj = EquipObj;
 		}
 
-		EquipmentItems.Add(EquipObj);
 
+		EquipmentItems.Add(EquipObj);
+		WantToEquip->ItemObj = EquipObj;
 		bReturn = true;
 
 
@@ -459,7 +449,48 @@ bool UEquipmentComponent::IsSameTypeExist(AEquipment* Equip, ERifleSlot RifleSlo
 	return false;
 }
 
+void UEquipmentComponent::UpdateEquipment(TArray<UNewItemObject*>& SavedEquipment)
+{
+	if ( SavedEquipment.Num() < 1 ) return;
 
+	for ( UNewItemObject* Equipment : SavedEquipment )
+	{
+		if ( Equipment == nullptr || Equipment->ItemInfo.DataAsset == nullptr ) continue;
+
+		AEquipment* SpawnEquip = UCustomInventoryLibrary::SpawnEquipment(GetWorld(), Equipment);
+
+		UCustomPDA* CPDA = Cast<UCustomPDA>(SpawnEquip->ItemSetting.DataAsset);
+		if ( CPDA->EquipmentType == EEquipmentType::EET_Rifle )
+		{
+			SpawnEquip->Equip(GetOwner(), ERifleSlot::ERS_Primary);
+		}
+		else
+		{
+			SpawnEquip->Equip(GetOwner());
+		}
+	}
+
+	/*if ( EquipmentItems.Num() < 1 ) return;
+
+	for ( UNewItemObject* Equipment : EquipmentItems )
+	{
+		if ( Equipment == nullptr || Equipment->ItemInfo.DataAsset == nullptr ) continue;
+
+		AEquipment* SpawnEquip = UCustomInventoryLibrary::SpawnEquipment(GetWorld(), Equipment);
+
+		UCustomPDA* CPDA = Cast<UCustomPDA>(SpawnEquip->ItemSetting.DataAsset);
+		if ( CPDA->EquipmentType == EEquipmentType::EET_Rifle )
+		{
+			SpawnEquip->Equip(GetOwner(), ERifleSlot::ERS_Primary);
+		}
+		else
+		{
+			SpawnEquip->Equip(GetOwner());
+		}
+	}*/
+	
+
+}
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
