@@ -265,6 +265,7 @@ public:
 	void Reload();
 	void ReloadEnd();
 
+	void PlayReloadSound(EPlayReloadSound SoundType);
 
 	virtual void Old_BulletOut() PURE_VIRTUAL(AWeapon::BulletOut);
 	virtual void New_BulletOut() PURE_VIRTUAL(AWeapon::New_BulletOut);

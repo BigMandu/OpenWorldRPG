@@ -11,7 +11,7 @@
 
 #include "OpenWorldRPG/NewInventory/LootWidgetComponent.h"
 #include "OpenWorldRPG/NewInventory/ItemStorageObject.h"
-#include "OpenWorldRPG/NewInventory/Widget/NewInventory.h"
+#include "OpenWorldRPG/UI/Inventory/NewInventory.h"
 
 #include "GameFramework/Character.h"
 #include "GameFramework/SpringArmComponent.h"

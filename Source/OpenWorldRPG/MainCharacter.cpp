@@ -12,7 +12,6 @@
 #include "OpenWorldRPG/Item/BaseGrenade.h"
 #include "OpenWorldRPG/NewInventory/EquipmentComponent.h"
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
-#include "OpenWorldRPG/NewInventory/Widget/NewInventory.h"
 
 #include "OpenWorldRPG/MainHud.h"
 #include "OpenWorldRPG/GameData/StatManagementComponent.h"
@@ -21,7 +20,8 @@
 #include "OpenWorldRPG/UI/WeaponStatusWidget.h"
 #include "OpenWorldRPG/UI/QuickSlotWidget.h"
 #include "OpenWorldRPG/UI/CompassWidget.h"
-#include "OpenWorldRPG/UI/CharacterStatusWidget.h"
+#include "OpenWorldRPG/UI/CharacterOverviewWidget.h"
+#include "OpenWorldRPG/UI/Inventory/NewInventory.h"
 
 #include "Engine/SkeletalMeshSocket.h"
 #include "Engine/EngineTypes.h"
@@ -59,8 +59,9 @@ AMainCharacter::AMainCharacter() : Super()
 	ActiveInteractDistance = 200.f; //상호작용 아이템이 표시되는 최대거리.
 
 
-	CharacterCapture = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("CharacterCaptureComp"));
-	CharacterCapture->SetupAttachment(RootComponent);
+	//Character Render Image는 안하기로 함. 여기에 Mission widget을 넣기로 결정.
+	/*CharacterCapture = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("CharacterCaptureComp"));
+	CharacterCapture->SetupAttachment(RootComponent);*/
 
 	/* 카메라 관련 */
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
@@ -103,6 +104,11 @@ AMainCharacter::AMainCharacter() : Super()
 	ShadowMesh->SetupAttachment(GetRootComponent());
 
 	CraftSysComp = CreateDefaultSubobject<UCraftSystemComponent>(TEXT("CraftSysComp"));
+
+	if (AOpenWorldRPGGameModeBase* Mode = Cast<AOpenWorldRPGGameModeBase>(UGameplayStatics::GetGameMode(GetWorld())))
+	{
+		Gmode = Mode;
+	}
 }
 
 
@@ -114,18 +120,10 @@ void AMainCharacter::PostInitializeComponents()
 	/* Player의 AnimInstance를 불러온다. */
 	//TPAnimInstance = Cast<UMainAnimInstance>(GetMesh()->GetAnimInstance()); 
 	FPAnimInstance = Cast<UMainAnimInstance>(FPMesh->GetAnimInstance());
-	
-	//if ( FPAnimInstance )//TPAnimInstance && FPAnimInstance)
-	//{
-		/* 사운드는 TP Animation을 기준으로 출력한다. */ //AnimInstance의 StepSound_Notify에서 호출.
-		//TPAnimInstance->StepSound.AddUObject(this, &AMainCharacter::StepSound); 
-		//TPAnimInstance->WeaponTypeNumber = 0;
-		//FPAnimInstance->WeaponTypeNumber = 0;
-		//FPAnimInstance->StartADS.AddUFunction(this,FName("GetADSPosition"));
-	//}
 
-	//ShadowMesh의 AnimInstance를 넣어준다.
-	ShadowMesh->SetAnimInstanceClass(GetMesh()->GetAnimClass());
+
+	//ShadowMesh의 AnimInstance를 넣어준다. -> 이거 바꿔야함 NoSound로 ㅇㅇ (주석처리함)
+	//ShadowMesh->SetAnimInstanceClass(GetMesh()->GetAnimClass());
 
 	ShadowMesh->SetOnlyOwnerSee(true);
 	ShadowMesh->SetRenderInMainPass(false);
@@ -204,7 +202,7 @@ void AMainCharacter::BeginPlay()
 		{
 			MainHud->ResourceWidget->BindStatManager(StatManagementComponent);
 			MainHud->NewInventoryWidget->ResourceStatusWidget->BindStatManager(StatManagementComponent);
-			MainHud->NewInventoryWidget->CharacterStatusWidget->BindStatManager(StatManagementComponent);
+			MainHud->NewInventoryWidget->CharacterOverviewWidget->BindStatManager(StatManagementComponent);
 		}
 
 
@@ -510,15 +508,21 @@ void AMainCharacter::SetAimMode(EAimMode Mode)
 	Super::SetAimMode(Mode);
 	//AimMode = Mode;
 	if ( EquippedWeapon == nullptr ) return;
-	if ( EquippedWeapon->CurrentWeaponState != EWeaponState::EWS_Idle ) return;
+
+	//Idle 상태가 아니면 ADS를 하지 못하게 막는다.
+	if ( EquippedWeapon->CurrentWeaponState != EWeaponState::EWS_Idle )
+	{
+		if (Gmode)
+		{
+			Gmode->ShowSystemNotiMessage(ESystemNotificationMessageType::ESNMT_WeaponIsBusy);
+		}
+		return;
+	}
 
 	switch ( AimMode )
 	{
 	case EAimMode::EAM_Aim:
-	{
-		//Idle 상태가 아니면 ADS를 하지 못하게 막는다.
-		
-			
+	{			
 		if ( CameraMode == ECameraMode::ECM_TPS )
 		{			
 			LerpCamera(CameraTPS, MINCameraLength + 20.f, TPSCam_Aim_Rel_Location, 77.f);
@@ -1127,6 +1131,7 @@ void AMainCharacter::TabKeyDown()
 	UE_LOG(LogTemp, Warning, TEXT("Tab key down"));
 
 	MainController->ToggleInventory();
+
 	OnGetAmmo.Broadcast(EquippedWeapon);
 }
 
@@ -1164,22 +1169,29 @@ void AMainCharacter::ChangeWeaponTypeNumber(int32 number)
 	ShadowAnim->SetWeaponTypeNumber(number);// WeaponTypeNumber = number;
 	UE_LOG(LogTemp,Warning,TEXT("AMainChar::ChangeWeaponTypeNum"));
 }
-/*******************************  Vehicle 관련 ************************************************/
+/*******************************  Sound 관련 ************************************************/
 
-//void AMainCharacter::ToggleCar()
-//{
-//	
-//	
-//}
-//
-//void AMainCharacter::GetIntheCar()
-//{
-//	
-//}
-//void AMainCharacter::GetOuttheCar()
-//{
-//
-//}
+void AMainCharacter::StepSound()
+{
+	if (this->GetMesh() != ShadowMesh)
+	{
+		Super::StepSound();
+	}
+}
+void AMainCharacter::SpeakSound(USoundCue* Sound)
+{
+	if (this->GetMesh() != ShadowMesh)
+	{
+		Super::SpeakSound(Sound);
+	}
+}
+void AMainCharacter::PlayReloadSound(EPlayReloadSound ReloadSoundType)
+{
+	if (this->GetMesh() != ShadowMesh)
+	{
+		Super::PlayReloadSound(ReloadSoundType);
+	}
+}
 
 /*************************  Weapon, Item 관련 ***************************************************/
 

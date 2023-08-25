@@ -3,9 +3,13 @@
 
 #include "EnemyCharacter.h"
 #include "EnemyAIController.h"
-#include "GameFramework/CharacterMovementComponent.h"
 #include "OpenWorldRPG/Item/Equipment.h"
 #include "OpenWorldRPG/NewInventory/EquipmentComponent.h"
+
+#include "GameFramework/CharacterMovementComponent.h"
+
+#include "Sound/SoundCue.h"
+#include "Components/AudioComponent.h"
 
 // Sets default values
 AEnemyCharacter::AEnemyCharacter()
@@ -17,6 +21,10 @@ AEnemyCharacter::AEnemyCharacter()
 	//GetCharacterMovement()->RotationRate = FRotator(0.f, 540.f, 0.f);
 	bUseControllerRotationYaw = false;
 
+	//AICon에서 CrowdFollowingComponent를 사용하기 때문에, RVO Avoidance algorithm을 비활성화 해야한다.
+	//안그럼 CrowdFollowingComponent가 적용되지 않음.
+	//그런데 키는게 더 좋은데? 걍 키도록 함.
+	GetCharacterMovement()->bUseRVOAvoidance = true;//false;
 
 	bHasPatrolPoints = false;
 	RandomPatrolRadius = 1000.f;
@@ -32,6 +40,10 @@ AEnemyCharacter::AEnemyCharacter()
 	AIControllerClass = AEnemyAIController::StaticClass(); //AIController를 넣어주고
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned; //AIController의 소유시기를 정해줌.
 	SetAIStatus(EAIStatus::EAS_Normal);
+
+
+	AudioComp = CreateDefaultSubobject<UAudioComponent>(TEXT("AudioComp"));
+	AudioComp->SetupAttachment(GetRootComponent());
 
 }
 
@@ -63,10 +75,10 @@ void AEnemyCharacter::SetAIStatus(EAIStatus Status)
 	switch(AIStatus)
 	{
 	case EAIStatus::EAS_Patrol:
-		GetCharacterMovement()->MaxWalkSpeed = MinWalkSpeed;
+		GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
 		break;
-	/*case EAIStatus::EAS_Scout:
-		GetCharacterMovement()->MaxWalkSpeed = MinWalkSpeed;*/
+	case EAIStatus::EAS_Scout:
+		GetCharacterMovement()->MaxWalkSpeed = MinWalkSpeed;
 		break;
 	case EAIStatus::EAS_Normal:
 		GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;

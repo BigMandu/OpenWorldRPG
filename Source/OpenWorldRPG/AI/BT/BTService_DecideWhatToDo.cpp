@@ -18,7 +18,7 @@
 #include "OpenWorldRPG/GameData/StatManagementComponent.h"
 
 
-#define DECISION_BRANCH_DEBUG 0
+#define DECISION_BRANCH_DEBUG 1
 
 UBTService_DecideWhatToDo::UBTService_DecideWhatToDo()
 {
@@ -44,10 +44,8 @@ void UBTService_DecideWhatToDo::TickNode(UBehaviorTreeComponent& OwnerComp, uint
 void UBTService_DecideWhatToDo::SetDecisionValue()//UBehaviorTreeComponent & OwnerComp)
 {
 
-	/*if (BBComp->GetValueAsBool(AICon->bHearEnemyKey))
-	{
-		bOnlyDetectHearing = true;
-	}*/
+	//if(AIChar->)
+
 
 	/*장착중인 무기가 없는 경우 */
 	if (AIChar->EquippedWeapon == nullptr)
@@ -81,16 +79,12 @@ void UBTService_DecideWhatToDo::SetDecisionValue()//UBehaviorTreeComponent & Own
 		}
 	}
 
-
-
-
 	/* 체력이 일정 이하(10 퍼센트 이하)인 경우 */
 	if (AIChar->StatManagementComponent->GetHealthRatio() <= 10.f)
 	{
 		BBComp->SetValueAsBool(AICon->bLowHPKey, true);
 		//bLowHP = true;
 	}
-
 
 
 	/* 교전하던 중이었던 경우*/
@@ -119,16 +113,25 @@ void UBTService_DecideWhatToDo::SetDecisionValue()//UBehaviorTreeComponent & Own
 		bool bInFov = IsThisAIinTargetFOV();
 		BBComp->SetValueAsBool(AICon->bInEnemyFOVKey, bInFov);
 
+		bool bBeforeMBTValue = BBComp->GetValueAsBool(AICon->bMovingBehindTargetKey);
+
+		//Target의 Fov안에 있고, 기존에 MovingBehind를 하고 있었다면, 바로 Attack할 수 있게 한다.
+		if(bInFov && bBeforeMBTValue)
+		{
+			AICon->UpdateBBCompBoolKey(AICon->bMovingBehindTargetKey, false);
+			AICon->UpdateBBCompBoolKey(AICon->bCanAttackKey, true);
+		}
 		//Target의 FOV안에 있다면 SneakUpToTarget을 실행하지 않도록 false를 준다.
-		if(bInFov )
+		else if (bInFov)
 		{
 			AICon->UpdateBBCompBoolKey(AICon->bMovingBehindTargetKey, false);
 		}
+		//Target의 Fov안에 있지 않다면 MovingBehindTarget을 하도록 한다.
 		else
 		{
 			AICon->UpdateBBCompBoolKey(AICon->bMovingBehindTargetKey, true);
 		}
-		//bInEnemyFOV = IsThisAIinTargetFOV();//(BBComp, AICon, AIChar);
+		
 	}
 }
 
@@ -166,6 +169,15 @@ void UBTService_DecideWhatToDo::DecisionBranch()//UBehaviorTreeComponent& OwnerC
 		return;
 	}
 
+	//No Ammo가 아니면 Reload를 지속적으로 하도록 한다.
+	if (!bNoAmmo)
+	{
+		if (AIChar->EquippedWeapon->AmmoLeftInMag <= 0)
+		{
+			AIChar->EquippedWeapon->Reload();
+		}
+	}
+
 
 
 
@@ -182,7 +194,7 @@ void UBTService_DecideWhatToDo::DecisionBranch()//UBehaviorTreeComponent& OwnerC
 		}
 		else
 		{
-			AIOpenFire();
+			//AIOpenFire();
 #if DECISION_BRANCH_DEBUG
 			UE_LOG(LogTemp, Warning, TEXT("UBTService_DecideWhatToDo::DecisionBranch / WasEngage"));
 #endif

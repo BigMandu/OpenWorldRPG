@@ -1,14 +1,16 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "OpenWorldRPG/UI/QuickSlotSlotWidget.h"
 #include "OpenWorldRPG/UI/QuickSlotWidget.h"
+#include "OpenWorldRPG/UI/Inventory/NewItemwidget.h"
+
 #include "OpenWorldRPG/MainHud.h"
 #include "OpenWorldRPG/MainController.h"
 #include "OpenWorldRPG/NewInventory/EquipmentComponent.h"
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
 #include "OpenWorldRPG/NewInventory/CustomDDOperation.h"
-#include "OpenWorldRPG/NewInventory/Widget/NewItemwidget.h"
+
 
 #include "Components/Border.h"
 

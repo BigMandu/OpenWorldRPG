@@ -89,6 +89,7 @@ public:
 	FOnHPChange	OnHPChange;
 	FOnHPZero OnHPZero;
 
+	/* UCharacterOverviewWidget에 bind됨 */
 	FOnLevelUp OnLevelUp;
 	FOnExpPointChange OnExpPointChange;
 
@@ -135,6 +136,7 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Stamina")
 	EStaminaStatus StaminaStatus;
 
+	bool bIsPendingKill;
 	
 
 

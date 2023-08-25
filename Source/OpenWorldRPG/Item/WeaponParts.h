@@ -23,9 +23,11 @@ public:
 	AWeaponParts();
 	bool bEmit;
 
-	UPROPERTY(EditDefaultsOnly)
-	class UNiagaraComponent* NiagaraComp;
+	//UPROPERTY(EditDefaultsOnly)
+	class UNiagaraComponent* LaserEffect;
+	UNiagaraComponent* LaserEndEffect;
 
+	class USpotLightComponent* FlashLightComp;
 
 
 	virtual void Tick(float DeltaTime) override;
@@ -36,6 +38,8 @@ public:
 
 	void GetEmitEndLocation();
 	void GetFinalEmitEndLocation();
+
+	void SetEndPointEffectLocation(FVector Location);
 
 	void Emit();
 	//UNewItemObject* GetOwnerWeapon();

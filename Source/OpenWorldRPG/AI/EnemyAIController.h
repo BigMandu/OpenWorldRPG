@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AIController.h"
+//#include "DetourCrowdAIController.h"
 #include "Perception/AIPerceptionTypes.h"
 #include "EnemyAIController.generated.h"
 
@@ -22,7 +23,7 @@ class UBlackboardComponent;
 class UNewInventoryComponent;
 
 UCLASS()
-class OPENWORLDRPG_API AEnemyAIController : public AAIController
+class OPENWORLDRPG_API AEnemyAIController : public AAIController //public ADetourCrowdAIController 
 {
 	GENERATED_BODY()
 
@@ -79,6 +80,7 @@ public:
 	const FName LastTargetRotationKey = FName("LastTargetRotation");
 	const FName EstimatedLocationOfTargetKey = FName("EstimatedLocation");
 	const FName DetectGrenadeLocationKey = FName("DetectGrenadeLocation");
+	const FName AIMLocationKey = FName("AIMLocation");
 	//const FName PatrolPosKey = FName("PatrolPos");
 	//const FName HearLocation = FName("HearLocation");
 	//const FName AttackableLocationKey = FName("AttackableLocation");
@@ -101,6 +103,7 @@ public:
 	const FName bLowAmmoKey = FName("LowAmmo");
 	const FName bWasEngageKey = FName("WasEngage");
 	const FName bInEnemyFOVKey = FName("InEnemyFOV");
+	const FName bIsInsideKey = FName("IsInside");
 	
 
 

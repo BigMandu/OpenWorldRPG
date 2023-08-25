@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
+#include "OpenWorldRPG/CustomLibrary/CustomStructLibrary.h"
 #include "CustomInventoryLibrary.generated.h"
 
 /**

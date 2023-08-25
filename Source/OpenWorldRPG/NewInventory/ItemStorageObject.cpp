@@ -2,9 +2,9 @@
 
 
 #include "OpenWorldRPG/NewInventory/ItemStorageObject.h"
-#include "OpenWorldRPG/NewInventory/Library/InventoryStruct.h"
 #include "OpenWorldRPG/NewInventory/Library/CustomInventoryLibrary.h"
-#include "OpenWorldRPG/NewInventory/Widget/WeaponPartsWidget.h"
+#include "OpenWorldRPG/CustomLibrary/CustomEnumLibrary.h"
+#include "OpenWorldRPG/UI/Inventory/WeaponPartsWidget.h"
 
 void UItemStorageObject::Serialize(FArchive& Ar)
 {

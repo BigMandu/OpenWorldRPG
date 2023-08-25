@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Interactable.h"
 //#include "OpenWorldRPG/NewInventory/InventoryComponent.h"
-#include "OpenWorldRPG/NewInventory/Library/ItemInterface.h"
+#include "OpenWorldRPG/CustomLibrary/CustomEnumLibrary.h"
 #include "Item.generated.h"
 
 
@@ -119,9 +119,10 @@ public:
 	//virtual UNewItemObject* GetDefaultItemObj();
 
 	bool Pickup(AActor* Actor, UNewItemObject* obj = nullptr);
+	bool AddAtCharInv(ABaseCharacter* Character, UItemStorageObject* InvComp, UNewItemObject* obj);
 
 	bool AddAtEquip(AEquipment* Equipped);
-	bool AddAtCharInv(ABaseCharacter* Character, UItemStorageObject* InvComp);
+	
 
 
 	

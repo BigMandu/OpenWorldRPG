@@ -10,7 +10,6 @@
 #include "OpenWorldRPG/NewInventory/ItemStorageObject.h"
 
 #include "OpenWorldRPG/NewInventory/Library/CustomInventoryLibrary.h"
-#include "OpenWorldRPG/NewInventory/Library/InventoryStruct.h"
 
 #include "Containers/Array.h"
 

@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -29,6 +29,8 @@ public:
 	virtual void Interaction(class AActor* Actor) = 0;// { return nullptr; }
 	virtual void SetOutline() = 0;
 	virtual void UnsetOutline() = 0;
+
+
 
 	FOnInteract OnInteract;
 };

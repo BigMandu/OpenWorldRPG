@@ -4,6 +4,9 @@
 #include "OpenWorldRPG/Item/WeaponParts.h"
 #include "OpenWorldRPG/Item/WeaponPartsPDA.h"
 
+#include "NiagaraComponent.h"
+#include "Components/SpotLightComponent.h"
+
 AWeaponParts::AWeaponParts()
 {
 	ItemState = EItemState::EIS_Spawn;
@@ -27,29 +30,73 @@ void AWeaponParts::Tick(float DeltaTime)
 
 	if (bEmit && OwnerWeapon.IsValid())
 	{
-		GetEmitEndLocation();
-		GetFinalEmitEndLocation();
-		//Emit();
+		UWeaponPartsPDA* PartsPDA = Cast<UWeaponPartsPDA>(ItemSetting.DataAsset);
+		if ( PartsPDA && PartsPDA->TacticalPartsType == ETacticalPartsType::ETPT_Laser )
+		{
+			GetEmitEndLocation();
+			GetFinalEmitEndLocation();
+		}
+		else if ( PartsPDA && PartsPDA->TacticalPartsType == ETacticalPartsType::ETPT_Flashlight )
+		{
+
+		}
+		
 	}
 }
 
 void AWeaponParts::SetEmitValue(bool bNeedToEmit)
 {
 	bEmit = bNeedToEmit;
+	UWeaponPartsPDA* PartsPDA = Cast<UWeaponPartsPDA>(ItemSetting.DataAsset);
+	if(!PartsPDA ) return;
 
 	if ( bEmit == false )
 	{
-		NiagaraComp->Deactivate();
+		if(PartsPDA->TacticalPartsType == ETacticalPartsType::ETPT_Laser)
+		{
+			LaserEffect->Deactivate();
+			LaserEndEffect->Deactivate();
+		}
+		else if ( PartsPDA->TacticalPartsType == ETacticalPartsType::ETPT_Flashlight )
+		{
+			FlashLightComp->Deactivate();
+		}
+		
+		
 		UE_LOG(LogTemp,Warning,TEXT("AWeaponParts::SetEmitValue, Tactical DEV OFF"));
 	}
 	else
 	{
-		NiagaraComp->Activate();
+		if ( PartsPDA->TacticalPartsType == ETacticalPartsType::ETPT_Laser )
+		{
+			LaserEffect->Activate();
+			LaserEndEffect->Activate();
+		}		
+		else if ( PartsPDA->TacticalPartsType == ETacticalPartsType::ETPT_Flashlight )
+		{
+			FlashLightComp->Activate();
+		}
+		
 		UE_LOG(LogTemp, Warning, TEXT("AWeaponParts::SetEmitValue, Tactical DEV ON"));
 	}
 }
 
-
+void AWeaponParts::SetEndPointEffectLocation(FVector Location)
+{
+	if ( LaserEndEffect->GetAsset() )
+	{
+		if ( Location == FVector(0.f) )
+		{
+			LaserEndEffect->SetVisibility(false);
+		}
+		else
+		{
+			LaserEndEffect->SetVisibility(true);
+			LaserEndEffect->SetWorldLocation(Location);
+		}
+		
+	}
+}
 
 
 void AWeaponParts::GetEmitEndLocation()
@@ -63,11 +110,13 @@ void AWeaponParts::GetEmitEndLocation()
 		FVector EmitEndVector = OWAimPos.GetLocation() + OWAimPos.GetRotation().Vector() * PartsPDA->TacticalEmitLimitRange;
 
 		FHitResult EmitHit = OwnerWeapon->BulletTrace(OWAimPos.GetLocation(), EmitEndVector);
+
 		
+
 		if ( EmitHit.IsValidBlockingHit() )
 		{
 			//for debug
-			if ( EmitHit.GetActor() )
+			/*if ( EmitHit.GetActor() )
 			{
 				FString HitActorName = EmitHit.Actor->GetFName().ToString();
 				if ( HitActorName.Contains("Main") )
@@ -77,9 +126,11 @@ void AWeaponParts::GetEmitEndLocation()
 					float DummyfloatResult = dummyfloat1+ dummyfloat2;
 
 				}
-			}
+			}*/
 
-			EmitEndPosition = EmitHit.Location;			
+			EmitEndPosition = EmitHit.Location;
+			SetEndPointEffectLocation(EmitEndPosition);
+
 			if ( OwnerWeapon->MainCon )
 			{
 				FHitResult FPSEmitHit = OwnerWeapon->BulletTrace(OwnerWeapon->MainCon->Main->CameraFPS->GetComponentLocation(), EmitEndPosition);
@@ -87,19 +138,20 @@ void AWeaponParts::GetEmitEndLocation()
 				if ( FPSEmitHit.IsValidBlockingHit() )
 				{					
 					EmitEndPosition = FPSEmitHit.Location;
+					SetEndPointEffectLocation(EmitEndPosition);
 				}
 			}
 			
 		}
 		else
 		{
+			SetEndPointEffectLocation(FVector(0.f));
 			EmitEndPosition = EmitEndVector;
 		}
 
 		//DrawDebugSphere(GetWorld(),EmitEndPosition,12.f, 5.f, FColor::Magenta, false, 5.f, 0, 3.f);
 		//UE_LOG(LogTemp, Warning, TEXT("AWeaponParts::GetEmitEndLocation, Emit End Pos = %s"), *EmitEndPosition.ToString());
-		
-		NiagaraComp->SetVectorParameter("LaserEndVector", EmitEndPosition);
+		LaserEffect->SetVectorParameter("LaserEndVector", EmitEndPosition);
 	}
 }
 
@@ -116,11 +168,23 @@ void AWeaponParts::GetFinalEmitEndLocation()
 		if ( OwnerWeapon->bIsHighReady || Bchar->GetLeftHandIK() < 1.f || Cast<UMainAnimInstance>(Bchar->GetMesh()->GetAnimInstance())->bIsinAir )
 		{
 			//Emit의 End Point를 계산하지 않도록 한다.
-			FVector StraightForwardVector = NiagaraComp->GetComponentLocation() + NiagaraComp->GetComponentRotation().Vector() * PartsPDA->TacticalEmitLimitRange;
+			FVector StraightForwardVector = LaserEffect->GetComponentLocation() + LaserEffect->GetComponentRotation().Vector() * PartsPDA->TacticalEmitLimitRange;
 
-			EmitEndPosition = StraightForwardVector;
+			FHitResult EmitHit = OwnerWeapon->BulletTrace(LaserEffect->GetComponentLocation(), StraightForwardVector);
+			if ( EmitHit.IsValidBlockingHit() )
+			{
+				EmitEndPosition = EmitHit.Location;
+				SetEndPointEffectLocation(EmitEndPosition);
 
-			NiagaraComp->SetVectorParameter("LaserEndVector", EmitEndPosition);
+			}
+			else
+			{
+				SetEndPointEffectLocation(FVector(0.f));
+				EmitEndPosition = StraightForwardVector;
+			}
+			
+
+			LaserEffect->SetVectorParameter("LaserEndVector", EmitEndPosition);
 		}
 	}
 }
@@ -134,7 +198,7 @@ void AWeaponParts::Emit()
 	UWeaponPartsPDA* PartsPDA = Cast<UWeaponPartsPDA>(ItemSetting.DataAsset);
 	if ( PartsPDA ) //EmitSocket&&
 	{	
-		NiagaraComp->Activate();	
+		LaserEffect->Activate();
 	}
 }
 
@@ -153,19 +217,53 @@ void AWeaponParts::SetOwnerWeapon(AWeapon* Weapon)
 
 		if ( PartsPDA->WeaponPartsType == EWeaponPartsType::EWPT_Tactical )
 		{
-			NiagaraComp = NewObject<UNiagaraComponent>(this);
-			NiagaraComp->RegisterComponent();
-			//NiagaraComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraComponent"));
-			FAttachmentTransformRules Rules(EAttachmentRule::KeepRelative,false);
-			NiagaraComp->AttachToComponent(this->SKMesh,Rules, "Emit");
+			if ( PartsPDA->TacticalPartsType == ETacticalPartsType::ETPT_Laser )
+			{
+				LaserEffect = NewObject<UNiagaraComponent>(this);
+				LaserEffect->RegisterComponent();
+				//NiagaraComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraComponent"));
+				FAttachmentTransformRules Rules(EAttachmentRule::KeepRelative,false);
+				LaserEffect->AttachToComponent(this->SKMesh,Rules, "Emit");
 
+				LaserEndEffect = NewObject<UNiagaraComponent>(this);
+				LaserEndEffect->RegisterComponent();
 
-			NiagaraComp->SetAutoActivate(false);
-			NiagaraComp->SetAsset(PartsPDA->TacticalEmitEffect);
-			NiagaraComp->SetColorParameter("LaserColor", PartsPDA->LaserEmitColor);//FLinearColor::Green);//);
-			NiagaraComp->SetFloatParameter("LaserWidth", PartsPDA->LaserWidth);
+				if ( PartsPDA->TacticalEmitEffect )
+				{
+					LaserEffect->SetAutoActivate(false);
+					LaserEffect->SetAsset(PartsPDA->TacticalEmitEffect);
+					LaserEffect->SetColorParameter("LaserColor", PartsPDA->LaserEmitColor);//FLinearColor::Green);//);
+					LaserEffect->SetFloatParameter("LaserWidth", PartsPDA->LaserWidth);
+					LaserEffect->Deactivate();
+				}			
 
-			NiagaraComp->Deactivate();
+				if ( PartsPDA->TacticalImpactEmitEffect )
+				{
+					LaserEndEffect->SetAsset(PartsPDA->TacticalImpactEmitEffect);
+					LaserEndEffect->SetColorParameter("LaserColor", PartsPDA->LaserEmitColor);
+					LaserEndEffect->SetFloatParameter("LaserWidth", PartsPDA->LaserWidth);
+					LaserEndEffect->Deactivate();
+				}
+			}
+			else if ( PartsPDA->TacticalPartsType == ETacticalPartsType::ETPT_Flashlight )
+			{
+				FlashLightComp = NewObject<USpotLightComponent>(this);
+				FlashLightComp->RegisterComponent();
+				FAttachmentTransformRules Rules(EAttachmentRule::KeepRelative, false);
+				FlashLightComp->AttachToComponent(this->SKMesh, Rules, "Emit");
+
+				FlashLightComp->SetInnerConeAngle(PartsPDA->Flashlight_InnerConeRadius);
+				FlashLightComp->SetOuterConeAngle(PartsPDA->Flashlight_OuterConeRadius);
+				FlashLightComp->SetAttenuationRadius(PartsPDA->Flashlight_Distance);
+				FlashLightComp->SetIntensity(PartsPDA->Flashlight_Brightness);
+				FlashLightComp->bAffectsWorld = true;
+				FlashLightComp->SetCastShadows(true);
+				FlashLightComp->SetLightColor(FLinearColor::White);
+				FlashLightComp->SetIntensityUnits(ELightUnits::Lumens);
+				FlashLightComp->SetLightBrightness(500000.f);
+
+			}
+
 		}
 
 	}

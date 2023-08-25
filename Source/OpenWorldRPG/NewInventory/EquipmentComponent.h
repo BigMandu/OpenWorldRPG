@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "OpenWorldRPG/NewInventory/Library/ItemInterface.h"
+#include "OpenWorldRPG/CustomLibrary/CustomEnumLibrary.h"
 #include "Components/ActorComponent.h"
 #include "EquipmentComponent.generated.h"
 
@@ -20,7 +20,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeaponSetSlot, UNewItemObject*, E
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeaponRemoveSlot, ERifleSlot, EquipWeaponSlot);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class OPENWORLDRPG_API UEquipmentComponent : public UActorComponent, public IItemInterface
+class OPENWORLDRPG_API UEquipmentComponent : public UActorComponent//, public IItemInterface
 {
 	GENERATED_BODY()
 

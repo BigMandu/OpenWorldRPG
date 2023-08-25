@@ -2,14 +2,13 @@
 
 
 #include "OpenWorldRPG/NewInventory/Library/CustomInventoryLibrary.h"
-#include "OpenWorldRPG/NewInventory/Library/InventoryStruct.h"
 
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
 #include "OpenWorldRPG/NewInventory/ItemStorageObject.h"
-
 #include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
-#include "OpenWorldRPG/NewInventory/Widget/NewInventoryGrid.h"
-#include "OpenWorldRPG/NewInventory/Widget/EquipmentSlot.h"
+
+#include "OpenWorldRPG/UI/Inventory/NewInventoryGrid.h"
+#include "OpenWorldRPG/UI/Inventory/EquipmentSlot.h"
 
 #include "OpenWorldRPG/Item/CustomPDA.h"
 #include "OpenWorldRPG/Item/Weapon.h"
@@ -120,6 +119,7 @@ AEquipment* UCustomInventoryLibrary::SpawnEquipment(UWorld* World, UNewItemObjec
 		{
 			Equipment = Cast<AWeapon_Instant>(World->SpawnActor<AActor>(AWeapon_Instant::StaticClass()));
 			Cast<AWeapon>(Equipment)->SettingWeaponPartsManager();
+			Cast<AWeapon>(Equipment)->AmmoLeftInMag = ItemObj->AmmoLeftInMag;
 			/*if (ItemObj->WeaponPartsManager.IsValid())
 			{
 				Cast<AWeapon>(Equipment)->WeaponPartsManager = ItemObj->WeaponPartsManager.Get();

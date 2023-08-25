@@ -3,7 +3,6 @@
 
 #include "Interactable.h"
 #include "OpenWorldRPG/Item/BasePDA.h"
-#include "OpenWorldRPG/NewInventory/Library/InventoryStruct.h"
 #include "OpenWorldRPG/MainCharacter.h"
 
 #include "Item.h"
@@ -13,7 +12,7 @@
 #include "Components/StaticMeshComponent.h"
 
 // Sets default values
-AInteractable::AInteractable()
+AInteractable::AInteractable() : Super()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;

@@ -3,9 +3,8 @@
 
 #include "OpenWorldRPG/NewInventory/SpawnItemEquipComponent.h"
 #include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
-#include "OpenWorldRPG/NewInventory/Library/CustomInventoryLibrary.h"
-#include "OpenWorldRPG/NewInventory/Library/ItemInterface.h"
 
+#include "OpenWorldRPG/CustomLibrary/CustomEnumLibrary.h"
 
 #include "OpenWorldRPG/Item/Equipment.h"
 #include "OpenWorldRPG/Item/CustomPDA.h"

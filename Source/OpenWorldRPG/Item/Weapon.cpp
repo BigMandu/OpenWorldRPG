@@ -11,7 +11,8 @@
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
 #include "OpenWorldRPG/NewInventory/ItemStorageObject.h"
 #include "OpenWorldRPG/NewInventory/EquipmentComponent.h"
-#include "OpenWorldRPG/NewInventory/Library/InventoryStruct.h"
+
+#include "OpenWorldRPG/CustomLibrary/CustomEnumLibrary.h"
 
 #include "OpenWorldRPG/Item/WeaponPartsManagerObject.h"
 #include "OpenWorldRPG/Item/WeaponParts.h"
@@ -59,15 +60,15 @@ void AWeapon::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	/* New Aim System, */
-	if(AMainCharacter* Player = Cast<AMainCharacter>(OwningPlayer) )
+	if(AMainCharacter* Player = Cast<AMainCharacter>(OwningPlayer))
 	{
-		if ( Player->EquippedWeapon == this )
+		if (Player->EquippedWeapon == this)
 		{
 			UpdateAim();
 			WeaponClipping();
 		}
 	}
-	else if(OwningPlayer )
+	else if(OwningPlayer)
 	{
 		WeaponClipping();
 	}
@@ -95,7 +96,7 @@ void AWeapon::BeginPlay()
 
 	WeaponDataAsset = Cast<UWeaponPDA>(ItemSetting.DataAsset);
 
-	if ( WeaponDataAsset)
+	if (WeaponDataAsset)
 	{
 		SettingWeaponPartsManager();
 		UpdateWeaponParts();
@@ -107,7 +108,7 @@ void AWeapon::SetMesh()
 {
 	Super::SetMesh();
 
-	if ( ItemSetting.DataAsset->Mesh_Optional )
+	if (ItemSetting.DataAsset->Mesh_Optional)
 	{
 		OptionalStaticMesh->SetStaticMesh(ItemSetting.DataAsset->Mesh_Optional);
 		OptionalStaticMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -127,14 +128,14 @@ bool AWeapon::StepEquip(AActor* Char, ERifleSlot RifleSlot)
 	CapsuleAdjust();
 
 
-	if ( RifleAssign == ERifleSlot::ERS_MAX )
+	if (RifleAssign == ERifleSlot::ERS_MAX)
 	{
-		if ( WeaponDataAsset->EquipmentType == EEquipmentType::EET_Rifle )
+		if (WeaponDataAsset->EquipmentType == EEquipmentType::EET_Rifle)
 		{
 			/* 1,2,3을 눌렀을때 Quick Swap하기 위해 Rifle을 지정한다 */
-			if ( RifleSlot == ERifleSlot::ERS_MAX ) //지정된 Slot이 없을때
+			if (RifleSlot == ERifleSlot::ERS_MAX) //지정된 Slot이 없을때
 			{
-				if ( BChar->PrimaryWeapon ) //이미 주무기가 있으면
+				if (BChar->PrimaryWeapon) //이미 주무기가 있으면
 				{
 					BChar->SetWeaponAssign(this, ERifleSlot::ERS_Sub);
 					//SettingRifleAssign(BChar, ERifleSlot::ERS_Sub);
@@ -154,21 +155,21 @@ bool AWeapon::StepEquip(AActor* Char, ERifleSlot RifleSlot)
 
 			}
 		}
-		else if ( WeaponDataAsset->EquipmentType == EEquipmentType::EET_Pistol )
+		else if (WeaponDataAsset->EquipmentType == EEquipmentType::EET_Pistol)
 		{
 			BChar->SetWeaponAssign(this, ERifleSlot::ERS_Pistol);
 		}
 	}
 
 	//들고 있는 무기가 없을 경우 지금 Weapon을 들도록 한다.
-	if ( BChar->EquippedWeapon == nullptr )
+	if (BChar->EquippedWeapon == nullptr)
 	{
 		GunAttachToMesh(BChar);
 		CurrentWeaponState = EWeaponState::EWS_Idle;
 
-		if ( WeaponDataAsset->EquipmentType == EEquipmentType::EET_Rifle )
+		if (WeaponDataAsset->EquipmentType == EEquipmentType::EET_Rifle)
 		{
-			if ( BChar->PrimaryWeapon )
+			if (BChar->PrimaryWeapon)
 			{
 				BChar->ChangeWeapon(1);
 			}
@@ -211,7 +212,7 @@ bool AWeapon::StepEquip(AActor* Char, ERifleSlot RifleSlot)
 	/**장착 직후 Ammo Widget을 update하기 위해
 	 * CheckAmmo로 obj의 AmmoInMag 변수를 불러오고 broadcast를 한다.
 	 */
-	if ( OwningPlayer )
+	if (OwningPlayer)
 	{
 		CheckAmmo();
 		OwningPlayer->OnGetAmmo.Broadcast(this);
@@ -235,28 +236,28 @@ void AWeapon::GunAttachToMesh(AActor* Actor)
 
 
 	// 1, 3인칭 변경시 weapon attach를 변경한다. (Main에만 적용)
-	if ( Main )
+	if (Main)
 	{
 		const USkeletalMeshSocket* TPSocket = Main->GetMesh()->GetSocketByName("WeaponGrip");
 		const USkeletalMeshSocket* FPSocket = Main->FPMesh->GetSocketByName("WeaponGrip");
 
-		if ( TPSocket && FPSocket )
+		if (TPSocket && FPSocket)
 		{
-			switch ( Main->CameraMode )
+			switch (Main->CameraMode)
 			{
 			case ECameraMode::ECM_FPS:
-				if ( FPSocket->AttachActor(this, Main->FPMesh) )
+				if (FPSocket->AttachActor(this, Main->FPMesh))
 				{
-					if ( WeaponDataAsset )
+					if (WeaponDataAsset)
 					{
 						SetActorRelativeTransform(WeaponDataAsset->FPMeshAttachTransform);
 					}
 				}
 				break;
 			case ECameraMode::ECM_TPS:
-				if ( TPSocket->AttachActor(this, Main->GetMesh()) )
+				if (TPSocket->AttachActor(this, Main->GetMesh()))
 				{
-					if ( WeaponDataAsset )
+					if (WeaponDataAsset)
 					{
 						SetActorRelativeTransform(WeaponDataAsset->MeshAttachTransform);
 					}
@@ -264,7 +265,7 @@ void AWeapon::GunAttachToMesh(AActor* Actor)
 				break;
 			}
 
-			if ( SKMesh )
+			if (SKMesh)
 			{
 				SKMesh->SetHiddenInGame(false);
 			}
@@ -273,14 +274,14 @@ void AWeapon::GunAttachToMesh(AActor* Actor)
 	}
 
 	//BChar만 null이 아닌경우 -> AI에만 해당
-	if ( BChar && Main == nullptr )
+	if (BChar && Main == nullptr)
 	{
 		const USkeletalMeshSocket* WeaponSocket = BChar->GetMesh()->GetSocketByName("WeaponGrip");
-		if ( WeaponSocket )
+		if (WeaponSocket)
 		{
-			if ( WeaponSocket->AttachActor(this, BChar->GetMesh()) )
+			if (WeaponSocket->AttachActor(this, BChar->GetMesh()))
 			{
-				if ( WeaponDataAsset )
+				if (WeaponDataAsset)
 				{
 					SetActorRelativeTransform(WeaponDataAsset->MeshAttachTransform);
 				}
@@ -300,14 +301,14 @@ void AWeapon::GunAttachToMesh(AActor* Actor)
 void AWeapon::GunAttachToSubSocket(AActor* Actor)
 {
 	ABaseCharacter* BChar = Cast<ABaseCharacter>(Actor);
-	if ( BChar == nullptr ) return;
+	if (BChar == nullptr) return;
 
 	const USkeletalMeshSocket* AttachSocket = nullptr;
 	FTransform AttachTransform;
 
-	if ( WeaponDataAsset->EquipmentType == EEquipmentType::EET_Rifle )
+	if (WeaponDataAsset->EquipmentType == EEquipmentType::EET_Rifle)
 	{
-		switch ( RifleAssign )
+		switch (RifleAssign)
 		{
 		case ERifleSlot::ERS_Primary:
 			AttachSocket = BChar->GetMesh()->GetSocketByName("PrimaryWeaponAttachSocket");
@@ -319,19 +320,19 @@ void AWeapon::GunAttachToSubSocket(AActor* Actor)
 			break;
 		}
 	}
-	else if ( WeaponDataAsset->EquipmentType == EEquipmentType::EET_Pistol )
+	else if (WeaponDataAsset->EquipmentType == EEquipmentType::EET_Pistol)
 	{
 		AttachSocket = BChar->GetMesh()->GetSocketByName("PistolAttachSocket");
 		AttachTransform = WeaponDataAsset->PistolAttachTransform;
 	}
 
 
-	if ( AttachSocket )
+	if (AttachSocket)
 	{
 		AttachSocket->AttachActor(this, BChar->GetMesh());
 		SetActorRelativeTransform(AttachTransform);
 
-		if ( WeaponDataAsset->EquippedSound )
+		if (WeaponDataAsset->EquippedSound)
 		{
 			UGameplayStatics::SpawnSoundAttached(WeaponDataAsset->EquippedSound, OwningPlayer->GetRootComponent());
 		}
@@ -351,9 +352,9 @@ FTransform AWeapon::GetSightSocketTransform()
 	FTransform ReturnTransform;
 	bool bHasSight = false;
 
-	if ( ItemObj && ItemObj->WeaponPartsManager )
+	if (ItemObj && ItemObj->WeaponPartsManager)
 	{
-		if ( AEquipment* A_Scope = ItemObj->WeaponPartsManager->GetWeaponParts(EWeaponPartsType::EWPT_Scope) )
+		if (AEquipment* A_Scope = ItemObj->WeaponPartsManager->GetWeaponParts(EWeaponPartsType::EWPT_Scope))
 		{
 			ReturnTransform = A_Scope->SKMesh->GetSocketTransform(SightSocketName, ERelativeTransformSpace::RTS_World);
 			bHasSight = true;
@@ -361,7 +362,7 @@ FTransform AWeapon::GetSightSocketTransform()
 	}
 	else if(WeaponPartsManager)
 	{
-		if ( AEquipment* A_Scope = WeaponPartsManager->GetWeaponParts(EWeaponPartsType::EWPT_Scope) )
+		if (AEquipment* A_Scope = WeaponPartsManager->GetWeaponParts(EWeaponPartsType::EWPT_Scope))
 		{
 			ReturnTransform = A_Scope->SKMesh->GetSocketTransform(SightSocketName, ERelativeTransformSpace::RTS_World);
 			bHasSight = true;
@@ -375,7 +376,7 @@ FTransform AWeapon::GetSightSocketTransform()
 	}
 
 	//Sight가 있다면 아래 기본 IronSight는 진행하지 않는다.
-	if( bHasSight == false)
+	if(bHasSight == false)
 	{
 		ReturnTransform = SKMesh->GetSocketTransform(SightSocketName, ERelativeTransformSpace::RTS_World);
 	}
@@ -398,7 +399,7 @@ void AWeapon::SettingWeaponPartsManager()
 	WeaponPartsManager->SetOwnerWeapon(this);
 	WeaponPartsManager->OnChangeParts.AddDynamic(this, &AWeapon::UpdateWeaponParts);
 
-	if ( bHasSpawnParts )
+	if (bHasSpawnParts)
 	{
 		TArray<UCustomPDA*> List1 = UCustomInventoryLibrary::RandomSpawnUsingTableButCount(1,SpawnMuzzlePartsList);
 		AddSpawnParts(List1);
@@ -419,13 +420,13 @@ void AWeapon::SettingWeaponPartsManager()
 
 void AWeapon::AddSpawnParts(TArray<UCustomPDA*>SpawnParts)
 {
-	for ( UCustomPDA* PartsPDA : SpawnParts )
+	for (UCustomPDA* PartsPDA : SpawnParts)
 	{
 		bool bIsCreated = false;
 		//auto SpawnParts = UCustomInventoryLibrary::SpawnEquipment(GetWorld(), Cast<UCustomPDA>(PartsPDA));
 		UNewItemObject* PartsObj = UCustomInventoryLibrary::CreateObject(FItemSetting(PartsPDA,1,0),bIsCreated); //SpawnParts->ItemSetting, bIsCreated);
 		//SpawnParts->Destroy();
-		if ( bIsCreated )
+		if (bIsCreated)
 		{
 			WeaponPartsManager->AddParts(PartsObj);
 		}
@@ -436,13 +437,13 @@ void AWeapon::UpdateWeaponParts()
 {
 	
 	if(WeaponDataAsset && (WeaponDataAsset->EquipmentType == EEquipmentType::EET_Rifle ||
-	WeaponDataAsset->EquipmentType == EEquipmentType::EET_Pistol ))
+	WeaponDataAsset->EquipmentType == EEquipmentType::EET_Pistol))
 	{
-		if ( ItemObj && ItemObj->WeaponPartsManager )
+		if (ItemObj && ItemObj->WeaponPartsManager)
 		{
 			ItemObj->WeaponPartsManager->UpdateParts(GetWorld(), this);
 		}
-		else if( WeaponPartsManager)
+		else if(WeaponPartsManager)
 		{
 			WeaponPartsManager->UpdateParts(GetWorld(), this);
 		}
@@ -454,38 +455,38 @@ void AWeapon::Remove()
 {
 	UE_LOG(LogTemp, Warning, TEXT("AWeapon::Remove func called"));
 	Super::Remove();
-	if ( OwningPlayer == nullptr ) return;
+	if (OwningPlayer == nullptr) return;
 
 	RifleAssign = ERifleSlot::ERS_MAX;
-	if ( ItemObj )
+	if (ItemObj)
 	{
 		ItemObj->RifleAssign = ERifleSlot::ERS_MAX;
 	}
 
-	if ( OwningPlayer->EquippedWeapon == this )
+	if (OwningPlayer->EquippedWeapon == this)
 	{
 		OwningPlayer->ChangeWeapon(0);
 		UE_LOG(LogTemp, Warning, TEXT("AWeapon::Remove , Remove RifleAssign"));
 	}
 
 
-	if ( OwningPlayer->PrimaryWeapon == this )
+	if (OwningPlayer->PrimaryWeapon == this)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("AWeapon::Remove, was Primary..."));
 		OwningPlayer->PrimaryWeapon = nullptr;
 	}
-	else if ( OwningPlayer->SubWeapon == this )
+	else if (OwningPlayer->SubWeapon == this)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("AWeapon::Remove, was Sub..."));
 		OwningPlayer->SubWeapon = nullptr;
 	}
-	else if ( OwningPlayer->PistolWeapon == this )
+	else if (OwningPlayer->PistolWeapon == this)
 	{
 		OwningPlayer->PistolWeapon = nullptr;
 	}
 
 	OwningPlayer = nullptr;
-	if ( WeaponPartsManager )
+	if (WeaponPartsManager)
 	{
 		WeaponPartsManager->DestroyAllAttachParts(this);
 	}
@@ -545,12 +546,12 @@ void AWeapon::FPS_AimAttachToMesh(AActor* Actor)
 //}
 void AWeapon::ToggleTacticalEquip()
 {
-	if ( WeaponDataAsset )
+	if (WeaponDataAsset)
 	{
-		if ( CurrentWeaponState == EWeaponState::EWS_Idle )
+		if (CurrentWeaponState == EWeaponState::EWS_Idle)
 		{
 			AWeaponParts* TacticalParts = nullptr;
-			if ( ItemObj && ItemObj->WeaponPartsManager )
+			if (ItemObj && ItemObj->WeaponPartsManager)
 			{
 				if ( AEquipment* A_Tactical = ItemObj->WeaponPartsManager->GetWeaponParts(EWeaponPartsType::EWPT_Tactical) )
 				{
@@ -559,7 +560,7 @@ void AWeapon::ToggleTacticalEquip()
 					TacticalParts = Cast<AWeaponParts>(A_Tactical);
 				}
 			}
-			else if ( WeaponPartsManager )
+			else if (WeaponPartsManager)
 			{
 				if ( AEquipment* A_Tactical = WeaponPartsManager->GetWeaponParts(EWeaponPartsType::EWPT_Tactical) )
 				{
@@ -570,9 +571,9 @@ void AWeapon::ToggleTacticalEquip()
 
 			}
 
-			if(TacticalParts == nullptr ) return;
+			if(TacticalParts == nullptr) return;
 
-			if ( bIsTacticalDevEmit )
+			if (bIsTacticalDevEmit)
 			{
 				//off
 				bIsTacticalDevEmit = false;
@@ -595,9 +596,9 @@ void AWeapon::ToggleTacticalEquip()
 void AWeapon::ChangeSafetyLever()
 {
 	//UCustomPDA* CPDA = Cast<UCustomPDA>(ItemSetting.DataAsset);
-	if ( WeaponDataAsset && WeaponDataAsset->EquipmentType == EEquipmentType::EET_Rifle )
+	if (WeaponDataAsset && WeaponDataAsset->EquipmentType == EEquipmentType::EET_Rifle)
 	{
-		switch ( WeaponFiringMode )
+		switch (WeaponFiringMode)
 		{
 		case EWeaponFiringMode::EWFM_Safe:
 			WeaponFiringMode = EWeaponFiringMode::EWFM_SemiAuto;
@@ -617,7 +618,7 @@ void AWeapon::ChangeSafetyLever()
 
 void AWeapon::ChangeSafetyLeverForAI(EWeaponFiringMode FiringMode)
 {
-	if ( WeaponDataAsset && WeaponDataAsset->EquipmentType == EEquipmentType::EET_Rifle )
+	if (WeaponDataAsset && WeaponDataAsset->EquipmentType == EEquipmentType::EET_Rifle)
 	{
 		WeaponFiringMode = FiringMode;
 	}
@@ -629,9 +630,9 @@ void AWeapon::TempNewWeaponState()
 	//UE_LOG(LogTemp, Warning, TEXT("AWeapon::TempNewWeaponState"));
 	EWeaponState State = EWeaponState::EWS_Idle;
 
-	if ( bLMBDown )
+	if (bLMBDown)
 	{
-		if ( CanFire() )//발사를 할 수 있다면, Firing으로 상태를 변경한다.
+		if (CanFire())//발사를 할 수 있다면, Firing으로 상태를 변경한다.
 		{
 #if WeaponDEBUG
 			UE_LOG(LogTemp, Warning, TEXT("TempState -> Firing"));
@@ -648,11 +649,11 @@ void AWeapon::SetWeaponState(EWeaponState NewState)
 {
 	//UE_LOG(LogTemp, Warning, TEXT("AWeapon::SetWeaponState"));
 	//기존에 발사중이었고, 더이상 LMB를 누르지 않는다면
-	if ( CurrentWeaponState == EWeaponState::EWS_Firing && NewState != EWeaponState::EWS_Firing )
+	if (CurrentWeaponState == EWeaponState::EWS_Firing && NewState != EWeaponState::EWS_Firing)
 	{
 		// 점사면 끝내도 지정된 몇발 이상 안쐈으면 사격되도록 함.
 		bool bCanEndFire = true;
-		if ( WeaponFiringMode == EWeaponFiringMode::EWFM_Burst )
+		if (WeaponFiringMode == EWeaponFiringMode::EWFM_Burst)
 		{
 #if WeaponDEBUG
 			UE_LOG(LogTemp, Warning, TEXT("SetWeponState: Burst mode Continuous Firing"));
@@ -664,7 +665,7 @@ void AWeapon::SetWeaponState(EWeaponState NewState)
 
 		//사격이 중단되어야 할때 EndFiring호출 
 		 //점사일때는 냅둔다-> Check Firing함수에서 Firing을 호출하도록 함.
-		if ( bCanEndFire )
+		if (bCanEndFire)
 		{
 #if WeaponDEBUG
 			UE_LOG(LogTemp, Warning, TEXT("SetWeponState: Call EndFiring func"));
@@ -676,7 +677,7 @@ void AWeapon::SetWeaponState(EWeaponState NewState)
 
 	}
 	//기존에 발사하지 않았고, LMB를 눌렀다면
-	else if ( CurrentWeaponState != EWeaponState::EWS_Firing && NewState == EWeaponState::EWS_Firing )
+	else if (CurrentWeaponState != EWeaponState::EWS_Firing && NewState == EWeaponState::EWS_Firing)
 	{
 
 #if WeaponDEBUG
@@ -703,14 +704,14 @@ bool AWeapon::CanFire()
 
 	//if (ItemObj->bIsDestoryed == false)
 	{
-		if ( WeaponFiringMode != EWeaponFiringMode::EWFM_Safe && CurrentWeaponState != EWeaponState::EWS_Reloading
-		&& CurrentWeaponState != EWeaponState::EWS_Equipping && OwningPlayer->bIsSprinting == false )
+		if (WeaponFiringMode != EWeaponFiringMode::EWFM_Safe && CurrentWeaponState != EWeaponState::EWS_Reloading
+		&& CurrentWeaponState != EWeaponState::EWS_Equipping && OwningPlayer->bIsSprinting == false)
 		{
 			//SemiAuto에 한발 이상 사격한게 아닐때만 CheckAmmo && 사격 가능
 			// 왜 이렇게 했는지 모르겠다... 필요없어 보여서 뺐는데도 잘 된다.
 			//if ( !( WeaponFiringMode == EWeaponFiringMode::EWFM_SemiAuto && FireCount > 0 ) )
 			{
-				if ( CheckAmmo() )
+				if (CheckAmmo())
 				{
 					bCanFire = true;
 				}
@@ -731,12 +732,12 @@ int32 AWeapon::GetCurrentAmmoInMag()
 
 bool AWeapon::CheckAmmo()
 {
-	if ( ItemObj )
+	if (ItemObj)
 	{
 		AmmoLeftInMag = ItemObj->GetAmmoLeftInMag();
 	}
 
-	if ( AmmoLeftInMag <= 0 )
+	if (AmmoLeftInMag <= 0)
 	{
 		// -1이하로 내려갈일은 없지만 방지용으로.
 		AmmoLeftInMag = 0;
@@ -748,7 +749,7 @@ bool AWeapon::CheckAmmo()
 void AWeapon::UseAmmo()
 {
 	--AmmoLeftInMag;
-	if ( ItemObj )
+	if (ItemObj)
 	{
 		ItemObj->SetAmmoLeftInMag(AmmoLeftInMag);
 	}
@@ -758,7 +759,7 @@ void AWeapon::UseAmmo()
 
 void AWeapon::Equipping()
 {
-	if(!WeaponDataAsset || !OwningPlayer ) return;
+	if(!WeaponDataAsset || !OwningPlayer) return;
 
 	CurrentWeaponState = EWeaponState::EWS_Equipping;
 
@@ -783,7 +784,7 @@ void AWeapon::EndEquipping()
 bool AWeapon::CheckCanReload()
 {
 	//Idle상태가 아닌 상태인 경우 장전 불가.
-	if ( CurrentWeaponState != EWeaponState::EWS_Idle )
+	if (CurrentWeaponState != EWeaponState::EWS_Idle)
 	{
 		return false;
 	}
@@ -794,10 +795,10 @@ bool AWeapon::CheckCanReload()
 //Reload는 단순히 Animation을 진행하도록 한다.
 void AWeapon::Reload()
 {
-	if ( CheckCanReload() == false )
+	if (CheckCanReload() == false)
 	{
-		UE_LOG(LogTemp,Warning,TEXT("AWeapon::Reload// 장전할 수 없습니다."
-		"이미 장전중이거나, Weapon이 다른 동작을 진행중입니다."));
+		//UE_LOG(LogTemp,Warning,TEXT("AWeapon::Reload// Can't Reload."
+		//"Already reloading or Weapon is busy."));
 		return;
 	}
 
@@ -806,7 +807,7 @@ void AWeapon::Reload()
 	CntAmmoSameType = 0;
 
 	//Player가 Ammo를 갖고 있고 && Mag에 남은 Ammo가 최대 APM보다 적은 경우에만 장전 가능
-	if ( bHasAmmo && AmmoLeftInMag < WeaponDataAsset->WeaponStat.AmmoPerMag )
+	if (bHasAmmo && AmmoLeftInMag < WeaponDataAsset->WeaponStat.AmmoPerMag)
 	{
 		CurrentWeaponState = EWeaponState::EWS_Reloading;
 
@@ -820,15 +821,15 @@ void AWeapon::Reload()
 			OwningPlayer->PlayAnimation(WeaponDataAsset->WeaponAnimaton.TPS_Actor_ReloadAnim, WeaponDataAsset->WeaponAnimaton.FPS_Actor_ReloadAnim);
 		}
 
-		//Sound 재생
-		if ( WeaponDataAsset->WeaponSound.ReloadSound)
+		//Sound 재생 -> Notify로 옮김.
+		/*if ( WeaponDataAsset->WeaponSound.ReloadSound)
 		{
 			UGameplayStatics::SpawnSoundAttached(WeaponDataAsset->WeaponSound.ReloadSound, OwningPlayer->GetRootComponent());
-		}
+		}*/
 	}
 	else
 	{
-		UE_LOG(LogTemp,Warning,TEXT("AWeapon::Reload// 장전 실패! : 탄약이 주머니 또는 조끼에 없거나 / Mag에 탄이 꽉 찼습니다."));
+		UE_LOG(LogTemp,Warning,TEXT("AWeapon::Reload// Reload Failed! : Ammo is not Vest or Pocket / full ammo in mag."));
 	}	
 }
 
@@ -853,6 +854,34 @@ void AWeapon::ReloadEnd()
 	OwningPlayer->OnGetAmmo.Broadcast(this);
 }
 
+void AWeapon::PlayReloadSound(EPlayReloadSound SoundType)
+{
+	if (WeaponDataAsset)
+	{
+		FVector WeaponLo = GetActorLocation();
+		USoundCue* Sound = nullptr;
+		UWorld* World = GetWorld();
+		if(!World) return;
+
+		switch (SoundType)
+		{
+			case EPlayReloadSound::EPRS_EjectSound:
+				Sound = WeaponDataAsset->WeaponSound.Reload_EjectSound;
+			break;
+			case EPlayReloadSound::EPRS_InsertSound:
+				Sound = WeaponDataAsset->WeaponSound.Reload_InsertSound;
+			break;
+			case EPlayReloadSound::EPRS_BoltReleaseSound:
+				Sound = WeaponDataAsset->WeaponSound.Reload_BoltReleaseSound;
+			break;
+
+		}
+		//UE_LOG(LogTemp,Warning,TEXT("AWeapon::PlayReloadSound"));
+		UGameplayStatics::PlaySoundAtLocation(World, Sound, WeaponLo);
+		//UGameplayStatics::SpawnSoundAttached(Sound, OwningPlayer->GetRootComponent());
+		UAISense_Hearing::ReportNoiseEvent(World, WeaponLo, 0.7f, this);
+	}
+}
 
 bool AWeapon::CanEndFire()
 {
@@ -869,8 +898,7 @@ bool AWeapon::CanEndFire()
  */
 void AWeapon::StartFire()
 {
-
-	if ( !bLMBDown )
+	if (!bLMBDown)
 	{
 		bLMBDown = true;
 		/*
@@ -885,7 +913,7 @@ void AWeapon::StartFire()
 
 void AWeapon::StopFire()
 {
-	if ( bLMBDown )
+	if (bLMBDown)
 	{
 		bLMBDown = false;
 		TempNewWeaponState();
@@ -923,7 +951,7 @@ void AWeapon::ControlFiring()
 	// 점사 모드일때는 강제로 시간을 더 추가한다. 
 	// Enum을 써도 되지만 if문이 너무 길어져서 boolean변수를 하나 추가한거다.
 	bool bIsBurstmode = false;
-	if ( WeaponFiringMode == EWeaponFiringMode::EWFM_Burst )
+	if (WeaponFiringMode == EWeaponFiringMode::EWFM_Burst)
 	{
 		bIsBurstmode = true;
 	}
@@ -932,16 +960,16 @@ void AWeapon::ControlFiring()
 	// 아직 발사 할 수 없으므로 발사가능 시간을 구한다.f
 
 	//점사모드면 발사 가능 시간을 늦춘 조건으로 검사한다.
-	if ( ( bIsBurstmode && LastFireTime > 0 && LastFireTime + WeaponDataAsset->WeaponStat.SecondPerBullet * 4 > WorldTime ) ||
-		( LastFireTime > 0 && LastFireTime + WeaponDataAsset->WeaponStat.SecondPerBullet > WorldTime ) )
+	if ((bIsBurstmode && LastFireTime > 0 && LastFireTime + WeaponDataAsset->WeaponStat.SecondPerBullet * 4 > WorldTime) ||
+		(LastFireTime > 0 && LastFireTime + WeaponDataAsset->WeaponStat.SecondPerBullet > WorldTime))
 	{
 		//발사 가능시간을 구한다. 
 		float RemainingTime = 0.f;// = LastFireTime + WeaponStat.SecondPerBullet - WorldTime;
 
-		if ( bIsBurstmode )
+		if (bIsBurstmode)
 		{
 			//점사 모드면 SecondPerBullet에 4를 곱한 값.
-			RemainingTime = ( LastFireTime + WeaponDataAsset->WeaponStat.SecondPerBullet * 4 ) - WorldTime;
+			RemainingTime = (LastFireTime + WeaponDataAsset->WeaponStat.SecondPerBullet * 4) - WorldTime;
 		}
 		GetWorldTimerManager().SetTimer(FiringTimer, this, &AWeapon::Firing, RemainingTime, false);
 
@@ -969,11 +997,11 @@ void AWeapon::Firing()
 	bIsFiring = true;
 	AMainCharacter* Main = Cast<AMainCharacter>(GetInstigator());
 
-	if ( bDetectLookInput == false )
+	if (bDetectLookInput == false)
 	{
-		if ( Main )
+		if (Main)
 		{
-			if ( Main->bIsLookInput )
+			if (Main->bIsLookInput)
 			{
 				bDetectLookInput = true;
 			}
@@ -1017,7 +1045,7 @@ void AWeapon::ReFiring()
 {
 	//실제로 체크하는 함수를 호출한다.
 	bool bCanReFire = CheckRefire();
-	if ( bCanReFire )
+	if (bCanReFire)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("ReFiring:: Can Refire. call Firing"));
 		Firing();
@@ -1044,9 +1072,9 @@ void AWeapon::EndFiring()
 
 
 	// 사격을 끝냈을때 첫 사격 에임으로 되돌아 오는 기능
-	if ( AMainCharacter* Player = Cast<AMainCharacter>(OwningPlayer) )
+	if (AMainCharacter* Player = Cast<AMainCharacter>(OwningPlayer))
 	{
-		if ( Player->EquippedWeapon == this )
+		if (Player->EquippedWeapon == this)
 		{
 			GetWorldTimerManager().ClearTimer(AimInitHandle);
 			AimInitialize();
@@ -1060,15 +1088,15 @@ bool AWeapon::CheckRefire()
 {
 	bool bFlag = false;
 	//격발이 가능한지 우선 체크하고
-	if ( CanFire() )
+	if (CanFire())
 	{
-		if ( CurrentWeaponState == EWeaponState::EWS_Firing )
+		if (CurrentWeaponState == EWeaponState::EWS_Firing)
 		{
 			//Burst모드일때는 BurstRound이하로 쐈을때 refire가 가능하다.
-			switch ( WeaponFiringMode )
+			switch (WeaponFiringMode)
 			{
 			case EWeaponFiringMode::EWFM_Burst:
-				if ( FireCount > 0 && FireCount < WeaponDataAsset->WeaponStat.BurstRound )
+				if (FireCount > 0 && FireCount < WeaponDataAsset->WeaponStat.BurstRound)
 				{
 					bFlag = true;
 				}
@@ -1113,7 +1141,7 @@ FTransform AWeapon::GetAimPosition()
 		FTransform ReturnAim = FTransform(FRotator::ZeroRotator, FVector::ZeroVector);
 	//FVector ReturnAim = FVector::ZeroVector;
 
-	if ( MainCon )
+	if (MainCon)
 	{
 		FVector AimLoc = FVector::ZeroVector;
 		FRotator AimRot = FRotator::ZeroRotator;
@@ -1130,29 +1158,29 @@ FTransform AWeapon::GetAimPosition()
 FVector AWeapon::GetTraceStartLocation(FVector Dir)
 {
 	check(OwningPlayer)
-		check(MainCon)
+	check(MainCon)
 
-		FVector ReturnLocation;
+	FVector ReturnLocation;
 	FRotator Rot;
 
 	//ClippingWall 함수가 실행되면, 탄 시작 위치를 Muzzle의 위치로 바꾼다.
 	//함수가 실행되지 않으면,  탄시작 위치는 Actor와(Actor-CamLo = Actor의 옆위치가 된다) Dir의 사이각이 된다.
 
 	//For debug
-	if ( SKMesh->GetSocketByName(MuzzleFlashSocketName) == nullptr )
+	if (SKMesh->GetSocketByName(MuzzleFlashSocketName) == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("AWeapon::GetTraceStartLocation / Can not find MuzzleFlashSocket"));
 	}
 
-	if ( bIsHighReady )
+	if (bIsHighReady)
 	{
 		FVector WeaponMuzzleLocation = SKMesh->GetSocketLocation(MuzzleFlashSocketName);
 		ReturnLocation = WeaponMuzzleLocation; //GetActorLocation();
 	}
-	else if ( MainCon )
+	else if (MainCon)
 	{
 		MainCon->GetPlayerViewPoint(ReturnLocation, Rot);
-		ReturnLocation = ReturnLocation + Dir * ( OwningPlayer->GetActorLocation() - ReturnLocation | Dir );
+		ReturnLocation = ReturnLocation + Dir * (OwningPlayer->GetActorLocation() - ReturnLocation | Dir);
 	}
 
 	return ReturnLocation;
@@ -1164,7 +1192,7 @@ FVector AWeapon::GetTraceEndLocation(FVector StartVector, FVector Dir)
 
 	//ClippingWall함수가 실행되면 탄의 종료 위치는 Muzzle의 방향*거리가 되며
 	//함수가 실행되지 않으면, WorldAimPosition이 된다.
-	if ( bIsHighReady )
+	if (bIsHighReady)
 	{
 		//Muzzle Flash Rotation값으로 하면 처음은 잘되는데  시간 지나다 보면 Rotation값이 이상하게 되는듯? 자꾸 변한다. -> ActorQuat 절대 축으로 변환함.
 		//FRotator MuzzleRotation = SKMesh->GetSocketRotation(MuzzleFlashSocketName);
@@ -1192,7 +1220,7 @@ FHitResult AWeapon::BulletTrace(FVector StartTrace, FVector EndTrace)
 	params.AddIgnoredActor(OwningPlayer);
 	params.AddIgnoredComponent(CapsuleComp);
 
-	if ( AMainCharacter* Player = Cast<AMainCharacter>(OwningPlayer) )
+	if (AMainCharacter* Player = Cast<AMainCharacter>(OwningPlayer))
 	{
 		params.AddIgnoredActor(Player);
 	}
@@ -1207,10 +1235,11 @@ FHitResult AWeapon::BulletTrace(FVector StartTrace, FVector EndTrace)
 void AWeapon::WeaponFX()
 {
 	//소음기가 있을때
-	if ( WeaponPartsManager->MuzzleParts )
+	
+	if (WeaponPartsManager && WeaponPartsManager->MuzzleParts)
 	{
 		//사운드만 재생
-		if ( WeaponDataAsset->WeaponSound.MuzzleParts_FireSound)
+		if (WeaponDataAsset->WeaponSound.MuzzleParts_FireSound)
 		{
 			UGameplayStatics::SpawnSoundAttached(WeaponDataAsset->WeaponSound.FireSound, this->SKMesh);
 		}
@@ -1219,17 +1248,17 @@ void AWeapon::WeaponFX()
 	else
 	{
 		//사운드
-		if ( WeaponDataAsset->WeaponSound.FireSound )
+		if (WeaponDataAsset->WeaponSound.FireSound)
 		{
 			UGameplayStatics::SpawnSoundAttached(WeaponDataAsset->WeaponSound.FireSound, this->SKMesh);
 		}
 
 		//총구 이펙트
-		if ( WeaponDataAsset->FireMuzzleEffect )
+		if (WeaponDataAsset->FireMuzzleEffect)
 		{
 			const USkeletalMeshSocket* MuzzleSocket = SKMesh->GetSocketByName(MuzzleFlashSocketName);
 
-			if ( MuzzleSocket )
+			if (MuzzleSocket)
 			{
 				FVector MuzzleLocation = SKMesh->GetSocketLocation(MuzzleFlashSocketName);
 				FRotator MuzzleRotation = SKMesh->GetSocketRotation(MuzzleFlashSocketName);
@@ -1239,7 +1268,7 @@ void AWeapon::WeaponFX()
 		}
 	}
 
-	if ( OwningPlayer->AimMode == EAimMode::EAM_Aim )
+	if (OwningPlayer->AimMode == EAimMode::EAM_Aim)
 	{
 		OwningPlayer->StopAnimMontage(nullptr);
 		OwningPlayer->PlayAnimation(WeaponDataAsset->WeaponAnimaton.TPS_ADS_Actor_FireAnim, WeaponDataAsset->WeaponAnimaton.FPS_ADS_Actor_FireAnim);
@@ -1283,7 +1312,7 @@ void AWeapon::AimInitialize()
 	EndFiringRotation = GetInstigatorController()->GetControlRotation();
 
 	//fire중 마우스 입력이 감지되면 AimInit을 단순히 아래로 내리게 한다.
-	if ( bDetectLookInput )
+	if (bDetectLookInput)
 	{
 		bDetectLookInput = false;
 		FRotator NewStartRot = FRotator(EndFiringRotation.Pitch - 3.f, EndFiringRotation.Yaw, EndFiringRotation.Roll);
@@ -1292,7 +1321,7 @@ void AWeapon::AimInitialize()
 	//UE_LOG(LogTemp, Warning, TEXT("End Rotating val : %s"), *EndFiringRotation.ToString());
 	Time = 0.f;
 	AlphaTime = 0.f;
-	GetWorldTimerManager().SetTimer(AimInitHandle, [ = ] {
+	GetWorldTimerManager().SetTimer(AimInitHandle, [=] {
 
 		Time += GetWorld()->GetDeltaSeconds();
 		AlphaTime = Time / OwningPlayer->StatManagementComponent->GetAimInitRate();//0.8f; // : Time/되돌아오는 시간  (스텟)
@@ -1312,13 +1341,13 @@ void AWeapon::UpdateAim()
 	FHitResult Hit = BulletTrace(AimPos.GetLocation(), EndVec);
 	if(!MainCon || !MainCon->Main->CameraFPS) return;
 
-	if ( Hit.bBlockingHit )
+	if (Hit.bBlockingHit)
 	{
 		WorldAimPosition = Hit.Location;
 
 		//FPS시점에서 Trace를 같은곳에 한번 더 쏴서 맞으면 맞은 위치로 AimPos를 옮긴다.
 		FHitResult WeaponHit = BulletTrace(MainCon->Main->CameraFPS->GetComponentLocation(), Hit.Location);
-		if ( WeaponHit.bBlockingHit )
+		if (WeaponHit.bBlockingHit)
 		{
 			WorldAimPosition = WeaponHit.Location;
 		}
@@ -1340,15 +1369,15 @@ void AWeapon::WeaponClipping()
 	FVector RotVec;
 	//Player인 경우 FPS/TPS시점에 따라 HandIK를 다르게 적용한다.
 
-	if(!OwningPlayer ) return;
+	if(!OwningPlayer) return;
 
-	if ( AMainCharacter* Player = Cast<AMainCharacter>(OwningPlayer) )
+	if (AMainCharacter* Player = Cast<AMainCharacter>(OwningPlayer))
 	{
 		if(!MainCon) return;
 		//아래 EndLo Vec을 계산할때 사용할 방향벡터
 		RotVec = GetAimPosition().GetRotation().GetForwardVector();
 
-		switch ( Player->CameraMode )
+		switch (Player->CameraMode)
 		{
 			case ECameraMode::ECM_FPS:
 				CurrentMeshAttachTransform = WeaponDataAsset->FPMeshAttachTransform;
@@ -1361,7 +1390,7 @@ void AWeapon::WeaponClipping()
 			
 		}
 	}
-	else if(OwningPlayer )
+	else if(OwningPlayer)
 	{
 		RotVec = OwningPlayer->GetActorForwardVector();
 
@@ -1391,7 +1420,7 @@ void AWeapon::WeaponClipping()
 	if ( Hit.bBlockingHit )
 	{
 		//Aim상태 였다면 Aim을 풀어준다.
-		if ( OwningPlayer->AimMode == EAimMode::EAM_Aim )
+		if (OwningPlayer->AimMode == EAimMode::EAM_Aim)
 		{
 			OwningPlayer->SetAimMode(EAimMode::EAM_NotAim);
 		}

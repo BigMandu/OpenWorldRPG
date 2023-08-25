@@ -5,6 +5,7 @@
 
 #include "EnemyAIController.h"
 #include "Navigation/CrowdFollowingComponent.h"
+#include "Navigation/CrowdManager.h"
 #include "EnemyCharacter.h"
 #include "OpenWorldRPG/BaseCharacter.h"
 #include "TimerManager.h"
@@ -24,9 +25,9 @@
 #include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
 #include "../MainController.h"
-#include <OpenWorldRPG/Item/BaseGrenade.h>
-#include <OpenWorldRPG/Item/GrenadePDA.h>
-#include <DrawDebugHelpers.h>
+#include "OpenWorldRPG/Item/BaseGrenade.h"
+#include "OpenWorldRPG/Item/GrenadePDA.h"
+#include "DrawDebugHelpers.h"
 
 
 
@@ -34,6 +35,26 @@ AEnemyAIController::AEnemyAIController(const FObjectInitializer& ObjectInitializ
 	: Super(ObjectInitializer.SetDefaultSubobjectClass<UCrowdFollowingComponent>(TEXT("PathFollowingComponent")))
 {
 	PrimaryActorTick.bCanEverTick = true;
+
+	/**************** CrowdFollowing Comp 관련 ****************/
+	if (UCrowdFollowingComponent* CrowdFollowComp = Cast<UCrowdFollowingComponent>(GetComponentByClass(UCrowdFollowingComponent::StaticClass())))
+	{
+		//CrowdFollowComp->SuspendCrowdSteering(true);
+		
+
+	/*	UCrowdManager* CrowdManager = UCrowdManager::GetCurrent(this);
+		if (CrowdManager)
+		{
+			CrowdManager->RegisterAgent(this);
+
+			CrowdManager->DrawDebugCollisionSegments(this);
+			CrowdManager->DrawDebugCorners(this);
+			CrowdManager->DrawDebugNeighbors(this);
+			CrowdManager->DrawDebugPath(this);
+			
+		}*/
+	}
+
 
 	/**************  AI Perception관련  ***************/
 	SetPerceptionComponent(*CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("PerceptionComponent")));
@@ -114,17 +135,21 @@ void AEnemyAIController::OnPossess(APawn* InPawn)
 	if (OwnerActor)
 	{
 		const FVector OriginPosition = OwnerActor->GetActorLocation();
-		BBComp->InitializeBlackboard(*(OwnerActor->BTAsset->BlackboardAsset)); //Blackboard초기화
 
-		//여긴 귀찮아서 걍 이걸로함
-		BBComp->SetValueAsVector(OriginPosKey, OriginPosition); //Spawn위치 저장.
-		BBComp->SetValueAsBool(bHasPatrolPointsKey, OwnerActor->bHasPatrolPoints); //Targetpoint 보유 여부를 넘겨줌.
-		BBComp->SetValueAsInt(PatrolPointIndexKey, 0); //Targetpoint index를 0으로 세팅한다.
+		if(BBComp && OwnerActor->BTAsset)
+		{
+			BBComp->InitializeBlackboard(*(OwnerActor->BTAsset->BlackboardAsset)); //Blackboard초기화
+
+			//여긴 귀찮아서 걍 이걸로함
+			BBComp->SetValueAsVector(OriginPosKey, OriginPosition); //Spawn위치 저장.
+			BBComp->SetValueAsBool(bHasPatrolPointsKey, OwnerActor->bHasPatrolPoints); //Targetpoint 보유 여부를 넘겨줌.
+			BBComp->SetValueAsInt(PatrolPointIndexKey, 0); //Targetpoint index를 0으로 세팅한다.
 		
-		BTComp->StartTree(*(OwnerActor->BTAsset)); //마지막에 StartTree
+			BTComp->StartTree(*(OwnerActor->BTAsset)); //마지막에 StartTree
 
-		SightConfig->SetMaxAge(OwnerActor->SightMaxAge);
-		HearingConfig->SetMaxAge(OwnerActor->HearingMaxAge);
+			SightConfig->SetMaxAge(OwnerActor->SightMaxAge);
+			HearingConfig->SetMaxAge(OwnerActor->HearingMaxAge);
+		}
 	}	
 }
 

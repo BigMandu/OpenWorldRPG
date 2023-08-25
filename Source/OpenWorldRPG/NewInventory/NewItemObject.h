@@ -4,8 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
-#include "OpenWorldRPG/NewInventory/Library/ItemInterface.h"
-#include "OpenWorldRPG/NewInventory/Library/InventoryStruct.h"
+#include "OpenWorldRPG/CustomLibrary/CustomEnumLibrary.h"
+#include "OpenWorldRPG/CustomLibrary/CustomStructLibrary.h"
 #include "NewItemObject.generated.h"
 
 /**
@@ -38,7 +38,7 @@ class UCustomPDA;
 //};
 
 UCLASS()
-class OPENWORLDRPG_API UNewItemObject : public UObject, public IItemInterface
+class OPENWORLDRPG_API UNewItemObject : public UObject//, public IItemInterface
 {
 	GENERATED_BODY()
 public:

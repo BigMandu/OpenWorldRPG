@@ -55,7 +55,13 @@ struct FWeaponSound
 	USoundCue* BulletHitSound;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon | FX")
-	USoundCue* ReloadSound;
+	USoundCue* Reload_EjectSound;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon | FX")
+	USoundCue* Reload_InsertSound;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon | FX")
+	USoundCue* Reload_BoltReleaseSound;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon | FX")
 	USoundCue* EquipSound;

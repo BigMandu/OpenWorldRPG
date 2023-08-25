@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
-#include "OpenWorldRPG/NewInventory/Library/ItemInterface.h"
+#include "OpenWorldRPG/CustomLibrary/CustomEnumLibrary.h"
 #include "BasePDA.generated.h"
 /**
  * 
@@ -56,7 +56,9 @@ public:
 	//UPROPERTY(EditAnywhere, Category = "Item | Info")
 	//FString InteractText;
 	
-	
+	//If this item is an intel, have to choose only one type other than MAXtype.
+	UPROPERTY(EditAnywhere, Category = "Item | Info")
+	EIntelType IntelType;
 
 	UPROPERTY(EditAnywhere, Category = "Item | Info")
 	EInteractType InteractType;

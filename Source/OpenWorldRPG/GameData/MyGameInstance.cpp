@@ -21,6 +21,18 @@ UMyGameInstance::UMyGameInstance()
 	FString FootStepDataTablePath = TEXT("/Game/GameData/FootStepDataTable.FootStepDataTable");
 	static ConstructorHelpers::FObjectFinder<UDataTable> DT_FootStepData(*FootStepDataTablePath);
 
+	FString IntelDataTablePath = TEXT("/Game/GameData/IntelDataTable.IntelDataTable");
+	static ConstructorHelpers::FObjectFinder<UDataTable> DT_IntelData(*IntelDataTablePath);
+	
+	FString MissionDataTablePath = TEXT("/Game/GameData/MainMissionDataTable.MainMissionDataTable");
+	static ConstructorHelpers::FObjectFinder<UDataTable> DT_MissionData(*MissionDataTablePath);
+
+	FString TutorialMissionDataTablePath = TEXT("/Game/GameData/TutorialMissionDataTable.TutorialMissionDataTable");
+	static ConstructorHelpers::FObjectFinder<UDataTable> DT_TutorialMissionData(*TutorialMissionDataTablePath);
+
+	
+
+
 	if( DT_LevelData.Succeeded())
 	{ 
 		LevelDataTable = DT_LevelData.Object;
@@ -31,12 +43,25 @@ UMyGameInstance::UMyGameInstance()
 		CraftRecipeDataTable = DT_CraftRecipe.Object;
 	}
 
-	if ( DT_FootStepData.Succeeded() )
+	if (DT_FootStepData.Succeeded())
 	{
 		FootStepDataTable = DT_FootStepData.Object;
 	}
-	
 
+	if (DT_IntelData.Succeeded())
+	{
+		IntelDataTable = DT_IntelData.Object;		
+	}
+
+	if (DT_MissionData.Succeeded())
+	{
+		MainMissionDataTable = DT_MissionData.Object;
+	}
+
+	if (DT_TutorialMissionData.Succeeded())
+	{
+		TutorialMissionDataTable = DT_TutorialMissionData.Object;
+	}
 }
 
 void UMyGameInstance::Init()
@@ -74,16 +99,12 @@ USoundCue* UMyGameInstance::GetFootStepSound(TWeakObjectPtr<UPhysicalMaterial> P
 				}
 			}
 
+			//PhysMat이 없는 경우엔 
 			if ( RowData->PhysMat->GetFName().IsEqual(FName("PM_Tile")) )
 			{
 				ProvisionalCue = RowData->StepSound;
 			}
 		}
-		/*USoundCue* FootStepSound = *FootStepMap.Find(PhysMat.Get());
-		if ( FootStepSound )
-		{
-			return FootStepSound;
-		}*/
 	}
 
 	if ( ProvisionalCue )

@@ -3,9 +3,10 @@
 
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
 #include "OpenWorldRPG/NewInventory/ItemStorageObject.h"
-#include "OpenWorldRPG/NewInventory/Widget/EquipmentSlot.h"
-#include "OpenWorldRPG/NewInventory/Widget/NewInventoryGrid.h"
 #include "OpenWorldRPG/NewInventory/Library/CustomInventoryLibrary.h"
+
+#include "OpenWorldRPG/UI/Inventory/EquipmentSlot.h"
+#include "OpenWorldRPG/UI/Inventory/NewInventoryGrid.h"
 
 #include "OpenWorldRPG/Item/Item.h"
 #include "OpenWorldRPG/Item/CoreUsableItem.h"

@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/SaveGame.h"
 #include "OpenWorldRPG/GameData/StatManagementComponent.h"
-
+#include "OpenWorldRPG/CustomLibrary/CustomEnumLibrary.h"
 #include "SavePlayer.generated.h"
 
 /**
@@ -28,6 +28,8 @@ public:
 	UPROPERTY()
 	struct FCharacterCurrentStat PlayerStat;
 
+	UPROPERTY()
+	struct FIntelAcquiredInfo IntelAcq;
 	/*UPROPERTY(VisibleAnywhere, Category = SaveGame)
 	TArray<class UNewItemObject*> PlayerEquipment;
 

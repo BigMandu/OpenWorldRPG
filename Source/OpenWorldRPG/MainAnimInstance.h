@@ -11,6 +11,12 @@ DECLARE_MULTICAST_DELEGATE(FStepSoundDelegate);
 //DECLARE_MULTICAST_DELEGATE_OneParam(FThrowDelegate,ABaseCharacter*);
 DECLARE_MULTICAST_DELEGATE(FThrowDelegate);
 
+#if WITH_EDITOR
+	#define AnimInst_DEBUG 0
+#endif
+
+
+
 //Notify Class를 따로 만들었다.
 //DECLARE_MULTICAST_DELEGATE(FStartADS);
 
@@ -87,7 +93,19 @@ public:
 
 	///////////////////////////////////////////////////////////////
 	/************************   Functions    *********************/
-	/////////////////////////////////////////////////////////////// 
+	///////////////////////////////////////////////////////////////
+private:
+	/*this function is prevent AnimNotify from being called twice.
+	* the player character has a 'Shadow mesh' that only renders shadows.
+	* The shadow mesh also has an AnimInstance that is exactly same as MainAnimInstace.
+	* so, when play specific Animation or AnimMontage, anim notify will called twice.
+	* in this function, just compare this class and shadow mesh's animinstance.
+	*
+	* it will return true when same, not equal will return false.
+	*/
+	bool PreventShadowmesh();
+	
+public:
 
 	virtual void NativeInitializeAnimation() override;
 
@@ -102,6 +120,10 @@ public:
 
 	UFUNCTION()
 	void AnimNotify_EndReload();
+	UFUNCTION()
+	void AnimNotify_Reload_Eject();
+	UFUNCTION()
+	void AnimNotify_Reload_Insert();
 
 	UFUNCTION()
 	void AnimNotify_EndEquipping();
@@ -109,9 +131,6 @@ public:
 	UFUNCTION()
 	void AnimNotify_AttachWeapon();
 
-	//NotifyClass를 따로 만들었다.
-	/*UFUNCTION()
-	void AnimNotify_StartFPADS();*/
 
 	void SetHandIK();
 
@@ -125,10 +144,25 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, meta = (BlueprintThreadSafe))
 	bool IsReadyToThrow();
 
+
+	/*********************************************************************/
+	/*                            FOR DEBUG                              */
+	/*********************************************************************/
+
+#if	AnimInst_DEBUG
+	virtual bool HandleNotify(const FAnimNotifyEvent& AnimNotifyEvent) override;
+#endif
+
+
+	//NotifyClass를 따로 만들었다.
+	/*UFUNCTION()
+	void AnimNotify_StartFPADS();*/
+
+
 	/*UFUNCTION()
 	void BeginHighReady();
 	UFUNCTION()
 	void EndHighReady();*/
 
-	
+
 };

@@ -5,8 +5,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "OpenWorldRPG/NewInventory/Library/Interactive_Interface.h"
-#include "OpenWorldRPG/NewInventory/Library/InventoryStruct.h"
-#include "OpenWorldRPG/NewInventory/Library/ItemInterface.h"
+#include "OpenWorldRPG/CustomLibrary/CustomStructLibrary.h"
+#include "OpenWorldRPG/CustomLibrary/CustomEnumLibrary.h"
 #include "Interactable.generated.h"
 
 class UMeshComponent;
@@ -26,7 +26,7 @@ class UCustomPDA;
 //};
 
 UCLASS()
-class OPENWORLDRPG_API AInteractable : public AActor, public IInteractive_Interface, public IItemInterface
+class OPENWORLDRPG_API AInteractable : public AActor, public IInteractive_Interface//, public IItemInterface
 {
 	GENERATED_BODY()
 	//GENERATED_UCLASS_BODY()

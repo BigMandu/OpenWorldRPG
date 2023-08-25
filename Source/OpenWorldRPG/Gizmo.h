@@ -1,9 +1,9 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Item/Interactable.h"
+#include "OpenWorldRPG/Item/Interactable.h"
 #include "Gizmo.generated.h"
 
 /**

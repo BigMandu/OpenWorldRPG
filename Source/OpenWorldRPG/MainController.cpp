@@ -10,11 +10,12 @@
 
 #include "OpenWorldRPG/NewInventory/ItemStorageObject.h"
 #include "OpenWorldRPG/NewInventory/EquipmentComponent.h"
-#include "OpenWorldRPG/NewInventory/Widget/NewInventory.h"
 #include "OpenWorldRPG/NewInventory/Library/CustomInventoryLibrary.h"
 
 #include "OpenWorldRPG/UI/QuickSlotWidget.h"
 #include "OpenWorldRPG/UI/CompassWidget.h"
+#include "OpenWorldRPG/UI/Inventory/NewInventory.h"
+#include "OpenWorldRPG/UI/CQBMissionResultWidget.h"
 
 #include "OpenWorldRPG/MainHud.h"
 #include "OpenWorldRPG/Vehicles/NiceCar.h"
@@ -24,13 +25,15 @@
 
 
 
-
-
 AMainController::AMainController()
 {
 	bIsInventoryVisible = false;
 
 	
+	if (AOpenWorldRPGGameModeBase* Mode = Cast<AOpenWorldRPGGameModeBase>(UGameplayStatics::GetGameMode(GetWorld())))
+	{
+		Gmode = Mode;		
+	}
 
 }
 
@@ -41,6 +44,15 @@ void AMainController::SetupInputComponent()
 	InputComponent->BindAction("testSave", IE_Pressed, this, &AMainController::SaveGame);
 	InputComponent->BindAction("testLoad", IE_Pressed, this, &AMainController::LoadGame);
 
+}
+
+void AMainController::OnPossess(APawn* aPawn)
+{
+	Super::OnPossess(aPawn);
+
+	InitPlayerState();
+	
+	Cast<AMyPlayerState>(PlayerState)->AfterPossess();	
 }
 
 void AMainController::BeginPlay()
@@ -78,6 +90,11 @@ void AMainController::ToggleInventory()
 		//ShowInventory();
 		MainHud->ShowInventoryWindow();
 		SetInputAndFocus(true);
+
+		if (Gmode)
+		{
+			Gmode->ShowGameProgressNotiMessage(EGameProgressNotificationMessageType::EGPNMT_Levelup);
+		}
 
 	}
 }
@@ -222,6 +239,13 @@ bool AMainController::GetIntheCar(ANiceCar* vCar)
 		Main->bDisableInteractionLineTrace = true;
 		return true;
 	}
+	else
+	{
+		if (Gmode)
+		{
+			Gmode->ShowSystemNotiMessage(ESystemNotificationMessageType::ESNMT_GetInCarFailed);
+		}
+	}
 	return false;
 }
 
@@ -339,6 +363,8 @@ void AMainController::SavePlayerStatus()
 {
 	FString SlotName = TEXT("SavePlayer");
 	int32 Index = 0;
+
+	//Save가 이미 있는지 확인하고 있으면 로드후 저장, 없으면 새로 생성한다.
 	if ( UGameplayStatics::DoesSaveGameExist(SlotName, Index) == false )
 	{
 		SaveGame_Player = Cast<USavePlayer>(UGameplayStatics::CreateSaveGameObject(USavePlayer::StaticClass()));
@@ -348,13 +374,17 @@ void AMainController::SavePlayerStatus()
 		SaveGame_Player = Cast<USavePlayer>(UGameplayStatics::LoadGameFromSlot(SlotName, Index));
 	}
 
+	AMyPlayerState* MyState = Cast<AMyPlayerState>(PlayerState);
 
-	if ( SaveGame_Player == nullptr || Main == nullptr ) return;
+	if ( SaveGame_Player == nullptr || Main == nullptr || MyState == nullptr) return;
 
+	//기존에 저장되어 있던걸 날리고 새로 저장한다.
 	SaveGame_Player->PlayerEquipment.Empty(0);
 	SaveGame_Player->SavedPocketItems.Empty(0);
 	SaveGame_Player->SavedSecureItems.Empty(0);
-	
+
+	SaveGame_Player->IntelAcq = MyState->IntelAcq;
+
 	SaveGame_Player->PlayerLevel = Main->StatManagementComponent->GetLevel();
 	SaveGame_Player->PlayerStat = Main->StatManagementComponent->CurrentStat;
 
@@ -441,4 +471,26 @@ void AMainController::CopyToOriginal(TArray<class UNewItemObject*>& Original, TA
 
 		Original.Add(ItemObj);
 	}
+}
+
+void AMainController::ShowCQBResult(float ElapsedTime, int32 PerfectDrillCnt, int32 TotalScore)
+{
+	if (WCQBResultWidget)
+	{
+		CQBResultWidget = CreateWidget<UCQBMissionResultWidget>(this,WCQBResultWidget);
+		if (CQBResultWidget)
+		{
+			CQBResultWidget->AfterConstruct(this); //CloseButton->OnClicked.AddDynamic(this,&AMainController::HideCQBResult);
+			CQBResultWidget->SetVariable(ElapsedTime,PerfectDrillCnt,TotalScore);
+			CQBResultWidget->AddToViewport();
+			SetInputAndFocus(true);
+		}
+	}
+}
+
+void AMainController::HideCQBResult()
+{
+	CQBResultWidget->SetVisibility(ESlateVisibility::Collapsed);
+	CQBResultWidget->RemoveFromViewport();
+	SetInputAndFocus(false);
 }

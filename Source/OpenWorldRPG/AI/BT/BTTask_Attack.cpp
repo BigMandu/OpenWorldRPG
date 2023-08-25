@@ -19,7 +19,7 @@ EBTNodeResult::Type UBTTask_Attack::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 	AIChar = Cast<AEnemyCharacter>(AICon->GetCharacter());
 
 	AIChar->SetAIStatus(EAIStatus::EAS_Attack);	
-	AIChar->SetAimMode(EAimMode::EAM_Aim);
+	AIChar->SetAimMode(EAimMode::EAM_Aim); 
 	
 
 	FiringWeapon();
@@ -40,9 +40,9 @@ void UBTTask_Attack::CheckWeapon()
 	AIChar->EquippedWeapon->ChangeSafetyLeverForAI(EWeaponFiringMode::EWFM_SemiAuto);
 	AIChar->EquippedWeapon->bLMBDown = false;
 
-	if (AIChar->EquippedWeapon->AmmoLeftInMag <= 0)
-	{
-		AIChar->EquippedWeapon->Reload();
-	}
+	//if (AIChar->EquippedWeapon->AmmoLeftInMag <= 0)
+	//{
+	//	AIChar->EquippedWeapon->Reload();
+	//}
 
 }

@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "OpenWorldRPG/NewInventory/Library/Interactive_Interface.h"
-#include "OpenWorldRPG/NewInventory/Library/ItemInterface.h"
+#include "OpenWorldRPG/CustomLibrary/CustomEnumLibrary.h"
 #include "Perception/AISightTargetInterface.h"
 #include "BaseCharacter.generated.h"
 
@@ -37,8 +37,8 @@ class AWeapon;
 UENUM()
 enum class ETeamType : uint8
 {
-	ETT_Blue	UMETA(DisplayName = "Blue"),
-	ETT_Red		UMETA(DisplayName = "Red"),
+	ETT_Blue_PlayerSide		UMETA(DisplayName = "Blue_PlayerSide"),
+	ETT_Red_EnemySide		UMETA(DisplayName = "Red_Enemy"),
 
 	ETT_MAX		UMETA(DisplayName = "DefaultsMAX")
 };
@@ -333,9 +333,12 @@ public:
 
 	void DetachCoreUsableItem();
 
-	void StepSound();
-	void SpeakSound(USoundCue* Sound);
+	/* Sound */
+	virtual void StepSound();
+	virtual void SpeakSound(USoundCue* Sound);
+	virtual void PlayReloadSound(EPlayReloadSound ReloadSoundType);
 
+	/* Damage || Recovery */
 	float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
 	void RecoveryHealthDelegate(const float Time, const float RecoveryAmount, TWeakObjectPtr<AItem> UsingItemInfo);
@@ -348,7 +351,6 @@ public:
 
 	UFUNCTION()
 	virtual void Die();
-
 	
 
 	void CalcFallingDistance(FHitResult& _FallHit);

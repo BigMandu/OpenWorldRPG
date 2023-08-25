@@ -15,6 +15,12 @@ EBTNodeResult::Type UBTTask_MoveToAttackableArea::ExecuteTask(UBehaviorTreeCompo
 	EBTNodeResult::Type Result = Super::ExecuteTask(OwnerComp, NodeMemory);
 	bUsePathfinding = true;
 
+	//test
+	AEnemyAIController* AICon = Cast<AEnemyAIController>(OwnerComp.GetAIOwner());
+	FVector Vec = OwnerComp.GetBlackboardComponent()->GetValueAsVector(AICon->TargetLocationKey);
+
+	DrawDebugSphere(GetWorld(),Vec,9.f, 8, FColor::Red, false, 10.f,0, 4.f);
+
 	
 	return Result;
 }

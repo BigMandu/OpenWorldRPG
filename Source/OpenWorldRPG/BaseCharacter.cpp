@@ -29,8 +29,8 @@
 #include "OpenWorldRPG/NewInventory/ItemStorageObject.h"
 
 
-#include "OpenWorldRPG/NewInventory/Widget/CharacterLootWidget.h"
-#include "OpenWorldRPG/NewInventory/Widget/NewInventory.h"
+#include "OpenWorldRPG/UI/Inventory/CharacterLootWidget.h"
+#include "OpenWorldRPG/UI/Inventory/NewInventory.h"
 
 #include "OpenWorldRPG/Item/WeaponPDA.h"
 #include "OpenWorldRPG/Item/Item.h"
@@ -440,7 +440,7 @@ void ABaseCharacter::ReloadWeapon()
 		}
 		else
 		{
-			UE_LOG(LogTemp,Warning, TEXT("ABaseCharacter::ReloadWeapon// 장전 실패! Sprint상태에선 장전할 수 없습니다."));
+			UE_LOG(LogTemp,Warning, TEXT("ABaseCharacter::ReloadWeapon// Reload failed! you can't reload while sprinting"));
 		}		
 	}
 }
@@ -638,7 +638,7 @@ void ABaseCharacter::SetEquippedWeapon(AWeapon* Weapon)
 	if ( Weapon )
 	{
 		SetLeftHandIK(0.f);
-		StopAnimation();
+		//StopAnimation();
 		EquippedWeapon->Equipping();
 
 
@@ -679,7 +679,17 @@ bool ABaseCharacter::ChangeWeapon(int32 index)
 
 	if ( bIsDie ) return false;
 	if(TPAnimInstance == nullptr) return false;
-		
+
+	//만약 다른 Item을 들고 있었다면 초기화 시켜준다.
+	if (HoldingItem)
+	{
+		//Attach Animation을 멈춘다. -> 오히려 아래 함수를 호출하면 빵 먹고 총 장착이 안됨 (애님 재생이안되서)
+		//StopAnimation();
+		HoldingItem->BeforeEquipppedWeapon = nullptr;
+		HoldingItem->Destroy();
+		SetHoldingItem(nullptr);
+	}
+
 	switch (index)
 	{
 	case 0:
@@ -745,15 +755,7 @@ bool ABaseCharacter::ChangeWeapon(int32 index)
 			SetAimMode(EAimMode::EAM_NotAim);
 		}
 
-		//만약 다른 Item을 들고 있었다면 초기화 시켜준다.
-		if ( HoldingItem )
-		{
-			//Attach Animation을 멈춘다.
-			StopAnimation();
-			HoldingItem->BeforeEquipppedWeapon = nullptr;
-			HoldingItem->Destroy();
-			SetHoldingItem(nullptr);
-		}	
+		
 		
 	}
 	
@@ -815,8 +817,8 @@ void ABaseCharacter::SetHoldingItem(AItem* WantToHolding)
 		{
 			HoldingItem->ItemUseEnd.Clear();
 		}		
-		
-		HoldingItem->ItemUseEnd.AddDynamic(this, &ABaseCharacter::StopAnimation);
+		//Equipping anim이 아래 때문에 끊김.
+		//HoldingItem->ItemUseEnd.AddDynamic(this, &ABaseCharacter::StopAnimation);
 		
 	}
 	
@@ -830,6 +832,7 @@ void ABaseCharacter::PlayAnimation(UAnimMontage* TPAnim, UAnimMontage* FPAnim)
 	}
 }
 
+//이 함수를 왜 만들었지?
 void ABaseCharacter::StopAnimation()
 {
 	GetMesh()->GetAnimInstance()->Montage_Stop(0.f,nullptr);
@@ -865,9 +868,10 @@ void ABaseCharacter::SpeakSound(USoundCue* Sound)
 {
 	if (Sound)
 	{
-		AudioComp->Stop(); //-> Play함수 내부에서 Stop함수를 호출 하기때문에 무의미.
+		//AudioComp->Stop(); //-> Play함수 내부에서 Stop함수를 호출 하기때문에 무의미.
 		AudioComp->SetSound(Sound);
 		AudioComp->Play();
+
 		//UGameplayStatics::PlaySoundAtLocation(GetWorld(),Sound,GetMesh()->GetSocketLocation(HeadSocketName));
 		UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), 1.f, this);
 	}
@@ -886,25 +890,36 @@ void ABaseCharacter::StepSound()
 
 	GetWorld()->LineTraceSingleByChannel(SurfaceHit, ActorLo, ActorLo-FVector(0.f,0.f,200.f),ECollisionChannel::ECC_Visibility,QParams);
 	if ( SurfaceHit.IsValidBlockingHit() )
-	{
-		//if ( SurfaceHit.PhysMaterial.IsValid() )
+	{	
+		if (UMyGameInstance* Inst = Cast<UMyGameInstance>(GetGameInstance()))
 		{
-			if ( UMyGameInstance* Inst = Cast<UMyGameInstance>(GetGameInstance()) )
+			if (USoundCue* Sc = Inst->GetFootStepSound(SurfaceHit.PhysMaterial))
 			{
-				if ( USoundCue* Sc = Inst->GetFootStepSound(SurfaceHit.PhysMaterial) )
-				{
-					UGameplayStatics::SpawnSoundAttached(Sc, this->GetMesh());
-				}
-				
-			}
-			
-		}
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(),Sc, ActorLo);
+
+				UAISense_Hearing::ReportNoiseEvent(GetWorld(),ActorLo,0.7f,this);
+
+				//UE_LOG(LogTemp,Warning, TEXT("step sound character : %s"), *this->GetFName().ToString());
+					
+				//아래 spawn함수 사용 x , play 함수 사용 o
+				//UGameplayStatics::SpawnSoundAttached(Sc, this->GetMesh());
+			}				
+		}		
 	}
 	/*if (StepSoundCue)
 	{
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), StepSoundCue, GetActorLocation());
 		UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), 1.f, this);
 	}*/
+}
+
+void ABaseCharacter::PlayReloadSound(EPlayReloadSound ReloadSoundType)
+{
+	
+	if (EquippedWeapon)
+	{
+		EquippedWeapon->PlayReloadSound(ReloadSoundType);
+	}
 }
 
 

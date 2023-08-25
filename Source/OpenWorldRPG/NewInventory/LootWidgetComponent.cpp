@@ -2,11 +2,11 @@
 
 
 #include "OpenWorldRPG/NewInventory/LootWidgetComponent.h"
-#include "OpenWorldRPG/NewInventory/Widget/CharacterLootWidget.h"
-#include "OpenWorldRPG/NewInventory/Widget/EquipWidget.h"
-#include "OpenWorldRPG/NewInventory/Widget/EquipStorageWidget.h"
-#include "OpenWorldRPG/NewInventory/Widget/ContainerWidget.h"
-#include "OpenWorldRPG/NewInventory/Widget/NewInventory.h"
+#include "OpenWorldRPG/UI/Inventory/CharacterLootWidget.h"
+#include "OpenWorldRPG/UI/Inventory/EquipWidget.h"
+#include "OpenWorldRPG/UI/Inventory/EquipStorageWidget.h"
+#include "OpenWorldRPG/UI/Inventory/ContainerWidget.h"
+#include "OpenWorldRPG/UI/Inventory/NewInventory.h"
 
 #include "OpenWorldRPG/MainController.h"
 #include "OpenWorldRPG/BaseCharacter.h"

@@ -49,6 +49,11 @@ public:
 	TSubclassOf<UUserWidget> WLoadingWidget;
 	UUserWidget* LoadingWidget;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets | CQBTraining")
+	TSubclassOf<class UCQBMissionResultWidget> WCQBResultWidget;
+	UCQBMissionResultWidget* CQBResultWidget;
+
+
 	FTimerHandle LoadingwidgetTimer;
 
 	bool bIsInteractLootBox;
@@ -60,6 +65,9 @@ public:
 	bool bIsinCar;
 	TWeakObjectPtr<class ANiceCar> Car;
 
+	UPROPERTY()
+	class AOpenWorldRPGGameModeBase* Gmode;
+
 	/* Save */
 	UPROPERTY()
 	class USavePlayer* SaveGame_Player;
@@ -67,6 +75,8 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
+
+	virtual void OnPossess(APawn* aPawn) override;
 
 public:	
 
@@ -116,6 +126,9 @@ public:
 
 	//void UseQuickSlotItem(EQuickSlotNumber QuickSlotNum);
 
+
+	void ShowCQBResult(float ElapsedTime, int32 PerfectDrillCnt, int32 TotalScore);
+	void HideCQBResult();
 
 	/* Save And Load Game */
 	void SaveGame();

@@ -77,12 +77,21 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	class UCompassWidget* CompassWidget;
+
+	UPROPERTY(meta = (BindWidget))
+	class UNotificationWidget* SystemNotificationWidget;
+
+	UPROPERTY(meta = (BindWidget))
+	UNotificationWidget* GameProgressNotificationWidget;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets | Interact")
 	TSubclassOf<UUserWidget> WInteractText;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets | Interact")
 	UUserWidget* InteractText;
+
+	UPROPERTY(meta = (BindWidget))
+	class USubTitleWidget* SubTitleWidget;
 
 	//for ZOrder
 	int32 HighestZ = 2;
@@ -138,6 +147,10 @@ public:
 	void NotifyHitSomething();
 	void NotifyHitbySomething(class AController* DamageGiver, AController* DamageReceiver, struct FDamageEvent const& DamageEvent);
 
-	
+	void SetNotificationMessage(ESystemNotificationMessageType NotiMsgType);
+	void SetNotificationMessage(EGameProgressNotificationMessageType NotiMsgType);
+
+	void SetSubtitleText(FText vName, FText vText, bool bBlueTeam);
+	void RemoveSubtitleText();
 
 };

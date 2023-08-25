@@ -4,10 +4,11 @@
 #include "OpenWorldRPG/NewInventory/EquipmentComponent.h"
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
 #include "OpenWorldRPG/NewInventory/ItemStorageObject.h"
-
-#include "OpenWorldRPG/NewInventory/Widget/EquipmentSlot.h"
-#include "OpenWorldRPG/NewInventory/Library/InventoryStruct.h"
 #include "OpenWorldRPG/NewInventory/Library/CustomInventoryLibrary.h"
+
+#include "OpenWorldRPG/CustomLibrary/CustomEnumLibrary.h"
+
+#include "OpenWorldRPG/UI/Inventory/EquipmentSlot.h"
 
 #include "OpenWorldRPG/Item/CustomPDA.h"
 #include "OpenWorldRPG/Item/Equipment.h"
@@ -248,7 +249,7 @@ bool UEquipmentComponent::AddEquipment(FItemSetting ItemSetting, AEquipment* Wan
 		if ( CPDA->EquipmentType == EEquipmentType::EET_Rifle || CPDA->EquipmentType == EEquipmentType::EET_Pistol )
 		{
 			EquipObj->RifleAssign = Cast<AWeapon>(WantToEquip)->RifleAssign;
-			
+			EquipObj->AmmoLeftInMag = Cast<AWeapon>(WantToEquip)->AmmoLeftInMag;
 
 			UCustomInventoryLibrary::SetWeaponPartsManager(EquipObj, Cast<AWeapon>(WantToEquip));
 			if ( EquipObj->WeaponPartsManager )

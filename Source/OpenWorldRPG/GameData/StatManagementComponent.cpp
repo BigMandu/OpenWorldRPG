@@ -114,15 +114,20 @@ void UStatManagementComponent::DamageApply(float Damage, FDamageEvent const& Dam
 
 	if(bIsGodMode) Damage = 0.f;
 
+	
 	//죽을 경우
-	if (CurrentStat.Health - Damage <= 0.f)                           
+	if (!bIsPendingKill && CurrentStat.Health - Damage <= 0.f)                          
 	{
 		//UDamageType* DmgType = DamageEvent.DamageTypeClass ? DamageEvent.DamageTypeClass->GetDefaultObject<UDamageType>() : GetDefault<UDamageType>();
+
+		//Kill event가 연속 실행될 경우를 prevent하기 위해 bIsPendingKill bool을 true로 한다.
+		//Actor에 붙은 component라 1회성으로 true로 변경하면 끝.
+		bIsPendingKill = true;
 		CurrentStat.Health = 0.f;
 		
 		//EventInstigator = BChar->GetDamageInstigator(EventInstigator, *DmgType);
 		GMode->ProcessKillEvent(EventInstigator, BChar->GetController(),DamageEvent);
-
+		
 		OnHPChange.Broadcast();
 		OnHPZero.Broadcast();
 

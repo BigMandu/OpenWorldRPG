@@ -6,7 +6,7 @@
 #include "OpenWorldRPG/AI/EnemyCharacter.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
-UBTTask_Patrol::UBTTask_Patrol()
+UBTTask_Patrol::UBTTask_Patrol(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	NodeName = TEXT("Patrol");
 }
@@ -23,10 +23,10 @@ EBTNodeResult::Type UBTTask_Patrol::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 	Enemy->SetAIStatus(EAIStatus::EAS_Patrol);
 
 	//Patrol인데, Hearing Something이면 AimMode로 세팅해준다.
-	if ( BBComp->GetValueAsBool(AICon->bHearEnemyKey) )
+	/*if ( BBComp->GetValueAsBool(AICon->bHearEnemyKey) )
 	{
 		Enemy->SetAimMode(EAimMode::EAM_Aim);
-	}
+	}*/
 	
 	//AcceptableRadius = Enemy->PatrolAcceptableRadius;
 	return Result;

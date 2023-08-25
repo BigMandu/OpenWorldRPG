@@ -1,10 +1,10 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "OpenWorldRPG/NewInventory/Library/ItemInterface.h"
+#include "OpenWorldRPG/CustomLibrary/CustomEnumLibrary.h"
 #include "QuickSlotWidget.generated.h"
 
 /**
@@ -17,7 +17,7 @@ class UNewItemObject;
 class UQuickSlotSlotWidget;
 
 UCLASS()
-class OPENWORLDRPG_API UQuickSlotWidget : public UUserWidget, public IItemInterface
+class OPENWORLDRPG_API UQuickSlotWidget : public UUserWidget//, public IItemInterface
 {
 	GENERATED_BODY()
 public:

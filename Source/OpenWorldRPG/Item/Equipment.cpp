@@ -9,15 +9,15 @@
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
 #include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
 #include "OpenWorldRPG/NewInventory/EquipmentComponent.h"
-
-#include "OpenWorldRPG/NewInventory/Widget/EquipmentSlot.h"
-#include "OpenWorldRPG/NewInventory/Widget/NewInventoryGrid.h"
-
-#include "OpenWorldRPG/NewInventory/Library/InventoryStruct.h"
 #include "OpenWorldRPG/NewInventory/Library/CustomInventoryLibrary.h"
+#include "OpenWorldRPG/CustomLibrary/CustomStructLibrary.h"
+
+#include "OpenWorldRPG/UI/Inventory/EquipmentSlot.h"
+#include "OpenWorldRPG/UI/Inventory/NewInventoryGrid.h"
 
 #include "OpenWorldRPG/MainCharacter.h"
 #include "OpenWorldRPG/MainController.h"
+
 #include "OpenWorldRPG/AI/EnemyAIController.h"
 
 #include "Engine/SkeletalMeshSocket.h"

@@ -2,11 +2,17 @@
 
 
 #include "OpenWorldRPG/MainHud.h"
-#include "OpenWorldRPG/NewInventory/Widget/NewInventory.h"
 #include "OpenWorldRPG/MainController.h"
+#include "OpenWorldRPG/UI/Inventory/NewInventory.h"
+#include "OpenWorldRPG/UI/NotificationWidget.h"
+#include "OpenWorldRPG/UI/SubTitleWidget.h"
+
 #include "Blueprint/WidgetTree.h"
 #include "Components/Image.h"
 #include "Components/CanvasPanel.h"
+
+
+#define LOCTEXT_NAMESPACE "HUD"
 
 UMainHud::UMainHud(const FObjectInitializer& ObjectInitializer) :Super(ObjectInitializer)
 {
@@ -61,6 +67,8 @@ void UMainHud::NativeConstruct()
 	{
 		CompassWidget->SetVisibility(ESlateVisibility::Collapsed);
 	}
+
+	
 }
 
 int32 UMainHud::NativePaint(const FPaintArgs& Args, const FGeometry& AllottedGeometry, const FSlateRect& MyCullingRect, FSlateWindowElementList& OutDrawElements, int32 LayerId, const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const
@@ -361,7 +369,28 @@ void UMainHud::SettingIsCompassWidgetVisible(bool bIsVisible)
 }
 
 
+void UMainHud::SetNotificationMessage(ESystemNotificationMessageType NotiMsgType)
+{
+	SystemNotificationWidget->AddNotificationMessage(NotiMsgType);
+	/* Noti Audio */
+}
 
+void UMainHud::SetNotificationMessage(EGameProgressNotificationMessageType NotiMsgType)
+{
+	GameProgressNotificationWidget->AddNotificationMessage(NotiMsgType);
+	/* noti audio */
+
+}
+
+void UMainHud::SetSubtitleText(FText vName, FText vText, bool bBlueTeam)
+{
+	SubTitleWidget->SetSub(vName,vText, bBlueTeam);
+}
+
+void UMainHud::RemoveSubtitleText()
+{
+	SubTitleWidget->RemoveSub();
+}
 
 void UMainHud::DrawHitByNotify()
 {
@@ -373,6 +402,9 @@ void UMainHud::UnDrawHitByNotify()
 {
 	GetWorld()->GetTimerManager().ClearTimer(HitByNotifyTimer);
 }
+
+
+#undef NSLOCTEXT_NAMESPACE
 /*
 
 바로 위 함수에서 한걸, 아래 함수가 표시하는거임.해보자.

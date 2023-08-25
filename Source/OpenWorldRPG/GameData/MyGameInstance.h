@@ -48,6 +48,15 @@ public:
 	UPROPERTY()
 	UDataTable* FootStepDataTable;
 
+	UPROPERTY()
+	UDataTable* IntelDataTable;
+
+	UPROPERTY()
+	UDataTable* MainMissionDataTable;
+
+	UPROPERTY()
+	UDataTable* TutorialMissionDataTable;
+
 
 private:
 	

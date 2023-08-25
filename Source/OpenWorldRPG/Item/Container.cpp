@@ -10,8 +10,8 @@
 #include "OpenWorldRPG/MainController.h"
 #include "OpenWorldRPG/MainHud.h"
 
-#include "OpenWorldRPG/NewInventory/Widget/ContainerWidget.h"
-#include "OpenWorldRPG/NewInventory/Widget/NewInventory.h"
+#include "OpenWorldRPG/UI/Inventory/ContainerWidget.h"
+#include "OpenWorldRPG/UI/Inventory/NewInventory.h"
 
 #include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
 #include "OpenWorldRPG/NewInventory/LootWidgetComponent.h"

@@ -86,6 +86,9 @@ public:
 	const FName MaskSocketName = FName("MaskClothes");
 
 	UPROPERTY()
+	class AOpenWorldRPGGameModeBase* Gmode;
+
+	UPROPERTY()
 	float TempVar_OriginInputYawScale;
 	UPROPERTY()
 	float TempVar_OriginInputPitchScale;
@@ -267,6 +270,11 @@ public:
 	
 	virtual void PlayAnimation(UAnimMontage* TPAnim, UAnimMontage* FPAnim) override;
 	virtual void StopAnimation() override;
+
+	/* Sound */
+	virtual void StepSound() override;
+	virtual void SpeakSound(USoundCue* Sound) override;
+	virtual void PlayReloadSound(EPlayReloadSound ReloadSoundType) override;
 
 
 	/* bind function. CompassBeginUse, EndUse*/

@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "OpenWorldRPG/UI/WeaponStatusWidget.h"
@@ -7,7 +7,7 @@
 #include "OpenWorldRPG/Item/WeaponPDA.h"
 #include "Components/TextBlock.h"
 
-#define LOCTEXT_NAMESPACE "WeaponWidget"
+//#define LOCTEXT_NAMESPACE "WeaponWidget"
 
 void UWeaponStatusWidget::NativeConstruct()
 {
@@ -58,7 +58,7 @@ void UWeaponStatusWidget::GetAmmoStatus(AWeapon* EquippedWeapon)
 		Args.Add(TEXT("InMag"),FText::AsNumber(LeftAmmoMag));
 		Args.Add(TEXT("InvAmmo"),FText::AsNumber(LeftAmmoTot));
 
-		AmmoText->SetText(FText::Format(LOCTEXT("AmmoText", "{InMag}   /   {InvAmmo}"),Args));
+		AmmoText->SetText(FText::Format(NSLOCTEXT("WeaponWidgetNS", "AmmoText", "{InMag}   /   {InvAmmo}"), Args));
 
 		//FText MagazineAmmo = FText::FromString(FString::FromInt(LeftAmmoMag));
 		//FText TotalSameTypeAmmo = FText::FromString(FString::FromInt(LeftAmmoTot));

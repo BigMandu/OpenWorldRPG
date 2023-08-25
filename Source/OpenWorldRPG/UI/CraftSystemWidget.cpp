@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "OpenWorldRPG/UI/CraftSystemWidget.h"
@@ -7,10 +7,11 @@
 #include "OpenWorldRPG/GameData/MyGameInstance.h"
 #include "OpenWorldRPG/GameData/CraftSystemComponent.h"
 
-#include "OpenWorldRPG/NewInventory/Library/InventoryStruct.h"
+#include "OpenWorldRPG/CustomLibrary/CustomStructLibrary.h"
 #include "OpenWorldRPG/NewInventory/Library/CustomInventoryLibrary.h"
 //#include "Components/UniformGridPanel.h"
 #include "Components/WrapBox.h"
+#include "Components/Button.h"
 
 void UCraftSystemWidget::NativeConstruct()
 {
@@ -21,13 +22,15 @@ void UCraftSystemWidget::NativeConstruct()
 	{
 		if(MyGameInst->CraftRecipeDataTable)
 		{
-			AMainCharacter* Player = Cast<AMainCharacter>(GetWorld()->GetFirstPlayerController()->GetCharacter());
-			PlayerCraftComp = Player->CraftSysComp;
+			if(AMainCharacter* Player = Cast<AMainCharacter>(GetWorld()->GetFirstPlayerController()->GetCharacter()))
+			{
+				PlayerCraftComp = Player->CraftSysComp;
 
-			CraftRecipeTable = MyGameInst->CraftRecipeDataTable;
-			SettingCraftWidget();//MyGameInst->CraftRecipeDataTable);
+				CraftRecipeTable = MyGameInst->CraftRecipeDataTable;
+				SettingCraftWidget();//MyGameInst->CraftRecipeDataTable);
 
-			CraftButton->OnClicked.AddDynamic(this,&UCraftSystemWidget::CraftItem);
+				CraftButton->OnClicked.AddDynamic(this,&UCraftSystemWidget::CraftItem);
+			}
 		}
 	}
 	

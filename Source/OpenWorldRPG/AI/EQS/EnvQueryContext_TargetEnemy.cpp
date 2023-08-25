@@ -19,6 +19,10 @@ void UEnvQueryContext_TargetEnemy::ProvideContext(FEnvQueryInstance& QueryInstan
 	{
 		UEnvQueryItemType_Actor::SetContextHelper(ContextData, Target);
 	}
+	else
+	{
+		UEnvQueryItemType_Actor::SetContextHelper(ContextData,nullptr);
+	}
 	
 	
 	//UE_CVLOG(GET_AI_CONFIG_VAR(bAllowControllersAsEQSQuerier) == false && Cast<AController>(QueryOwner) != nullptr, QueryOwner, LogEQS, Warning, TEXT("Using Controller as query's owner is dangerous since Controller's location is usually not what you expect it to be!"));

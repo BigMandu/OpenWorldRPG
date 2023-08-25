@@ -15,9 +15,9 @@
 #include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
 #include "OpenWorldRPG/NewInventory/ItemStorageObject.h"
-
-#include "OpenWorldRPG/NewInventory/Widget/NewInventoryGrid.h"
 #include "OpenWorldRPG/NewInventory/Library/CustomInventoryLibrary.h"
+
+#include "OpenWorldRPG/UI/Inventory/NewInventoryGrid.h"
 
 #include "OpenWorldRPG/MainAnimInstance.h"
 
@@ -170,10 +170,10 @@ bool AItem::Pickup(class AActor* Actor, UNewItemObject* obj)
 			if(bFlag == false)
 			{
 				//bFlag = AddAtCharInv(BChar->PocketInventoryComp);
-				bFlag = AddAtCharInv(BChar, BChar->PocketStorage);
+				bFlag = AddAtCharInv(BChar, BChar->PocketStorage, obj);
 				if(bFlag == false)
 				{
-					bFlag = AddAtCharInv(BChar, BChar->SecureBoxStorage);
+					bFlag = AddAtCharInv(BChar, BChar->SecureBoxStorage, obj);
 					if(bFlag == false)
 					{
 						//DDOPer의 defaultVisual을 복제하면서 필요 없어짐.
@@ -239,26 +239,11 @@ bool AItem::Pickup(class AActor* Actor, UNewItemObject* obj)
 	return bReturn;
 }
 
-bool AItem::AddAtEquip(AEquipment* Equipped)
-{
-	if (Equipped)
-	{
-		//if (Equipped->EquipInventoryComp->TryAddItem(ItemObj))
-		{
-			SetItemState(EItemState::EIS_Pickup);
-			//ItemObj->bIsDestoryed = true;
-			Destroy();
-			return true;
-		}
-	}
-	return false;
-}
-
-bool AItem::AddAtCharInv(ABaseCharacter* Character, UItemStorageObject* Storage)
+bool AItem::AddAtCharInv(ABaseCharacter* Character, UItemStorageObject* Storage, UNewItemObject* obj)
 {
 	if (Storage)
 	{
-		if (Character->BaseInventoryComp->TryAddItem(Storage, ItemSetting))
+		if (Character->BaseInventoryComp->TryAddItem(Storage, ItemSetting, this, obj))
 		{
 			return true;
 		}
@@ -270,6 +255,21 @@ bool AItem::AddAtCharInv(ABaseCharacter* Character, UItemStorageObject* Storage)
 			Destroy();
 			return true;
 		}*/
+	}
+	return false;
+}
+
+bool AItem::AddAtEquip(AEquipment* Equipped)
+{
+	if (Equipped)
+	{
+		//if (Equipped->EquipInventoryComp->TryAddItem(ItemObj))
+		{
+			SetItemState(EItemState::EIS_Pickup);
+			//ItemObj->bIsDestoryed = true;
+			Destroy();
+			return true;
+		}
 	}
 	return false;
 }

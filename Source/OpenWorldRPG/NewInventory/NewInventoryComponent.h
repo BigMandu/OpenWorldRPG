@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "OpenWorldRPG/NewInventory/Library/InventoryStruct.h"
+#include "OpenWorldRPG/CustomLibrary/CustomStructLibrary.h"
 #include "NewInventoryComponent.generated.h"
 
 class UNewItemObject;

@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -14,6 +14,6 @@ class OPENWORLDRPG_API UBTTask_Patrol : public UBTTask_MoveTo
 {
 	GENERATED_BODY()
 public:
-	UBTTask_Patrol();
+	UBTTask_Patrol(const FObjectInitializer& ObjectInitializer);
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 };

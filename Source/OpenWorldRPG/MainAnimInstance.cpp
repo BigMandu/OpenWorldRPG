@@ -133,9 +133,40 @@ void UMainAnimInstance::SetWeaponTypeNumber(int32 number)
 
 }
 
+
+
+
+////////////////////////////////////////////////////////////////////////
+/*                            Anim Notify                             */
+////////////////////////////////////////////////////////////////////////
+
+//if true skip notify, false do notify.
+bool UMainAnimInstance::PreventShadowmesh()
+{
+	if (AMainCharacter* MainChar = Cast<AMainCharacter>(Player))
+	{
+		if (this == MainChar->ShadowMesh->GetAnimInstance())
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	return false;
+}
+
+
+
 void UMainAnimInstance::AnimNotify_StepSound()
 {
 	StepSound.Broadcast();
+	//UE_LOG(LogTemp, Warning, TEXT("UMainAnimInstance::AnimNotify_StepSound, broadcast"));
+	//FString assetstr = this->GetFName().ToString();
+	//UE_LOG(LogTemp, Warning, TEXT("UMainAnimInstance::AnimNotify_StepSound, asset name : %s"), *assetstr);
+	
 	/*FAnimNode_ModifyBone ModBone;
 	FBoneReference Bone("")
 	ModBone.BoneToModify = Bone.BoneName*/
@@ -147,17 +178,46 @@ void UMainAnimInstance::AnimNotify_throw()
 	ThrowDelegate.Broadcast();
 }
 
+void UMainAnimInstance::AnimNotify_Reload_Eject()
+{	
+	if (Player)
+	{
+		if (PreventShadowmesh())
+		{
+			return;			
+		}
+		Player->PlayReloadSound(EPlayReloadSound::EPRS_EjectSound);
+	}
+}
+	
+void UMainAnimInstance::AnimNotify_Reload_Insert()
+{
+	if (Player)
+	{
+		if (PreventShadowmesh())
+		{
+			return;
+		}
+		Player->PlayReloadSound(EPlayReloadSound::EPRS_InsertSound);
+	}
+}
+
 void UMainAnimInstance::AnimNotify_EndReload()
 {
-	if ( Player )
+	if (Player)
 	{
+		if (PreventShadowmesh())
+		{
+			return;
+		}
 		Player->EndReload();
+		Player->PlayReloadSound(EPlayReloadSound::EPRS_BoltReleaseSound);
 	}
 }
 
 void UMainAnimInstance::AnimNotify_AttachWeapon()
 {
-	if ( Player )
+	if (Player)
 	{
 		Player->AttachWeaponToActor();
 	}
@@ -165,11 +225,27 @@ void UMainAnimInstance::AnimNotify_AttachWeapon()
 
 void UMainAnimInstance::AnimNotify_EndEquipping()
 {
-	if ( Player )
+	if (Player)
 	{
 		Player->EndEquipped();
 	}
 }
+
+/*********************************************************************/
+/*                            FOR DEBUG                              */
+/*********************************************************************/
+
+#if AnimInst_DEBUG
+
+bool UMainAnimInstance::HandleNotify(const FAnimNotifyEvent& AnimNotifyEvent)
+{
+	UE_LOG(LogTemp, Warning, TEXT("UMainAnimInstance::HandleNotify"));
+	UE_LOG(LogTemp, Warning, TEXT("UMainAnimInstance::HandleNotify // Notify name : %s"),*AnimNotifyEvent.GetNotifyEventName().ToString());
+	
+	return false;
+}
+
+#endif
 
 //void UMainAnimInstance::AnimNotify_StartFPADS()
 //{
