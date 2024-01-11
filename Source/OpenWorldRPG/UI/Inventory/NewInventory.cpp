@@ -11,6 +11,8 @@
 #include "OpenWorldRPG/UI/Inventory/DraggInventoryWindow.h"
 #include "OpenWorldRPG/UI/Inventory/WeaponPartsWidget.h"
 
+#include "OpenWorldRPG/UI/ResourceStatusWidgetInInventory.h"
+
 #include "OpenWorldRPG/NewInventory/Library/CustomInventoryLibrary.h"
 
 #include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
@@ -42,22 +44,7 @@ void UNewInventory::NativeConstruct()
 {
 	Super::NativeConstruct();
 	
-	SetVisibility(ESlateVisibility::Collapsed);
-	if (EquipComp)
-	{
-		EquipmentWidget->EquipInitialize(EquipComp);
-		EquipmentWidget->MainWidget = this;
-
-		EquipmentStorageWidget->InitializeInventory(Main);
-		EquipmentStorageWidget->EquipInitialize(EquipComp);		
-		EquipmentStorageWidget->MainWidget = this;
-
-		//아래 event는 실제로 NewItemwidget class에서 broadcast 된다.
-		EquipmentStorageWidget->PocketWidget->OpenAdditionalWidget.AddDynamic(this, &UNewInventory::BindingOpenWidgetFunc);
-		EquipmentStorageWidget->SecureBoxWidget->OpenAdditionalWidget.AddDynamic(this, &UNewInventory::BindingOpenWidgetFunc);
-
-		EquipmentWidget->OpenAdditionalWidget_Equip.AddDynamic(this, &UNewInventory::BindingOpenWidgetFunc);
-	}
+	InitUIData();
 
 	StatusButton->OnClicked.AddDynamic(this, &UNewInventory::ChangeMainSwitchToStatus);
 	InventoryButton->OnClicked.AddDynamic(this, &UNewInventory::ChangeMainSwitchToInventory);
@@ -70,13 +57,48 @@ bool UNewInventory::Initialize()
 {
 	bool bResult = Super::Initialize();
 
-	AMainCharacter* TMain = Cast<AMainCharacter>(GetOwningPlayerPawn());
-	Main = (TMain == nullptr) ? nullptr : TMain;
-	if (Main)
+	/*AMainCharacter* Player = Cast<AMainCharacter>(GetOwningPlayerPawn());
+	if (Player)
 	{
-		EquipComp = Main->Equipment;
+		EquipComp = Player->Equipment;
 	}
+	*/
 	return bResult;
+}
+
+void UNewInventory::InitUIData()
+{
+	if(AMainCharacter* Player = Cast<AMainCharacter>(GetOwningPlayerPawn()))
+	{
+		SetVisibility(ESlateVisibility::Collapsed);
+		if(!Player->Equipment) return;
+				
+		
+		EquipmentWidget->EquipInitialize(Player->Equipment);
+		EquipmentWidget->MainWidget = this;
+
+		EquipmentStorageWidget->InitializeInventory(Player);
+		EquipmentStorageWidget->EquipInitialize(Player->Equipment);
+		EquipmentStorageWidget->MainWidget = this;
+
+
+		EquipmentWidget->RefreshEquipWidget();
+		EquipmentStorageWidget->RefreshEquipWidget();
+
+		EquipmentWidget->OpenAdditionalWidget_Equip.Clear();
+		EquipmentStorageWidget->PocketWidget->OpenAdditionalWidget.Clear();
+		EquipmentStorageWidget->SecureBoxWidget->OpenAdditionalWidget.Clear();
+
+		CraftSystemWidget->SettingCraftWidget();
+		
+
+		//아래 event는 NewItemwidget class에서 broadcast 된다.
+		//GridWidget과, Equip widget에서 Delegate를 선언하고, 여기서 binding을 진행한다.
+		EquipmentStorageWidget->PocketWidget->OpenAdditionalWidget.AddDynamic(this, &UNewInventory::BindingOpenWidgetFunc);
+		EquipmentStorageWidget->SecureBoxWidget->OpenAdditionalWidget.AddDynamic(this, &UNewInventory::BindingOpenWidgetFunc);
+		EquipmentWidget->OpenAdditionalWidget_Equip.AddDynamic(this, &UNewInventory::BindingOpenWidgetFunc);
+		
+	}
 }
 
 void UNewInventory::SetRightWidget(UUserWidget* Widget)
@@ -92,20 +114,17 @@ void UNewInventory::SetRightWidget(UUserWidget* Widget)
 
 void UNewInventory::ChangeRightSwitcher()
 {
-	if (Main)
+	AMainController* PlayerCon = Cast<AMainController>(GetOwningPlayer());
+	if (PlayerCon)
 	{
-		AMainController* MainCon = Main->MainController;
-		if (MainCon)
+		if (PlayerCon->bIsInteractLootBox || PlayerCon->bIsInteractCharacterLoot)
 		{
-			if (MainCon->bIsInteractLootBox || MainCon->bIsInteractCharacterLoot)
-			{
-				RightWidgetSwitcher->SetActiveWidgetIndex(0);
-			}
-			else
-			{
-				SetRightWidget(nullptr);
-				RightWidgetSwitcher->SetActiveWidgetIndex(2);
-			}
+			RightWidgetSwitcher->SetActiveWidgetIndex(0);
+		}
+		else
+		{
+			SetRightWidget(nullptr);
+			RightWidgetSwitcher->SetActiveWidgetIndex(2);
 		}
 	}
 }
@@ -141,6 +160,10 @@ bool UNewInventory::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEve
 	return bReturn;
 }
 
+/**
+ * NewItemwidget에서 broadcast시 파라미터를 넘겨준다.
+ * 해당 ItemObj의 Storage 또는 WeaponParts정보를 가져오기 위함.
+ */
 void UNewInventory::BindingOpenWidgetFunc(UNewItemObject* ItemObj)
 {	
 	if (ItemObj == nullptr) return;
@@ -161,13 +184,15 @@ void UNewInventory::CreateAdditionalWidget(UNewItemObject* T_Obj)
 		return;
 	}
 	UDraggInventoryWindow* AdditionalWindow = CreateWidget<UDraggInventoryWindow>(this, WStorageWindow);
-		
+
+	//DraggInvWindow는 Border만 있다고 봐도 무방하다. 해당 Border에 들어갈
+	//자식 widget을 생성하여 DraggInvWindow에 추가한다.
 	UWidget* ChildWidget = CreateChildWidget(AdditionalWindow,T_Obj);
 
 	if(ChildWidget == nullptr) return;
 	
-	
-	AdditionalWindow->ContentBorder->AddChild(ChildWidget);
+	AdditionalWindow->SettingWidget(ChildWidget,T_Obj);
+	//AdditionalWindow->ContentBorder->AddChild(ChildWidget);
 	
 	
 	UCanvasPanelSlot* CanvasSlot = MainCanvas->AddChildToCanvas(AdditionalWindow);

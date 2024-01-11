@@ -62,6 +62,7 @@ void ACoreUsableItem::ToggleOn(AMainCharacter* Actor, UNewItemObject* Obj)
 	UWorld* World = GetWorld();
 
 	if (World == nullptr) return;
+	if(!Actor || !Obj) return;
 
 	TSubclassOf<ANorthPoint> NorthPoint = TSubclassOf<ANorthPoint>(ANorthPoint::StaticClass());
 	ANorthPoint* NP = Cast<ANorthPoint>(UGameplayStatics::GetActorOfClass(World, NorthPoint));
@@ -81,13 +82,14 @@ void ACoreUsableItem::ToggleOn(AMainCharacter* Actor, UNewItemObject* Obj)
 
 void ACoreUsableItem::ToggleOff(AMainCharacter* Actor, UNewItemObject* Obj)
 {
-	if(Actor == nullptr) return;
+	if (!Actor || !Obj) return;
 
 	Obj->bIsUsing = false;
 	ItemUseEnd.Broadcast();	
 	Actor->CompassEndUse.Broadcast();
+	//Stop Animation을 호출하기 위함.
 
-	DetachFromHand(Actor, true);
+	DetachFromHand(Actor, false);
 	Destroy();
 }
 
@@ -126,4 +128,14 @@ void ACoreUsableItem::UpdateCompassPointerRotation()
 
 		OptionalStaticMesh->SetRelativeRotation(NewCompassRotator);
 	}
+}
+
+void ACoreUsableItem::ReadyToDestory(ABaseCharacter* Actor, UNewItemObject* Obj)
+{
+	if(!Obj || !Actor) return;
+	if (AMainCharacter* Player = Cast<AMainCharacter>(Actor))
+	{
+		ToggleOff(Player, Obj);
+	}
+	
 }

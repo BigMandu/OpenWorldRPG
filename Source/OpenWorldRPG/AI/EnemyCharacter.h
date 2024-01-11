@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "OpenWorldRPG/BaseCharacter.h"
+#include "OpenWorldRPG/CustomLibrary/CustomStructLibrary.h"
 #include "EnemyCharacter.generated.h"
 
 class AEquipment;
@@ -29,8 +30,11 @@ public:
 	// Sets default values for this character's properties
 	AEnemyCharacter();
 
-	UPROPERTY(EditDefaultsOnly, Category = AI)
-	class UBehaviorTree* BTAsset; //AIController의 BTComp에 넣어주기 위함.
+	/*UPROPERTY(EditDefaultsOnly, Category = AI)
+	class UBehaviorTree* BTAsset;*/ //AIController의 BTComp에 넣어주기 위함.
+
+	UPROPERTY(EditAnywhere, Category = AI)
+	bool bSpawnedFromSpawnVolume = true;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Enums")
 	EAIStatus AIStatus;
@@ -71,10 +75,16 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	virtual void Die() override;
+	virtual void SetMotherSpawnVolume(class ASpawnVolume* Var_MotherVolume) override;
+
 	// Called to bind functionality to input
 	//virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	void SetAIStatus(EAIStatus Status);
 
 	bool CheckEquipped(AActor* Actor);
+
+	void SetAIData(struct FEnemyDataTable AIData);
+
 };

@@ -23,6 +23,17 @@ void UCraftSystemComponent::BeginPlay()
 	
 }
 
+
+void UCraftSystemComponent::DeleteAllCraftStatus()
+{
+	SaveTwoIngRecipeStatusMap.Empty();
+	SaveThreeIngRecipeStatusMap.Empty();
+	SaveFourIngRecipeStatusMap.Empty();
+}
+
+
+/************************ Two ****************************/
+
 void UCraftSystemComponent::SaveCraftStatus_TwoIng(FName CraftItemName, FTwoIngredientRecipe RemainReciepeStatus)
 {
 	//이미 저장되어있는 Data가 있다면 덮어쓴다.
@@ -54,6 +65,7 @@ FTwoIngredientRecipe* UCraftSystemComponent::LoadCraftIngredient_TwoIng(FName Cr
 	}
 	return nullptr;
 }
+
 
 
 void UCraftSystemComponent::DeleteCraftStatus_TwoIng(FName CraftItemName)

@@ -9,6 +9,7 @@
 #include "OpenWorldRPG/UI/Inventory/NewInventoryGrid.h"
 
 #include "OpenWorldRPG/Item/Item.h"
+#include "OpenWorldRPG/Item/GrenadeBase.h"
 #include "OpenWorldRPG/Item/CoreUsableItem.h"
 
 
@@ -225,6 +226,8 @@ void UNewItemObject::UseItem(UWorld* World)
 	if (SpawnItem)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("UNewItemObj::Success SpawnItem"));
+
+		//이거, 나중에 AI가 이 함수를 사용하려면, 파라미터로 ABaseChar를 받아야함.
 		ABaseCharacter* BChar = Cast<ABaseCharacter>(World->GetFirstPlayerController()->GetCharacter());
 		
 		if (ItemInfo.DataAsset->bIsNeedToAttachHandBeforeUse)
@@ -234,7 +237,7 @@ void UNewItemObject::UseItem(UWorld* World)
 			//Grenade Type이 아니라면 Attach 이후에 바로 Use 함수를 호출한다.
 			if (ItemInfo.DataAsset->ItemType != EItemType::EIT_Grenade)
 			{
-				SpawnItem->Use(BChar, this);				
+				SpawnItem->Use(BChar, this);
 			}
 		}
 		else

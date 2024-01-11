@@ -131,11 +131,11 @@ void AWeaponParts::GetEmitEndLocation()
 			EmitEndPosition = EmitHit.Location;
 			SetEndPointEffectLocation(EmitEndPosition);
 
-			if ( OwnerWeapon->MainCon )
+			if (OwnerWeapon->MainCon)
 			{
-				FHitResult FPSEmitHit = OwnerWeapon->BulletTrace(OwnerWeapon->MainCon->Main->CameraFPS->GetComponentLocation(), EmitEndPosition);
+				FHitResult FPSEmitHit = OwnerWeapon->BulletTrace(OwnerWeapon->MainCon->PlayerChar->CameraFPS->GetComponentLocation(), EmitEndPosition);
 
-				if ( FPSEmitHit.IsValidBlockingHit() )
+				if (FPSEmitHit.IsValidBlockingHit())
 				{					
 					EmitEndPosition = FPSEmitHit.Location;
 					SetEndPointEffectLocation(EmitEndPosition);

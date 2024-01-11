@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -9,6 +9,12 @@
 /**
  * 
  */
+
+ class UDataTable;
+ class UCraftItemWidget;
+ class UCraftSystemComponent;
+ struct FCraftRecipeTable;
+
 UCLASS()
 class OPENWORLDRPG_API UCraftSystemWidget : public UUserWidget
 {
@@ -46,6 +52,8 @@ public:
 	TSubclassOf<UCraftItemWidget> WCraftItemWidget;
 
 
+private:
+	void ClearRecipe();
 
 protected:
 	virtual void NativeConstruct() override;

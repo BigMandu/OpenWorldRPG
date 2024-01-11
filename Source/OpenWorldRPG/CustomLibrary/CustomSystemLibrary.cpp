@@ -4,6 +4,8 @@
 #include "OpenWorldRPG/CustomLibrary/CustomSystemLibrary.h"
 #include "OpenWorldRPG/Mission/MissionInterface.h"
 #include "OpenWorldRPG/Mission/MissionVolume.h"
+#include "OpenWorldRPG/CommonImpactEffect.h"
+
 
 #include "Kismet/GameplayStatics.h"
 
@@ -107,6 +109,8 @@ void UCustomSystemLibrary::AdjustProjectionScreenPosition(FVector2D& ScreenPos, 
 
 void UCustomSystemLibrary::ToggleDisplayHintsWidget(UWorld* World, bool bIsShow, TSubclassOf<AActor>MissionObj, FString MissionUniqueID, FString CharacterUniqueID, EMissionActionType ActionType)
 {
+	if(!World) return;
+
 	TArray<AActor*> OutActors;
 
 	if(ActionType != EMissionActionType::EMAT_MAX)
@@ -167,4 +171,175 @@ void UCustomSystemLibrary::ToggleDisplayHintsWidget(UWorld* World, bool bIsShow,
 			}
 		}
 	}
+}
+
+
+AActor* UCustomSystemLibrary::SpawnAIChar(UWorld* World, struct FEnemyDataTable SpawnAIData)
+{
+	AEnemyCharacter* SpawnAI = nullptr;
+	if(World)
+	{
+		SpawnAI = Cast<AEnemyCharacter>(World->SpawnActor<AEnemyCharacter>(AEnemyCharacter::StaticClass()));
+
+		if (SpawnAI)
+		{
+			SpawnAI->SetAIData(SpawnAIData);
+			//SpawnAI->ItemSetting = FItemSetting(ItemDA, 1, 0);
+			//SpawnAI->SetMesh();
+			//SpawnAI->SetItemState(EItemState::EIS_Spawn);
+			return SpawnAI;
+		}
+	}	
+
+	return SpawnAI;
+}
+
+void UCustomSystemLibrary::GetChildNativeClass(UClass* BaseClass, TArray<UClass*> ChildClass)
+{
+	if (BaseClass)
+	{
+		ChildClass.Empty();
+
+		for (TObjectIterator<UClass> Iter; Iter; ++Iter)
+		{
+			if (!Iter->IsNative())
+			{
+				continue;
+			}
+
+			if (Iter->HasAnyClassFlags(EClassFlags::CLASS_Abstract))
+			{
+				continue;
+			}
+
+			if (Iter->IsChildOf(BaseClass))
+			{
+				ChildClass.Add(*Iter);
+			}
+
+		}
+
+		/*
+		for (const UObject* Obj : TObjectRange<UObject>())
+		{
+			if (UClass* Cla = Obj->GetClass())
+			{
+				if (Cla->IsChildOf(AGrenadeBase::StaticClass()))
+				{
+					ChildClass.Add(Cla);
+				}
+			}
+		}*/
+	}
+}
+
+
+void UCustomSystemLibrary::SpawnImpactEffect_Delayed(UWorld* World, FHitResult HitResult, FVector HitForce, UDataTable* DataTable, FName FineTableRowName, FTransform SpawnTransform)
+{
+	if(!World || !DataTable) return;
+
+	FString DataTableName = DataTable->GetName();
+	FCommonImpactEffectTable* EffectData = DataTable->FindRow<FCommonImpactEffectTable>(FineTableRowName, DataTableName);
+	ACommonImpactEffect* EffectActor = World->SpawnActorDeferred<ACommonImpactEffect>(ACommonImpactEffect::StaticClass(), SpawnTransform);
+
+	if(!EffectActor || !EffectData) return;
+	EffectActor->SetImpactEffect(*EffectData, HitResult, HitForce, SpawnTransform);
+	//EffectActor->SetActorTransform(SpawnTransform);
+	UGameplayStatics::FinishSpawningActor(EffectActor, SpawnTransform);
+
+	
+}
+
+UNiagaraSystem* UCustomSystemLibrary::GetImpactFX(FCommonImpactEffectTable EffectData, TEnumAsByte<EPhysicalSurface> MaterialType)
+{
+	UNiagaraSystem* ReturnEffect = nullptr;
+
+	switch (MaterialType)
+	{
+	case PHYSICS_SURFACE_CONCRETE:
+		ReturnEffect = EffectData.ConcreteFX;
+		break;
+	case PHYSICS_SURFACE_METAL:
+		ReturnEffect = EffectData.MetalFX;
+		break;
+	case PHYSICS_SURFACE_SOIL:
+		ReturnEffect = EffectData.SoilFX;
+		break;
+	case PHYSICS_SURFACE_DIRT:
+		ReturnEffect = EffectData.DirtFX;
+		break;
+	case PHYSICS_SURFACE_GRASS:
+		ReturnEffect = EffectData.GrassFX;
+		break;
+	case PHYSICS_SURFACE_GLASS:
+		ReturnEffect = EffectData.GlassFX;
+		break;
+	case PHYSICS_SURFACE_TILE:
+		ReturnEffect = EffectData.TileFX;
+		break;
+	case PHYSICS_SURFACE_CARPET:
+		ReturnEffect = EffectData.CarpetFX;
+		break;
+	case PHYSICS_SURFACE_WOOD:
+		ReturnEffect = EffectData.WoodFX;
+		break;
+	case PHYSICS_SURFACE_WATER:
+		ReturnEffect = EffectData.WaterFX;
+		break;
+	case PHYSICS_SURFACE_SCRAP:
+		ReturnEffect = EffectData.ScrapFX;
+		break;
+	case PHYSICS_SURFACE_FLESH:
+		ReturnEffect = EffectData.FleshFX;
+		break;
+	}
+
+	return ReturnEffect ? ReturnEffect : EffectData.DefaultFX;
+}
+
+USoundCue* UCustomSystemLibrary::GetImpactSound(FCommonImpactEffectTable EffectData, TEnumAsByte<EPhysicalSurface> MaterialType)
+{
+	USoundCue* ReturnSound = nullptr;
+
+	switch (MaterialType)
+	{
+	case PHYSICS_SURFACE_CONCRETE:
+		ReturnSound = EffectData.ConcreteSound;
+		break;
+	case PHYSICS_SURFACE_METAL:
+		ReturnSound = EffectData.MetalSound;
+		break;
+	case PHYSICS_SURFACE_SOIL:
+		ReturnSound = EffectData.SoilSound;
+		break;
+	case PHYSICS_SURFACE_DIRT:
+		ReturnSound = EffectData.DirtSound;
+		break;
+	case PHYSICS_SURFACE_GRASS:
+		ReturnSound = EffectData.GrassSound;
+		break;
+	case PHYSICS_SURFACE_GLASS:
+		ReturnSound = EffectData.GlassSound;
+		break;
+	case PHYSICS_SURFACE_TILE:
+		ReturnSound = EffectData.TileSound;
+		break;
+	case PHYSICS_SURFACE_CARPET:
+		ReturnSound = EffectData.CarpetSound;
+		break;
+	case PHYSICS_SURFACE_WOOD:
+		ReturnSound = EffectData.WoodSound;
+		break;
+	case PHYSICS_SURFACE_WATER:
+		ReturnSound = EffectData.WaterSound;
+		break;
+	case PHYSICS_SURFACE_SCRAP:
+		ReturnSound = EffectData.ScrapSound;
+		break;
+	case PHYSICS_SURFACE_FLESH:
+		ReturnSound = EffectData.FleshSound;
+		break;
+	}
+
+	return ReturnSound ? ReturnSound : EffectData.DefaultSound;
 }

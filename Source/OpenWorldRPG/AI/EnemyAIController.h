@@ -32,6 +32,9 @@ public:
 
 	AEnemyCharacter* OwnerActor;
 
+	UPROPERTY(EditDefaultsOnly, Category = AI)
+	class UBehaviorTree* BTAsset;
+
 	/*********** AI Perception ***************/
 	/*UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = AI)
 	UAIPerceptionComponent* PerceptionComp;*/
@@ -64,7 +67,7 @@ public:
 	class UEnvQuery* SneakUpOnTargetEQS;
 
 
-	TArray<TWeakObjectPtr<class ABaseGrenade>> DetectedGrenadeList;
+	TArray<TWeakObjectPtr<class AGrenadeBase>> DetectedGrenadeList;
 
 	/**********  Blackboard Key   **********/
 	//Object
@@ -131,7 +134,7 @@ public:
 
 	void DetectedGrenade(AActor* DetectTarget, FAIStimulus Stimulus);
 	UFUNCTION()
-	void GrenadeEffectIsEnd(ABaseGrenade* ExplodedGrenade);
+	void GrenadeEffectIsEnd(class AGrenadeBase* ExplodedGrenade);
 	UFUNCTION()
 	void DetectedTarget(AActor* Target, FAIStimulus Stimulus);
 

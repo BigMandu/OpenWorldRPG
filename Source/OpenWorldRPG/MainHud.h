@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "OpenWorldRPG/CustomLibrary/CustomEnumLibrary.h"
 #include "Engine/Canvas.h"
 
 #include "MainHud.generated.h"

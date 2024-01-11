@@ -23,7 +23,7 @@ public:
 
 	//if this true, bhasSpawnItems And bHasSpawnEquipments must be false;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "SpawnItems")
-	bool bRandomSpawn = true;
+	bool bRandomSpawn;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "SpawnItems", meta = (EditCondition = "bRandomSpawn"))
 	bool bMustSpawnHelmet;
@@ -65,7 +65,9 @@ private:
 	int32 SpawnORNot(bool bIsMustSpawn, int32 returnIndex);
 
 public:	
-	
+
+	void JudgeSpawn();
+
 	/**** Spawn items *******/
 	void SpawnItems();
 	void SpawnEquipments();

@@ -3,6 +3,7 @@
 
 #include "Mission_Item.h"
 #include "OpenWorldRPG/OpenWorldRPGGameModeBase.h"
+#include "Components/SphereComponent.h"
 
 AMission_Item::AMission_Item(): Super()
 {

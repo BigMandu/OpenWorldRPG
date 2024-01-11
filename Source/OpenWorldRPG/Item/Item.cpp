@@ -10,7 +10,6 @@
 
 #include "OpenWorldRPG/BaseCharacter.h"
 #include "OpenWorldRPG/MainCharacter.h"
-#include "OpenWorldRPG/SpawnVolume.h"
 #include "OpenWorldRPG/NewInventory/EquipmentComponent.h"
 #include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
@@ -18,6 +17,8 @@
 #include "OpenWorldRPG/NewInventory/Library/CustomInventoryLibrary.h"
 
 #include "OpenWorldRPG/UI/Inventory/NewInventoryGrid.h"
+
+#include "OpenWorldRPG/WorldControlVolume/SpawnVolume.h"
 
 #include "OpenWorldRPG/MainAnimInstance.h"
 
@@ -127,12 +128,22 @@ void AItem::BeginPlay()
 //	return Obj;
 //}
 
+bool AItem::IsUsableItem()
+{
+	EItemType itemType = this->ItemSetting.DataAsset->ItemType;
+	if (itemType != EItemType::EIT_Scrap && itemType != EItemType::EIT_NONE && itemType != EItemType::EIT_MAX)
+	{
+		return true;
+	}
+	return false;
+}
+
 
 bool AItem::Pickup(class AActor* Actor, UNewItemObject* obj)
 {
-	bool bReturn = false;
+	//bool bReturn = false;
 	//UE_LOG(LogTemp, Warning, TEXT("AItem::Pickup"));
-	bool bFlag = false;
+	bool bIsAdded = false;
 
 	ABaseCharacter* BChar = Cast<ABaseCharacter>(Actor);
 	if (BChar)
@@ -140,58 +151,71 @@ bool AItem::Pickup(class AActor* Actor, UNewItemObject* obj)
 		//UE_LOG(LogTemp, Warning, TEXT("AItem::Add To Inventory"));
 		if (BChar->Equipment)
 		{
-			//New Version. EnumRange를 이용해 Backpack, Vest순으로 넣을 수 있다면 넣는다.
+
 			
-			for (EEquipmentType EquipTp : TEnumRange<EEquipmentType>())
+			/** 포켓, 베스트에 있어야 되는 아이템(총알, 메디컬, 푸드 등등) 이면
+			 *  베스트와 포켓 부터 넣는 시도를 한다.
+			 */
+			if (IsUsableItem())
 			{
-				UNewItemObject* TempObj = nullptr;
-				UCustomPDA* Var_CPDA = nullptr;
-
-				TempObj = BChar->Equipment->GetEquipStorage(EquipTp);
-				if(TempObj)
+				
+				if (UItemStorageObject* Storage = BChar->Equipment->GetEquipStorage(EEquipmentType::EET_Vest))
 				{
-					Var_CPDA = Cast<UCustomPDA>(TempObj->ItemInfo.DataAsset);
-					if (Var_CPDA == nullptr || (Var_CPDA && Var_CPDA->bHasStorage == false))
-					{
-						continue;
-					}
+					bIsAdded = BChar->BaseInventoryComp->TryAddItem(Storage, ItemSetting,this);
 				}
-				else continue;
-
-				UItemStorageObject* ItemStorage = Cast<UItemStorageObject>(TempObj);
-				if(ItemStorage == nullptr) continue;
-
-				bFlag = BChar->BaseInventoryComp->TryAddItem(ItemStorage,ItemSetting, this, obj);
-				if (bFlag) break;
+				if (bIsAdded == false)
+				{
+					bIsAdded = AddAtCharInv(BChar, BChar->PocketStorage, nullptr);
+				}
 			}
 
-			//장착중인 장비에 AddItem이 실패했다면 Pocket, Securebox순으로 AddItem을 시도한다.
-			//pocket, secure box
-			if(bFlag == false)
+			if(bIsAdded == false)
 			{
-				//bFlag = AddAtCharInv(BChar->PocketInventoryComp);
-				bFlag = AddAtCharInv(BChar, BChar->PocketStorage, obj);
-				if(bFlag == false)
+				//New Version. EnumRange를 이용해 Backpack, Vest순으로 넣을 수 있다면 넣는다.
+				for (EEquipmentType EquipTp : TEnumRange<EEquipmentType>())
 				{
-					bFlag = AddAtCharInv(BChar, BChar->SecureBoxStorage, obj);
-					if(bFlag == false)
+					if(UItemStorageObject* TempObj = BChar->Equipment->GetEquipStorage(EquipTp))
 					{
-						//DDOPer의 defaultVisual을 복제하면서 필요 없어짐.
-						//PickUP상태의 Item Add에 실패했다면 CustomInventoryLibrary의 BackToItem을 실행한다.
-						/*if (ItemState == EItemState::EIS_Pickup)
+						UCustomPDA* Var_CPDA = nullptr;
+						Var_CPDA = Cast<UCustomPDA>(TempObj->ItemInfo.DataAsset);
+						if (Var_CPDA == nullptr || (Var_CPDA && Var_CPDA->bHasStorage == false))
 						{
-							ItemObj->bIsDestoryed = true;
-							Destroy();
+							continue;
+						}
+
+						bIsAdded = BChar->BaseInventoryComp->TryAddItem(TempObj, ItemSetting, this, obj);
+						if (bIsAdded) break;
+					}
+				}
+
+				//장착중인 장비에 AddItem이 실패했다면 Pocket, Securebox순으로 AddItem을 시도한다.
+				//pocket, secure box
+				if(bIsAdded == false)
+				{
+					//bFlag = AddAtCharInv(BChar->PocketInventoryComp);
+					bIsAdded = AddAtCharInv(BChar, BChar->PocketStorage, obj);
+					if(bIsAdded == false)
+					{
+						bIsAdded = AddAtCharInv(BChar, BChar->SecureBoxStorage, obj);
+						if(bIsAdded == false)
+						{
+							//DDOPer의 defaultVisual을 복제하면서 필요 없어짐.
+							//PickUP상태의 Item Add에 실패했다면 CustomInventoryLibrary의 BackToItem을 실행한다.
+							/*if (ItemState == EItemState::EIS_Pickup)
+							{
+								ItemObj->bIsDestoryed = true;
+								Destroy();
 							
-							UCustomInventoryLibrary::DirectInToInventory(ItemObj, BChar);							
-						}*/
-						UE_LOG(LogTemp, Warning, TEXT("Item Add fail. No Space"));
+								UCustomInventoryLibrary::DirectInToInventory(ItemObj, BChar);							
+							}*/
+							UE_LOG(LogTemp, Warning, TEXT("Item Add fail. No Space"));
+						}
 					}
 				}
 			}
 
 			//추가 했다면 나머지 정리를 한다.
-			if (bFlag)
+			if (bIsAdded)
 			{
 				SetItemState(EItemState::EIS_Pickup);
 				//ItemObj->bIsDestoryed = true;
@@ -235,8 +259,8 @@ bool AItem::Pickup(class AActor* Actor, UNewItemObject* obj)
 			}
 		}*/
 	}
-	bReturn = bFlag;
-	return bReturn;
+	//bReturn = bFlag;
+	return bIsAdded;
 }
 
 bool AItem::AddAtCharInv(ABaseCharacter* Character, UItemStorageObject* Storage, UNewItemObject* obj)
@@ -331,7 +355,7 @@ void AItem::AttachToHand(ABaseCharacter* Actor, UNewItemObject* Obj, bool bIsNee
 		Actor->ChangeWeapon(0);
 	}
 	//이미 다른 HoldingItem이 있다면 비교한다.
-	else if (Actor->HoldingItem)
+	else if (Actor->HoldingItem.IsValid())
 	{
 		/**만일 이거랑 동일한거면 새로 생성한 이 item을 destory한다.
 		 *다만, 원래 있던 Item을 재호출 하는 경우엔 삭제가 되면 안되므로 bIsNeedToDestory가 false인 경우 패스한다.
@@ -345,8 +369,31 @@ void AItem::AttachToHand(ABaseCharacter* Actor, UNewItemObject* Obj, bool bIsNee
 		//만일 다른 item을 들고 있었다면, 기 등록된 holding actor를 삭제한다.
 		else if (Actor->HoldingItem != this)
 		{
-			Actor->HoldingItem->Destroy();
-			Actor->SetHoldingItem(nullptr);
+			//여기 싹 뜯어 고쳐야함.
+			/**
+			 * 지금 발생하는 문제.
+			 *
+			 *  --> 1번 문제는 AnimBP문제 였음.. 해결완료.
+			 * 1. HoldingItem -> ChangeWeapon시 equpping animation이 제대로 수행되지 않는점.
+			 *    (Grenade RMB Down중에 change weapon할땐 Anim이 제대로 동작함. 참고할것)
+			 * 
+			 * 2. CoreUsableItem을 사용중에 다른 HoldingItem을 attach했을때,
+			 *    CoreUsable의 ToggleOff가 안꺼지는 문제 발생.
+			 *    아래 코드는 해당 문제를 해결하기 위한 코드인데, 아래 코드를 실행하면 정작 CoreUsable을 재사용 했을시 ToggleOff 함수가 호출되지 않음.
+			 *     
+			 */
+
+			/*if (ACoreUsableItem* CoreItem = Cast<ACoreUsableItem>(Actor->HoldingItem))
+			{
+				CoreItem->ToggleOff(Cast<AMainCharacter>(Actor), Obj);
+
+			}
+			else*/
+			{
+				Actor->HoldingItem->ReadyToDestory(Actor,Obj);
+				Actor->SetHoldingItem(nullptr);
+			}
+			
 		}
 	}
 
@@ -372,7 +419,10 @@ void AItem::AttachToHand_Step(ABaseCharacter* Actor)
 	AMainCharacter* Player = Cast<AMainCharacter>(Actor);
 	if (Player)
 	{
-		//Item을 Player Character에 부착시킨다.
+		/**Item을 Player Character에 부착시킨다.
+		 * 따로 사용하는 이유는 FPS, TPS시점에 따라 attach될 mesh가 다르기 때문.
+		 * 또, 아래 함수는 V key(시점 변경)를 누를때마다 호출된다.
+		*/
 		Player->ReAttachHoldingItem();
 	}
 	//Player가 아닌 AI Character의 Attach
@@ -383,12 +433,18 @@ void AItem::AttachToHand_Step(ABaseCharacter* Actor)
 
 		if (Actor)
 		{
-			if ( ItemSetting.DataAsset->bAttachedToLeftHand )
+			//이 Item이 왼손에 attach될 item
+			if (ItemSetting.DataAsset->bAttachedToLeftHand)
 			{
+				//AnimBP의 Layered blend per bone node에 연관됨
+				Actor->TPAnimInstance->SetIsRightHandAttached(false);
 				AttachSocket = Actor->GetMesh()->GetSocketByName(Actor->LeftHandGripSocketName);
 			}
+			//이 Item은 오른손에 attached.
 			else
 			{
+				//AnimBP의 Layered blend per bone node에 연관됨
+				Actor->TPAnimInstance->SetIsRightHandAttached(true);
 				AttachSocket = Actor->GetMesh()->GetSocketByName(Actor->GripSocketName);
 			}
 			//const USkeletalMeshSocket* LeftHandSocket = Actor->GetMesh()->GetSocketByName(Actor->LeftHandGripSocketName);
@@ -410,6 +466,7 @@ void AItem::AttachToHand_Step(ABaseCharacter* Actor)
 		}
 	}
 
+
 	Actor->PlayAnimation(this->ItemSetting.DataAsset->TPS_AttachAnimMontage, this->ItemSetting.DataAsset->FPS_AttachAnimMontage);
 
 	/*if ( Player )
@@ -423,6 +480,11 @@ void AItem::AttachToHand_Step(ABaseCharacter* Actor)
 
 }
 
+
+/**
+ * 단순하게 Detach만 시켜준다.
+ * detach했다고 Destory까진 안함, grenade도 이 함수를 사용하기 때문에...
+ */
 void AItem::DetachFromHand(ABaseCharacter* Actor, bool bIsNeedToEquipBeforeWeapon)
 {
 	//Detach를 한다.
@@ -431,11 +493,11 @@ void AItem::DetachFromHand(ABaseCharacter* Actor, bool bIsNeedToEquipBeforeWeapo
 
 	//던진뒤 PrimaryWeapon을 장착시킨다.
 	Actor->SetHoldingItem(nullptr);// = nullptr;
+
 	if(bIsNeedToEquipBeforeWeapon)
 	{
 		EquipBeforeWeapon(Actor);
 	}
-
 }
 
 void AItem::Use(ABaseCharacter* Char, UNewItemObject* Obj)
@@ -462,13 +524,7 @@ void AItem::Use(ABaseCharacter* Char, UNewItemObject* Obj)
 		}
 
 		RemoveCountAtIventory(Char, 1);
-		Destroy();
-	}
-	
-	
-	
-	
-	
+	}	
 }
 
 
@@ -480,16 +536,16 @@ void AItem::RemoveCountAtIventory(ABaseCharacter* Char, int32 RemoveCount)
 	}
 }
 
-void AItem::EquipBeforeWeapon(ABaseCharacter* Actor)
+bool AItem::EquipBeforeWeapon(ABaseCharacter* Actor)
 {
-	if ( AMainCharacter* Player = Cast<AMainCharacter>(Actor) )
+	if (AMainCharacter* Player = Cast<AMainCharacter>(Actor))
 	{
 		Player->ChangeWeaponTypeNumber(0);
 		Player->FPAnimInstance->WeaponTypeNumber = 0;
 	}
 	else
 	{
-		if ( Actor)
+		if (Actor)
 		{
 			Actor->ChangeWeaponTypeNumber(0);
 		}
@@ -510,9 +566,17 @@ void AItem::EquipBeforeWeapon(ABaseCharacter* Actor)
 				Actor->ChangePistolWeapon();
 			break;
 		}
+		return true;
 	}
+
+	return false;
 }
 
+void AItem::ReadyToDestory(ABaseCharacter* Actor, UNewItemObject* Obj)
+{
+	Actor->SetHoldingItem(nullptr);
+	Destroy();
+}
 
 
 //void AItem::SettingStorage()

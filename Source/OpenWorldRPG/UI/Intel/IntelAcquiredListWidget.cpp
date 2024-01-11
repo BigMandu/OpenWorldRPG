@@ -10,6 +10,7 @@
 #include "OpenWorldRPG/UI/Intel/IntelPageOtherWidget.h"
 
 #include "OpenWorldRPG/GameData/MyGameInstance.h"
+#include "OpenWorldRPG/GameData/IntelligenceDataTable.h"
 
 #include "Components/ListView.h"
 #include "Components/Overlay.h"

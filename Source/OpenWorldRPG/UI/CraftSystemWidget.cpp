@@ -6,42 +6,41 @@
 
 #include "OpenWorldRPG/GameData/MyGameInstance.h"
 #include "OpenWorldRPG/GameData/CraftSystemComponent.h"
+#include "OpenWorldRPG/GameData/CraftRecipe.h"
 
 #include "OpenWorldRPG/CustomLibrary/CustomStructLibrary.h"
 #include "OpenWorldRPG/NewInventory/Library/CustomInventoryLibrary.h"
-//#include "Components/UniformGridPanel.h"
+
 #include "Components/WrapBox.h"
 #include "Components/Button.h"
 
 void UCraftSystemWidget::NativeConstruct()
 {
-	
-	UMyGameInstance* MyGameInst = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-
-	if(MyGameInst)
-	{
-		if(MyGameInst->CraftRecipeDataTable)
-		{
-			if(AMainCharacter* Player = Cast<AMainCharacter>(GetWorld()->GetFirstPlayerController()->GetCharacter()))
-			{
-				PlayerCraftComp = Player->CraftSysComp;
-
-				CraftRecipeTable = MyGameInst->CraftRecipeDataTable;
-				SettingCraftWidget();//MyGameInst->CraftRecipeDataTable);
-
-				CraftButton->OnClicked.AddDynamic(this,&UCraftSystemWidget::CraftItem);
-			}
-		}
-	}
-	
+	CraftButton->OnClicked.AddDynamic(this, &UCraftSystemWidget::CraftItem);
+	SettingCraftWidget();//MyGameInst->CraftRecipeDataTable);
 }
 
 void UCraftSystemWidget::SettingCraftWidget()//UDataTable* CraftDT)
 {
 	//auto CraftMap = CraftDT->GetRowMap();
+	UMyGameInstance* MyGameInst = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	AMainCharacter* Player = Cast<AMainCharacter>(GetWorld()->GetFirstPlayerController()->GetCharacter());
+
+	if (!MyGameInst || !Player) return;
+	if (!MyGameInst->CraftRecipeDataTable) return;
+	
+	
+	PlayerCraftComp = Player->CraftSysComp;
+	CraftRecipeTable = MyGameInst->CraftRecipeDataTable;
+
+
 	if(CraftRecipeTable.IsValid() == false) return;
 	
 	CraftGridPanel->ClearChildren();
+	ClearRecipe();
+	PlayerCraftComp->DeleteAllCraftStatus();
+	CheckCanCraft();
+
 
 	for (auto looprow : CraftRecipeTable->GetRowMap()) //CraftDT->GetRowMap())
 	{
@@ -61,11 +60,7 @@ void UCraftSystemWidget::SettingCraftWidget()//UDataTable* CraftDT)
 			CraftableWidget->OnCraftWidgetClicked.AddDynamic(this, &UCraftSystemWidget::SettingRecipe);
 			
 			CraftGridPanel->AddChildToWrapBox(CraftableWidget);// AddChildToUniformGrid(CraftableWidget);
-			
-			
-
 		}
-
 	}
 }
 
@@ -103,19 +98,18 @@ void UCraftSystemWidget::SettingRecipe(UCraftItemWidget* NewClickedWidget)
 			case 5:
 			break;
 			}
-			
-
-
-
-
-		
-
 		 }
 	}
 
 }
 
-
+void UCraftSystemWidget::ClearRecipe()
+{
+	FText BlankText = FText::FromString(TEXT(" "));
+	RecipeBox->ClearChildren();
+	CraftItemName->SetText(BlankText);
+	CraftItemDescription->SetText(BlankText);
+}
 
 //이전에 Click한것인지 확인한다.
 bool UCraftSystemWidget::bIsSameClickedItem(UCraftItemWidget* NewClickedWidget)
@@ -186,6 +180,8 @@ bool UCraftSystemWidget::CheckCanCraft()
 
 void UCraftSystemWidget::CraftItem()
 {
+	if(!PlayerCraftComp.IsValid()) return;
+
 	if (CheckCanCraft() && ClickedCraftWidget.IsValid())
 	{
 		if (ClickedCraftWidget->CraftItemDA.IsValid())

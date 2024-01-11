@@ -5,6 +5,8 @@
 #include "Item.h"
 #include "Kismet/GameplayStatics.h"
 #include "Blueprint/UserWidget.h"
+
+
 #include "OpenWorldRPG/AI/EnemyAIController.h"
 #include "OpenWorldRPG/MainCharacter.h"
 #include "OpenWorldRPG/MainController.h"
@@ -17,6 +19,8 @@
 #include "OpenWorldRPG/NewInventory/LootWidgetComponent.h"
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
 #include "OpenWorldRPG/NewInventory/ItemStorageObject.h"
+
+#include "OpenWorldRPG/WorldControlVolume/SpawnVolume.h"
 
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "Perception/AISense_Sight.h"
@@ -147,6 +151,11 @@ void AContainer::SetOutline()
 void AContainer::UnsetOutline()
 {
 	Mesh->SetRenderCustomDepth(false);
+}
+
+void AContainer::SetMotherSpawnVolume(ASpawnVolume* Var_MotherVolume)
+{
+
 }
 
 /*

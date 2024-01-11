@@ -3,11 +3,32 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "OpenWorldRPG/CustomLibrary/CustomStructLibrary.h"
+#include "OpenWorldRPG/GameData/CommonImpactEffectTable.h"
 #include "CustomSystemLibrary.generated.h"
 /**
  * 
  */
- UCLASS()
+
+ /** If you add another Physics material, you have to add
+  * additional code in [ %ProjectDirectory%\Config\DefaultEngine.ini ]
+  * below [/Script/Engine.PhysicsSettings] section.
+  */
+ #define PHYSICS_SURFACE_CONCRETE	SurfaceType1
+ #define PHYSICS_SURFACE_METAL		SurfaceType2
+ #define PHYSICS_SURFACE_SOIL		SurfaceType3
+ #define PHYSICS_SURFACE_DIRT		SurfaceType4
+ #define PHYSICS_SURFACE_GRASS		SurfaceType5
+ #define PHYSICS_SURFACE_GLASS		SurfaceType6
+ #define PHYSICS_SURFACE_TILE		SurfaceType7
+ #define PHYSICS_SURFACE_CARPET		SurfaceType8
+ #define PHYSICS_SURFACE_WOOD		SurfaceType9
+ #define PHYSICS_SURFACE_WATER		SurfaceType10
+ #define PHYSICS_SURFACE_SCRAP		SurfaceType11
+ #define PHYSICS_SURFACE_FLESH		SurfaceType12
+
+
+UCLASS()
 class OPENWORLDRPG_API UCustomSystemLibrary : public UObject
 {
 	 GENERATED_BODY()
@@ -46,5 +67,14 @@ public:
 	 */
 	static void ToggleDisplayHintsWidget(UWorld* World, bool bIsShow, TSubclassOf<AActor>MissionObj, FString MissionUniqueID, FString CharacterUniqueID, EMissionActionType ActionType = EMissionActionType::EMAT_MAX);
 
-	
+
+	static AActor* SpawnAIChar(UWorld* World, struct FEnemyDataTable SpawnAIData);
+
+	static void GetChildNativeClass(UClass* BaseClass, TArray<UClass*> ChildClass);
+
+
+	static void SpawnImpactEffect_Delayed(UWorld* World, FHitResult HitResult, FVector HitForce, UDataTable* DataTable, FName FineTableRowName, FTransform SpawnTransform);
+
+	static class UNiagaraSystem* GetImpactFX(struct FCommonImpactEffectTable EffectData, TEnumAsByte<EPhysicalSurface> MaterialType);
+	static class USoundCue* GetImpactSound(FCommonImpactEffectTable EffectData, TEnumAsByte<EPhysicalSurface> MaterialType);
 };

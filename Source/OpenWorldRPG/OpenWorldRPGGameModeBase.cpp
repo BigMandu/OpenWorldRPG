@@ -7,16 +7,22 @@
 //#include "Kismet/GameplayStatics.h"
 
 #include "OpenWorldRPG/GameData/MyGameInstance.h"
+#include "OpenWorldRPG/GameData/MissionDataTableRow.h"
+
 #include "OpenWorldRPG/Save/SaveWorld.h"
 #include "OpenWorldRPG/UI/MainMenuWidget.h"
+#include "OpenWorldRPG/WorldControlVolume/SpawnVolume.h"
 
-#include "OpenWorldRPG/SpawnVolume.h"
 #include "OpenWorldRPG/Mission/MissionInterface.h"
 #include "OpenWorldRPG/Mission/MissionVolume.h"
 #include "OpenWorldRPG/Mission/MissionWeapon_Instant.h"
 
+#include "OpenWorldRPG/Gizmo/TargetBindVolume.h"
+
+#include "OpenWorldRPG/MyDamageType.h"
+
 //Blueprint'/Game/Blueprints/DamageType/DmgType_Falling.DmgType_Falling'
-AOpenWorldRPGGameModeBase::AOpenWorldRPGGameModeBase() : Super()
+AOpenWorldRPGGameModeBase::AOpenWorldRPGGameModeBase(): Super()
 {
 	FString DmgtypePath = TEXT("/Game/Blueprints/DamageType/DmgType_Falling");
 	ConstructorHelpers::FClassFinder<UMyDamageType>FallingDmgTypeOBJ(*DmgtypePath);
@@ -68,46 +74,104 @@ void AOpenWorldRPGGameModeBase::PostLogin(APlayerController* NewPlayer)
 				}
 			}
 		}
+
+		//RespawnPlayer(NewPlayer);
 	}
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("AMyPlayerState// Already has mission"));
 	}
-	
+
 }
 
 void AOpenWorldRPGGameModeBase::StartPlay()
 {
 	Super::StartPlay();
 
-	UE_LOG(LogTemp,Warning,TEXT("AOpenWorldRPGGameModeBase::StartPlay"));
+	UWorld* World = GetWorld();
+	UMyGameInstance* Inst = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+
+	if(!World) return;
+	if(!Inst) return;
+
+	AMainController* PlayerCon = Cast<AMainController>(GetWorld()->GetFirstPlayerController());
+	if(!PlayerCon) return;
+
+	UE_LOG(LogTemp, Warning, TEXT("AOpenWorldRPGGameModeBase::StartPlay"));
+
+		
+	//Inst->Hide Loading Scren()
+	Inst->StopLoadingScreen();
+		
+	FInputModeGameOnly Inputmode;
+	PlayerCon->SetInputMode(Inputmode);
+	PlayerCon->SetShowMouseCursor(false);
+
+	BindDeathEvent();
+}
+
+void AOpenWorldRPGGameModeBase::BindDeathEvent()
+{
+	
+	if (!OnStartDeathEvent.IsBound())
+	{
+		OnStartDeathEvent.AddDynamic(this, &AOpenWorldRPGGameModeBase::RespawnPlayer);
+	}
+}
+
+
+void AOpenWorldRPGGameModeBase::RespawnPlayer(AController* TempController)
+{
+	AMainController* PlayerCon = Cast<AMainController>(TempController);
+	if(!PlayerCon) return;
+
+	FString SlotName = TEXT("SaveWorld");
+	int32 Index = 0;
+		
+
+	//save 파일이 있다면, 저장된 기록을 불러와 restart를 한다.
+	if (UGameplayStatics::DoesSaveGameExist(SlotName, Index))
+	{
+		FTransform Tf = FTransform(FRotator(0.f), FVector(0.f));
+		RestartPlayerAtTransform(PlayerCon, Tf);
+		PlayerCon->InitUI();
+		PlayerCon->LoadGame();
+		
+	}
+	//save 파일이 없다면 startlocation에서 restart를 한다.
+	else
+	{
+		RestartPlayer(PlayerCon);
+		PlayerCon->InitUI();
+	}
+	
 
 	
-	UMyGameInstance* Inst = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	if (Inst)
-	{
-		//Inst->Hide Loading Scren()
-		Inst->StopLoadingScreen();		
-	}
-	PlayerCon = Cast<AMainController>(GetWorld()->GetFirstPlayerController());
-
-	if(PlayerCon)
-	{
-		FInputModeGameOnly Inputmode;
-		PlayerCon->SetInputMode(Inputmode);
-		PlayerCon->SetShowMouseCursor(false);
-		/*GetWorld()->GetFirstPlayerController()->SetInputMode(Inputmode);
-		GetWorld()->GetFirstPlayerController()->SetShowMouseCursor(false);*/
-		/*if (PCon->MainHud)
-		{
-			Mainhud = Mainhud;
-		}*/
-	}
+	
+	
 	
 }
 
+
+////AMainController::UnFreeze가 실행되면 호출됨 -> delegate 호출로 변경함 UnFreeze사용 x
+void AOpenWorldRPGGameModeBase::RestartPlayer(AController* NewPlayer)
+{
+	Super::RestartPlayer(NewPlayer);
+}
+
+void AOpenWorldRPGGameModeBase::RestartPlayerAtTransform(AController* NewPlayer, const FTransform& SpawnTransform)
+{
+	Super::RestartPlayerAtTransform(NewPlayer, SpawnTransform);
+}
+
+
 void AOpenWorldRPGGameModeBase::ShowSystemNotiMessage(ESystemNotificationMessageType MsgType)
 {
+	UWorld* World = GetWorld();
+	if (!World) return;
+	AMainController* PlayerCon = Cast<AMainController>(GetWorld()->GetFirstPlayerController());
+	if (!PlayerCon) return;
+
 	if (PlayerCon->MainHud)
 	{
 		PlayerCon->MainHud->SetNotificationMessage(MsgType);
@@ -116,13 +180,18 @@ void AOpenWorldRPGGameModeBase::ShowSystemNotiMessage(ESystemNotificationMessage
 
 void AOpenWorldRPGGameModeBase::ShowGameProgressNotiMessage(EGameProgressNotificationMessageType MsgType)
 {
+	UWorld* World = GetWorld();
+	if (!World) return;
+	AMainController* PlayerCon = Cast<AMainController>(GetWorld()->GetFirstPlayerController());
+	if (!PlayerCon) return;
+
 	if (PlayerCon->MainHud)
 	{
 		PlayerCon->MainHud->SetNotificationMessage(MsgType);
 	}
 }
 
-void AOpenWorldRPGGameModeBase::SaveWorldStatus()
+void AOpenWorldRPGGameModeBase::SaveWorldStatus(ANiceCar* CarRef)
 {
 	FString SlotName = TEXT("SaveWorld");
 	int32 Index = 0;
@@ -136,12 +205,13 @@ void AOpenWorldRPGGameModeBase::SaveWorldStatus()
 		SaveGame_World = Cast<USaveWorld>(UGameplayStatics::LoadGameFromSlot(SlotName, Index));
 	}
 
-
 	if (SaveGame_World == nullptr) return;
+
+
+	if(!CarRef) return;
 
 	//Save시에 그냥 통으로 날리고 새로 저장하도록 한다.
 	SaveGame_World->SavedSpawnVolStatusMap.Empty();
-
 
 	//World에 배치된 Spawn Vol을 전부 구한다.
 	TArray<AActor*> WorldVolumeList;
@@ -165,12 +235,13 @@ void AOpenWorldRPGGameModeBase::SaveWorldStatus()
 	UGameplayStatics::SaveGameToSlot(SaveGame_World, SlotName, Index);
 }
 
+
 void AOpenWorldRPGGameModeBase::LoadWorldStatus()
 {
 	FString SlotName = TEXT("SaveWorld");
 	int32 Index = 0;
 
-	if ( UGameplayStatics::DoesSaveGameExist(SlotName, Index) == false )
+	if (UGameplayStatics::DoesSaveGameExist(SlotName, Index) == false)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("AOpenWorldRPGGameModeBase::SaveWorldStatus // Load Fail!"));
 	}
@@ -182,10 +253,11 @@ void AOpenWorldRPGGameModeBase::LoadWorldStatus()
 	TArray<AActor*> WorldVolumeList;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASpawnVolume::StaticClass(), WorldVolumeList);
 
-	/* save와 비슷하다.
+	/* save와 비슷하다
 	* 우선 world에 배치된 spawnvol을 순회하면서
 	* loadGame에 있는 Map에서 spawnvol을 비교하며 일치하면 destroycnt를 그대로 대입시킨다.
 	*/
+
 	for (auto GetActor : WorldVolumeList)
 	{
 		if (!GetActor) continue;
@@ -237,7 +309,7 @@ float AOpenWorldRPGGameModeBase::ModifyApplyDamage(float BeforeDamage, struct FD
 	//Damage formula
 	float Armor = 30.f; 
 	//DamagedVictim->Armor <<- 나중에 이걸로 바꿔야함.
-	float CalculateDamage = BeforeDamage * BonusDamageFactor * ( 1 - Armor / 100 );
+	float CalculateDamage = BeforeDamage * BonusDamageFactor * (1 - Armor / 100);
 
 	return CalculateDamage;
 }
@@ -258,7 +330,7 @@ void AOpenWorldRPGGameModeBase::ProcessKillEvent(AController* Killer, AControlle
 		if (Hit.IsValidBlockingHit())
 		{
 			FString HitBoneName = Hit.BoneName.ToString();
-			if ( HitBoneName.Contains("Head", ESearchCase::IgnoreCase, ESearchDir::FromStart) )
+			if (HitBoneName.Contains("Head", ESearchCase::IgnoreCase, ESearchDir::FromStart))
 			{
 				KillerState->AddHeadShotCount(Killer->GetCharacter());
 			}
@@ -300,7 +372,7 @@ void AOpenWorldRPGGameModeBase::ProcessKillEvent(AController* Killer, AControlle
 void AOpenWorldRPGGameModeBase::ProcessHitEvent(AController* DamageGiver, AController* DamageReceiver, struct FDamageEvent const& DamageEvent)
 {
 	//Player가 맞았을 경우
-	if (AMainController* pcon = Cast<AMainController>(DamageReceiver))
+	if (AMainController* PlayerCon = Cast<AMainController>(DamageReceiver))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("AOpenWorldRPGGameModeBase::HitEvent, I'm Hit!!"));
 		/*여기서 Playercon의 함수 호출하자.
@@ -311,7 +383,7 @@ void AOpenWorldRPGGameModeBase::ProcessHitEvent(AController* DamageGiver, AContr
 	}
 
 	//Player가 enemy를 때려서 맞췄을 경우
-	if (AMainController* pcon = Cast<AMainController>(DamageGiver))
+	if (AMainController* PlayerCon = Cast<AMainController>(DamageGiver))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("AOpenWorldRPGGameModeBase::HitEvent, you Hit someone!!"));
 		/*맞췄다는 표시를 Hud에 띄우자.
@@ -902,8 +974,10 @@ void AOpenWorldRPGGameModeBase::OnlyCQBMission(int32 PerfectCnt, int32 TotalScor
  */
 void AOpenWorldRPGGameModeBase::EndCQBMission()
 {
-	UWorld* world = GetWorld() ? GetWorld() : nullptr;
-	if(!world) return;
+	UWorld* World = GetWorld() ? GetWorld() : nullptr;
+	if(!World) return;
+	AMainController* PlayerCon = Cast<AMainController>(World->GetFirstPlayerController());
+
 
 	if (PlayerCon && bStartedCQBMission)
 	{
@@ -918,10 +992,10 @@ void AOpenWorldRPGGameModeBase::EndCQBMission()
 	
 
 	TArray<AActor*> Actorarr;
-	UGameplayStatics::GetAllActorsOfClass(world, ATargetBindVolume::StaticClass(), Actorarr);
+	UGameplayStatics::GetAllActorsOfClass(World, ATargetBindVolume::StaticClass(), Actorarr);
 	InitCQBMissionAsset(true, Actorarr);
 	Actorarr.Empty();
-	UGameplayStatics::GetAllActorsOfClass(world, ADoor::StaticClass(), Actorarr);
+	UGameplayStatics::GetAllActorsOfClass(World, ADoor::StaticClass(), Actorarr);
 	InitCQBMissionAsset(false, Actorarr);
 }
 
@@ -943,7 +1017,7 @@ void AOpenWorldRPGGameModeBase::InitCQBMissionAsset(bool bIsTargetBindVolume, TA
 		{
 			if (ADoor* MD = Cast<ADoor>(Obj))
 			{
-				if (MD->DoorType == EDoorType::EDT_LockedDoor)
+				//if (MD->DoorType == EDoorType::EDT_LockedDoor)
 				{
 					MD->LockTheDoor();
 				}

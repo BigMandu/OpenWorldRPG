@@ -4,6 +4,7 @@
 #include "MissionWeapon_Instant.h"
 #include "OpenWorldRPG/OpenWorldRPGGameModeBase.h"
 #include "Components/WidgetComponent.h"
+#include "Components/SphereComponent.h"
 
 AMissionWeapon_Instant::AMissionWeapon_Instant(): Super()
 {

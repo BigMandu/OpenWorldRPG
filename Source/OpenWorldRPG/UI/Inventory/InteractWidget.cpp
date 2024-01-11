@@ -12,16 +12,16 @@
 void UInteractWidget::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
-	if (MainChar == nullptr)
-	{
-		//GetOwningPlayer();
-		//GetOwningLocalPlayer();
-		
-		AMainCharacter* T_MainChar = Cast<AMainCharacter>(GetOwningPlayerPawn());
-		MainChar = T_MainChar ? T_MainChar : nullptr;
-		//check(MainChar);
-		
-	}
+	//if (MainChar == nullptr)
+	//{
+	//	//GetOwningPlayer();
+	//	//GetOwningLocalPlayer();
+	//	
+	//	AMainCharacter* T_MainChar = Cast<AMainCharacter>(GetOwningPlayerPawn());
+	//	MainChar = T_MainChar ? T_MainChar : nullptr;
+	//	//check(MainChar);
+	//	
+	//}
 }
 
 //WBP_InteractWidget에서 FText를 해당 함수로 지정한다.
@@ -29,9 +29,12 @@ void UInteractWidget::NativeOnInitialized()
 FText UInteractWidget::InterSetText()
 {
 	FText ReturnTEXT;
-	if (MainChar && MainChar->InteractActor)
+
+	AMainCharacter* Player = Cast<AMainCharacter>(GetOwningPlayerPawn());
+
+	if (Player && Player->InteractActor)
 	{
-		AInteractable* InActor = Cast<AInteractable>(MainChar->InteractActor);
+		AInteractable* InActor = Cast<AInteractable>(Player->InteractActor);
 		if (InActor && InActor->ItemSetting.DataAsset)
 		{
 			//*@usage FText::FormatNamed(FText::FromString(TEXT("{PlayerName} is really cool")), TEXT("PlayerName"), FText::FromString(TEXT("Awesomegirl")));

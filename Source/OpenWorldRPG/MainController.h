@@ -25,33 +25,45 @@ public:
 
 	AMainController();
 
-	AMainCharacter* Main;
+	UPROPERTY()
+	AMainCharacter* PlayerChar;
 
 	/****** Main Hud *****/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets | MainHUD")
 	TSubclassOf<UUserWidget> WMainHud;
+	UPROPERTY()
 	class UMainHud* MainHud;
 
 	/***** Widget ******/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets | Interact")
 	TSubclassOf<UUserWidget> WInteractText;
+	UPROPERTY()
 	UUserWidget* InteractText;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets | Inventory")
 	TSubclassOf<UUserWidget> WInventory;
+	UPROPERTY()
 	UUserWidget* Inventory;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets | Menu")
 	TSubclassOf<UUserWidget> WDeathWidget;
+	UPROPERTY()
 	UUserWidget* DeathWidget;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets | Loading")
 	TSubclassOf<UUserWidget> WLoadingWidget;
+	UPROPERTY()
 	UUserWidget* LoadingWidget;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets | CQBTraining")
 	TSubclassOf<class UCQBMissionResultWidget> WCQBResultWidget;
+	UPROPERTY()
 	UCQBMissionResultWidget* CQBResultWidget;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets | Menu")
+	TSubclassOf<class UESCMenuWidget> WEscMenuWidget;
+	
+
 
 
 	FTimerHandle LoadingwidgetTimer;
@@ -79,8 +91,11 @@ protected:
 	virtual void OnPossess(APawn* aPawn) override;
 
 public:	
+	/** Timer used by RoundEnded and Inactive states to accept player input again */
+	virtual void UnFreeze() override;
 
 	void ToggleInventory();
+	void InitUI();
 
 	void ControlInteractText(bool bIsInteract);
 
@@ -90,11 +105,14 @@ public:
 	void ShowLootBoxWidget();
 	void HideLootBoxWidget();
 
-	void SetInputAndFocus(bool bIsShow);
+	void SetInputAndFocus(bool bIsShow = false, UUserWidget* FocusWidget = nullptr);
 
 	void Die();
 
 	void Respawn();
+
+	UFUNCTION()
+	void ShowESCmenu();
 
 	/*************Vehicle *********/
 	bool ToggleCar(class ANiceCar* vCar, FVector OutPos = FVector(0.f));
@@ -124,6 +142,11 @@ public:
 	//TArray<AEnemyAIController> GetListTargetingThisActor();
 	bool bIsthisTargetForAI();
 
+	/* 이 owner pawn을 식별한 AI의 목록을 전부 삭제한다.
+	* 이 컨트롤러가 possess한 pawn이 죽었을때 사용함.
+	*/
+	void RemoveAllAITargetingList();
+
 	//void UseQuickSlotItem(EQuickSlotNumber QuickSlotNum);
 
 
@@ -131,15 +154,23 @@ public:
 	void HideCQBResult();
 
 	/* Save And Load Game */
+	UFUNCTION()
 	void SaveGame();
+	UFUNCTION()
 	void LoadGame();
+
+	void LoadUsedCar(USavePlayer& LoadGamePlayer);
 
 
 	void SavePlayerStatus();
 	void LoadPlayerStatus();
 
-	void OriginalToCopy(TArray<class UNewItemObject*> &Original, TArray<struct FSaveItem> &Copy);
-	void CopyToOriginal(TArray<class UNewItemObject*> &Original, TArray<struct FSaveItem> &Copy);
+	/* Storage 저장 */
+	void OriginalToCopy(class UItemStorageObject& TempStorage, TArray<struct FSaveItem> &Copy);
+	/* Array 저장 */
+	void OriginalToCopy(TArray<class UNewItemObject*>& Original, TArray<struct FSaveItem>& Copy);
+	/* 불러오기 */
+	void CopyToOriginal(TArray<UNewItemObject*> &Original, TArray<struct FSaveItem> &Copy);
 
 	UFUNCTION()
 	void LoadingProcessCompleted();

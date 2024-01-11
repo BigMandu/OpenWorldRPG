@@ -8,6 +8,7 @@
 #include "OpenWorldRPG/MainCharacter.h"
 #include "OpenWorldRPG/MainController.h"
 #include "OpenWorldRPG/GameData/VehicleDataTable.h"
+#include "OpenWorldRPG/WorldControlVolume/SpawnVolume.h"
 
 #include "OpenWorldRPG/NewInventory/LootWidgetComponent.h"
 #include "OpenWorldRPG/NewInventory/ItemStorageObject.h"
@@ -23,8 +24,9 @@
 #include "Components/AudioComponent.h"
 #include "Components/CapsuleComponent.h"
 
-#include "WheeledVehicleMovementComponent.h"
-#include "WheeledVehicleMovementComponent4W.h"
+//#include "WheeledVehicleMovementComponent.h"
+//#include "WheeledVehicleMovementComponent4W.h"
+#include "PhysicalMaterials/PhysicalMaterial.h"
 
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
@@ -41,23 +43,36 @@ ANiceCar::ANiceCar()
 	{
 		VehicleDataTable = DT_VehicleData.Object;
 	}
-	/*SKMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("VehicleSKMesh"));
-	SetRootComponent(SKMesh);*/
+
+	static ConstructorHelpers::FObjectFinder<UPhysicalMaterial> Slippery(TEXT("/Game/Vehicles/Slippery.Slippery"));
+	if (Slippery.Succeeded())
+	{
+		SlipperyMaterial = Slippery.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<UPhysicalMaterial> NonSlippery(TEXT("/Game/Vehicles/NonSlippery.NonSlippery"));
+	if (NonSlippery.Succeeded())
+	{
+		NonSlipperyMaterial = NonSlippery.Object;
+	}
 
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
 	SpringArm->SetRelativeLocation(FVector(0.f,0.f,200.f));
 	SpringArm->SetupAttachment(GetRootComponent());
 
-	SpringArm->TargetArmLength = 400.f;
+	SpringArm->TargetArmLength = 475.f;
 	//camera smooth panning 
 	SpringArm->bEnableCameraLag = true;
+	SpringArm->bEnableCameraRotationLag = true;
 	SpringArm->CameraLagSpeed = 9.0f;
+	SpringArm->CameraRotationLagSpeed = 10.0f;
 	SpringArm->CameraLagMaxDistance = 115.f;
 
 	SpringArm->bInheritPitch = true;
-	SpringArm->bInheritRoll = true;
 	SpringArm->bInheritYaw = true;
-	SpringArm->bUsePawnControlRotation = true;	
+	SpringArm->bInheritRoll = false;
+	SpringArm->bUsePawnControlRotation = true;
+	
 
 	TPSCam = CreateDefaultSubobject<UCameraComponent>(TEXT("TPSCamComp"));
 	TPSCam->SetupAttachment(SpringArm);
@@ -66,15 +81,26 @@ ANiceCar::ANiceCar()
 	TPSCam->bUsePawnControlRotation = false;
 	TPSCam->SetFieldOfView(90.f);
 
+
+	FPSpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("FPSpringArmComp"));
+	FPSpringArm->SetRelativeLocation(FVector(47.f, -40.f, 200.f));
+	FPSpringArm->SetupAttachment(GetRootComponent());
+	FPSpringArm->TargetArmLength = 0.f;
+	FPSpringArm->bInheritPitch = true;
+	FPSpringArm->bInheritYaw = true;
+	FPSpringArm->bInheritRoll = true;
+	FPSpringArm->bUsePawnControlRotation = true;
+
 	FPScam = CreateDefaultSubobject<UCameraComponent>(TEXT("FPSCamComp"));
-	FPScam->SetupAttachment(GetRootComponent());
-	FPScam->SetRelativeLocation(FVector(47.f,-40.f,200.f));
-	FPScam->bUsePawnControlRotation = true;	
+	FPScam->SetupAttachment(FPSpringArm);
+	FPScam->SetRelativeLocation(FVector(0.f));
+	FPScam->bUsePawnControlRotation = false;	
 	FPScam->SetFieldOfView(90.f);
 
 	EngineSoundComp = CreateDefaultSubobject<UAudioComponent>(TEXT("EngineSoundComp"));
 	EngineSoundComp->SetupAttachment(GetRootComponent());
 	EngineSoundComp->SetAutoActivate(false);
+
 	SkidSoundComp = CreateDefaultSubobject<UAudioComponent>(TEXT("SkidSoundComp"));
 	SkidSoundComp->SetupAttachment(GetRootComponent());
 	SkidSoundComp->SetAutoActivate(false);
@@ -92,6 +118,9 @@ ANiceCar::ANiceCar()
 
 	TrunkCollision->OnComponentBeginOverlap.AddDynamic(this,&ANiceCar::TrunkOnOverlapBegin);
 	TrunkCollision->OnComponentEndOverlap.AddDynamic(this,&ANiceCar::TrunkOnOverlapEnd);
+
+	LootWidgetComp = CreateDefaultSubobject<ULootWidgetComponent>(TEXT("LootWidgetComp"));
+	LootWidgetComp->WidgetType = EWidgetType::EWT_LootBox;
 
 	/* Wheels Setting*/
 	//휠 할당 순서는 앞,뒤 상관없고 오직 Bone name과 wheel class에만 영향을 준다.
@@ -116,19 +145,50 @@ ANiceCar::ANiceCar()
 	Vehicle4W->WheelSetups[3].BoneName = FName("Wheel_Rear_Right");
 	//GetVehicleMovement()->WheelSetups[3].AdditionalOffset = FVector(0.f, 8.f, 0.f);
 
-	LootWidgetComp = CreateDefaultSubobject<ULootWidgetComponent>(TEXT("LootWidgetComp"));
-	LootWidgetComp->WidgetType = EWidgetType::EWT_LootBox;
-	
+
+	bIsLowFriction = false;	
 }
 
 void ANiceCar::Tick(float DeltaSeconds)
 {
-	Super::Tick(DeltaSeconds);
+	if (!CurrentHaveSeatChar.IsValid()) return;
 
-	float EngineRotSpd = GetVehicleMovement()->GetEngineRotationSpeed();
-	EngineSoundComp->SetFloatParameter(FName("RPM"),EngineRotSpd);
+	Super::Tick(DeltaSeconds);
+	
+	/*float EngineRotSpd = GetVehicleMovement()->GetEngineRotationSpeed();
+	EngineSoundComp->SetFloatParameter(FName("RPM"),EngineRotSpd);*/
 	
 
+	UpdatePhysicsMaterial();
+
+	//Engine sound based on RPM
+	float EngineRotSpd = 2500.f / GetVehicleMovement()->GetEngineMaxRotationSpeed();
+	EngineSoundComp->SetFloatParameter(FName("RPM"), GetVehicleMovement()->GetEngineRotationSpeed() * EngineRotSpd);
+
+	/** Always lock the camera's roll. */
+	LockCameraRoll();
+
+	//if no longer input then, locked (hold) the camera in the forward direction.
+	if (bPitchIsZero && bYawIsZero)
+	{
+		if (bIsStillNoInput)
+		{
+			if (!GetWorldTimerManager().IsTimerActive(CamRotTimer) && !GetWorldTimerManager().IsTimerActive(FirstLockedCamTimer))
+			{
+				//CamFixTime = 0.085f;
+				LockedCam();
+			}
+			
+		}
+		else
+		{
+			CamFixTime = 2.5f;
+			CanLockedCam();
+		}
+	}	
+
+	CheckIsStuck();
+	
 }
 
 void ANiceCar::SetupPlayerInputComponent(UInputComponent* InputComp)
@@ -141,12 +201,14 @@ void ANiceCar::SetupPlayerInputComponent(UInputComponent* InputComp)
 	InputComp->BindAxis("MoveRight",this,&ANiceCar::MoveRight);
 	
 	InputComp->BindAction("Camera",IE_Pressed, this, &ANiceCar::ChangeCamera);
-	InputComp->BindAction("Interactive", IE_Pressed, this, &ANiceCar::GetoutCar);
+	
 
 	InputComp->BindAction("Jump", IE_Pressed, this, &ANiceCar::PressHandbrake);
 	InputComp->BindAction("Jump", IE_Released, this, &ANiceCar::ReleaseHandbrake);
 	InputComp->BindAction("Reload", IE_Pressed, this, &ANiceCar::TrySave);
 
+	InputComp->BindAction("Interactive", IE_Pressed, this, &ANiceCar::GetoutCar);
+	//InputComp->BindAction("Interactive", IE_Pressed, this, &ANiceCar::InOutCar);
 
 }
 
@@ -154,6 +216,7 @@ void ANiceCar::OnConstruction(const FTransform& Transform)
 {
 	if (VehicleDataTable)
 	{
+		/** VechieRowHandle이라는 TableRowHandle 구조체를 이용해 Row를 찾는 과정. */
 		VehicleRowHandle.DataTable = VehicleDataTable;
 		FName WantRow = VehicleRowHandle.RowName;
 
@@ -163,7 +226,24 @@ void ANiceCar::OnConstruction(const FTransform& Transform)
 		{
 			VD = *GetData;
 			VehicleSetting(VD);
+			if(GetMesh())
+			{
+				GetMesh()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
+				GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+			}
 		}
+
+
+
+		//아래코드 안됨.
+		//UWheeledVehicleMovementComponent4W* Vehicle4W = CastChecked<UWheeledVehicleMovementComponent4W>(GetVehicleMovement());
+		//if(!Vehicle4W) return;
+		//WheelPos.Empty();
+		//for (int32 WheelCnt = 0; WheelCnt < 4; ++WheelCnt)
+		//{
+		//	WheelPos.Add(GetWheelLocation(Vehicle4W->WheelSetups[WheelCnt]));
+		//	//WheelPos[WheelCnt] = /*U2PVector*/GetWheelLocation(Vehicle4W->WheelSetups[WheelCnt]);
+		//}
 	}
 }
 
@@ -176,24 +256,49 @@ void ANiceCar::VehicleSetting(FVehicleDataTable Data)
 	GetMesh()->SetAnimInstanceClass(Data.AnimInst);
 	SpringArm->SetRelativeLocation(Data.SpringArmLocation);
 	SpringArm->TargetArmLength = Data.SpringArmLength;
-	FPScam->SetRelativeLocation(Data.FPSCamLocation);
+	FPSpringArm->SetRelativeLocation(Data.FPSCamLocation);
 
 	DoorCollision->SetRelativeTransform(Data.DoorCollisionTF);
 	TrunkCollision->SetRelativeTransform(Data.TrunkCollisionTF);
-	auto VMC = GetVehicleMovement();
-	VMC->WheelSetups[0].WheelClass = Data.FrontWheel;
-	VMC->WheelSetups[0].BoneName = Data.FRWheelBoneName;
-	VMC->WheelSetups[1].WheelClass = Data.FrontWheel;
-	VMC->WheelSetups[1].BoneName = Data.FLWheelBoneName;
 
-	VMC->WheelSetups[2].WheelClass = Data.RearWheel;
-	VMC->WheelSetups[2].BoneName = Data.RRWheelBoneName;
-	VMC->WheelSetups[3].WheelClass = Data.RearWheel;
-	VMC->WheelSetups[3].BoneName = Data.RLWheelBoneName;
+	UWheeledVehicleMovementComponent4W* Vehicle4W = CastChecked<UWheeledVehicleMovementComponent4W>(GetVehicleMovement());
+	/* Wheel Setting */
+	Vehicle4W->WheelSetups[0].WheelClass = Data.FrontWheel;
+	Vehicle4W->WheelSetups[0].BoneName = Data.FRWheelBoneName;
+	Vehicle4W->WheelSetups[1].WheelClass = Data.FrontWheel;
+	Vehicle4W->WheelSetups[1].BoneName = Data.FLWheelBoneName;
 
-	VMC->Mass = Data.Mass;
-	VMC->DragCoefficient = Data.Dragcoefficient;
-	VMC->MaxEngineRPM = Data.MaxRPM;
+	Vehicle4W->WheelSetups[2].WheelClass = Data.RearWheel;
+	Vehicle4W->WheelSetups[2].BoneName = Data.RRWheelBoneName;
+	Vehicle4W->WheelSetups[3].WheelClass = Data.RearWheel;
+	Vehicle4W->WheelSetups[3].BoneName = Data.RLWheelBoneName;
+
+	
+	for (int32 WheelIndex = 0; WheelIndex < 4; ++WheelIndex)
+	{
+		if (UFrontWheel* FWheel = Cast<UFrontWheel>(Vehicle4W->WheelSetups[WheelIndex].WheelClass.GetDefaultObject()))
+		{
+			FWheel->SettingWheel(Data);
+		}
+		else if (URearWheel* RWheel = Cast<URearWheel>(Vehicle4W->WheelSetups[WheelIndex].WheelClass.GetDefaultObject()))
+		{
+			RWheel->SettingWheel(Data);
+		}
+	}
+
+	Vehicle4W->MinNormalizedTireLoad = 0.0f;
+	Vehicle4W->MinNormalizedTireLoadFiltered = 0.2f;
+	Vehicle4W->MaxNormalizedTireLoad = 2.0f;
+	Vehicle4W->MaxNormalizedTireLoadFiltered = 2.0f;
+
+	
+	Vehicle4W->Mass = Data.Mass;
+	Vehicle4W->DragCoefficient = Data.Dragcoefficient;
+	Vehicle4W->MaxEngineRPM = Data.MaxRPM;
+
+	//관성 세팅
+	// Set the inertia scale. This controls how the mass of the vehicle is distributed.
+	Vehicle4W->InertiaTensorScale = FVector(1.0f, 1.333f, 1.2f);
 
 
 	/*Sound Settings */
@@ -206,8 +311,19 @@ void ANiceCar::VehicleSetting(FVehicleDataTable Data)
 	
 	SkidSoundComp->SetSound(Data.SkidSound);
 	SkidSoundComp->Stop();
-	
+
+	//자체 메쉬 중심점 설정
 	GetMesh()->SetCenterOfMass(Data.CenterOfMass);
+
+	// Physics settings
+	// Adjust the center of mass - the buggy is quite low
+	UPrimitiveComponent* UpdatedPrimitive = Cast<UPrimitiveComponent>(Vehicle4W->UpdatedComponent);
+	if (UpdatedPrimitive)
+	{
+		UpdatedPrimitive->BodyInstance.COMNudge = FVector(-1.0f, 0.0f, -5.0f);
+		//UpdatedPrimitive->BodyInstance.
+	}
+	
 
 	/* Detail Settings */
 	if (Data.bIs4WD)
@@ -268,6 +384,8 @@ void ANiceCar::FWDSetting(FVehicleDataTable Data)
 	*/
 	Vehicle4W->DifferentialSetup.DifferentialType = EVehicleDifferential4W::LimitedSlip_4W;
 
+	// Drive the front wheels a little more than the rear
+	Vehicle4W->DifferentialSetup.FrontRearSplit = 0.65;
 
 	// Automatic gearbox
 	Vehicle4W->TransmissionSetup.bUseGearAutoBox = true;
@@ -282,36 +400,349 @@ void ANiceCar::StorageSetting(FVehicleDataTable Data)
 	StorageObj->InitializeStorage(Data.TrunkSizeColumn, Data.TrunkSizeRow, 65.f);
 }
 
+
+void ANiceCar::CheckIsStuck()
+{
+	bool bCheckAllWheelOnGround_localval = true;
+	bool bCanNotMove_localval = false;
+	bool bCarWasFlip_localval = false;
+	
+
+	FVector ActorUpVec = GetActorUpVector();
+	FVector WorldUpVector = FVector(0.f,0.f, 1.f);
+	float JudgeFlipValue = FVector::DotProduct(ActorUpVec, WorldUpVector);
+
+	if (JudgeFlipValue < 0.5)
+	{
+		bCarWasFlip_localval = true;
+	}
+
+	for (int32 WheelCnt = 0; WheelCnt < 4; ++WheelCnt)
+	{
+		UPhysicalMaterial* GroundMat = GetVehicleMovement()->Wheels[WheelCnt]->GetContactSurfaceMaterial();
+		if (GroundMat == nullptr)
+		{
+			bIsInAir = true;
+			bCheckAllWheelOnGround_localval = false;
+			break;
+		}
+		else
+		{
+			bIsInAir = false;
+		}
+	}
+
+	if (GetVehicleMovement()->GetForwardSpeed() < 0.5)
+	{
+		bCanNotMove_localval = true;
+	}
+
+	/** 바로바로 variable을 변경하니까 stuck recovery code가 제대로 수행안됨
+	 *  원복을 시도 했다가 말았다가 반복함.
+	 * 새로운 val을 두고, timer를 이용해야 할듯.
+	 * 그런데 문제는 timer가 작동하는 동안 원복이 됐다면 즉시 val을 off시켜야 하는데 어떻게?
+	 * 
+	 */
+
+	if (bCarWasFlip_localval /* && bCanNotMove_localval*/)
+	{
+		//Set the timer or instantly set the 'canrotate'
+		bIsStuck = true;
+
+	}
+	else if ((bCheckAllWheelOnGround_localval == false) && bCanNotMove_localval)
+	{
+		//Set the timer or instantly set the 'canrotate'
+		bIsStuck = true;
+
+	}
+	else
+	{
+		bIsStuck = false;
+	}
+
+
+	//if (bCheckAllWheelOnGround_localval)
+	//{
+	//	//UE_LOG(LogTemp, Warning, TEXT("ANiceCar::CheckIsInAir // On Ground..."));
+	//	bIsStuck = false;
+	//}
+	//else
+	//{
+	//	//UE_LOG(LogTemp, Warning, TEXT("ANiceCar::CheckIsInAir // In Air..."));
+	//	bIsStuck = true;
+	//}
+
+	//if (WheelPos.Num() != 4)
+	//{
+	//	UE_LOG(LogTemp,Warning,TEXT("ANiceCar::CheckIsInAir // something wrong..."));
+	//}
+
+	//FHitResult Hit;
+	//FCollisionQueryParams Params(FName("Wheel"), false, this);
+	//FCollisionResponseParams RParams(ECollisionResponse::ECR_Block);
+
+	//bool bCheckAllWheelIsGround = true;
+
+	//for (int32 WheelCnt = 0; WheelCnt < WheelPos.Num(); ++WheelCnt)
+	//{
+	//	FVector WheelLo = WheelPos[WheelCnt];
+	//	FVector AdjustWheelLo = WheelLo + FVector::DownVector * VD.WheelRadius;		
+	//	FVector EndLo = FVector(AdjustWheelLo.X, AdjustWheelLo.Y, AdjustWheelLo.Z * 30.f);
+
+	//	DrawDebugLine(GetWorld(),AdjustWheelLo,EndLo, FColor::Blue, false, 1.f, 0, 2.f);
+	//	//하나라도 떠있다면 공중에 있다고 판단한다.
+	//	if (GetWorld()->LineTraceSingleByChannel(Hit, AdjustWheelLo, EndLo, ECollisionChannel::ECC_WorldStatic, Params, RParams) == false)
+	//	{
+	//		bCheckAllWheelIsGround = false;
+	//		break;
+	//	}
+	//}
+
+	/*if (bCheckAllWheelIsGround)
+	{
+		bIsInAir = true;
+	}
+	else
+	{
+		bIsInAir = false;
+	}*/
+
+}
+
+void ANiceCar::LockCameraRoll()
+{
+	FRotator CurrentVehicleRot = GetActorRotation();
+	
+	FRotator CurrentFPArmRot = FPSpringArm->GetRelativeRotation();
+	FRotator CurrentFPCamRot = FPScam->GetRelativeRotation();
+
+	//FPSpringArm->SetRelativeRotation(FRotator(CurrentFPArmRot.Pitch, CurrentFPArmRot.Yaw, CurrentVehicleRot.Roll));
+	FPScam->SetRelativeRotation(FRotator(CurrentFPCamRot.Pitch, CurrentFPCamRot.Yaw, CurrentVehicleRot.Roll));
+	//SpringArm->SetRelativeRotation(FRotator(CurrentSpringArmRot.Pitch, CurrentSpringArmRot.Yaw, CurrentVehicleRot.Roll));
+	
+	//FPScam->SetRelativeRotation(FRotator(CurrentFPCamRot.Pitch, CurrentFPCamRot.Yaw, CurrentVehicleRot.Roll));
+
+	//FPScam->SetWorldRotation(FRotator(CurrentFPCamRot.Pitch, CurrentFPCamRot.Yaw, CurrentVehicleRot.Roll));
+}
+
+void ANiceCar::CanLockedCam()
+{
+	//if, FirstLockedCam || ContinuousLockCam Timer is active then, return.
+	if (GetWorldTimerManager().IsTimerActive(FirstLockedCamTimer)) return;
+
+	GetWorldTimerManager().SetTimer(FirstLockedCamTimer, [=] {
+		//UE_LOG(LogTemp, Warning, TEXT("ANiceCar : Set Still No Input, Set FirstLockedCamTimer "));
+		bIsStillNoInput = true;
+		bFirstFixed = true;
+	}, 5.f, false);
+}
+
+void ANiceCar::LockedCam()
+{
+	if (Controller)
+	{
+		APlayerController* const PC = CastChecked<APlayerController>(Controller);
+		if (PC)
+		{
+			RotTime = 0.f;
+			RotAlphaTime = 0.f;
+			FRotator CurrentRotation = PC->GetControlRotation();
+			GetWorldTimerManager().SetTimer(CamRotTimer, [ = ] {
+
+				if (RotAlphaTime >= 0.999f)
+				{
+					CanClearRotTimer();
+					return;
+				}
+
+				RotTime += GetWorld()->GetDeltaSeconds();				
+				RotAlphaTime = RotTime / CamFixTime;				
+
+				FRotator ForwRot = GetActorForwardVector().Rotation();
+
+				//첫 고정이면 lerp하게 한다.
+				if (bFirstFixed)
+				{
+					//UE_LOG(LogTemp, Warning, TEXT("ANiceCar : FirstLockedCamTimer is Active, Lerp Cam"));
+					FRotator LerpRotation = FMath::Lerp(CurrentRotation, ForwRot, RotAlphaTime);
+					PC->SetControlRotation(LerpRotation);					
+				}
+				//지속 고정이면 바로 고정되게 한다.
+				else
+				{
+					//UE_LOG(LogTemp, Warning, TEXT("ANiceCar : FirstLockedCamTimer is Not Active, Fix Fast Cam"));
+					PC->SetControlRotation(ForwRot);
+				}
+				
+
+				//DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + GetActorForwardVector() * 1000.f, FColor::Green, false, 1.f, 0, 3.f);
+				//UE_LOG(LogTemp, Warning, TEXT("CurrentRot : %s"), *CurrentRotation.ToString());
+				//UE_LOG(LogTemp, Warning, TEXT("LerpRotation : %s"), *LerpRotation.ToString());
+		}, GetWorld()->GetDeltaSeconds(), true);
+
+			//ClearFirstLockedCamTimer();
+			/*PC->RotationInput = FRotator::ZeroRotator;*/
+
+		}
+	}
+}
+
+void ANiceCar::ManClearAllTimer()
+{
+	GetWorldTimerManager().ClearTimer(CamRotTimer);
+	GetWorldTimerManager().ClearTimer(FirstLockedCamTimer);
+	bIsStillNoInput = false;
+}
+
+void ANiceCar::ClearFirstLockedCamTimer()
+{
+	if (GetWorldTimerManager().IsTimerActive(FirstLockedCamTimer))
+	{
+		GetWorldTimerManager().ClearTimer(FirstLockedCamTimer);
+	}
+
+}
+
+void ANiceCar::CanClearRotTimer()
+{
+	//UE_LOG(LogTemp, Warning, TEXT("ANiceCar : Clear FirstLockedCamTimer And CamRotTimer"));
+	if (GetWorldTimerManager().IsTimerActive(CamRotTimer))
+	{
+		GetWorldTimerManager().ClearTimer(CamRotTimer);
+	}
+
+	bFirstFixed = false;
+	if (GetWorldTimerManager().IsTimerActive(FirstLockedCamTimer))
+	{
+		GetWorldTimerManager().ClearTimer(FirstLockedCamTimer);
+	}
+}
+
+
+void ANiceCar::EngineStart()
+{
+	bIsEngineStarting = false;
+}
+
+
+
+
+
+
+
 /******************************************************************/
 /*****************        Input            ************************/
 /******************************************************************/
+
 void ANiceCar::CamLookPitch(float Val)
 {
+	if (Val == 0.f)
+	{
+		bPitchIsZero = true;
+		return;
+	}
+
+	bPitchIsZero = false;
+	ManClearAllTimer();	
 	AddControllerPitchInput(Val * 45.f * GetWorld()->GetDeltaSeconds());
 }
 
 void ANiceCar::CamLookYaw(float Val)
 {
+	if (Val == 0.f)
+	{
+		bYawIsZero = true;
+		return;
+	}
+
+	bYawIsZero = false;
+	ManClearAllTimer();
 	AddControllerYawInput(Val * 45.f * GetWorld()->GetDeltaSeconds());
 }
 
 
 void ANiceCar::MoveForward(float Val)
 {
+	if(bIsEngineStarting) return;
+
+	/*if (Val == 0.f)
+	{
+		bIsInputThrottle = false;
+	}
+	else
+	{
+		bIsInputThrottle = true;
+	}*/
+
+	if (bIsInAir && Val != 0.f)
+	{
+		FVector CurrentLo = GetMesh()->GetRelativeLocation();
+		FRotator CurrentRot = GetMesh()->GetRelativeRotation();
+
+		FVector BeforeVec = CurrentRot.Vector().GetSafeNormal();
+
+		CurrentRot.Pitch += Val*2;
+		FVector AfterVec = CurrentRot.Vector().GetSafeNormal();
+
+		FVector ForceDir = (AfterVec - BeforeVec).GetSafeNormal();
+
+		GetMesh()->AddForce(ForceDir);
+		GetMesh()->SetWorldLocationAndRotation(CurrentLo, CurrentRot, false, nullptr, ETeleportType::TeleportPhysics);
+		
+	}
+
 	GetVehicleMovementComponent()->SetThrottleInput(Val);
 }
 void ANiceCar::MoveRight(float Val)
 {
+	if (bIsEngineStarting) return;
+
+	if (bIsStuck && Val != 0.f)
+	{	
+		FVector CurrentLo = GetMesh()->GetRelativeLocation();
+		FRotator CurrentRot = GetMesh()->GetRelativeRotation();
+
+		FVector UpVector = FVector(0.f,0.f,1.f);
+		FVector ReverseGravityForce = UpVector * GetVehicleMovement()->Mass* GetWorld()->GetGravityZ() *-1.3f;
+		GetMesh()->AddForce(ReverseGravityForce / 1.5f);
+
+		CurrentRot.Roll += Val * 3.f;
+
+		GetMesh()->SetRelativeLocationAndRotation(CurrentLo, CurrentRot, false, nullptr, ETeleportType::TeleportPhysics);
+
+		/*FVector DebugLo = GetActorLocation();
+		DrawDebugLine(GetWorld(), DebugLo + UpVector, DebugLo + ReverseGravityForce / 2, FColor::Green, false, 1.f, 0, 4.f);*/	
+	}
 	GetVehicleMovementComponent()->SetSteeringInput(Val);
 }
 
 void ANiceCar::PressHandbrake()
-{	
+{
+	if (bIsEngineStarting) return;
 	GetVehicleMovementComponent()->SetHandbrakeInput(true);
 }
 void ANiceCar::ReleaseHandbrake()
 {
+	if (bIsEngineStarting) return;
 	GetVehicleMovementComponent()->SetHandbrakeInput(false);
+}
+
+void ANiceCar::UpdatePhysicsMaterial()
+{
+	if (GetActorUpVector().Z < 0)
+	{
+		if (bIsLowFriction == true)
+		{
+			GetMesh()->SetPhysMaterialOverride(NonSlipperyMaterial);
+			bIsLowFriction = false;
+		}
+		else
+		{
+			GetMesh()->SetPhysMaterialOverride(SlipperyMaterial);
+			bIsLowFriction = true;
+		}
+	}
 }
 
 void ANiceCar::ChangeCamera()
@@ -339,25 +770,60 @@ void ANiceCar::ChangeCamera()
 //GetIn the Car
 void ANiceCar::Interaction(AActor* Actor)
 {
+	InOutCar();
+}
+
+void ANiceCar::InOutCar()
+{
+	if(GetOwner())
+	{
+		//UE_LOG(LogTemp, Warning, TEXT("ANiceCar::InOutCar"));
+		//UE_LOG(LogTemp, Warning, TEXT("Did This call Twice? Owning Actor: %s | Component Name: %s"), *GetOwner()->GetName(), *GetName());
+	}
+
 	AMainController* PlayerCon = Cast<AMainController>(GetWorld()->GetFirstPlayerController());
 	if (PlayerCon)
 	{
 		if (bIsOverlapDoor)
-		{			
-			if ( PlayerCon->ToggleCar(this) == false )
+		{ 
+			if (PlayerCon->ToggleCar(this))
 			{
 				UnsetOutline();
-				return;
-			}
-			UnsetOutline();
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), VD.EngineStartSound, GetActorLocation());//EngineSoundComp->GetComponentLocation());
+				EngineIgnitionTime = VD.EngineStartSound->GetDuration();
+				bIsEngineStarting = true;
+				GetWorldTimerManager().SetTimer(EngineIgnitionTimer, this, &ANiceCar::EngineStart, EngineIgnitionTime, false);
 
-			UGameplayStatics::PlaySoundAtLocation(GetWorld(), VD.EngineStartSound, GetActorLocation());//EngineSoundComp->GetComponentLocation());
-			EngineSoundComp->Play();
+				EngineSoundComp->Play();
+
+				GetMesh()->SetSimulatePhysics(true);
+				return;
+			}			
 		}
 		else if (bIsOverlapTrunk)
 		{
 			OpenTrunk();
 		}
+	}
+	return;
+}
+
+void ANiceCar::SetCharacter(ABaseCharacter* TakeSeatCharacter)
+{
+	if(!TakeSeatCharacter) return;
+
+	CurrentHaveSeatChar = TakeSeatCharacter;
+	CurrentHaveSeatChar->PlayAnimation(VD.CharacterSeatAnim, nullptr);
+
+	CurrentHaveSeatChar->SetActorRelativeTransform(VD.SeatSocketTF);
+}
+
+void ANiceCar::UnSetCharacter()
+{
+	if (CurrentHaveSeatChar.IsValid())
+	{
+		CurrentHaveSeatChar->StopAnimation();
+		CurrentHaveSeatChar = nullptr;
 	}
 }
 
@@ -367,7 +833,7 @@ void ANiceCar::OpenTrunk()
 	UNewInventory* MainInventory = Cast<UNewInventory>(PlayerCon->MainHud->NewInventoryWidget);
 	if (MainInventory)
 	{
-		PlayerCon->bIsInteractLootBox = this;
+		PlayerCon->bIsInteractLootBox = true;
 		LootWidgetComp->CreateInteractionWidget(PlayerCon, this); //새로추가
 	}
 }
@@ -379,7 +845,7 @@ void ANiceCar::GetoutCar()
 	{
 		float CapsuleRad;
 		float CapsuleHH;
-		PlayerCon->Main->GetCapsuleComponent()->GetScaledCapsuleSize(CapsuleRad, CapsuleHH);
+		PlayerCon->PlayerChar->GetCapsuleComponent()->GetScaledCapsuleSize(CapsuleRad, CapsuleHH);
 
 		FVector CarRightVec = GetActorRightVector();
 		FVector DoorBoxLo = DoorCollision->GetComponentLocation();
@@ -417,6 +883,8 @@ void ANiceCar::GetoutCar()
 			UGameplayStatics::PlaySoundAtLocation(GetWorld(), VD.EngineOffSound, GetActorLocation());//EngineSoundComp->GetComponentLocation());
 			EngineSoundComp->Stop();
 			SkidSoundComp->Stop();
+			ManClearAllTimer();
+			UnSetCharacter();
 			PlayerCon->ToggleCar(this,GetoutLocation);
 		}		
 	}
@@ -431,6 +899,11 @@ bool ANiceCar::CanGetout(const FVector DoorOrigin, const FVector WantToGetOutPos
 	FCollisionQueryParams Params(FName("door"), false, this);
 	FCollisionResponseParams RParams(ECollisionResponse::ECR_Block);
 
+	if (CurrentHaveSeatChar.IsValid())
+	{
+		Params.AddIgnoredActor(CurrentHaveSeatChar.Get());
+	}
+	
 	DrawDebugLine(GetWorld(), DoorOrigin, WantToGetOutPos,FColor::Green,false, 5.f,0,3.f);
 	if (GetWorld()->LineTraceSingleByChannel(Hit, DoorOrigin, WantToGetOutPos, ECollisionChannel::ECC_WorldStatic, Params, RParams))
 	{
@@ -601,6 +1074,17 @@ void ANiceCar::TrunkOnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActo
 }
 
 
+void ANiceCar::TeleportVehicle(FTransform& DesignatedLocation)
+{
+	FVector Location = DesignatedLocation.GetTranslation();
+	FQuat Rotation = DesignatedLocation.GetRotation();
+
+	GetMovementComponent()->StopMovementImmediately();
+
+	GetMesh()->SetAllPhysicsPosition(Location);
+	GetMesh()->SetAllPhysicsRotation(Rotation);
+}
+
 void ANiceCar::SetOutline()
 {
 	GetMesh()->SetRenderCustomDepth(true);
@@ -611,6 +1095,98 @@ void ANiceCar::UnsetOutline()
 	GetMesh()->SetRenderCustomDepth(false);
 }
 
+
+void ANiceCar::NotifyHit(UPrimitiveComponent* MyComp, AActor* Other, UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalForce, const FHitResult& Hit)
+{
+	Super::NotifyHit(MyComp, Other, OtherComp, bSelfMoved, HitLocation, HitNormal, NormalForce, Hit);
+	if (!CurrentHaveSeatChar.IsValid()) return;
+
+	/** 부딪힌 세기가 특정 값 이하면 effect를 발생시키지 않는다. */
+	UE_LOG(LogTemp, Warning, TEXT("ANiceCar::NotifyHit was called"));
+	float Force = NormalForce.SizeSquared(); //Size();
+	if (Force <= FMath::Square(55000.f)) return;
+
+	/** 뒤집혀서 멈춘 상태라면 effect를 발생시키지 않는다. */
+	if(bIsStuck && GetVehicleMovement()->GetForwardSpeed() < 0.5f) return;
+
+	UE_LOG(LogTemp, Warning, TEXT("ANiceCar::NotifyHit/ Force : %f"), Force);
+	
+
+	if (UMyGameInstance* GameInst = Cast<UMyGameInstance>(GetWorld()->GetGameInstance()))
+	{
+		if(!GameInst->CommonImpactEffectTable) return;
+
+		FTransform SpawnEffectTransform = FTransform(HitNormal.Rotation(), HitLocation);
+
+		FName FindRowName = VD.ImpactEffectRowHandle.RowName;
+		UCustomSystemLibrary::SpawnImpactEffect_Delayed(GetWorld(), Hit, NormalForce, GameInst->CommonImpactEffectTable, FindRowName, SpawnEffectTransform);
+
+		/* came shake */
+
+	}
+
+		
+	/** impact FX config */
+	/*UPROPERTY(Category=Effects, EditDefaultsOnly)
+	TSubclassOf<AVehicleImpactEffect> ImpactTemplate;*/
+
+	/** camera shake on impact */
+	/*UPROPERTY(Category=Effects, EditDefaultsOnly)
+	TSubclassOf<UMatineeCameraShake> ImpactCameraShake;*/
+
+	/*if (ImpactTemplate && NormalForce.SizeSquared() > FMath::Square(ImpactEffectNormalForceThreshold))
+	{
+		FTransform const SpawnTransform(HitNormal.Rotation(), HitLocation);
+		AVehicleImpactEffect* EffectActor = GetWorld()->SpawnActorDeferred<AVehicleImpactEffect>(ImpactTemplate, SpawnTransform);
+		if (EffectActor)
+		{
+			float DotBetweenHitAndUpRotation = FVector::DotProduct(HitNormal, GetMesh()->GetUpVector());
+			EffectActor->HitSurface = Hit;
+			EffectActor->HitForce = NormalForce;
+			EffectActor->bWheelLand = DotBetweenHitAndUpRotation > 0.8f;
+			UGameplayStatics::FinishSpawningActor(EffectActor, SpawnTransform);
+		}
+	}
+
+	if (ImpactCameraShake)
+	{
+		AVehiclePlayerController* PC = Cast<AVehiclePlayerController>(Controller);
+		if (PC != nullptr && PC->IsLocalController())
+		{
+			PC->ClientStartCameraShake(ImpactCameraShake, 1);
+		}
+	}*/
+
+}
+
+void ANiceCar::SetMotherSpawnVolume(ASpawnVolume* Var_MotherVolume)
+{
+	
+}
+
+FVector ANiceCar::GetWheelLocation(const FWheelSetup& WheelSetup)
+{
+	//UWheeledVehicleMovementComponent4W* Vehicle4W = CastChecked<UWheeledVehicleMovementComponent4W>(GetVehicleMovement());
+
+	FVector Offset = WheelSetup.WheelClass.GetDefaultObject()->Offset + WheelSetup.AdditionalOffset;
+
+	if (WheelSetup.BoneName != NAME_None)
+	{
+		USkinnedMeshComponent* MeshCmp = GetMesh();
+		if (MeshCmp && MeshCmp->SkeletalMesh)
+		{
+			const FVector BonePosition = MeshCmp->SkeletalMesh->GetComposedRefPoseMatrix(WheelSetup.BoneName).GetOrigin() * MeshCmp->GetRelativeScale3D();
+			//BonePosition is local for the root BONE of the skeletal mesh - however, we are using the Root BODY which may have its own transform, so we need to return the position local to the root BODY
+			if (MeshCmp->GetBodyInstance() && MeshCmp->GetBodyInstance()->BodySetup.IsValid())
+			{
+				const FMatrix RootBodyMTX = MeshCmp->SkeletalMesh->GetComposedRefPoseMatrix(MeshCmp->GetBodyInstance()->BodySetup->BoneName);
+				const FVector LocalBonePosition = RootBodyMTX.InverseTransformPosition(BonePosition);
+				Offset += LocalBonePosition;
+			}
+		}
+	}
+	return Offset;
+}
 
 PRAGMA_ENABLE_DEPRECATION_WARNINGS
 

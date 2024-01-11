@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -84,6 +84,13 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetVariable", meta = (BindWidget))
 	UTextBlock* ItemCount;
 
+	UPROPERTY(meta = (BindWidget))
+	UBorder* QuickSlotBorder;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* QuickSlotNumTxt;
+
+
 
 	class UEquipWidget* MotherEquipWidget;
 	/* GridWidget에서 data를 넣어줌*/
@@ -118,6 +125,21 @@ public:
 	
 	void Refresh(bool bIsTempRotate = false);// UNewItemObject* V_Obj, float V_Tilesize);// float var_tilesize);
 
+	/**
+	 * EQuickSlotNumber를 파라미터로 받아
+	 * Border와 TextBlock을 세팅하고 Quickslot에 등록했다라는것을
+	 * 알리기 위해 해당 number를 등록한다.
+	 */
+	void SetQuickSlotNumber(EQuickSlotNumber SlotNum);
+	void RemoveQuickSlotNumber();
+	/**
+	 * QuickSlotSlotWidget에서 사용하는 전용 함수.
+	 * QuickSlotwidget에선 quickslot number가 너무 작아서 해당 함수를 이용해
+	 * 조절한다.
+	 */
+	void AdjustQuickSlotNumber();
+	
+	
 	
 	
 

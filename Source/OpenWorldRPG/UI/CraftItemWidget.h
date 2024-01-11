@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -25,7 +25,7 @@ public:
 	FOnCraftWidgetClicked OnCraftWidgetClicked;
 	FOnDropCraftWidget OnDropCraftWidget;
 
-	TWeakObjectPtr<UBasePDA> CraftItemDA;
+	TWeakObjectPtr<class UBasePDA> CraftItemDA;
 
 	UPROPERTY(meta = (bindwidget))
 	class UBorder* ItemBorder;

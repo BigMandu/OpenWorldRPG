@@ -77,7 +77,7 @@ enum class EStaminaStatus : uint8
 	ESS_MAX					UMETA(DisplayName = "DefaultsMAX")
 };
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class OPENWORLDRPG_API UStatManagementComponent : public UActorComponent
 {
 	GENERATED_BODY()
@@ -171,6 +171,8 @@ public:
 	void AddCurrentHPRecoveryPoint(float Points);
 	void RemoveCurrentHPRecoveryPoint(float Points);
 
+	
+
 	//Called from LoadGame
 	void UpdateCurrentStats(FCharacterCurrentStat Stats);
 
@@ -188,4 +190,8 @@ private:
 		
 	void StaminaBreathSoundManager(EStaminaStatus CurrentStatus);
 	void TakeDamageSound();
+
+	//save가 없을때 첫실행 또는 death후 respawn상태에 적용됨.
+	void InitializeMaxHpandStam();
+
 };

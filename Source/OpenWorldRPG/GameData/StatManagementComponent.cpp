@@ -24,6 +24,7 @@ void UStatManagementComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
 	SetLevel(Level);
+	InitializeMaxHpandStam();
 }
 
 
@@ -39,11 +40,11 @@ void UStatManagementComponent::SetLevel(int32 SetLevel)
 	{
 		CurrentMAXStats = MyGameInst->GetLevelStats(SetLevel);
 		
-		if ( CurrentMAXStats )
+		if (CurrentMAXStats)
 		{
 			Level = SetLevel;
 
-			if(Level < 20 )
+			if(Level < 20)
 			{
 				NextMAXStats = MyGameInst->GetLevelStats(Level+1);
 			}
@@ -64,16 +65,27 @@ void UStatManagementComponent::SetLevel(int32 SetLevel)
 	}
 }
 
+void UStatManagementComponent::InitializeMaxHpandStam()
+{
+	if(!CurrentMAXStats) return;
+
+	CurrentStat.Health = 100.f;
+	CurrentStat.Stamina = CurrentMAXStats->Stamina;
+
+	OnHPChange.Broadcast();
+	OnStaminaChange.Broadcast();
+}
+
 void UStatManagementComponent::AddExpPoint(int32 ExpPoint)
 {
-	if(Level >= 20 ) return;
+	if(Level >= 20) return;
 	int32 AdjustExpPoint = ExpPoint;
 
 	//계산 편하게 하기 위해서.
 	int32 ExpOver = CurrentStat.ExperiencePoint + ExpPoint;
 	//Exppoint와 현재 경험치의 합이  레벨업에 필요한 총 경험치 보다 많으면
 	//레벨업 이후 경험치에 포함 하기 위함.
-	if ( ExpOver >= CurrentMAXStats->NextExp )
+	if (ExpOver >= CurrentMAXStats->NextExp)
 	{		
 		AdjustExpPoint = ExpOver - CurrentMAXStats->NextExp;
 		SetLevel(++Level);
@@ -118,35 +130,33 @@ void UStatManagementComponent::DamageApply(float Damage, FDamageEvent const& Dam
 	//죽을 경우
 	if (!bIsPendingKill && CurrentStat.Health - Damage <= 0.f)                          
 	{
-		//UDamageType* DmgType = DamageEvent.DamageTypeClass ? DamageEvent.DamageTypeClass->GetDefaultObject<UDamageType>() : GetDefault<UDamageType>();
-
-		//Kill event가 연속 실행될 경우를 prevent하기 위해 bIsPendingKill bool을 true로 한다.
-		//Actor에 붙은 component라 1회성으로 true로 변경하면 끝.
 		bIsPendingKill = true;
 		CurrentStat.Health = 0.f;
-		
+
 		//EventInstigator = BChar->GetDamageInstigator(EventInstigator, *DmgType);
-		GMode->ProcessKillEvent(EventInstigator, BChar->GetController(),DamageEvent);
-		
+		GMode->ProcessKillEvent(EventInstigator, BChar->GetController(), DamageEvent);
+
 		OnHPChange.Broadcast();
 		OnHPZero.Broadcast();
-
-		return;
+		//StartDeathProcess();
 	}
+	else
+	{
+		CurrentStat.Health -= Damage;
+		GMode->ProcessHitEvent(EventInstigator, BChar->GetController(), DamageEvent);
 
-	CurrentStat.Health -= Damage;
-	GMode->ProcessHitEvent(EventInstigator, BChar->GetController(), DamageEvent);
-
-
-	UE_LOG(LogTemp, Warning, TEXT("StatManager::DamageApply// DamagePoint :  %f // CurrentHealth : %f"), Damage, CurrentStat.Health);
-	OnHPChange.Broadcast();
+		UE_LOG(LogTemp, Warning, TEXT("StatManager::DamageApply// DamagePoint :  %f // CurrentHealth : %f"), Damage, CurrentStat.Health);
+		OnHPChange.Broadcast();
+	}
+	
 	
 }
+
 
 void UStatManagementComponent::AddHPPoint(float RecoveryPoint)
 {
 	float RecoveryAmount = CurrentStat.Health + RecoveryPoint;
-	CurrentStat.Health = ( RecoveryAmount >= MaxHealth) ? MaxHealth : RecoveryAmount;
+	CurrentStat.Health = (RecoveryAmount >= MaxHealth) ? MaxHealth : RecoveryAmount;
 	
 	UE_LOG(LogTemp,Warning,TEXT("StatManager::AddHPPoint// RecoveryPoint :  %f // CurrentHealth : %f"),RecoveryPoint, CurrentStat.Health);
 	OnHPChange.Broadcast();
@@ -155,7 +165,7 @@ void UStatManagementComponent::AddHPPoint(float RecoveryPoint)
 void UStatManagementComponent::AddStaminaPoint(float RecoveryPoint)
 {
 	float RecoveryAmount = CurrentStat.Stamina + RecoveryPoint;
-	CurrentStat.Stamina = ( RecoveryAmount >= CurrentMAXStats->Stamina) ? CurrentMAXStats->Stamina : RecoveryAmount;
+	CurrentStat.Stamina = (RecoveryAmount >= CurrentMAXStats->Stamina) ? CurrentMAXStats->Stamina : RecoveryAmount;
 
 	OnStaminaChange.Broadcast();
 }

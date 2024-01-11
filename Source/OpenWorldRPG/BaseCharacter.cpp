@@ -2,6 +2,32 @@
 
 
 #include "BaseCharacter.h"
+#include "MainAnimInstance.h"
+#include "OpenWorldRPGGameModeBase.h"
+#include "MyDamageType.h"
+#include "MainController.h"
+
+#include "AI/EnemyAIController.h"
+
+#include "OpenWorldRPG/WorldControlVolume/SpawnVolume.h"
+#include "OpenWorldRPG/GameData/StatManagementComponent.h"
+
+#include "OpenWorldRPG/NewInventory/LootWidgetComponent.h"
+#include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
+#include "OpenWorldRPG/NewInventory/EquipmentComponent.h"
+#include "OpenWorldRPG/NewInventory/SpawnItemEquipComponent.h"
+#include "OpenWorldRPG/NewInventory/NewItemObject.h"
+#include "OpenWorldRPG/NewInventory/ItemStorageObject.h"
+
+#include "OpenWorldRPG/UI/Inventory/CharacterLootWidget.h"
+#include "OpenWorldRPG/UI/Inventory/NewInventory.h"
+
+#include "OpenWorldRPG/Item/WeaponPDA.h"
+#include "OpenWorldRPG/Item/Item.h"
+#include "OpenWorldRPG/Item/Equipment.h"
+#include "OpenWorldRPG/Item/Weapon.h"
+#include "OpenWorldRPG/Item/GrenadeBase.h"
+#include "OpenWorldRPG/Item/CoreUsableItem.h"
 
 #include "Components/CapsuleComponent.h"
 #include "Components/SphereComponent.h"
@@ -12,35 +38,6 @@
 #include "Kismet/GameplayStatics.h"
 #include "Perception/AISense_Hearing.h"
 #include "Sound/SoundCue.h"
-
-#include "MainController.h"
-#include "AI/EnemyAIController.h"
-#include "MainAnimInstance.h"
-
-
-#include "OpenWorldRPGGameModeBase.h"
-#include "OpenWorldRPG/GameData/StatManagementComponent.h"
-
-#include "OpenWorldRPG/NewInventory/LootWidgetComponent.h"
-#include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
-#include "OpenWorldRPG/NewInventory/EquipmentComponent.h"
-#include "OpenWorldRPG/NewInventory/SpawnItemEquipComponent.h"
-#include "OpenWorldRPG/NewInventory/NewItemObject.h"
-#include "OpenWorldRPG/NewInventory/ItemStorageObject.h"
-
-
-#include "OpenWorldRPG/UI/Inventory/CharacterLootWidget.h"
-#include "OpenWorldRPG/UI/Inventory/NewInventory.h"
-
-#include "OpenWorldRPG/Item/WeaponPDA.h"
-#include "OpenWorldRPG/Item/Item.h"
-#include "OpenWorldRPG/Item/Equipment.h"
-#include "OpenWorldRPG/Item/Weapon.h"
-#include "OpenWorldRPG/Item/BaseGrenade.h"
-#include "OpenWorldRPG/Item/CoreUsableItem.h"
-
-
-
 
 
 
@@ -75,8 +72,12 @@ ABaseCharacter::ABaseCharacter()
 	LootWidgetComp = CreateDefaultSubobject<ULootWidgetComponent>(TEXT("LootWidgetComp"));
 	SpawnItemEquipComp = CreateDefaultSubobject<USpawnItemEquipComponent>(TEXT("SpawnItemEquipComp"));
 	//AudioComp = CreateDefaultSubobject<UAudioComponent>(TEXT("AudioComp"));
-	//AudioComp->SetupAttachment(GetRootComponent());\
+	//AudioComp->SetupAttachment(GetRootComponent());
 
+	if (StatManagementComponent)
+	{
+		StatManagementComponent->OnHPZero.AddDynamic(this, &ABaseCharacter::Die);
+	}
 	//decal을 무시한다.
 	GetMesh()->SetReceivesDecals(false);
 
@@ -89,10 +90,7 @@ void ABaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (StatManagementComponent)
-	{
-		StatManagementComponent->OnHPZero.AddDynamic(this,&ABaseCharacter::Die);
-	}
+	
 	
 }
 
@@ -130,22 +128,26 @@ void ABaseCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
+	SetAnimVariable();
+}
+
+void ABaseCharacter::SetAnimVariable()
+{
 	TPAnimInstance = Cast<UMainAnimInstance>(GetMesh()->GetAnimInstance());
 
 	if (TPAnimInstance == nullptr) return;
 
 	/* 사운드는 TP Animation을 기준으로 출력한다. */ //AnimInstance의 StepSound_Notify에서 호출.
 	TPAnimInstance->StepSound.AddUObject(this, &ABaseCharacter::StepSound);
-	TPAnimInstance->ThrowDelegate.AddUObject(this,&ABaseCharacter::DetachThrowingObject);
+	TPAnimInstance->ThrowDelegate.AddUObject(this, &ABaseCharacter::DetachThrowingObject);
 
 
 	//TPAnimInstance->WeaponTypeNumber = 0;
 	ChangeWeaponTypeNumber(0);
-	
+
 	SetCharacterStatus(ECharacterStatus::EPS_Normal);
 	SetTeamType(TeamType);
 	SettingStorage();
-
 }
 
 void ABaseCharacter::SetTeamType(ETeamType Team)
@@ -155,11 +157,11 @@ void ABaseCharacter::SetTeamType(ETeamType Team)
 
 void ABaseCharacter::SetAimMode(EAimMode Mode)
 {	
-	if ( EquippedWeapon == nullptr) return;
-	if ( EquippedWeapon->CurrentWeaponState != EWeaponState::EWS_Idle ) return;
+	if (EquippedWeapon == nullptr) return;
+	if (EquippedWeapon->CurrentWeaponState != EWeaponState::EWS_Idle) return;
 
 	AimMode = Mode;
-	switch ( AimMode )
+	switch (AimMode)
 	{
 		case EAimMode::EAM_Aim:
 			bIsAim = true;
@@ -222,9 +224,9 @@ void ABaseCharacter::ApplyFallingDamage(FHitResult& _FallHit)
 		if (FallingDistance >= GetDefaultHalfHeight() * 3.f)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("BaseChar::ApplyFallingDamage // Fall Damage : %f"), FallingDistance*0.05f);
-			if ( AOpenWorldRPGGameModeBase* GMode = Cast<AOpenWorldRPGGameModeBase>(UGameplayStatics::GetGameMode(GetWorld())))
+			if (AOpenWorldRPGGameModeBase* GMode = Cast<AOpenWorldRPGGameModeBase>(UGameplayStatics::GetGameMode(GetWorld())))
 			{
-				if ( GMode->FallingDmgType )
+				if (GMode->FallingDmgType)
 				{
 					FDamageEvent DmgEve;
 					DmgEve.DamageTypeClass = GMode->FallingDmgType;
@@ -249,7 +251,7 @@ void ABaseCharacter::SetCharacterStatus(ECharacterStatus Type)
 	* */
 	if (AimMode == EAimMode::EAM_Aim) return;
 
-	switch ( CharacterStatus )
+	switch (CharacterStatus)
 	{
 	case ECharacterStatus::EPS_Normal:
 		//StatManagementComponent->
@@ -314,6 +316,18 @@ void ABaseCharacter::UseItem(class AActor* Item)
 	}
 }
 
+void ABaseCharacter::EndUseItem()
+{
+	if (HoldingItem.IsValid())
+	{
+		//HoldingItem의 destory, nullptr는 아래 함수에서 진행된다..
+		if (HoldingItem->EquipBeforeWeapon(this) == false)
+		{
+			HoldingItem->ReadyToDestory(this);
+		}		
+	}
+}
+
 void ABaseCharacter::MyJump()
 {
 	bIsJumpKeyDown = true;
@@ -332,10 +346,10 @@ void ABaseCharacter::MyStopJumping()
 bool ABaseCharacter::CanSprint()
 {
 	bool bReturn = true;
-	if ( EquippedWeapon )
+	if (EquippedWeapon)
 	{
 		//Idle상태가 아닌 Reload, Firing, Equiping상태면 sprint불가.
-		if ( EquippedWeapon->CurrentWeaponState != EWeaponState::EWS_Idle )
+		if (EquippedWeapon->CurrentWeaponState != EWeaponState::EWS_Idle)
 		{
 			bReturn = false;
 		}
@@ -345,7 +359,7 @@ bool ABaseCharacter::CanSprint()
 }
 void ABaseCharacter::Sprint()
 {
-	if(CanSprint() )
+	if(CanSprint())
 	{
 		TPAnimInstance->bIsSprint = true;
 		SetLeftHandIK(0.f);
@@ -369,9 +383,13 @@ void ABaseCharacter::UnSprint()
 
 void ABaseCharacter::DetachThrowingObject()
 {
-	if (HoldingItem)
+	if (HoldingItem.IsValid())
 	{
-		ABaseGrenade* Grenade = Cast<ABaseGrenade>(HoldingItem);
+		/*if (IGrenadeHandler* Grenade = Cast<IGrenadeHandler>(HoldingItem.Get()))
+		{
+			Grenade->TriggerGrenade(this);
+		}*/
+		AGrenadeBase* Grenade = Cast<AGrenadeBase>(HoldingItem.Get());
 		UE_LOG(LogTemp, Warning, TEXT("ABaseCharacter::DetachThrowingObject, receive animnotify"));
 		if(Grenade)
 		{
@@ -423,7 +441,7 @@ bool ABaseCharacter::CanReload()
 {
 	bool bReturn = true;
 
-	if ( CharacterStatus == ECharacterStatus::EPS_Dead || CharacterStatus == ECharacterStatus::EPS_Sprint)
+	if (CharacterStatus == ECharacterStatus::EPS_Dead || CharacterStatus == ECharacterStatus::EPS_Sprint)
 	{
 		bReturn = false;
 	}
@@ -434,7 +452,7 @@ void ABaseCharacter::ReloadWeapon()
 {
 	if (EquippedWeapon)
 	{
-		if ( CanReload() )
+		if (CanReload())
 		{
 			EquippedWeapon->Reload();
 		}
@@ -448,7 +466,7 @@ void ABaseCharacter::ReloadWeapon()
 //called from AnimInst::AnimNotify
 void ABaseCharacter::EndReload()
 {
-	if ( EquippedWeapon )
+	if (EquippedWeapon)
 	{
 		EquippedWeapon->ReloadEnd();
 	}
@@ -615,7 +633,7 @@ void ABaseCharacter::SetWeaponAssign(AWeapon* Weapon, ERifleSlot RifleSlot)
 
 void ABaseCharacter::ToggleTacticalEquip()
 {
-	if ( EquippedWeapon )
+	if (EquippedWeapon)
 	{
 		EquippedWeapon->ToggleTacticalEquip();
 	}
@@ -635,7 +653,7 @@ void ABaseCharacter::ChangeSafetyLever()
 void ABaseCharacter::SetEquippedWeapon(AWeapon* Weapon)
 {
 	EquippedWeapon = Weapon;
-	if ( Weapon )
+	if (Weapon)
 	{
 		SetLeftHandIK(0.f);
 		//StopAnimation();
@@ -653,11 +671,11 @@ void ABaseCharacter::SetEquippedWeapon(AWeapon* Weapon)
 //called from MainAnimInstance, AnimNotify
 void ABaseCharacter::EndEquipped()
 {
-	if ( EquippedWeapon )
+	if (EquippedWeapon)
 	{
 		EquippedWeapon->EndEquipping();
 
-		switch ( EquippedWeapon->WeaponDataAsset->EquipmentType )
+		switch (EquippedWeapon->WeaponDataAsset->EquipmentType)
 		{
 		case EEquipmentType::EET_Rifle:
 			ChangeWeaponTypeNumber(1);
@@ -677,14 +695,16 @@ bool ABaseCharacter::ChangeWeapon(int32 index)
 	
 	bool bSuccessChangeWeapon = false;
 
-	if ( bIsDie ) return false;
+	if (bIsDie) return false;
 	if(TPAnimInstance == nullptr) return false;
 
+	DetachCoreUsableItem();
 	//만약 다른 Item을 들고 있었다면 초기화 시켜준다.
-	if (HoldingItem)
+	if (HoldingItem.IsValid())
 	{
 		//Attach Animation을 멈춘다. -> 오히려 아래 함수를 호출하면 빵 먹고 총 장착이 안됨 (애님 재생이안되서)
 		//StopAnimation();
+		//detach and destroy when holding item.		
 		HoldingItem->BeforeEquipppedWeapon = nullptr;
 		HoldingItem->Destroy();
 		SetHoldingItem(nullptr);
@@ -700,8 +720,6 @@ bool ABaseCharacter::ChangeWeapon(int32 index)
 		// 현재 장착하고 있는 무기가 Primary와 다를경우에만 변경. 일치하면 똑같은걸 장착할 필요가 없음.
 		if (PrimaryWeapon && (PrimaryWeapon != EquippedWeapon))
 		{
-			//detach and destroy when holding item.
-			DetachCoreUsableItem();
 			//이미 장착한 Weapon이 있는경우 SubSocket으로 보냄.
 			if(EquippedWeapon)
 			{
@@ -718,8 +736,6 @@ bool ABaseCharacter::ChangeWeapon(int32 index)
 	case 2:
 		if (SubWeapon && (SubWeapon != EquippedWeapon))
 		{
-			//detach and destroy when holding item.
-			DetachCoreUsableItem();
 			if (EquippedWeapon)
 			{
 				EquippedWeapon->GunAttachToSubSocket(this);
@@ -750,7 +766,7 @@ bool ABaseCharacter::ChangeWeapon(int32 index)
 	if (bSuccessChangeWeapon)
 	{
 		//무기를 변경했을때 기존에 ADS상태 였다면 Aim을 풀어준다.
-		if ( bIsAim )
+		if (bIsAim)
 		{
 			SetAimMode(EAimMode::EAM_NotAim);
 		}
@@ -777,7 +793,7 @@ void ABaseCharacter::ChangePistolWeapon()
 
 void ABaseCharacter::ChangeWeaponTypeNumber(int32 number)
 {
-	if(TPAnimInstance == nullptr ) return;
+	if(TPAnimInstance == nullptr) return;
 
 	TPAnimInstance->SetWeaponTypeNumber(number);// WeaponTypeNumber = number;
 }
@@ -785,7 +801,7 @@ void ABaseCharacter::ChangeWeaponTypeNumber(int32 number)
 //called from AnimNotify
 void ABaseCharacter::AttachWeaponToActor()
 {
-	if ( EquippedWeapon )
+	if (EquippedWeapon)
 	{
 		EquippedWeapon->GunAttachToMesh(this);
 	}
@@ -796,10 +812,10 @@ void ABaseCharacter::AttachWeaponToActor()
 
 void ABaseCharacter::DetachCoreUsableItem()
 {
-	if ( HoldingItem )
+	if (HoldingItem.IsValid())
 	{
-		ACoreUsableItem* CoreItem = Cast<ACoreUsableItem>(HoldingItem);
-		if ( CoreItem )
+		ACoreUsableItem* CoreItem = Cast<ACoreUsableItem>(HoldingItem.Get());
+		if (CoreItem)
 		{
 			CoreItem->Use(this, CoreItem->ItemObj);
 		}
@@ -807,35 +823,43 @@ void ABaseCharacter::DetachCoreUsableItem()
 }
 
 
+/**
+ * HoldingItem의 파라미터는 nullptr로 넘겨줘도 됨.
+ * null일때의 처리는 여기서 진행하지 않는다.
+ * grenade함수도 아래 함수를 사용하기 때문에 destory는 절대 금물.
+ */
 void ABaseCharacter::SetHoldingItem(AItem* WantToHolding)
-{	
+{
 	HoldingItem = WantToHolding;
-	if(WantToHolding != nullptr )
+	if(WantToHolding != nullptr)
 	{
-		//만약 bind된게 있으면 안전하게 지워주고 bind한다.
-		if ( HoldingItem->ItemUseEnd.IsBound() )
+		//만약 bind된게 있으면 지워준다.
+		if (HoldingItem->ItemUseEnd.IsBound())
 		{
 			HoldingItem->ItemUseEnd.Clear();
-		}		
-		//Equipping anim이 아래 때문에 끊김.
-		//HoldingItem->ItemUseEnd.AddDynamic(this, &ABaseCharacter::StopAnimation);
-		
-	}
-	
+		}
+
+		//Equipping anim이 아래 때문에 끊김.-> 아래 코드 실행 안해도 끊김. 걍켠다.
+		HoldingItem->ItemUseEnd.AddDynamic(this, &ABaseCharacter::StopAnimation);	
+	}	
 }
 
 void ABaseCharacter::PlayAnimation(UAnimMontage* TPAnim, UAnimMontage* FPAnim)
 {
-	if ( TPAnim )
+	if (TPAnim && TPAnimInstance)
 	{
-		PlayAnimMontage(TPAnim);
+		TPAnimInstance->Montage_Play(TPAnim);
+		//PlayAnimMontage(TPAnim);
 	}
 }
 
 //이 함수를 왜 만들었지?
 void ABaseCharacter::StopAnimation()
 {
-	GetMesh()->GetAnimInstance()->Montage_Stop(0.f,nullptr);
+	if(GetMesh() && GetMesh()->GetAnimInstance())
+	{
+		GetMesh()->GetAnimInstance()->Montage_Stop(0.f,nullptr);
+	}
 }
 
 FTransform ABaseCharacter::LeftHandik()
@@ -889,7 +913,7 @@ void ABaseCharacter::StepSound()
 	QParams.bReturnPhysicalMaterial = true; //필수임.. Staticmesh Collision에도 Return Material On Move flag를 on해야함.
 
 	GetWorld()->LineTraceSingleByChannel(SurfaceHit, ActorLo, ActorLo-FVector(0.f,0.f,200.f),ECollisionChannel::ECC_Visibility,QParams);
-	if ( SurfaceHit.IsValidBlockingHit() )
+	if (SurfaceHit.IsValidBlockingHit())
 	{	
 		if (UMyGameInstance* Inst = Cast<UMyGameInstance>(GetGameInstance()))
 		{
@@ -1016,7 +1040,7 @@ float ABaseCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageE
 	float ApplyingDmg = Super::TakeDamage(FinalDmg, DamageEvent, EventInstigator, DamageCauser);
 
 	UE_LOG(LogTemp, Warning, TEXT("BChar::TakeDamage : %f "), ApplyingDmg);
-	if( ApplyingDmg > 0.f)
+	if(ApplyingDmg > 0.f)
 	{
 		StatManagementComponent->DamageApply(ApplyingDmg, DamageEvent, EventInstigator, DamageCauser);
 	}
@@ -1026,7 +1050,6 @@ float ABaseCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageE
 
 void ABaseCharacter::Die()
 {
-	AEnemyAIController* AICon = Cast<AEnemyAIController>(GetController());
 	//AMainController* PCon = Cast<AMainController>(GetController());
 	/* set Ragdoll */
 	USkeletalMeshComponent* TPMesh = GetMesh();
@@ -1055,29 +1078,25 @@ void ABaseCharacter::Die()
 	GetCharacterMovement()->StopMovementImmediately();
 	GetCharacterMovement()->DisableMovement();
 	GetCharacterMovement()->SetComponentTickEnabled(false);
-
+	StopAnimation();
 	//SetLifeSpan(60.f);
 
 
-	if(AICon)
-	{
-		
-		//AICon->UnPossess();
-
-		DetachFromControllerPendingDestroy();
-
-		//Player의 Controller에서 해당 AI를 삭제한다.
-		//AI가 식별한 Player가 있으면, 그 Player는 차량 탑승 불가 기능을 추가 했기때문에, 죽으면 List에서 삭제 해줘야함.
-		if ( AMainController* PlayerCon = Cast<AMainController>(GetWorld()->GetFirstPlayerController()) )
-		{
-			PlayerCon->RemoveAtListTargetingThisActor(AICon);
-		}
-		//TPMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
-			
-		
-		
-	}
 }
+
+FVector ABaseCharacter::GetRightHandLocation()
+{
+	FVector ReturnVec = FVector::ZeroVector;
+	if(!GetMesh()) return ReturnVec;
+
+	if (GetMesh()->GetSocketByName(RightHandSocketName))
+	{
+		ReturnVec = GetMesh()->GetSocketLocation(RightHandSocketName);
+	}
+
+	return ReturnVec;
+}
+
 
 /* Perception */
 
@@ -1107,7 +1126,7 @@ bool ABaseCharacter::CanBeSeenFrom(const FVector& ObserverLocation, FVector& Out
 	//StimulusQParams.AddIgnoredComponent(OverlapSphereComp);
 
 	//아래는 Victim Character가 장착중인 모든 Equip을 막기 위해 했는데 안된다? 뭐가 안되는듯?
-	for ( auto Equipped : Equipment->EquipmentItems )
+	for (auto Equipped : Equipment->EquipmentItems)
 	{
 		StimulusQParams.AddIgnoredActor(Equipped->Equipment);
 	}
@@ -1117,7 +1136,7 @@ bool ABaseCharacter::CanBeSeenFrom(const FVector& ObserverLocation, FVector& Out
 	//WorldDynamic, WorldStatic, IgnoreActor를 (관측자의 위치에서 Player의 위치의 범위) LineTrace로 감지.
 	bool bHit = GetWorld()->LineTraceSingleByObjectType(HitResult, ObserverLocation, PlayerLocation
 		, FCollisionObjectQueryParams(ECC_TO_BITFIELD(ECC_WorldDynamic) | ECC_TO_BITFIELD(ECC_WorldStatic))
-		, StimulusQParams/*FCollisionQueryParams(FName(TEXT("SightSense")), true, IgnoreActor)*/ );
+		, StimulusQParams/*FCollisionQueryParams(FName(TEXT("SightSense")), true, IgnoreActor)*/);
 
 	NumberOfLoSChecksPerformed++;
 
@@ -1188,3 +1207,7 @@ void ABaseCharacter::UnsetOutline()
 	GetMesh()->SetRenderCustomDepth(false);
 }
 
+void ABaseCharacter::SetMotherSpawnVolume(ASpawnVolume* Var_MotherVolume)
+{
+
+}

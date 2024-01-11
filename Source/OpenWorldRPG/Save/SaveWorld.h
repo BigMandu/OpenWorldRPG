@@ -7,9 +7,8 @@
 #include "SaveWorld.generated.h"
 
 /** 월드에 배치된 Spawn volume(Item spawn vol, Enemy spawn vol)
- * 
+ *
  */
-
 
 UCLASS()
 class OPENWORLDRPG_API USaveWorld : public USaveGame

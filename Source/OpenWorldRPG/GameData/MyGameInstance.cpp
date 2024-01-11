@@ -4,7 +4,10 @@
 #include "MyGameInstance.h"
 #include "Engine/DataTable.h"
 #include "PhysicalMaterials/PhysicalMaterial.h"
-#include "OpenWorldRPG\GameData\FootStepTable.h"
+#include "OpenWorldRPG/GameData\FootStepTable.h"
+#include "OpenWorldRPG/UI/ESCMenuWidget.h"
+#include "OpenWorldRPG/UI/Option/OptionWidget.h"
+
 #include "OpenWorldRPGLoadingScreen/Public/OpenWorldRPGLoadingScreen.h"
 
 UMyGameInstance::UMyGameInstance()
@@ -30,7 +33,11 @@ UMyGameInstance::UMyGameInstance()
 	FString TutorialMissionDataTablePath = TEXT("/Game/GameData/TutorialMissionDataTable.TutorialMissionDataTable");
 	static ConstructorHelpers::FObjectFinder<UDataTable> DT_TutorialMissionData(*TutorialMissionDataTablePath);
 
-	
+	FString OptionWidgetPath = TEXT("/Game/UI/Option/WBP_OptionWidget.WBP_OptionWidget_C");
+	static ConstructorHelpers::FClassFinder<UOptionWidget> WOptionWidgetClass(*OptionWidgetPath);
+
+	FString ImpactEffectTablePath = TEXT("/Game/GameData/CommonImpactEffectTable.CommonImpactEffectTable");
+	static ConstructorHelpers::FObjectFinder<UDataTable> DT_CIEData(*ImpactEffectTablePath);
 
 
 	if( DT_LevelData.Succeeded())
@@ -61,6 +68,16 @@ UMyGameInstance::UMyGameInstance()
 	if (DT_TutorialMissionData.Succeeded())
 	{
 		TutorialMissionDataTable = DT_TutorialMissionData.Object;
+	}
+
+	if (WOptionWidgetClass.Succeeded())
+	{
+		WOptionWidget = WOptionWidgetClass.Class;
+	}
+
+	if (DT_CIEData.Succeeded())
+	{
+		CommonImpactEffectTable = DT_CIEData.Object;
 	}
 }
 
@@ -131,6 +148,52 @@ void UMyGameInstance::StopLoadingScreen()
 	IOpenWorldRPGLoadingScreenModule& LoadingScreen = IOpenWorldRPGLoadingScreenModule::Get();
 	LoadingScreen.StopInGameLoadingScreen();
 }
+
+void UMyGameInstance::ToggleESCWidget()
+{
+	AMainController* PlayerCon = Cast<AMainController>(GetPrimaryPlayerController());
+	if(!PlayerCon || !PlayerCon->WEscMenuWidget) return;
+	
+	if (bShowEscMenu && EscMenuWidget)
+	{
+		EscMenuWidget->ClickResumeBtn();
+	}
+	else
+	{
+		EscMenuWidget = CreateWidget<UESCMenuWidget>(this, PlayerCon->WEscMenuWidget);
+		if(!EscMenuWidget) return;
+
+		EscMenuWidget->bIsFocusable = true;
+
+		bShowEscMenu = true;
+		PlayerCon->SetInputAndFocus(true, EscMenuWidget);
+		EscMenuWidget->AddToViewport();
+
+		
+	}
+
+}
+
+void UMyGameInstance::InitVariableRelevantEscWidget()
+{
+	EscMenuWidget = nullptr;
+	bShowEscMenu = false;
+}
+
+UOptionWidget* UMyGameInstance::CreateOptionWidget()
+{
+	if(!WOptionWidget) return nullptr;
+
+	//UClass* LoadOptionWidget = StaticLoadClass(UObject::StaticClass(),nullptr, TEXT("/Game/UI/WBP_OptionWidget.WBP_OptionWidget"));
+	UOptionWidget* OptionWidget = CreateWidget<UOptionWidget>(this, WOptionWidget);
+	if (OptionWidget)
+	{
+		return OptionWidget;
+	}
+
+	return nullptr;
+}
+
 
 //int32 UMyGameInstance::GetCraftRecipeCount()
 //{

@@ -215,7 +215,35 @@ public:
 
 };
 
+USTRUCT()
+struct FSaveUserCar
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY()
+	FName VehicleDataRowName;
 
+	UPROPERTY()
+	FTransform VehicleTransform;
+
+	FSaveUserCar(): VehicleDataRowName(FName()), VehicleTransform(FTransform())
+	{
+
+	}
+
+	FSaveUserCar(FName Rowname, FTransform Tf)
+		:VehicleDataRowName(Rowname), VehicleTransform(Tf)
+	{
+
+	}
+
+	void Serialize(FArchive& Ar)
+	{
+		Ar << VehicleDataRowName;
+		Ar << VehicleTransform;
+	}
+
+};
 
 
 
@@ -223,6 +251,31 @@ public:
 ///////////////////////////////////////////////////////////////////////
 /*                      Data Table Row base                          */
 ///////////////////////////////////////////////////////////////////////
+USTRUCT(BlueprintType)
+struct FEnemyDataTable: public FTableRowBase
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Appearance")
+	USkeletalMesh* Mesh;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Appearance")
+	UAnimBlueprint* AnimBP;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Appearance")
+	FTransform MeshRelativeTF;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Appearance")
+	float CharCapsuleHalfHeight;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Appearance")
+	float CharCapsuleRadius;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spec")
+	float RandomPatrolRadius;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spec")
+	float SightMaxAge;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spec")
+	float HearingMaxAge;
+};
+
+
 
 USTRUCT(BlueprintType)
 struct FRifleTable : public FTableRowBase

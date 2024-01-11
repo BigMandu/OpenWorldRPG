@@ -34,6 +34,7 @@ bool UNewItemwidget::Initialize()
 {
 	bool bReturn = Super::Initialize();
 
+	RemoveQuickSlotNumber();
 	return bReturn;
 }
 
@@ -46,6 +47,8 @@ void UNewItemwidget::NativeConstruct()
 	bIsFocusable = true;
 	
 	CreateTooltip();
+
+	
 }
 
 void UNewItemwidget::CreateTooltip()
@@ -174,6 +177,7 @@ void UNewItemwidget::NativeOnMouseLeave(const FPointerEvent& InMouseEvent)
 		}
 
 	}*/
+
 	if (BGBorder)
 	{
 		
@@ -341,7 +345,6 @@ FReply UNewItemwidget::NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEv
 	//		if (ItemObj && ItemObj->ItemInfo.DataAsset->bCanRotate)
 	//		{
 	//			DDOper->ItemObj->ItemRotate();
-
 	//			DDOper->DragWidget->ItemIcon->SetBrush(GetIconImage());
 	//			return FReply::Handled();
 	//		}
@@ -354,41 +357,121 @@ FReply UNewItemwidget::NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEv
 
 	UQuickSlotWidget* QuickSlot = PlayerCon->MainHud->QuickSlot;
 	check(QuickSlot);
-	
+
+	bool bIsRegistered = false;
+
 	if (key == EKeys::Four || key == EKeys::NumPadFour)
 	{
-		QuickSlot->SetItemInQuickSlot(EQuickSlotNumber::EQSN_N4,ItemObj,true);
-		return FReply::Handled();
+		if (QuickSlot->CheckAndRegisterQuickSlot(EQuickSlotNumber::EQSN_N4, ItemObj, true))
+		{
+			SetQuickSlotNumber(EQuickSlotNumber::EQSN_N4);
+			bIsRegistered = true;
+		}
+		//return FReply::Handled();
 	}
 	else if (key == EKeys::Five || key == EKeys::NumPadFive)
 	{
-		QuickSlot->SetItemInQuickSlot(EQuickSlotNumber::EQSN_N5, ItemObj, true);
-		return FReply::Handled();
+		if (QuickSlot->CheckAndRegisterQuickSlot(EQuickSlotNumber::EQSN_N5, ItemObj, true))
+		{
+			SetQuickSlotNumber(EQuickSlotNumber::EQSN_N5);
+			bIsRegistered = true;
+		}
+		//return FReply::Handled();
 	}
 	else if (key == EKeys::Six || key == EKeys::NumPadSix)
 	{
-		QuickSlot->SetItemInQuickSlot(EQuickSlotNumber::EQSN_N6, ItemObj, true);
-		return FReply::Handled();
+		if (QuickSlot->CheckAndRegisterQuickSlot(EQuickSlotNumber::EQSN_N6, ItemObj, true))
+		{
+			SetQuickSlotNumber(EQuickSlotNumber::EQSN_N6);
+			bIsRegistered = true;
+		}
+		//return FReply::Handled();
 	}
 	else if (key == EKeys::Seven || key == EKeys::NumPadSeven)
 	{
-		QuickSlot->SetItemInQuickSlot(EQuickSlotNumber::EQSN_N7, ItemObj, true);
-		return FReply::Handled();
+		if (QuickSlot->CheckAndRegisterQuickSlot(EQuickSlotNumber::EQSN_N7, ItemObj, true))
+		{
+			SetQuickSlotNumber(EQuickSlotNumber::EQSN_N7);
+			bIsRegistered = true;
+		}
+		//return FReply::Handled();
 	}
 	else if (key == EKeys::Eight || key == EKeys::NumPadEight)
 	{
-		QuickSlot->SetItemInQuickSlot(EQuickSlotNumber::EQSN_N8, ItemObj, true);
-		return FReply::Handled();
+		if (QuickSlot->CheckAndRegisterQuickSlot(EQuickSlotNumber::EQSN_N8, ItemObj, true))
+		{
+			SetQuickSlotNumber(EQuickSlotNumber::EQSN_N8);
+			bIsRegistered = true;
+		}
+		//return FReply::Handled();
 	}
 	else if (key == EKeys::Nine || key == EKeys::NumPadNine)
 	{
-		QuickSlot->SetItemInQuickSlot(EQuickSlotNumber::EQSN_N9, ItemObj, true);
-		return FReply::Handled();
+		if (QuickSlot->CheckAndRegisterQuickSlot(EQuickSlotNumber::EQSN_N9, ItemObj, true))
+		{
+			SetQuickSlotNumber(EQuickSlotNumber::EQSN_N9);
+			bIsRegistered = true;
+		}
+		//return FReply::Handled();
 	}
 	
+	
 
+	/*QuickSlot을 등록, 해제 했다면 GridInv에 있는
+	* Itemwidget의 QuickSlot number를 설정,해제하기 위해 refresh Inv를 호출한다.
+	* 
+	* */
+	if(bIsRegistered)
+	{
+		MotherContainer->RefreshInventory();
+		return FReply::Handled();
+	}
+	else
+	{
+		RemoveQuickSlotNumber();
+	}
 
 	return FReply::Unhandled();
 }
 
 
+void UNewItemwidget::SetQuickSlotNumber(EQuickSlotNumber SlotNum)
+{
+	int32 number = 0;
+	switch (SlotNum)
+	{
+		case EQuickSlotNumber::EQSN_N4:
+			number = 4;
+		break;
+		case EQuickSlotNumber::EQSN_N5:
+			number = 5;
+		break;
+		case EQuickSlotNumber::EQSN_N6:
+			number = 6;
+		break;
+		case EQuickSlotNumber::EQSN_N7:
+			number = 7;
+		break;
+		case EQuickSlotNumber::EQSN_N8:
+			number = 8;
+		break;
+		case EQuickSlotNumber::EQSN_N9:
+			number = 9;
+		break;
+	}
+
+	QuickSlotNumTxt->SetText(FText::AsNumber(number));
+	QuickSlotBorder->SetVisibility(ESlateVisibility::HitTestInvisible);
+	QuickSlotNumTxt->SetVisibility(ESlateVisibility::HitTestInvisible);
+}
+
+void UNewItemwidget::RemoveQuickSlotNumber()
+{
+	QuickSlotBorder->SetVisibility(ESlateVisibility::Collapsed);
+	QuickSlotNumTxt->SetVisibility(ESlateVisibility::Collapsed);
+}
+
+void UNewItemwidget::AdjustQuickSlotNumber()
+{
+	QuickSlotNumTxt->Font.Size = 30;
+}

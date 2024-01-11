@@ -212,7 +212,7 @@ float AShootingTarget::TakeDamage(float DamageAmount, struct FDamageEvent const&
 
 bool AShootingTarget::CheckTripleTap()
 {
-	if (HitCount == 3 || HitCount >= 3)
+	if (HitCount == FlippedHitCount || HitCount >= FlippedHitCount)
 	{
 		return true;
 	}

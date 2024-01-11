@@ -51,7 +51,12 @@ void USpawnItemEquipComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
+	//JudgeSpawn();
+	
+}
 
+void USpawnItemEquipComponent::JudgeSpawn()
+{
 	if (bRandomSpawn)
 	{
 		SpawnRandomItems();
@@ -117,11 +122,18 @@ void USpawnItemEquipComponent::SpawnRandomItems()
 	int32 VestRowind = VestDT->GetRowMap().Num();
 	int32 BackPackRowind = BackPackDT->GetRowMap().Num();
 
+	int32 LoopCnt = 0;
 	
 	for (EEquipmentType EquipTp : TEnumRange<EEquipmentType>())
 	{
 		UCustomPDA* EquipPDA = nullptr;
 		int32 RandIndex = 0;
+
+		if (LoopCnt > 3)
+		{
+			break;
+		}
+
 		switch (EquipTp)
 		{
 		case EEquipmentType::EET_Rifle:
@@ -164,8 +176,8 @@ void USpawnItemEquipComponent::SpawnRandomItems()
 
 
 		if (EquipPDA == nullptr) continue;
-		
 		TryEquip(EquipPDA, OwnerBChar);
+		++LoopCnt;
 	}
 }
 

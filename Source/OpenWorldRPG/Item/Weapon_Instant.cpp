@@ -133,9 +133,12 @@ void AWeapon_Instant::ApplyRecoil()
 
 		WorldTime = 0.f;
 		RecoilAlphaTime = 0.f;
+		UWorld* World = GetWorld();
+
 
 		GetWorldTimerManager().SetTimer(RecoilHandle, [=] {
-			WorldTime += GetWorld()->GetDeltaSeconds();
+			if(!World) return;
+			WorldTime += World->GetDeltaSeconds();
 			RecoilAlphaTime = WorldTime / (WeaponDataAsset->WeaponStat.SecondPerBullet * 1.5);
 
 			float LerpRecoilX = UKismetMathLibrary::Lerp(0, PitchValue, RecoilAlphaTime);
@@ -145,7 +148,7 @@ void AWeapon_Instant::ApplyRecoil()
 			GetInstigator()->AddControllerPitchInput(LerpRecoilX);
 			GetInstigator()->AddControllerYawInput(LerpRecoilY);
 
-			}, GetWorld()->GetDeltaSeconds(), true);
+			}, World->GetDeltaSeconds(), true);
 
 		/*GetInstigator()->AddControllerPitchInput(PitchValue);
 		GetInstigator()->AddControllerYawInput(YawValue);*/

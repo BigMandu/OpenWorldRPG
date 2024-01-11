@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -82,4 +82,5 @@ public:
 	//void CloseBox(AActor* Actor);
 	virtual void SetOutline() override;
 	virtual void UnsetOutline() override;
+	virtual void SetMotherSpawnVolume(class ASpawnVolume* Var_MotherVolume) override;
 };

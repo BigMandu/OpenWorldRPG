@@ -15,40 +15,53 @@ void UQuickSlotWidget::BindSlotWidget(class AMainCharacter* Player)
 	Player->Equipment->OnWeaponRemoveSlot.AddDynamic(this,&UQuickSlotWidget::RemoveWeaponQuickSlot);
 }
 
-/* 특정 Slot 하나씩 Register하는 방식이다.  (Inventory, Equipwidget 과는 다른 형식임 <- 얘들은 전체 refresh) */
-void UQuickSlotWidget::SetItemInQuickSlot(EQuickSlotNumber QuickSlotNum, UNewItemObject* ItemObj, bool bIsNeedOnlyDeleted)
+bool UQuickSlotWidget::CheckAndRegisterQuickSlot(EQuickSlotNumber QuickSlotNum, UNewItemObject* ItemObj, bool bIsNeedOnlyDeleted)
 {
+	bool bReturn = false;
 	if (ItemObj)
 	{
-		if(CheckCanBeRegister(ItemObj))
+		if (CheckCanBeRegister(ItemObj))
 		{
 			//동일 Quickslot에 동일 item인 경우에만 false를 리턴한다.
-			if(CheckAlreadyRegistered(ItemObj, bIsNeedOnlyDeleted, QuickSlotNum))
+			if (CheckAlreadyRegistered(ItemObj, bIsNeedOnlyDeleted, QuickSlotNum))
 			{
-				switch (QuickSlotNum)
-				{
-				case EQuickSlotNumber::EQSN_N4:
-					QSlot_4->RegisterQuickSlot(ItemObj);
-					break;
-				case EQuickSlotNumber::EQSN_N5:
-					QSlot_5->RegisterQuickSlot(ItemObj);
-					break;
-				case EQuickSlotNumber::EQSN_N6:
-					QSlot_6->RegisterQuickSlot(ItemObj);
-					break;
-				case EQuickSlotNumber::EQSN_N7:
-					QSlot_7->RegisterQuickSlot(ItemObj);
-					break;
-				case EQuickSlotNumber::EQSN_N8:
-					QSlot_8->RegisterQuickSlot(ItemObj);
-					break;
-				case EQuickSlotNumber::EQSN_N9:
-					QSlot_9->RegisterQuickSlot(ItemObj);
-					break;
-				}
+				bReturn = SetItemInQuickSlot(QuickSlotNum,ItemObj);
 			}
 		}
 	}
+
+	return bReturn;
+}
+
+/* 특정 Slot 하나씩 Register하는 방식이다.  (Inventory, Equipwidget 과는 다른 형식임 <- 얘들은 전체 refresh) */
+bool UQuickSlotWidget::SetItemInQuickSlot(EQuickSlotNumber QuickSlotNum, UNewItemObject* ItemObj)
+{
+	if (ItemObj)
+	{
+		switch (QuickSlotNum)
+		{
+		case EQuickSlotNumber::EQSN_N4:
+			QSlot_4->RegisterQuickSlot(ItemObj);
+			return true;					
+		case EQuickSlotNumber::EQSN_N5:
+			QSlot_5->RegisterQuickSlot(ItemObj);
+			return true;
+		case EQuickSlotNumber::EQSN_N6:
+			QSlot_6->RegisterQuickSlot(ItemObj);
+			return true;
+		case EQuickSlotNumber::EQSN_N7:
+			QSlot_7->RegisterQuickSlot(ItemObj);
+			return true;
+		case EQuickSlotNumber::EQSN_N8:
+			QSlot_8->RegisterQuickSlot(ItemObj);
+			return true;
+		case EQuickSlotNumber::EQSN_N9:
+			QSlot_9->RegisterQuickSlot(ItemObj);
+			return true;
+		}
+			
+	}
+	return false;
 }
 
 UQuickSlotSlotWidget* UQuickSlotWidget::GetQuickSlotSlot(EQuickSlotNumber QuickSlotNum)
@@ -129,13 +142,12 @@ bool UQuickSlotWidget::CheckCanBeRegister(UNewItemObject* WantToSlot)
 }
 
 
-/* 
-* UNewInventoryGrid::RefreshInventory에서 
-* ItemObject에 bIsRegQuickSlot이 True면 아래 함수가 호출된다.
-* 
-* 
-*/
-void UQuickSlotWidget::JudgeCanbeInQuickSlotOrUpdate(UNewItemObject* ItemObj)
+/** 
+ * UNewInventoryGrid::RefreshInventory에서 
+ * ItemObject에 bIsRegQuickSlot이 True면 아래 함수가 호출된다.
+ * 
+ */
+EQuickSlotNumber UQuickSlotWidget::JudgeCanbeInQuickSlotOrUpdate(UNewItemObject* ItemObj)
 {
 	for (EQuickSlotNumber QuickNum : TEnumRange<EQuickSlotNumber>())
 	{
@@ -147,15 +159,20 @@ void UQuickSlotWidget::JudgeCanbeInQuickSlotOrUpdate(UNewItemObject* ItemObj)
 			if (CheckCanBeRegister(ItemObj) == false)
 			{
 				QuickSlot->RemoveMountedObj();
-				return;
+
+				return EQuickSlotNumber::EQSN_MAX;
 			}
 			else
 			{
 				//등록 가능한 상태면 Item상황을 Update한다. (삭제후 재삽입 ㅇㅇ)
-				SetItemInQuickSlot(QuickSlot->QuickSlotNumber,ItemObj, false);
+				if (SetItemInQuickSlot(QuickSlot->QuickSlotNumber, ItemObj))
+				{
+					return QuickNum;
+				}
 			}
 		}
 	}
+	return EQuickSlotNumber::EQSN_MAX;
 }
 
 /*

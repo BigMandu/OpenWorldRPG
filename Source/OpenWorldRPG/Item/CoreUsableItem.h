@@ -25,9 +25,8 @@ public:
 
 
 
-private:
-	void ToggleOn(class AMainCharacter* Actor, UNewItemObject* Obj = nullptr);
-	void ToggleOff(AMainCharacter* Actor, UNewItemObject* Obj = nullptr);
+protected:
+	
 public:
 	
 	//override from AItem class
@@ -35,5 +34,10 @@ public:
 	virtual void AttachToHand(ABaseCharacter* Actor, class UNewItemObject* Obj, bool bIsNeedToDestory = true) override;
 	virtual void SetMesh() override;
 
+	void ToggleOn(class AMainCharacter* Actor, UNewItemObject* Obj = nullptr);
+	void ToggleOff(AMainCharacter* Actor, UNewItemObject* Obj = nullptr);
+
 	void UpdateCompassPointerRotation();
+
+	virtual void ReadyToDestory(ABaseCharacter* Actor, UNewItemObject* Obj = nullptr) override;
 };

@@ -115,6 +115,7 @@ void AInteractable::Interaction(class AActor* Actor)
 	
 	UE_LOG(LogTemp, Warning, TEXT("Actor is : %s"), *GetName());
 
+	bool bConfirmInteract = false;
 
 	switch (ItemSetting.DataAsset->InteractType)
 	{
@@ -124,6 +125,7 @@ void AInteractable::Interaction(class AActor* Actor)
 		if (Item)
 		{
 			Item->Pickup(Actor); //Pickup진행.
+			bConfirmInteract = true;
 		}
 		break;
 	}
@@ -138,9 +140,19 @@ void AInteractable::Interaction(class AActor* Actor)
 				//장착에 실패했으면 Pickup을 진행한다.
 				Equipment->Pickup(Actor);
 			}
+			bConfirmInteract = true;
 		}
 		break;
 	}
+
+	if (bConfirmInteract)
+	{
+		if (MotherVolume.IsValid())
+		{
+			MotherVolume->RemoveSpawnedActorAtList(this);
+		}
+	}
+
 	}
 }
 
@@ -160,3 +172,14 @@ void AInteractable::UnsetOutline()//_Implementation()
 	if(bCanNotInteractable) return;
 	Mesh->SetRenderCustomDepth(false);
 }
+
+
+void AInteractable::SetMotherSpawnVolume(class ASpawnVolume* Var_MotherVolume)
+{
+	if (Var_MotherVolume)
+	{
+		MotherVolume = Var_MotherVolume;
+	}
+	
+}
+

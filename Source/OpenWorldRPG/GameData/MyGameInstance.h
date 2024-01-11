@@ -36,6 +36,13 @@ UCLASS()
 class OPENWORLDRPG_API UMyGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
+
+	UPROPERTY()
+	class UESCMenuWidget* EscMenuWidget;
+
+	bool bShowEscMenu;
+	bool bShowOptionWidget;
+
 public:
 	UMyGameInstance();
 
@@ -57,23 +64,36 @@ public:
 	UPROPERTY()
 	UDataTable* TutorialMissionDataTable;
 
+	UPROPERTY()
+	UDataTable* CommonImpactEffectTable;
+
+	/* Widget */
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
+	//TSubclassOf<UUserWidget> WESCWidget;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widgets")
+	TSubclassOf<class UOptionWidget> WOptionWidget;
 
 private:
 	
 	
 
 public:
-	void PlayLoadingScreen();
-	void StopLoadingScreen();
-
 	/** virtual function to allow custom GameInstances an opportunity to set up what it needs */
 	virtual void Init() override;
 	FCurrentMAXStats* GetLevelStats(int32 Level);
 
 	class USoundCue* GetFootStepSound(TWeakObjectPtr<class UPhysicalMaterial> PhysMat);
 
-	//int32 GetCraftRecipeCount();
+	void PlayLoadingScreen();
+	void StopLoadingScreen();
 
+	void ToggleESCWidget();
+	void InitVariableRelevantEscWidget();
+
+	UOptionWidget* CreateOptionWidget();
+
+	//int32 GetCraftRecipeCount();
 	//TMap<FName,uint8*> GetCraftRecipeMap();
 
 };

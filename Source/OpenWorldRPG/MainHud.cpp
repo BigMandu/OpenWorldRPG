@@ -6,6 +6,10 @@
 #include "OpenWorldRPG/UI/Inventory/NewInventory.h"
 #include "OpenWorldRPG/UI/NotificationWidget.h"
 #include "OpenWorldRPG/UI/SubTitleWidget.h"
+#include "OpenWorldRPG/UI/ResourceStatusWidget.h"
+#include "OpenWorldRPG/UI/WeaponStatusWidget.h"
+
+
 
 #include "Blueprint/WidgetTree.h"
 #include "Components/Image.h"
@@ -294,10 +298,6 @@ void UMainHud::ShowInventoryWindow()
 	{
 		//Inventory를 열면 표시된 widget을 hide한다.
 		HideOtherUI();
-
-		FInputModeGameAndUI Mode; ///TabKey로 HIde를 하기위해 Game And UI mode로 했는데도 키가 안먹힌다. 
-		Mode.SetWidgetToFocus(NewInventoryWidget->TakeWidget());
-		MainCon->SetInputMode(Mode);
 
 		bIsInventoryWindowShow = true;
 		NewInventoryWidget->ChangeRightSwitcher();

@@ -30,7 +30,9 @@ public:
 	virtual void SetOutline() = 0;
 	virtual void UnsetOutline() = 0;
 
+	virtual void SetMotherSpawnVolume(class ASpawnVolume* Var_MotherVolume) = 0;
 
 
+	TWeakObjectPtr<class ASpawnVolume> MotherVolume;
 	FOnInteract OnInteract;
 };

@@ -43,6 +43,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Target")
 	FString RelatedMissionUniqID;
 
+	UPROPERTY(EditAnywhere, Category = "Target")
+	int32 FlippedHitCount;
+
 	/* Rotation Optional Mesh */
 	UPROPERTY(EditAnywhere, Category = "Target")
 	class UShootingTargetSMComponent* Body_10P;

@@ -248,6 +248,11 @@ bool UItemStorageObject::RemoveItem(UNewItemObject* ItemObj)
 	return true;
 }
 
+void UItemStorageObject::RemoveAllItems()
+{
+	InitializeStorage(Columns, Rows, TileSize);
+}
+
 const TMap<UNewItemObject*, FTile> UItemStorageObject::GetAllItems()
 {
 	/*
@@ -276,10 +281,17 @@ const TMap<UNewItemObject*, FTile> UItemStorageObject::GetAllItems()
 void UItemStorageObject::UpdateInventory(TArray<UNewItemObject*> SavedInventory)
 {
 	
-	if( Inventory.Num() < 1) return;
-	for ( auto Item : Inventory )
+	if(SavedInventory.Num() < 1) return;
+	for ( auto Item : SavedInventory)
 	{
 		if(Item == nullptr ) continue;
-		TryAddItem(Item);		
+		TryAddItem(Item);
 	}
+}
+
+
+
+void UItemStorageObject::RefreshGrid() const
+{
+	OnInventoryAdd.Broadcast(nullptr);
 }

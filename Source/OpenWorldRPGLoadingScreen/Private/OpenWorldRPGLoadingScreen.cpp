@@ -232,6 +232,7 @@ public:
 		DeltaTime += InDeltaTime;
 	}
 
+	//깜빡이는 기능
 	FSlateColor Fliker() const
 	{
 		const float MinAlpha = 0.1;

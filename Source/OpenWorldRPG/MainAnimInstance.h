@@ -78,6 +78,11 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = HandIK)
 	FVector LeftHandLocation;
 
+	/**AnimMontage play시에 Layered blend per bone node에 blend가중치를 주기 위함
+	 *왼쪽손, 오른쪽손을 나눠서 blend 하기 위한 bool variable.
+	 */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = AnimMontageBlend)
+	bool bIsRightHandAttached;
 
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = BoneMove)
@@ -95,14 +100,16 @@ public:
 	/************************   Functions    *********************/
 	///////////////////////////////////////////////////////////////
 private:
-	/*this function is prevent AnimNotify from being called twice.
-	* the player character has a 'Shadow mesh' that only renders shadows.
-	* The shadow mesh also has an AnimInstance that is exactly same as MainAnimInstace.
-	* so, when play specific Animation or AnimMontage, anim notify will called twice.
-	* in this function, just compare this class and shadow mesh's animinstance.
-	*
-	* it will return true when same, not equal will return false.
-	*/
+
+	/**
+	 * this function is prevent AnimNotify from being called twice.
+	 * the player character has a 'Shadow mesh' that only renders shadows.
+	 * The shadow mesh also has an AnimInstance that is exactly same as MainAnimInstace.
+	 * so, when play specific Animation or AnimMontage, anim notify will called twice.
+	 * in this function, just compare this class and shadow mesh's animinstance.
+	 *
+	 * it will return true when same, not equal will return false.
+	 */
 	bool PreventShadowmesh();
 	
 public:
@@ -111,6 +118,25 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = AnimProperties)
 	void UpdateAnimationProperties();
+
+	void SetHandIK();
+
+	void SetHighReady();
+
+	void SetLeftHandIKAlpha(float Alpha);
+	FORCEINLINE float GetLeftHandIKAlpha() { return LeftHandAlpha; }
+
+	void SetWeaponTypeNumber(int32 number);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, meta = (BlueprintThreadSafe))
+	bool IsReadyToThrow();
+
+	void SetIsRightHandAttached(bool bIsRightHand);
+
+///////////////////////////////////////////////////////////////////////
+/*                           ANIM NOTIFY                             */
+///////////////////////////////////////////////////////////////////////
+
 
 	UFUNCTION()
 	void AnimNotify_StepSound();
@@ -131,23 +157,14 @@ public:
 	UFUNCTION()
 	void AnimNotify_AttachWeapon();
 
-
-	void SetHandIK();
-
-	void SetHighReady();
-
-	void SetLeftHandIKAlpha(float Alpha);
-	FORCEINLINE float GetLeftHandIKAlpha() { return LeftHandAlpha; }
-
-	void SetWeaponTypeNumber(int32 number);
-
-	UFUNCTION(BlueprintCallable, BlueprintPure, meta = (BlueprintThreadSafe))
-	bool IsReadyToThrow();
+	UFUNCTION()
+	void AnimNotify_EndUseItem();
 
 
-	/*********************************************************************/
-	/*                            FOR DEBUG                              */
-	/*********************************************************************/
+
+///////////////////////////////////////////////////////////////////////
+/*                            FOR DEBUG                              */
+///////////////////////////////////////////////////////////////////////
 
 #if	AnimInst_DEBUG
 	virtual bool HandleNotify(const FAnimNotifyEvent& AnimNotifyEvent) override;

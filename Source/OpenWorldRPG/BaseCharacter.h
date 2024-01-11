@@ -81,6 +81,8 @@ public:
 	/* Socket Name */
 	const FName HeadSocketName = FName("headsocket");
 	const FName GripSocketName = FName("WeaponGrip");
+	const FName RightHandSocketName = FName("Hand_R");
+
 	//Item을 잡을 LeftHand Socket
 
 	const FName LeftHandGripSocketName = FName("handLeftGripPos");
@@ -135,7 +137,7 @@ public:
 	float FallingHighestZ;
 
 	UPROPERTY()
-	class AItem* HoldingItem;
+	TWeakObjectPtr<class AItem> HoldingItem;
 
 	/* Weapon */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item | Weapon")
@@ -213,12 +215,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Component | Item")
 	USpawnItemEquipComponent* SpawnItemEquipComp;
 
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
-	//UNewInventoryComponent* PocketInventoryComp;
-
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
-	//UNewInventoryComponent* SecureBoxInventoryComp;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Component | Item")
 	UEquipmentComponent* Equipment;
 
@@ -232,6 +228,8 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	void SetAnimVariable();
 
 public:	
 	// Called every frame
@@ -306,9 +304,12 @@ public:
 	int32 GetTotalNumberofSameTypeAmmo();
 
 	
-
+	//이 함수는 뭔지..??
 	UFUNCTION()
 	void UseItem(AActor* Item);
+
+	//called from AnimMontage Notify
+	void EndUseItem();
 
 	// AIController::ItemFarming함수에서 사용됨
 	UNewInventoryComponent* GetAllInvComp(int32 index);
@@ -356,12 +357,14 @@ public:
 	void CalcFallingDistance(FHitResult& _FallHit);
 	void ApplyFallingDamage(FHitResult& _FallHit);
 
-	
+	FVector GetRightHandLocation();
 
 	/*******************************/
 	virtual void Interaction(AActor* Actor) override;
 	virtual void SetOutline() override;
 	virtual void UnsetOutline() override;
+	virtual void SetMotherSpawnVolume(class ASpawnVolume* Var_MotherVolume) override;
+	
 	/********** Perception ********/
 	virtual bool CanBeSeenFrom(const FVector& ObserverLocation, FVector& OutSeenLocation, int32& NumberOfLoSChecksPerformed, float& OutSightStrength, const AActor* IgnoreActor, const bool* bWasVisible, int32* UserData) const;
 	//for Child class

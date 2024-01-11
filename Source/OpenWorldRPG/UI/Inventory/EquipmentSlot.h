@@ -16,6 +16,7 @@ class UImage;
 class UBorder;
 class UNewItemObject;
 
+class AEquipment;
 class ABaseCharacter;
 
 //for WeaponPartsWidget

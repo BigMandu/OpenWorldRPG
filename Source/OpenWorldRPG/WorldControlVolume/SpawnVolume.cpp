@@ -2,8 +2,11 @@
 
 
 #include "SpawnVolume.h"
+#include "OpenWorldRPG/NewInventory/Library/Interactive_Interface.h"
 #include "OpenWorldRPG/NewInventory/Library/CustomInventoryLibrary.h"
+#include "OpenWorldRPG/CustomLibrary/CustomSystemLibrary.h"
 #include "OpenWorldRPG/Item/Item.h"
+#include "OpenWorldRPG/Item/Equipment.h"
 
 #include "Components/BoxComponent.h"
 #include "Components/BillboardComponent.h"
@@ -11,33 +14,43 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 
+#include "DrawDebugHelpers.h"
+
 // Sets default values
 ASpawnVolume::ASpawnVolume()
 {
 	PrimaryActorTick.bCanEverTick = false;
-
-	SpawnCount = 8;
 	
 	static ConstructorHelpers::FObjectFinder<UDataTable> RifleDataTableObj(TEXT("/Game/GameData/Equip_RifleDataTable.Equip_RifleDataTable"));
 	static ConstructorHelpers::FObjectFinder<UDataTable> HelmetDataTableObj(TEXT("/Game/GameData/Equip_HelmetDataTable.Equip_HelmetDataTable"));
-	static ConstructorHelpers::FObjectFinder<UDataTable> BackPackDataTableObj(TEXT("/Game/GameData/Equip_BackPackDataTable.Equip_BackPackDataTable"));
 	static ConstructorHelpers::FObjectFinder<UDataTable> VestDataTableObj(TEXT("/Game/GameData/Equip_VestDataTable.Equip_VestDataTable"));
-
+	static ConstructorHelpers::FObjectFinder<UDataTable> BackPackDataTableObj(TEXT("/Game/GameData/Equip_BackPackDataTable.Equip_BackPackDataTable"));
 	
+	static ConstructorHelpers::FObjectFinder<UDataTable> AmmoDataTableObj(TEXT("/Game/GameData/Item_AmmoDataTable.Item_AmmoDataTable"));
 	static ConstructorHelpers::FObjectFinder<UDataTable> FoodDataTableObj(TEXT("/Game/GameData/Item_FoodDataTable.Item_FoodDataTable"));
+	static ConstructorHelpers::FObjectFinder<UDataTable> MedicalDataTableObj(TEXT("/Game/GameData/Item_MedicalDataTable.Item_MedicalDataTable"));
+	static ConstructorHelpers::FObjectFinder<UDataTable> ScrapDataTableObj(TEXT("/Game/GameData/Item_ScrapDataTable.Item_ScrapDataTable"));
+
+	static ConstructorHelpers::FObjectFinder<UDataTable> EnemyDataTableObj(TEXT("/Game/GameData/EnemyDataTable.EnemyDataTable"));
 
 
-	if (RifleDataTableObj.Succeeded() && HelmetDataTableObj.Succeeded() && BackPackDataTableObj.Succeeded() && VestDataTableObj.Succeeded())
-	{
-		if (FoodDataTableObj.Succeeded())
-		{
-			RifleDT = RifleDataTableObj.Object;
-			HelmetDT = HelmetDataTableObj.Object;
-			BackPackDT = BackPackDataTableObj.Object;
-			VestDT = VestDataTableObj.Object;
 
-			FoodDT = FoodDataTableObj.Object;
-		}
+	if (RifleDataTableObj.Succeeded() && HelmetDataTableObj.Succeeded() && BackPackDataTableObj.Succeeded() && VestDataTableObj.Succeeded() &&
+		FoodDataTableObj.Succeeded() && MedicalDataTableObj.Succeeded() && ScrapDataTableObj.Succeeded() && AmmoDataTableObj.Succeeded() &&
+		EnemyDataTableObj.Succeeded())
+	{	
+		RifleDT = RifleDataTableObj.Object;
+		HelmetDT = HelmetDataTableObj.Object;
+		BackPackDT = BackPackDataTableObj.Object;
+		VestDT = VestDataTableObj.Object;
+
+		AmmoDT = AmmoDataTableObj.Object;
+		FoodDT = FoodDataTableObj.Object;
+		MedicalDT = MedicalDataTableObj.Object;
+		ScrapDT = ScrapDataTableObj.Object;
+
+		EnemyDT = EnemyDataTableObj.Object;
+		
 	}
 
 
@@ -54,11 +67,16 @@ void ASpawnVolume::BeginPlay()
 {
 	Super::BeginPlay();
 
+	TrySpawn();
+}
+
+void ASpawnVolume::TrySpawn()
+{
 	bool bNeedToSpawnItem = true;
-	if ( DestoryCount > 0 )
+	if (DestoryCount > 0)
 	{
 		//Load한 DestoryCount가 Spawncount이상이라면 더이상 spawn할 필요 없음. (player가 이미 다먹음)
-		if ( DestoryCount >= SpawnCount )
+		if (DestoryCount >= SpawnCount)
 		{
 			bNeedToSpawnItem = false;
 			RemainingCount = 0;
@@ -74,20 +92,19 @@ void ASpawnVolume::BeginPlay()
 		RemainingCount = SpawnCount;
 	}
 
-	if(bNeedToSpawnItem )
+	if (bNeedToSpawnItem)
 	{
 		switch (SpawnType)
 		{
 		case ESpawnType::EST_Volume:
 			StartVolumeSpawn();
-		break;
+			break;
 		case ESpawnType::EST_Point:
 			StartPointSpawn();
-		break;
+			break;
 		}
 	}
 }
-
 
 /*
 * 실제 while문의 반복은 표면상 loop변수를 이용하지만
@@ -102,7 +119,7 @@ void ASpawnVolume::StartVolumeSpawn()
 {
 	//DTCount는 DataTable의 개수.
 	//만일 이걸 수정하게 된다면, GetSpawnItem의 Switch문에도 case를 추가 또는 삭제를 해야한다.
-	const int32 DTCount = 8;
+	const int32 DTCount = 9;
 	int32 SaveMinDTTableindex = DTCount;
 	int32 loop = 0;
 
@@ -117,69 +134,84 @@ void ASpawnVolume::StartVolumeSpawn()
 			break;
 		}
 
-
 		loop %= DTCount;
 
 		const FVector SpawnLocation = GetPointInVolume();
-		if (bOnGround)
+		DrawDebugPoint(GetWorld(), SpawnLocation, 5.f, FColor::Cyan, false, 3.f);
+
+		AActor* WantToSpawn = GetSpawnItem(loop);
+		bool bCanSpawn = false;		
+		
+		if(WantToSpawn)
 		{
-			DrawDebugPoint(GetWorld(), SpawnLocation, 5.f, FColor::Cyan, false, 3.f);
-
-			bool bCanSpawn = false;
-			AItem* WantToSpawn = GetSpawnItem(loop);
-			FVector SpawnVector = FVector(0.f);
-			if(WantToSpawn)
+			if (bOnGround)
 			{
-				FVector SpawnItemSize = WantToSpawn->GetComponentsBoundingBox().GetSize();
-				SpawnVector = GetGroundVector(SpawnLocation, bCanSpawn, SpawnItemSize);
-			}
 			
-			if (bCanSpawn == true)
-			{
-				++ActualSpawnCount;
-				bWasSpawn = true;
-
-				//bCanSpawn일때의 가장 최소 DTTable(loop)값을 갱신한다. -> 132 line
-				SaveMinDTTableindex = (SaveMinDTTableindex > loop) ? loop : SaveMinDTTableindex;
-
-				//Adjust Item Location,
-				WantToSpawn->SetActorLocation(SpawnVector);
-				WantToSpawn->OwningVolume = this;
-				
-
-				UE_LOG(LogTemp, Warning, TEXT("SpawnVolume::StartVolumeSpawn // ActualCount ; %d"), ActualSpawnCount);
+				FVector SpawnItemSize = WantToSpawn->GetComponentsBoundingBox().GetSize();
+				FVector SpawnVector = GetGroundVector(SpawnLocation, bCanSpawn, SpawnItemSize);
 			}
-			//스폰 불가할 경우
+			//OnGroud가 아닌경우
 			else
 			{
-				if (loop >= DTCount -1 && ActualSpawnCount < RemainingCount )
-				{
-					//Spawn할 수 없을때, 0이 아닌 Spawn가능한 가장 최소 DT부터 시작하기 위해 대입한다.
-					loop = SaveMinDTTableindex;
-				}
-				else
-				{
-					++loop;
-				}
+				//Spawn Item의 BoundingBox와 SpawnLocation 검증 필요.
 
-				if(WantToSpawn)
-				{
-					WantToSpawn->Destroy();
-				}
+				bCanSpawn = true;
 			}
-
 		}
-		//OnGroud가 아닌경우
+
+
+		if (bCanSpawn)
+		{
+			++ActualSpawnCount;
+			bWasSpawn = true;
+
+			//bCanSpawn일때의 가장 최소 DTTable(loop)값을 갱신한다. -> 132 line
+			SaveMinDTTableindex = (SaveMinDTTableindex > loop) ? loop : SaveMinDTTableindex;
+
+
+			FinalStepSpawnActor(WantToSpawn, SpawnLocation);
+
+
+			UE_LOG(LogTemp, Warning, TEXT("SpawnVolume::StartVolumeSpawn // ActualCount ; %d"), ActualSpawnCount);
+		}
+		//스폰 불가할 경우
 		else
 		{
-			
+			if (loop >= DTCount - 1 && ActualSpawnCount < RemainingCount)
+			{
+				//Spawn할 수 없을때, 0이 아닌 Spawn가능한 가장 최소 DT부터 시작하기 위해 대입한다.
+				loop = SaveMinDTTableindex;
+			}
+			else
+			{
+				++loop;
+			}
+
+			if (WantToSpawn)
+			{
+				WantToSpawn->Destroy();
+			}
 		}
+
+
 	}
 }
 
 void ASpawnVolume::StartPointSpawn()
 {
 	
+}
+
+void ASpawnVolume::FinalStepSpawnActor(AActor* SpawnActor, const FVector& SpawnLocation)
+{
+	//Adjust Item Location,
+	if (IInteractive_Interface* Inter = Cast<IInteractive_Interface>(SpawnActor))
+	{
+		SpawnActor->SetActorLocation(SpawnLocation);
+		Inter->SetMotherSpawnVolume(this);
+		
+		SpawnedActors.Add(SpawnActor);
+	}
 }
 
 
@@ -238,14 +270,18 @@ bool ASpawnVolume::VerifyCanSpawn(const FVector WantToSpawn, const FVector Spawn
 }
 
 
-AItem* ASpawnVolume::GetSpawnItem(const int32 TableTypeNumber)
+/* Loop index를 가져와서 switch문과 비교하게 되는데
+* 이렇게 시간복잡도를 높게 잡은 이유는
+* SpawnVolume에 spawn할 Item type이 여러개라면 여러 type의 item을 spawn하기 위함이다.
+*/
+AActor* ASpawnVolume::GetSpawnItem(const int32 TableTypeNumber)
 {
 
 	int32 DTRowNum = 0;
 	int32 DTRandIndex = 0;
 
 	UBasePDA* SpawnPDA = nullptr;
-	AItem* ReturnItem = nullptr;
+	AActor* ReturnItem = nullptr;
 
 	switch (TableTypeNumber)
 	{
@@ -254,8 +290,8 @@ AItem* ASpawnVolume::GetSpawnItem(const int32 TableTypeNumber)
 			{
 				DTRowNum = FoodDT->GetRowMap().Num();
 				DTRandIndex = FMath::RandRange(1, DTRowNum);
-				
-				FFoodTable* FoodDTRow = FoodDT->FindRow<FFoodTable>(*FString::FromInt(DTRandIndex), RifleDT->GetName());
+
+				FFoodTable* FoodDTRow = FoodDT->FindRow<FFoodTable>(*FString::FromInt(DTRandIndex), FoodDT->GetName());
 				if(FoodDTRow == nullptr) return nullptr;
 				SpawnPDA = FoodDTRow->FoodDataAsset;
 			}
@@ -264,18 +300,33 @@ AItem* ASpawnVolume::GetSpawnItem(const int32 TableTypeNumber)
 			if (bSpawnMedical)
 			{
 				DTRowNum = MedicalDT->GetRowMap().Num();
+				DTRandIndex = FMath::RandRange(1, DTRowNum);
+
+				FMedicalTable* MedicalDTRow = MedicalDT->FindRow<FMedicalTable>(*FString::FromInt(DTRandIndex), MedicalDT->GetName());
+				if (MedicalDTRow == nullptr) return nullptr;
+				SpawnPDA = MedicalDTRow->MedicalDataAsset;
 			}
 		break;
 		case 2:
 			if (bSpawnScrap)
 			{
 				DTRowNum = ScrapDT->GetRowMap().Num();
+				DTRandIndex = FMath::RandRange(1, DTRowNum);
+
+				FScrapTable* ScrapDTRow = ScrapDT->FindRow<FScrapTable>(*FString::FromInt(DTRandIndex), ScrapDT->GetName());
+				if (ScrapDTRow == nullptr) return nullptr;
+				SpawnPDA = ScrapDTRow->ScrapDataAsset;
 			}
 		break;
 		case 3:
 			if (bSpawnAmmo)
 			{
 				DTRowNum = AmmoDT->GetRowMap().Num();
+				DTRandIndex = FMath::RandRange(1, DTRowNum);
+
+				FAmmoTable* AmmoDTRow = AmmoDT->FindRow<FAmmoTable>(*FString::FromInt(DTRandIndex), AmmoDT->GetName());
+				if (AmmoDTRow == nullptr) return nullptr;
+				SpawnPDA = AmmoDTRow->AmmoDataAsset;
 			}
 		break;
 		case 4:
@@ -291,18 +342,42 @@ AItem* ASpawnVolume::GetSpawnItem(const int32 TableTypeNumber)
 		case 5:
 			if (bSpawnVest)
 			{
-
+				DTRowNum = VestDT->GetRowMap().Num();
+				DTRandIndex = FMath::RandRange(1, DTRowNum);
+				FVestTable* VestDTRow = VestDT->FindRow<FVestTable>(*FString::FromInt(DTRandIndex), VestDT->GetName());
+				if (VestDTRow == nullptr) return nullptr;
+				SpawnPDA = VestDTRow->VestDataAsset;
 			}
 		break;
 		case 6:
 			if (bSpawnBackPack)
 			{
-
+				DTRowNum = BackPackDT->GetRowMap().Num();
+				DTRandIndex = FMath::RandRange(1, DTRowNum);
+				FBackPackTable* BackPackDTRow = BackPackDT->FindRow<FBackPackTable>(*FString::FromInt(DTRandIndex), BackPackDT->GetName());
+				if (BackPackDTRow == nullptr) return nullptr;
+				SpawnPDA = BackPackDTRow->BackPackDataAsset;
 			}
 		break;
 		case 7:
 			if (bSpawnRifle)
 			{
+				DTRowNum = RifleDT->GetRowMap().Num();
+				DTRandIndex = FMath::RandRange(1, DTRowNum);
+				FRifleTable* RifleDTRow = RifleDT->FindRow<FRifleTable>(*FString::FromInt(DTRandIndex), RifleDT->GetName());
+				if (RifleDTRow == nullptr) return nullptr;
+				SpawnPDA = RifleDTRow->WeaponDataAsset;
+			}
+		break;
+		case 8:
+			if (bSpawnEnemyAI)
+			{
+				DTRowNum = EnemyDT->GetRowMap().Num();
+				DTRandIndex = FMath::RandRange(1, DTRowNum);
+				FEnemyDataTable* EnemyDTRow = EnemyDT->FindRow<FEnemyDataTable>(*FString::FromInt(DTRandIndex), EnemyDT->GetName());
+				if(EnemyDTRow == nullptr) return nullptr;
+
+				ReturnItem = UCustomSystemLibrary::SpawnAIChar(GetWorld(), *EnemyDTRow);
 
 			}
 		break;
@@ -322,7 +397,6 @@ AItem* ASpawnVolume::GetSpawnItem(const int32 TableTypeNumber)
 		}
 		
 	}
-
 
 
 	return ReturnItem;
@@ -440,12 +514,13 @@ bool ASpawnVolume::CheckLimitZ(FHitResult HitResult)
 			break;
 		}
 
-		//맞은 Actor의 가로,세로, 높이를 고려해 각 길이를 반을 나눠 각 면으로 부터 수직하는 아래에 lay를 4방향으로 쏜다.
-		//ex) 만약 맞은 Actor의 Up이나 Down인 경우 해당하는 Actor가 바닥에서 얼마만큼 높이 있는가를 측정하기 위해서
-		// 박스의 X, Y길이를 반으로 나눈 값을 넘겨준다.
-		// 그리고 이 값들을 고려하지 않고 4번씩 lay를 쏘도록 한다.
-		//(이 Actor의 중앙에서 부터 아주 살짝 벗어난 경계지점이 x/2, y/2값이 되므로.)
-		//lay의 길이가 character의 높이보다 길다면 spawn불가.
+		/** 맞은 Actor의 가로, 세로, 높이를 고려해 각 길이를 반을 나눠 각 면으로 부터 수직하는 아래에 lay를 4방향으로 쏜다.
+		 * ex) 만약 맞은 Actor의 Up이나 Down인 경우 해당하는 Actor가 바닥에서 얼마만큼 높이 있는가를 측정하기 위해서
+		 * 박스의 X, Y길이를 반으로 나눈 값을 넘겨준다.
+		 * 그리고 이 값들을 고려하지 않고 4번씩 lay를 쏘도록 한다.
+		 * (이 Actor의 중앙에서 부터 아주 살짝 벗어난 경계지점이 x/2, y/2값이 되므로.)
+		 * lay의 길이가 character의 높이보다 길다면 spawn불가. -> character가 해당 item을 먹을수 없으므로..
+		 */
 		bCanSpawn = StepCheckLimit_Loop1(HitResult, CharHeight, SpawnLocation, Calc1, FColor::Green);
 		
 		if (bCanSpawn == false)
@@ -549,4 +624,34 @@ EWhichSide ASpawnVolume::GetWhichSide(FVector ImpactNormal, AActor* HitActor)
 	
 	return ReturnSide;
 
+}
+
+
+void ASpawnVolume::SetSpawnedActorVisibility(bool bVisible)
+{
+	for (TWeakObjectPtr<AActor> SpanwedActor : SpawnedActors)
+	{
+		if (SpanwedActor.IsValid())
+		{
+			if(bVisible)
+			{
+				SpanwedActor->GetRootComponent()->SetVisibility(true, true);
+			}
+			else
+			{
+				SpanwedActor->GetRootComponent()->SetVisibility(false, true);
+			}
+		}
+	}
+}
+
+void ASpawnVolume::RemoveSpawnedActorAtList(AActor* ChildActor)
+{
+	if (ChildActor)
+	{
+		if (SpawnedActors.Contains(ChildActor))
+		{
+			SpawnedActors.RemoveSingle(ChildActor);
+		}
+	}
 }

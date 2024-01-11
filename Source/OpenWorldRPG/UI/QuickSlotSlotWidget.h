@@ -36,6 +36,7 @@ public:
 
 private:
 	FORCEINLINE void SetMountedObject(UNewItemObject* ItemObj) {MountedItemObj = ItemObj;}
+	
 protected:
 	virtual bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
 	//virtual void NativeOnDragEnter(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;

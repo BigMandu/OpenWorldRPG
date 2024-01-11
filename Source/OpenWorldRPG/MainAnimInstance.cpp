@@ -6,7 +6,7 @@
 //#include "MainCharacter.h"
 //#include "MainController.h"
 //#include "Animation/AnimNode_SequencePlayer.h"
-#include "Item/BaseGrenade.h"
+#include "Item/GrenadeBase.h"
 #include "GameFramework/CharacterMovementComponent.h"
 //#include "BoneControllers/AnimNode_ModifyBone.h"
 //#include "Engine/SkeletalMeshSocket.h"
@@ -81,9 +81,9 @@ void UMainAnimInstance::UpdateAnimationProperties()
 //Called from AnimBP::Throw state machine
 bool UMainAnimInstance::IsReadyToThrow()
 {
-	if ( Player && Player->HoldingItem)
+	if ( Player && Player->HoldingItem.IsValid())
 	{
-		ABaseGrenade* Grenade = Cast<ABaseGrenade>(Player->HoldingItem);
+		AGrenadeBase* Grenade = Cast<AGrenadeBase>(Player->HoldingItem.Get());
 		if (Grenade)
 		{
 			//this bool setted when LMBDown
@@ -132,6 +132,13 @@ void UMainAnimInstance::SetWeaponTypeNumber(int32 number)
 	WeaponTypeNumber = number;
 
 }
+
+
+void UMainAnimInstance::SetIsRightHandAttached(bool bIsRightHand)
+{
+	bIsRightHandAttached = bIsRightHand;
+}
+
 
 
 
@@ -228,6 +235,14 @@ void UMainAnimInstance::AnimNotify_EndEquipping()
 	if (Player)
 	{
 		Player->EndEquipped();
+	}
+}
+
+void UMainAnimInstance::AnimNotify_EndUseItem()
+{
+	if (Player)
+	{
+		Player->EndUseItem();
 	}
 }
 

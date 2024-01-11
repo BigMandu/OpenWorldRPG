@@ -3,6 +3,7 @@
 
 #include "MissionDoor.h"
 #include "OpenWorldRPG/OpenWorldRPGGameModeBase.h"
+#include "OpenWorldRPG/CustomLibrary/CustomSystemLibrary.h"
 #include "Components/WidgetComponent.h"
 
 AMissionDoor::AMissionDoor(): Super()

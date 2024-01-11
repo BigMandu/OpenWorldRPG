@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
@@ -16,7 +16,9 @@ struct FVehicleDataTable : public FTableRowBase
 {
 	GENERATED_USTRUCT_BODY()
 public:
-
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = DefaultSetting)
+	struct FDataTableRowHandle ImpactEffectRowHandle;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Interaction)
 	FTransform DoorCollisionTF;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Interaction)
@@ -29,7 +31,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FVector FPSCamLocation;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FVector SeatSocketLocation;
+	FTransform SeatSocketTF;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Detail option")
 	bool bIs4WD;
@@ -45,9 +47,9 @@ public:
 	FVector CenterOfMass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wheel")
-	TSubclassOf<UVehicleWheel> FrontWheel;
+	TSubclassOf<class UFrontWheel> FrontWheel;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wheel")
-	TSubclassOf<UVehicleWheel> RearWheel;
+	TSubclassOf<class URearWheel> RearWheel;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wheel")
 	FName FRWheelBoneName;
@@ -58,6 +60,18 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wheel")
 	FName RLWheelBoneName;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wheel")
+	float WheelRadius;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wheel")
+	float WheelWidth;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wheel")
+	float WheelMass;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wheel")
+	float SteerAngle;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UAnimMontage* CharacterSeatAnim;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<class UAnimInstance> AnimInst;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

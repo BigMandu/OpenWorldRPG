@@ -23,13 +23,16 @@
 void UDraggInventoryWindow::NativeConstruct()
 {
 	Super::NativeConstruct();
-	/*if(GridInventory && GridInventory->StorageObj)
-	{
-		StorageWidgetName->SetText(GridInventory->StorageObj->ItemInfo.DataAsset->ItemName);*/
 
-		UE_LOG(LogTemp, Warning, TEXT("DraggingInventoryWindow::Binding ClsoeWindow func"));
-		CloseButton->OnClicked.AddDynamic(this,&UDraggInventoryWindow::CloseWindow);
+	UE_LOG(LogTemp, Warning, TEXT("DraggingInventoryWindow::Binding ClsoeWindow func"));
+	CloseButton->OnClicked.AddDynamic(this,&UDraggInventoryWindow::CloseWindow);
 	//}
+}
+
+void UDraggInventoryWindow::SettingWidget(UWidget* T_ChildWidget, UNewItemObject* T_Obj)
+{
+	ContentBorder->AddChild(T_ChildWidget);
+	WidgetName->SetText(T_Obj->ItemInfo.DataAsset->ItemName);
 }
 
 FReply UDraggInventoryWindow::NativeOnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)

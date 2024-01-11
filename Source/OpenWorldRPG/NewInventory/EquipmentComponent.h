@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "OpenWorldRPG/CustomLibrary/CustomEnumLibrary.h"
+#include "OpenWorldRPG/CustomLibrary/CustomStructLibrary.h"
 #include "Components/ActorComponent.h"
 #include "EquipmentComponent.generated.h"
 
@@ -11,6 +12,7 @@
 class AWeapon;
 class AEquipment;
 class UNewItemObject;
+class UItemStorageObject;
 
 //for EquipWidget Refresh
 DECLARE_MULTICAST_DELEGATE(FOnEquipmentUpdated);
@@ -19,7 +21,7 @@ DECLARE_MULTICAST_DELEGATE(FOnEquipmentUpdated);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeaponSetSlot, UNewItemObject*, EquipWeaponObj);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeaponRemoveSlot, ERifleSlot, EquipWeaponSlot);
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class OPENWORLDRPG_API UEquipmentComponent : public UActorComponent//, public IItemInterface
 {
 	GENERATED_BODY()
@@ -45,13 +47,13 @@ public:
 	/*bool bHasBackpack;
 	bool bHasVest;*/
 
-	UNewItemObject* BackpackObj = nullptr;
-	UNewItemObject* VestObj = nullptr;
+	UItemStorageObject* BackpackObj = nullptr;
+	UItemStorageObject* VestObj = nullptr;
 
 	
 private:
 	//WeaponPartsManager를 생성 , data를 넘겨준다.
-	void SetWeaponPartsManager(AEquipment* WantToEquip, UNewItemObject* WeaponObj);
+	//void SetWeaponPartsManager(AEquipment* WantToEquip, UNewItemObject* WeaponObj);
 
 protected:
 	// Called when the game starts
@@ -59,24 +61,27 @@ protected:
 
 public:	
 
-	bool AddEquipment(AEquipment* Equip);
-	bool RemoveEquipment(AEquipment* Equip);
-
-	//Equip의 파라미터와 같은 타입의 장비가 이미 있는지 확인
-	bool IsSameTypeExist(AEquipment* Equip, ERifleSlot RifleSlot = ERifleSlot::ERS_MAX);
+	//bool AddEquipment(AEquipment* Equip);
+	//bool RemoveEquipment(AEquipment* Equip);
+	
 	
 	//Weapon파라미터와 같은 타입의 장비를 리턴
 	//AEquipment* GetEquippedWeaponSameType(EEquipmentType EquipType, AEquipment* Equip = nullptr, ERifleSlot RifleSlot = ERifleSlot::ERS_MAX);
 
-	bool SwapEquipment(AEquipment* Before, AEquipment* Next);
+	//bool SwapEquipment(AEquipment* Before, AEquipment* Next);
 
 	/* New version */
-	UNewItemObject* GetEquipStorage(EEquipmentType Type);
-	bool AddEquipment(FItemSetting ItemSetting, AEquipment* WantToEquip);
+	UItemStorageObject* GetEquipStorage(EEquipmentType Type);
+	bool AddEquipment(struct FItemSetting ItemSetting, AEquipment* WantToEquip);
 	bool RemoveEquipment(UNewItemObject* EquipObj);
+
+	//Equip의 파라미터와 같은 타입의 장비가 이미 있는지 확인
+	bool IsSameTypeExist(AEquipment* Equip, ERifleSlot RifleSlot = ERifleSlot::ERS_MAX);
 
 	UNewItemObject* GetEquippedWeaponSameType(EEquipmentType EquipType, UNewItemObject* Object, ERifleSlot RifleSlot = ERifleSlot::ERS_MAX);
 
 	void UpdateEquipment(TArray<UNewItemObject*>& SavedEquipment);
+
+	void RemoveAllEquip();
 
 };

@@ -53,6 +53,7 @@ class OPENWORLDRPG_API AMainCharacter : public ABaseCharacter
 public:
 	AMainCharacter();
 
+	/* UQuickSlotWidget::BindSlotWidget에서 bind */
 	FOnQuickSlotUse OnQuickSlotUse;
 
 	/* CoreUsableItem에서 broadcast,*/
@@ -69,8 +70,8 @@ public:
 	/* Anim Instance */
 	UMainAnimInstance* FPAnimInstance;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Character)
-	AMainController* MainController;
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Character)
+	//AMainController* MainController;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Character)
 	USkeletalMeshComponent* FPMesh;
@@ -84,9 +85,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Character)
 	USkeletalMeshComponent* CharacterMaskClothes;
 	const FName MaskSocketName = FName("MaskClothes");
-
-	UPROPERTY()
-	class AOpenWorldRPGGameModeBase* Gmode;
 
 	UPROPERTY()
 	float TempVar_OriginInputYawScale;
@@ -186,8 +184,7 @@ public:
 	float CamAlphaTime;
 
 private:
-	bool CanSprint();
-	
+	bool CanSprint();	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -199,6 +196,10 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	virtual void PostInitializeComponents() override;
+
+	void CameraUpdate(const FVector& CamLoc, const FRotator& CamRot);
+
+	virtual void Destroyed() override;
 
 
 	void InteractionLineTrace();
@@ -263,6 +264,10 @@ public:
 	void SetCameraMode(ECameraMode Type);	
 	void LerpCamera(UCameraComponent* VarTPScam, float TargetBoomLength, FVector TargetCamRelativeLocation, float TargetFOV);
 	void LerpCamera(UCameraComponent* VarFPScam, float TargetFOV);
+
+	/**CameraMode에 따라 HoldingItem을 Attach시킨다.
+	 * V key를 누를 때 마다 호출된다.
+	 */
 	void ReAttachHoldingItem();
 
 	void FPSAimLocationAdjust();

@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "OpenWorldRPG/Item/BaseGrenade.h"
+#include "OpenWorldRPG/Item/GrenadeBase.h"
 #include "OpenWorldRPG/Item/GrenadePDA.h"
 #include "OpenWorldRPG/BaseCharacter.h"
 #include "OpenWorldRPG/MainCharacter.h"
@@ -29,7 +29,7 @@
 
 #include "DrawDebugHelpers.h"
 
-ABaseGrenade::ABaseGrenade()
+AGrenadeBase::AGrenadeBase()
 {
 	//ProjectileMovementComp = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovComp"));
 	//ProjectileMovementComp->ProjectileGravityScale = 1.1f;
@@ -54,15 +54,13 @@ ABaseGrenade::ABaseGrenade()
 
 	BounceAudioComp = CreateDefaultSubobject<UAudioComponent>(TEXT("BounceAudioComp"));
 	BounceAudioComp->SetupAttachment(GetRootComponent());
-	
-	Mesh->OnComponentHit.AddDynamic(this, &ABaseGrenade::OnCapsuleComponentHit);
-	//CapsuleComp->OnComponentHit.AddDynamic(this,&ABaseGrenade::OnCapsuleComponentHit);
-	
 
+	Mesh->OnComponentHit.AddDynamic(this, &AGrenadeBase::OnCapsuleComponentHit);
+	//CapsuleComp->OnComponentHit.AddDynamic(this,&ABaseGrenade::OnCapsuleComponentHit);
 }
 
 
-void ABaseGrenade::OnConstruction(const FTransform& Transform)
+void AGrenadeBase::OnConstruction(const FTransform& Transform)
 {	
 	Super::OnConstruction(Transform);
 	if (Mesh)
@@ -97,83 +95,44 @@ void ABaseGrenade::OnConstruction(const FTransform& Transform)
 		}
 		
 	}
-	/*if (SKMesh)
-	{
-		SKMesh->SetSimulatePhysics(false);
-	}*/
 }
 
 //QuickSlotWidget -> NewItemObject::UseItem에서 호출함.
-void ABaseGrenade::AttachToHand(ABaseCharacter* Actor, UNewItemObject* Obj, bool bIsNeedToDestory)
+void AGrenadeBase::AttachToHand(ABaseCharacter* Actor, UNewItemObject* Obj, bool bIsNeedToDestory)
 {
 	Super::AttachToHand(Actor,Obj, bIsNeedToDestory);
 
 	Mesh->SetSimulatePhysics(false);
 	Mesh->SetLinearDamping(0.01f);
 	Mesh->SetAngularDamping(0.f);
-
-	//WeaponClass의 GunAttachToMesh func를 호출해 WeaponGripSocket에 부착한다.
-	//GunAttachToMesh(Actor);
 	SetOwningPlayer(Actor);
 }
 
 //While LMB down
-void ABaseGrenade::ReadyToThrow()
+void AGrenadeBase::ReadyToThrow()
 {
 	UGrenadePDA* GPDA = Cast<UGrenadePDA>(this->ItemSetting.DataAsset);
 	if (GPDA == nullptr) return;
-	UE_LOG(LogTemp,Warning,TEXT("ABaseGrenade::ReadyTo Throw"));
+	UE_LOG(LogTemp,Warning,TEXT("AGrenadeBase::ReadyTo Throw"));
 	
 	bReadyToThrow = true;
 
 	
 	if(OwningPlayer)
 	{
-		//if ( AMainCharacter* Player = Cast<AMainCharacter>(OwningPlayer) )
-		//{
-		//	//FPMesh도 끌수 있도록 커스텀 함수를 호출한다..
-		//	//여기서 좀 헤맴.
-		//	Player->StooopAnimMontage();
-		//	//Player->StopAnimMontage(nullptr);
-		//	Player->ChangeWeaponTypeNumber(3);
-		//}
-		//else
-		{
-			//다른 AnimMontage가 재생중이면 Stop시켜서
-			//AnimBP의 Anim을 재생 할 수 있도록 한다.
-			OwningPlayer->StopAnimation();
-			OwningPlayer->ChangeWeaponTypeNumber(3);
-		}
+		//다른 AnimMontage가 재생중이면 Stop시켜서
+		//AnimBP의 Anim을 재생 할 수 있도록 한다.
+		OwningPlayer->StopAnimation();
+		OwningPlayer->ChangeWeaponTypeNumber(3);
 	}
-
-
- 	GetWorldTimerManager().SetTimer(EffectTriggerTimerHandle, this, &ABaseGrenade::BeginEffect, GPDA->EffectDelayTime, false);
-
 }
 
 
 //called when LMB Up
 //Detach from hand
-void ABaseGrenade::ThrowGrenade(ABaseCharacter* Actor)
+void AGrenadeBase::ThrowGrenade(ABaseCharacter* Actor)
 {
-	//UE_LOG(LogTemp, Warning, TEXT("ABaseGrenade:: Throw Grenade, playAnim"));
-	// 
-	//UGrenadePDA* GPDA = Cast<UGrenadePDA>(this->ItemSetting.DataAsset);
-	//Actor->PlayAnimMontage(GPDA->ThrowingAnimMontage);
-
-
 	Actor->PlayAnimation(this->ItemSetting.DataAsset->TPS_UseAnimMontage, this->ItemSetting.DataAsset->FPS_UseAnimMontage);
-	
-	
-	//Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Block);
-	//Mesh->BodyInstance.SetCollisionProfileName("Projectile");
-
-	/*CapsuleComp->SetGenerateOverlapEvents(true);
-	CapsuleComp->BodyInstance.SetCollisionProfileName("BlockAllDynamic");
-	CapsuleComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	CapsuleComp->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);*/
-
-
 	
 	//던지고 난 이후엔 Interaction이 불가능하도록 한다.
 	bCanNotInteractable = true;
@@ -185,14 +144,16 @@ void ABaseGrenade::ThrowGrenade(ABaseCharacter* Actor)
 	RemoveCountAtIventory(Actor,1);
 }
 
-void ABaseGrenade::DetectThrow(ABaseCharacter* Actor)
+
+void AGrenadeBase::DetectThrow(ABaseCharacter* Actor)
 {
-	UE_LOG(LogTemp, Warning, TEXT("ABaseGrenade:: DetectThrow, detect AnimNotify"));
+	UE_LOG(LogTemp, Warning, TEXT("AGrenadeBase:: DetectThrow, detect AnimNotify"));
 	
 	UGrenadePDA* GPDA = Cast<UGrenadePDA>(this->ItemSetting.DataAsset);
 
 	if(GPDA == nullptr ) return;
-	////Detach를 한다.
+	
+	//Detach를 한다.
 	DetachFromHand(Actor, GPDA->bIsNeedToAttachHandBeforeUse);
 
 	//Hit Event를 발생시키기 위함.
@@ -203,13 +164,6 @@ void ABaseGrenade::DetectThrow(ABaseCharacter* Actor)
 	
 	Mesh->SetLinearDamping(2.f);
 	Mesh->SetAngularDamping(1.f);
-
-
-	/*여기서 던져야하는데
-	* AddImpulse || SetPhysics LinearVelocity
-	*
-	* predict projectile path by tracechannel
-	*/
 
 	FTransform AimPos = GetAimPosition();
 	FVector StartTrace = GetTraceStartLocation(AimPos.Rotator().Vector());
@@ -226,6 +180,12 @@ void ABaseGrenade::DetectThrow(ABaseCharacter* Actor)
 
 	Mesh->SetPhysicsLinearVelocity(CalcVector);
 
+	FTimerDelegate TimerCallback;
+	TimerCallback.BindUFunction(this, FName("BeginEffect"));
+	
+	//GetWorldTimerManager().SetTimer(EffectTriggerTimerHandle, this, &AGrenadeBase::BeginEffect, GPDA->EffectDelayTime, false);
+	GetWorldTimerManager().SetTimer(EffectTriggerTimerHandle, TimerCallback, GPDA->EffectDelayTime, false);
+
 	//ProjectileMovementComp->Velocity = GetAimPosition().GetRotation().Vector() * 500.f;//ProjectileMovementComp->InitialSpeed;
 	//DrawDebugLine(GetWorld(), GetAimPosition().GetRotation().Vector(), ProjectileMovementComp->Velocity, FColor::Green, false, 3.f, 0, 2.f);
 
@@ -237,7 +197,7 @@ void ABaseGrenade::DetectThrow(ABaseCharacter* Actor)
 }
 
 //timer ready to throw
-void ABaseGrenade::BeginEffect()
+void AGrenadeBase::BeginEffect()
 {
 	UGrenadePDA* GPDA = Cast<UGrenadePDA>(this->ItemSetting.DataAsset);
 	if (GPDA == nullptr) return;
@@ -262,24 +222,19 @@ void ABaseGrenade::BeginEffect()
 		Ni_ParticleComp->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 		//Ni_ParticleComp->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 		Ni_ParticleComp->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
-		Ni_ParticleComp->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Ignore);
-
-
-		
-		//FNiagaraDICollisionQueryBatch.
-		
+		Ni_ParticleComp->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Ignore);		
 	}
 
 	
 	EffectAudioComp->SetAutoActivate(true);
 	Ca_ParticleComp->SetWorldRotation(FRotator(0.f, 0.f, 1.f));
-	EffectAudioComp->SetSound(GPDA->GrenadeEffectSound);
-	
-	
+	EffectAudioComp->SetSound(GPDA->GrenadeEffectSound);	
 	EffectAudioComp->Activate();
+
 	//AI가 인식할 수 있도록 함.
 	UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), 1.f, this);
 
+	/*
 	switch (GPDA->GrenadeType)
 	{
 	case EGrenadeType::EGT_Fragment:
@@ -289,8 +244,10 @@ void ABaseGrenade::BeginEffect()
 		SmokeEffect(GPDA);
 	break;
 	}	
+	*/
 
-	//던지지 않은 상태에서 터졌을 경우
+	//던지지 않은 상태에서 터졌을 경우 -> 해당 경우는 삭제함
+	/*
 	if (bThrow == false)
 	{
 		ABaseCharacter* BChar = Cast<ABaseCharacter>(GetOwningPlayer());
@@ -299,50 +256,122 @@ void ABaseGrenade::BeginEffect()
 		bThrow = true;
 		bCanNotInteractable = true;
 
-		/*
-		BChar->HoldingItem = nullptr;
-		EquipBeforeWeapon(BChar);*/
+		
+		//BChar->HoldingItem = nullptr;
+		//EquipBeforeWeapon(BChar);
 	}
-
-	
+	*/
 }
 
-void ABaseGrenade::FragmentEffect(UGrenadePDA* gPDA)
+
+void AGrenadeBase::EndEffect()
 {
-	if(gPDA == nullptr) return;
-	UE_LOG(LogTemp, Warning, TEXT("ABaseGrenade:: FragmentEffect"));
+	UE_LOG(LogTemp, Warning, TEXT("AGrenadeBase:: EndEffect"));
+	if (Ca_ParticleComp->IsActive())
+	{
+		Ca_ParticleComp->DeactivateSystem(); //Deactivate();
+	}
+
+	if (Ni_ParticleComp->IsActive())
+	{
+		Ni_ParticleComp->Deactivate();
+	}
+
+	if ( EffectAudioComp->IsActive())
+	{
+		EffectAudioComp->Stop();// Deactivate();
+	}
+
+	//GetWorldTimerManager().RemoveTimer
 	
+	GetWorldTimerManager().ClearTimer(EffectDurationTimerHandle);
+
+	//EndEffect이후 바로 destory를 하지 않고 일정 초 이후에 삭제하도록 한다.
+	GetWorldTimerManager().SetTimer(DestoryGrenadeTimerHandle, this, &AGrenadeBase::StartDestory, 10.f, false);
+}
+
+UFUNCTION()
+void AGrenadeBase::StartDestory()
+{
+	OnGrenadeDestroy.Broadcast(this);
+	//던지고 나서 Effect이후 Destroy를 해준다.
+	OwningPlayer = nullptr;
+	Destroy();
+}
+
+
+// Grenade를 throw하고 bounce될때 sound를 출력하기 위함.
+void AGrenadeBase::OnCapsuleComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	if (Hit.bBlockingHit)
+	{
+		if (UGrenadePDA* GPDA = Cast< UGrenadePDA>(this->ItemSetting.DataAsset))
+		{
+			if (GPDA->GrenadeBounceSound)
+			{
+				BounceAudioComp->SetSound(GPDA->GrenadeBounceSound);
+			}
+
+		}
+
+		if (BounceAudioComp)
+		{
+			//UE_LOG(LogTemp, Warning, TEXT("AGrenadeBase:: playsound"));
+
+			BounceAudioComp->Activate();
+
+			//AI가 인식할 수 있도록 함.
+			UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), 1.f, this);
+		}
+	}
+}
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////////
+/*                              안쓰는 함수                                       */
+////////////////////////////////////////////////////////////////////////////////////
+
+//아래 함수는 sub class로 분할 해서 더이상 안씀, 주석때문에 남겨둠
+
+/*
+void AGrenadeBase::FragmentEffect(UGrenadePDA* gPDA)
+{
+	if (gPDA == nullptr) return;
+	UE_LOG(LogTemp, Warning, TEXT("AGrenadeBase:: FragmentEffect"));
+
 	FRadialDamageEvent RadialDmgEvt;
 	const TArray<AActor*> IgnoreActarr;
-	TSubclassOf<UDamageType> const DmgType = TSubclassOf<UDamageType>(UDamageType::StaticClass());			
-	UGameplayStatics::ApplyRadialDamage(GetWorld(), gPDA->Damage, GetActorLocation(), gPDA->EffectRadius,DmgType,IgnoreActarr,this,GetOwningPlayer()->GetInstigatorController(),true);
-	
+	TSubclassOf<UDamageType> const DmgType = TSubclassOf<UDamageType>(UDamageType::StaticClass());
+	UGameplayStatics::ApplyRadialDamage(GetWorld(), gPDA->Damage, GetActorLocation(), gPDA->EffectRadius, DmgType, IgnoreActarr, this, GetOwningPlayer()->GetInstigatorController(), true);
+
 
 	//안먹음
 	//UGameplayStatics::ApplyRadialDamageWithFalloff(GetWorld(),GPDA->Damage, GPDA->Damage - GPDA->Damage*0.1f,GetActorLocation(), GPDA->EffectRadius - GPDA->EffectRadius*0.2f,GPDA->EffectRadius, 1.f,
 	//	DmgType, IgnoreActarr, OwningPlayer,GetInstigatorController());
-	
-	DrawDebugSphere(GetWorld(),GetActorLocation(), gPDA->EffectRadius,12,FColor::Cyan,false,5.f,0,2.f);
+
+	DrawDebugSphere(GetWorld(), GetActorLocation(), gPDA->EffectRadius, 12, FColor::Cyan, false, 5.f, 0, 2.f);
 	//DrawDebugSphere(GetWorld(),GetActorLocation(), GPDA->EffectRadius - GPDA->EffectRadius * 0.2f,12,FColor::Red,false,5.f,0,2.f);
 
-	
+
 	TArray<FHitResult> Hits;
 	FVector Location = GetActorLocation();
 	FCollisionShape Shape = FCollisionShape::MakeSphere(gPDA->EffectRadius);
 	//ECollisionChannel Collisionch = 
 
-	/* RadialForce와 TakeDamage를 합침. */
+	// RadialForce와 TakeDamage를 합침.
 	TArray<FOverlapResult> Overlaps;
 	if (UWorld* World = GEngine->GetWorldFromContextObject(GetWorld(), EGetWorldErrorMode::LogAndReturnNull))
 	{
-		World->OverlapMultiByObjectType(Overlaps, Location , FQuat::Identity, FCollisionObjectQueryParams(FCollisionObjectQueryParams::InitType::AllDynamicObjects),Shape);
+		World->OverlapMultiByObjectType(Overlaps, Location, FQuat::Identity, FCollisionObjectQueryParams(FCollisionObjectQueryParams::InitType::AllDynamicObjects), Shape);
 	}
 
 	for (int32 ind = 0; ind < Overlaps.Num(); ++ind)
 	{
-		const FOverlapResult& Overlap = Overlaps[ind];
-		AActor* OverlapAct =  Overlap.GetActor();
-		
+		const FOverlapResult& Overlap = Overlaps[ ind ];
+		AActor* OverlapAct = Overlap.GetActor();
+
 		if (OverlapAct && OverlapAct != this && Overlap.Component.IsValid())
 		{
 			//우선 MeshComponent만 있는 StaticMesh인 경우, Character인 경우 /두개로 나뉜다.
@@ -358,79 +387,47 @@ void ABaseGrenade::FragmentEffect(UGrenadePDA* gPDA)
 			}
 
 			//LineTrace를 여러번 쏴야할듯
-			/*if (OverlapAct->CanBeDamaged())
-			{
-				FHitResult OutHit;
-				FVector EndLocation = OverlapAct->GetActorLocation();
-				if (GetWorld()->LineTraceSingleByChannel(OutHit, Location, EndLocation, ECollisionChannel::ECC_Visibility))
-				{
-					TSubclassOf<UDamageType> const DmgType = TSubclassOf<UDamageType>(UDamageType::StaticClass());
-					FDamageEvent DmgEvt = FDamageEvent(DmgType);
-					OverlapAct->TakeDamage(gPDA->Damage, DmgEvt, GetOwningPlayer()->GetInstigatorController(), this);
-				}
-			}*/
+			//if (OverlapAct->CanBeDamaged())
+			//{
+			//	FHitResult OutHit;
+			//	FVector EndLocation = OverlapAct->GetActorLocation();
+			//	if (GetWorld()->LineTraceSingleByChannel(OutHit, Location, EndLocation, ECollisionChannel::ECC_Visibility))
+			//	{
+			//		TSubclassOf<UDamageType> const DmgType = TSubclassOf<UDamageType>(UDamageType::StaticClass());
+			//		FDamageEvent DmgEvt = FDamageEvent(DmgType);
+			//		OverlapAct->TakeDamage(gPDA->Damage, DmgEvt, GetOwningPlayer()->GetInstigatorController(), this);
+			//	}
+			//}
 		}
 	}
 
-	GetWorldTimerManager().SetTimer(EffectDurationTimerHandle, this, &ABaseGrenade::EndEffect, 2.f, false);
-	
+	//GetWorldTimerManager().SetTimer(EffectDurationTimerHandle, this, &AGrenadeBase::EndEffect, 2.f, false);
+
 }
+*/
 
 
-void ABaseGrenade::OnCapsuleComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
-{	
-	if ( Hit.bBlockingHit )
-	{
-		if ( UGrenadePDA* GPDA = Cast< UGrenadePDA>(this->ItemSetting.DataAsset) )
-		{
-			if ( GPDA->GrenadeBounceSound )
-			{
-				BounceAudioComp->SetSound(GPDA->GrenadeBounceSound);
-			}
-
-		}
-
-		if ( BounceAudioComp)
-		{
-			//UE_LOG(LogTemp, Warning, TEXT("ABaseGrenade:: playsound"));
-			
-			BounceAudioComp->Activate();
-
-			//AI가 인식할 수 있도록 함.
-			UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), 1.f, this);
-		}
-	}
-}
-
-
-void ABaseGrenade::SmokeEffect(UGrenadePDA* gPDA)
+/*
+void AGrenadeBase::SmokeEffect(UGrenadePDA* gPDA)
 {
 	if (gPDA == nullptr) return;
-	UE_LOG(LogTemp, Warning, TEXT("ABaseGrenade:: SmokeEffect"));
-	
-	GetWorldTimerManager().SetTimer(EffectDurationTimerHandle, this, &ABaseGrenade::EndEffect, gPDA->SmokeDuration, false);
+	UE_LOG(LogTemp, Warning, TEXT("AGrenadeBase:: SmokeEffect"));
 
-	
-}
+	if (SmokeEffectVisibleBlockSphere)
+	{
+		if (gPDA->Ni_GrenadeEffect)
+		{
+			//UNiagaraFunctionLibrary::SpawnSystemAtLocation
+			// 
 
-void ABaseGrenade::EndEffect()
-{
-	UE_LOG(LogTemp, Warning, TEXT("ABaseGrenade:: EndEffect"));
-	if (Ca_ParticleComp->IsActive())
-	{
-		Ca_ParticleComp->DeactivateSystem(); //Deactivate();
-	}
-	if ( EffectAudioComp->IsActive())
-	{
-		EffectAudioComp->Stop();// Deactivate();
+		}
+		else if (gPDA->Ca_GrenadeEffect)
+		{
+
+		}
+		//SmokeEffectVisibleBlockSphere->SetSphereRadius(gPDA->)
 	}
 
-	//GetWorldTimerManager().RemoveTimer
-	
-	GetWorldTimerManager().ClearTimer(EffectDurationTimerHandle);
-	OnGrenadeDestroy.Broadcast(this);
-
-	//던지고 나서 Effect이후 Destroy를 해준다.
-	OwningPlayer = nullptr;
-	Destroy();
+	//GetWorldTimerManager().SetTimer(EffectDurationTimerHandle, this, &AGrenadeBase::EndEffect, gPDA->SmokeDuration, false);
 }
+*/

@@ -60,6 +60,10 @@ class OPENWORLDRPG_API ASpawnVolume : public AActor
 
 private:
 
+	/** If you add an additional DataTable type, you have to make changes or additions to the following: 
+	 * Change variable 'DTCount', add boolean variable like 'bSpawnFood', add switch case in 'GetSpawnItem' function.
+	 */
+	
 	class UDataTable* FoodDT;
 	UDataTable* MedicalDT;
 	UDataTable* ScrapDT;
@@ -69,6 +73,11 @@ private:
 	UDataTable* HelmetDT;	
 	UDataTable* VestDT;
 	UDataTable* BackPackDT;
+
+	UDataTable* EnemyDT;
+
+
+	TArray<TWeakObjectPtr<AActor>> SpawnedActors;
 	
 public:	
 	ASpawnVolume();
@@ -92,6 +101,9 @@ public:
 	//ESpawnItemType MustSpawnItemType;
 
 	UPROPERTY(EditAnywhere, Category = "SpawnVolume | SelectSpawnItem")
+	bool bSpawnEnemyAI;	
+
+	UPROPERTY(EditAnywhere, Category = "SpawnVolume | SelectSpawnItem")
 	bool bSpawnFood;
 	UPROPERTY(EditAnywhere, Category = "SpawnVolume | SelectSpawnItem")
 	bool bSpawnMedical;
@@ -111,7 +123,7 @@ public:
 
 
 	UPROPERTY(EditAnywhere, Category = "SpawnVolume | Settings")
-	int32 SpawnCount;
+	int32 SpawnCount = 8;
 
 	UPROPERTY(VisibleAnywhere, Category = "SpawnVolume | Settings")
 	FVector SpawnPoint;
@@ -123,6 +135,8 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "SpawnVolume | Settings")
 	class UBillboardComponent* Billboard;
 
+	UPROPERTY(EditAnywhere, Category = "SpawnVolume | SpawnActorManager")
+	bool bNeedToHideWhenFarAway = false;
 
 	/*This Array is for a 'Save And Load' System.
 	//StartVolumeSpawn일 때 DestoryCount는 ActualspawnCount값을 가지게 된다.
@@ -140,6 +154,8 @@ public:
 
 
 private:
+	void TrySpawn();
+
 	FVector GetPointInVolume();
 	bool VerifyCanSpawn(const FVector WantToSpawn, const FVector SpawnItemSize);
 
@@ -154,16 +170,20 @@ private:
 
 	EWhichSide GetWhichSide(FVector ImpactNormal, AActor* HitActor);
 
-	class AItem* GetSpawnItem(const int32 TableTypeNumber);
+	AActor* GetSpawnItem(const int32 TableTypeNumber);
 
+	void FinalStepSpawnActor(AActor* SpawnActor, const FVector& SpawnLocation);
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 public:
+	void RemoveSpawnedActorAtList(AActor* ChildActor);
+
 	void IncreaseDestroyCount();
 
+	void SetSpawnedActorVisibility(bool bVisible);
 	
 
 	

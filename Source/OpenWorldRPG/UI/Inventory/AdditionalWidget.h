@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -7,8 +7,9 @@
 #include "AdditionalWidget.generated.h"
 
 /**
- * 
+ *  NOT USED
  */
+
 UCLASS()
 class OPENWORLDRPG_API UAdditionalWidget : public UUserWidget
 {

@@ -10,23 +10,11 @@ void UMainMenuWidget::NativeConstruct()
 {
 	
 	/* bind click */
-	NewGame->OnClicked.AddDynamic(this, &UMainMenuWidget::Click_Newgame);
-	Continue->OnClicked.AddDynamic(this, &UMainMenuWidget::Click_Continue);
-	Option->OnClicked.AddDynamic(this, &UMainMenuWidget::Click_Option);
-	Credit->OnClicked.AddDynamic(this, &UMainMenuWidget::Click_Credit);
-	Exit->OnClicked.AddDynamic(this, &UMainMenuWidget::Click_Exit);
-
-	//NewGame->OnHovered.AddDynamic(this, &UMainMenuWidget::Hoverbutton);
-	//Continue->OnHovered.AddDynamic(this, &UMainMenuWidget::Hoverbutton);
-	//Option->OnHovered.AddDynamic(this, &UMainMenuWidget::Hoverbutton);
-	//Credit->OnHovered.AddDynamic(this, &UMainMenuWidget::Hoverbutton);
-	//Exit->OnHovered.AddDynamic(this, &UMainMenuWidget::Hoverbutton);
-
-	/*NewGame->OnUnhovered.AddDynamic(this, &UMainMenuWidget::UnHoverbutton);
-	Continue->OnUnhovered.AddDynamic(this, &UMainMenuWidget::UnHoverbutton);
-	Option->OnUnhovered.AddDynamic(this, &UMainMenuWidget::UnHoverbutton);
-	Credit->OnUnhovered.AddDynamic(this, &UMainMenuWidget::UnHoverbutton);
-	Exit->OnUnhovered.AddDynamic(this, &UMainMenuWidget::UnHoverbutton);*/
+	NewGameBtn->OnClicked.AddUniqueDynamic(this, &UMainMenuWidget::Click_Newgame);
+	ContinueBtn->OnClicked.AddUniqueDynamic(this, &UMainMenuWidget::Click_Continue);
+	OptionBtn->OnClicked.AddUniqueDynamic(this, &UMainMenuWidget::Click_Option);
+	CreditBtn->OnClicked.AddUniqueDynamic(this, &UMainMenuWidget::Click_Credit);
+	ExitBtn->OnClicked.AddUniqueDynamic(this, &UMainMenuWidget::Click_Exit);
 
 	
 	UWorld* world = GetWorld();
@@ -46,11 +34,12 @@ void UMainMenuWidget::CheckContinueButtonEnabled()
 	
 	int32 Index = 0;
 
+	//if save file is not exist, hide Continue button.
 	if ( !UGameplayStatics::DoesSaveGameExist(SlotPlName, Index)
 	|| !UGameplayStatics::DoesSaveGameExist(SlotWoName, Index))
 	{
-		Continue->SetVisibility(ESlateVisibility::Collapsed);
-		Continue->SetIsEnabled(false);
+		ContinueBtn->SetVisibility(ESlateVisibility::Collapsed);
+		ContinueBtn->SetIsEnabled(false);
 	}
 }
 
@@ -96,6 +85,24 @@ void UMainMenuWidget::Click_Continue()
 void UMainMenuWidget::Click_Option()
 {
 	//option widget 생성
+
+	UMyGameInstance* MyGameInst = GetWorld()->GetGameInstance<UMyGameInstance>();
+	if (!MyGameInst) return;
+
+	//이미 있다면 추가 생성은 하지 않고 return한다.
+	if (OptionWidget.IsValid()) return;
+
+	OptionWidget = MyGameInst->CreateOptionWidget();
+
+	if (OptionWidget.IsValid())
+	{
+		OptionWidget->OnRemoveWidget.AddUniqueDynamic(this, &UMainMenuWidget::RemoveAdditionalWidget);
+		OptionWidget->AddToViewport(9);
+
+		//when showing option widget, hide this widget.
+		SetVisibility(ESlateVisibility::Collapsed);
+		
+	}
 }
 
 void UMainMenuWidget::Click_Credit()
@@ -109,15 +116,8 @@ void UMainMenuWidget::Click_Exit()
 }
 
 
-
-void UMainMenuWidget::Hoverbutton()
+void UMainMenuWidget::RemoveAdditionalWidget()
 {
-	UE_LOG(LogTemp, Warning, TEXT("UMainMenuWidget::Hoverbutton"));
-	
-
-}
-
-void UMainMenuWidget::UnHoverbutton()
-{
-	UE_LOG(LogTemp, Warning, TEXT("UMainMenuWidget::UnHoverbutton"));
+	OptionWidget.Reset();
+	SetVisibility(ESlateVisibility::Visible);
 }

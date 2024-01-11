@@ -57,7 +57,7 @@ void UBTService_DecideWhatToDo::SetDecisionValue()//UBehaviorTreeComponent & Own
 
 
 	/*무기는 있으나, 탄창이 특정 갯수 이하인 경우 (1탄창 절반 이하)  또는 Ammo가 아예 없는 경우	*/
-	if (bNoWeapon == false)
+	if (bNoWeapon == false && AIChar->EquippedWeapon)
 	{
 		int32 APM = AIChar->EquippedWeapon->WeaponDataAsset->WeaponStat.AmmoPerMag;
 		if (AIChar->GetTotalNumberofSameTypeAmmo() < APM / 2)

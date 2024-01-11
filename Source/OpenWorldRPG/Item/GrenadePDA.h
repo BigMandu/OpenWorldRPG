@@ -52,4 +52,31 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Grenade | Smoke")
 	float SmokeDuration;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Grenade | Smoke")
+	float SmokeSpriteSizeMin;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Grenade | Smoke")
+	float SmokeSpriteSizeMax;
+
+	/** Value and Result 
+	 * 1,0,0 : Red
+	 * 0,1,0 : Green
+	 * 0,0,1 : Blue
+	 *
+	 * 0,1,1 : bluegreen
+	 * 1,1,0 : green but seems like toxin
+	 * 1,0,1 : Purple
+	 * 1,1,1 : White
+	 *
+	 * 2,1,1 : white but add some red
+	 * 1,2,1 : white but add some green
+	 * 1,1,2 : white but add soem blue
+	 */
+	UPROPERTY(EditDefaultsOnly, Category = "Grenade | Smoke")
+	FVector SmokeColorRGBFloat;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Grenade | Smoke")
+	float SmokeSpawnRate;
+	UPROPERTY(EditDefaultsOnly, Category = "Grenade | Smoke")
+	float SmokeRadius;
 };

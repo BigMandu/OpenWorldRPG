@@ -69,4 +69,6 @@ public:
 	virtual void Interaction(AActor* Actor) override;
 	virtual void SetOutline() override;
 	virtual void UnsetOutline() override;
+
+	virtual void SetMotherSpawnVolume(class ASpawnVolume* Var_MotherVolume) override;
 };

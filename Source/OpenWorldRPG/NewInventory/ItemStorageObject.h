@@ -52,11 +52,14 @@ public:
 	bool TryAddItem(UNewItemObject* ItemObj, bool bWantToGenerateRandomCount = false);
 	void AddItemAtIndex(UNewItemObject* ItemObj, int32 Index);
 	bool RemoveItem(UNewItemObject* ItemObj);
+
+	void RemoveAllItems();
 	
 	const TMap<UNewItemObject*, FTile> GetAllItems();
 
 	void UpdateInventory(TArray<UNewItemObject*> SavedInventory);
-	
+
+	void RefreshGrid() const;
 
 	
 

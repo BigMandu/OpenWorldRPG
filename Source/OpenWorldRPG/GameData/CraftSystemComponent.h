@@ -27,7 +27,9 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-public:	
+public:
+	void DeleteAllCraftStatus();
+	
 	void SaveCraftStatus_TwoIng(FName CraftItemName, FTwoIngredientRecipe RemainReciepeStatus);
 	FTwoIngredientRecipe* LoadCraftIngredient_TwoIng(FName CraftItemName);
 	void DeleteCraftStatus_TwoIng(FName CraftItemName);
@@ -41,4 +43,5 @@ public:
 	void SaveCraftStatus_FourIng(FName CraftItemName, FFourIngredientRecipe RemainReciepeStatus);
 	FFourIngredientRecipe* LoadCraftIngredient_FourIng(FName CraftItemName);
 	void DeleteCraftStatus_FourIng(FName CraftItemName);
+
 };

@@ -57,12 +57,12 @@ void ADoor::PostInitializeComponents()
 
 		if (TargetRotation == FRotator(0.f) || TargetLocation == FVector(0.f))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("TargetRotation Or Location is 0"));
+			UE_LOG(LogTemp, Warning, TEXT("ADoor:://TargetRotation Or Location is 0"));
 		}
 
 		if (RotationLerpSpeed == 0.f || LocationLerpSpeed == 0.f)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("LerpSpeed is 0"));
+			UE_LOG(LogTemp, Warning, TEXT("ADoor:://LerpSpeed is 0"));
 		}
 	}
 	
@@ -81,7 +81,7 @@ void ADoor::BeginPlay()
 	DoorKnob->SetSimulatePhysics(false);
 	DoorKnobInitTF = DoorKnob->GetComponentTransform();
 	
-	UE_LOG(LogTemp,Warning,TEXT("DoorKnob Init Lo : %s"), *DoorKnobInitTF.ToString())
+	UE_LOG(LogTemp,Warning,TEXT("ADoor:://DoorKnob Init Lo : %s"), *DoorKnobInitTF.ToString())
 	//OnComponentHit이 먹질 않는다... TakeDamage로 변경함.
 	//DoorKnob->OnComponentHit.AddDynamic(this, &ADoor::OnDoorKnobDestroy);
 	
@@ -283,7 +283,7 @@ void ADoor::CloseDoor()
 
 void ADoor::LockTheDoor()
 {
-	if (DoorType != EDoorType::EDT_LockedDoor && bIsLocked)
+	if (/*DoorType != EDoorType::EDT_LockedDoor &&*/ bIsLocked)
 	{
 		return;
 	}
@@ -299,10 +299,15 @@ void ADoor::LockTheDoor()
 	
 	DoorKnob->SetCollisionProfileName(TEXT("BlockAllDynamic"));
 	
-	
 
-	UE_LOG(LogTemp, Warning, TEXT("DoorKnob LockThe Door Lo : %s"), *DoorKnobInitTF.ToString())
-	bIsLocked = true;
+	if (DoorType == EDoorType::EDT_LockedDoor)
+	{
+		bIsLocked = true;
+	}
+
+
+	UE_LOG(LogTemp, Warning, TEXT("ADoor:://DoorKnob LockThe Door Lo : %s"), *DoorKnobInitTF.ToString())
+	
 }
 
 

@@ -1,9 +1,10 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "VehicleWheel.h"
+#include "OpenWorldRPG/GameData/VehicleDataTable.h"
 #include "FrontWheel.generated.h"
 
 /**
@@ -16,7 +17,8 @@ class OPENWORLDRPG_API UFrontWheel : public UVehicleWheel
 {
 	GENERATED_BODY()
 public:
-	UFrontWheel();	
+	UFrontWheel();
+	void SettingWheel(FVehicleDataTable Data);
 };
 
 PRAGMA_ENABLE_DEPRECATION_WARNINGS

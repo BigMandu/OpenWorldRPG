@@ -56,7 +56,8 @@ class OPENWORLDRPG_API AItem : public AInteractable //, public IItemInterface
 public:
 
 	AItem();
-	
+
+	/* BaseCharacter::SetHoldingItem함수에서 bind됨*/
 	FItemUseEnd ItemUseEnd;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Item)
@@ -97,12 +98,13 @@ public:
 	UPROPERTY()
 	TWeakObjectPtr<class ASpawnVolume> OwningVolume;
 
+private:
+	bool IsUsableItem();
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-protected:
 	void RemoveCountAtIventory(ABaseCharacter* Char, int32 RemoveCount = 0);
 	void SettingItemObj(UNewItemObject* Obj);
 public:
@@ -141,8 +143,10 @@ public:
 	virtual void AttachToHand(class ABaseCharacter* Actor, class UNewItemObject* Obj, bool bIsNeedToDestory = true);
 	void AttachToHand_Step(ABaseCharacter* Actor);
 	virtual void DetachFromHand(ABaseCharacter* Actor, bool bIsNeedToEquipBeforeWeapon);
-	void EquipBeforeWeapon(ABaseCharacter* Actor);
+	bool EquipBeforeWeapon(ABaseCharacter* Actor);
 	UFUNCTION()
 	virtual void Use(ABaseCharacter* Actor, UNewItemObject* Obj = nullptr);
+
+	virtual void ReadyToDestory(ABaseCharacter* Actor, UNewItemObject* Obj = nullptr);
 
 };

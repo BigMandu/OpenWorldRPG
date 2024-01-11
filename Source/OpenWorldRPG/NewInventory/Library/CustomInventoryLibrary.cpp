@@ -11,11 +11,19 @@
 #include "OpenWorldRPG/UI/Inventory/EquipmentSlot.h"
 
 #include "OpenWorldRPG/Item/CustomPDA.h"
+#include "OpenWorldRPG/Item/GrenadePDA.h"
+#include "OpenWorldRPG/Item/GrenadeBase.h"
+#include "OpenWorldRPG/Item/GrenadeFragment.h"
+#include "OpenWorldRPG/Item/GrenadeSmoke.h"
+
 #include "OpenWorldRPG/Item/Weapon.h"
 #include "OpenWorldRPG/Item/Weapon_Instant.h"
+#include "OpenWorldRPG/Item/WeaponParts.h"
 #include "OpenWorldRPG/Item/CoreUsableItem.h"
 #include "OpenWorldRPG/Item/Equipment.h"
 #include "OpenWorldRPG/Item/Container.h"
+
+
 #include "OpenWorldRPG/Item/WeaponPartsManagerObject.h"
 #include "OpenWorldRPG/BaseCharacter.h"
 
@@ -164,25 +172,40 @@ AEquipment* UCustomInventoryLibrary::SpawnEquipment(UWorld* World, UNewItemObjec
 	return nullptr;
 }
 
-ABaseGrenade* UCustomInventoryLibrary::SpawnGrenade(UWorld* World, UNewItemObject* ItemObj)
+AGrenadeBase* UCustomInventoryLibrary::SpawnGrenade(UWorld* World, UNewItemObject* ItemObj)
 {
-	if ( World && ItemObj )
+	if (World && ItemObj)
 	{
-		ABaseGrenade* ReturnActor = nullptr;
+		AGrenadeBase* ReturnActor = nullptr;
 		UGrenadePDA* GPDA = Cast<UGrenadePDA>(ItemObj->ItemInfo.DataAsset);
-		if ( GPDA )
+		
+		
+		if (GPDA)
 		{
-			ReturnActor = Cast<ABaseGrenade>(World->SpawnActor<ABaseGrenade>(ABaseGrenade::StaticClass()));
-
-			if ( ReturnActor )
+			if (GPDA->GrenadeType == EGrenadeType::EGT_Fragment)
 			{
-				ItemObj->bIsDestoryed = false;
-				ReturnActor->ItemSetting = ItemObj->ItemInfo;
-				ReturnActor->SetMesh();
-				ReturnActor->SetItemState(EItemState::EIS_Pickup);
-				return ReturnActor;
+				ReturnActor = World->SpawnActor<AGrenadeFragment>(AGrenadeFragment::StaticClass());
+			}
+			else if (GPDA->GrenadeType == EGrenadeType::EGT_Smoke)
+			{
+				ReturnActor = World->SpawnActor<AGrenadeSmoke>(AGrenadeSmoke::StaticClass());
 			}
 		}
+
+
+		//ReturnActor = Cast<AGrenadeBase>(World->SpawnActor<AGrenadeBase>(AGrenadeBase::StaticClass()));
+
+
+
+		if (ReturnActor)
+		{
+			ItemObj->bIsDestoryed = false;
+			ReturnActor->ItemSetting = ItemObj->ItemInfo;
+			ReturnActor->SetMesh();
+			ReturnActor->SetItemState(EItemState::EIS_Pickup);
+			return ReturnActor;
+		}
+		
 	}
 	return nullptr;
 }

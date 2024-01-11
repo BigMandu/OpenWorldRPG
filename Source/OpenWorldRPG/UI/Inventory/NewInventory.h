@@ -13,25 +13,11 @@ class UWidgetSwitcher;
 class UBorder;
 class UScrollBox;
 
-class UEquipmentComponent;
-class UNewInventoryComponent;
-class UNewInventoryGrid;
-class UEquipWidget;
-class UCharacterInventoryWidget;
-class UDropWidget;
-class ULootBoxWidget;
-
-class AMainCharacter;
-
 UCLASS()
 class OPENWORLDRPG_API UNewInventory : public UUserWidget
 {
 	GENERATED_BODY()
-private:
-	
-
 public:
-	AMainCharacter* Main;
 
 	//for Z order
 	int32 HighestZ = 2;
@@ -39,7 +25,7 @@ public:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	class UCanvasPanel* MainCanvas;
 
-	UEquipmentComponent* EquipComp;
+	class UEquipmentComponent* EquipComp;
 	
 	UPROPERTY(meta = (BindWidget))
 	class UButton* StatusButton;
@@ -55,13 +41,18 @@ public:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UWidgetSwitcher* RightWidgetSwitcher;
 	
+	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBorder* ContentBorder;
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UDropWidget* DropWidget;
+	class UDropWidget* DropWidget;
 
 	/*UPROPERTY(meta = (BindWidget))
 	class UAdditionalWidget* AdditionalWidget;*/
+
+	UPROPERTY(meta = (BindWidget))
+	class UCraftSystemWidget* CraftSystemWidget;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	class UResourceStatusWidgetInInventory* ResourceStatusWidget;
@@ -72,7 +63,7 @@ public:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	class UEquipStorageWidget* EquipmentStorageWidget;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UEquipWidget* EquipmentWidget;	
+	class UEquipWidget* EquipmentWidget;	
 
 	UPROPERTY(meta = (BindWidget))
 	class UIntelAcquiredListWidget* IntelAcquiredListWidget;
@@ -100,10 +91,10 @@ public:
 
 public:
 	UNewInventory(const FObjectInitializer& ObjectInitializer);
-
-public:
 	virtual bool Initialize() override;
 	virtual void NativeConstruct() override;
+
+	void InitUIData();
 
 	UFUNCTION()
 	void ChangeMainSwitchToStatus();

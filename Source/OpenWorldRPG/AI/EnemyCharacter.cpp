@@ -5,6 +5,8 @@
 #include "EnemyAIController.h"
 #include "OpenWorldRPG/Item/Equipment.h"
 #include "OpenWorldRPG/NewInventory/EquipmentComponent.h"
+#include "OpenWorldRPG/NewInventory/SpawnItemEquipComponent.h"
+#include "OpenWorldRPG/WorldControlVolume/SpawnVolume.h"
 
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -12,7 +14,7 @@
 #include "Components/AudioComponent.h"
 
 // Sets default values
-AEnemyCharacter::AEnemyCharacter()
+AEnemyCharacter::AEnemyCharacter() : Super()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	//PrimaryActorTick.bCanEverTick = true;
@@ -45,6 +47,8 @@ AEnemyCharacter::AEnemyCharacter()
 	AudioComp = CreateDefaultSubobject<UAudioComponent>(TEXT("AudioComp"));
 	AudioComp->SetupAttachment(GetRootComponent());
 
+
+
 }
 
 // Called to bind functionality to input
@@ -59,7 +63,11 @@ AEnemyCharacter::AEnemyCharacter()
 void AEnemyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	if (!bSpawnedFromSpawnVolume)
+	{
+		SpawnItemEquipComp->JudgeSpawn();
+	}
 }
 
 // Called every frame
@@ -105,4 +113,65 @@ bool AEnemyCharacter::CheckEquipped(AActor* Actor)
 		}
 	}
 	return false;
+}
+
+void AEnemyCharacter::Die()
+{
+	Super::Die();
+
+	//AICon->UnPossess();
+
+	if (MotherVolume.IsValid())
+	{
+		MotherVolume->RemoveSpawnedActorAtList(this);
+	}
+
+	DetachFromControllerPendingDestroy();
+
+	//Player의 Controller에서 해당 AI를 삭제한다.
+	//AI가 식별한 Player가 있으면, 그 Player는 차량 탑승 불가 기능을 추가 했기때문에, 죽으면 List에서 삭제 해줘야함.
+	if (AMainController* PlayerCon = Cast<AMainController>(GetWorld()->GetFirstPlayerController()))
+	{
+		PlayerCon->RemoveAtListTargetingThisActor(Cast<AEnemyAIController>(GetController()));
+
+	}
+	//TPMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+	
+}
+
+
+
+void AEnemyCharacter::SetMotherSpawnVolume(ASpawnVolume* Var_MotherVolume)
+{
+	if (Var_MotherVolume)
+	{
+		MotherVolume = Var_MotherVolume;
+		
+	}
+	
+}
+
+void AEnemyCharacter::SetAIData(struct FEnemyDataTable AIData)
+{
+
+	if (AIData.Mesh && AIData.AnimBP)
+	{
+		GetMesh()->SetSkeletalMesh(AIData.Mesh);
+		GetMesh()->SetAnimInstanceClass(AIData.AnimBP->GeneratedClass);
+		GetMesh()->SetRelativeTransform(AIData.MeshRelativeTF);
+		
+		RandomPatrolRadius = AIData.RandomPatrolRadius;
+		SightMaxAge = AIData.SightMaxAge;
+		HearingMaxAge = AIData.HearingMaxAge;
+
+		SetAnimVariable();
+
+		if (SpawnItemEquipComp)
+		{
+			SpawnItemEquipComp->bRandomSpawn = true;
+			SpawnItemEquipComp->JudgeSpawn();
+		}
+		//GetController()->Possess(this);
+	}		
+	
 }

@@ -174,8 +174,8 @@ void UNewInventoryGrid::RefreshInventory(UNewItemObject* Obj)
 		{
 			//QuickSlot에 등록되어 있는지 확인하고 등록 되어 있는 경우에 QuickSlot에서 삭제 process를 진행한다.
 			MainCon->MainHud->QuickSlot->CheckAlreadyRegistered(Obj,false);
-		}
 
+		}
 
 		const TMap<UNewItemObject*, FTile> ItemsMap = StorageObj->GetAllItems(); //InventoryComp->GetAllItems();
 		 
@@ -212,9 +212,23 @@ void UNewInventoryGrid::RefreshInventory(UNewItemObject* Obj)
 					}
 
 
+					/**
+					 * QuickSlot에 등록되어 있다면
+					 * 계속해서 Quickslot에 등록될 수 있는 여부를 알 수 있는 - QuickNum을 return하는 함수를 호출한뒤
+					 * QuickSlot text를 세팅하거나 지워준다.
+					 */
 					if (ele.Key->bIsRegQuickSlot)
 					{
-						MainCon->MainHud->QuickSlot->JudgeCanbeInQuickSlotOrUpdate(ele.Key);
+						EQuickSlotNumber QuickNum = MainCon->MainHud->QuickSlot->JudgeCanbeInQuickSlotOrUpdate(ele.Key);
+						if (QuickNum == EQuickSlotNumber::EQSN_MAX)
+						{
+							Itemwidget->RemoveQuickSlotNumber();
+						}
+						else
+						{
+							Itemwidget->SetQuickSlotNumber(QuickNum);
+						}
+						
 					}
 				}
 			}

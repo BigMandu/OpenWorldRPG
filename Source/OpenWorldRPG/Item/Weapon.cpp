@@ -60,17 +60,23 @@ void AWeapon::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	/* New Aim System, */
-	if(AMainCharacter* Player = Cast<AMainCharacter>(OwningPlayer))
+	if(!OwningPlayer || !WeaponDataAsset) return;
+
+
+	if(OwningPlayer->CharacterStatus != ECharacterStatus::EPS_Dead)
 	{
-		if (Player->EquippedWeapon == this)
+		if(AMainCharacter* Player = Cast<AMainCharacter>(OwningPlayer))
 		{
-			UpdateAim();
+			if (Player->EquippedWeapon == this)
+			{
+				UpdateAim();
+				WeaponClipping();
+			}
+		}
+		else
+		{
 			WeaponClipping();
 		}
-	}
-	else if(OwningPlayer)
-	{
-		WeaponClipping();
 	}
 	//if ( MainCon != nullptr ) //if (OwningPlayer != nullptr)
 	//{
@@ -829,7 +835,7 @@ void AWeapon::Reload()
 	}
 	else
 	{
-		UE_LOG(LogTemp,Warning,TEXT("AWeapon::Reload// Reload Failed! : Ammo is not Vest or Pocket / full ammo in mag."));
+		//UE_LOG(LogTemp,Warning,TEXT("AWeapon::Reload// Reload Failed! : Ammo is not Vest or Pocket / full ammo in mag."));
 	}	
 }
 
@@ -1307,6 +1313,8 @@ void AWeapon::PlayWeaponAnimAndCamShake(FWeaponAnim& Anim)
 
 void AWeapon::AimInitialize()
 {
+	if(GetInstigatorController() == nullptr) return;
+
 	UE_LOG(LogTemp, Warning, TEXT("AWeapon::AimInitialize"));
 	//UE_LOG(LogTemp, Warning, TEXT("Save End Firing Location And Init"));
 	EndFiringRotation = GetInstigatorController()->GetControlRotation();
@@ -1339,14 +1347,14 @@ void AWeapon::UpdateAim()
 	FTransform AimPos = GetAimPosition();
 	FVector EndVec = AimPos.GetLocation() + AimPos.GetRotation().Vector() * 3000.f;
 	FHitResult Hit = BulletTrace(AimPos.GetLocation(), EndVec);
-	if(!MainCon || !MainCon->Main->CameraFPS) return;
+	if(!MainCon || !MainCon->PlayerChar->CameraFPS) return;
 
 	if (Hit.bBlockingHit)
 	{
 		WorldAimPosition = Hit.Location;
 
 		//FPS시점에서 Trace를 같은곳에 한번 더 쏴서 맞으면 맞은 위치로 AimPos를 옮긴다.
-		FHitResult WeaponHit = BulletTrace(MainCon->Main->CameraFPS->GetComponentLocation(), Hit.Location);
+		FHitResult WeaponHit = BulletTrace(MainCon->PlayerChar->CameraFPS->GetComponentLocation(), Hit.Location);
 		if (WeaponHit.bBlockingHit)
 		{
 			WorldAimPosition = WeaponHit.Location;
@@ -1369,11 +1377,13 @@ void AWeapon::WeaponClipping()
 	FVector RotVec;
 	//Player인 경우 FPS/TPS시점에 따라 HandIK를 다르게 적용한다.
 
-	if(!OwningPlayer) return;
+	if(!OwningPlayer || !WeaponDataAsset) return;
+	if (!OwningPlayer->GetMesh()) return;
 
 	if (AMainCharacter* Player = Cast<AMainCharacter>(OwningPlayer))
 	{
-		if(!MainCon) return;
+		if(Player->FPMesh == nullptr || Player->GetMesh() == nullptr) return;
+		
 		//아래 EndLo Vec을 계산할때 사용할 방향벡터
 		RotVec = GetAimPosition().GetRotation().GetForwardVector();
 
@@ -1381,21 +1391,21 @@ void AWeapon::WeaponClipping()
 		{
 			case ECameraMode::ECM_FPS:
 				CurrentMeshAttachTransform = WeaponDataAsset->FPMeshAttachTransform;
-				CurrentMeshRightHand = MainCon->Main->FPMesh->GetSocketLocation("Hand_R");
+				CurrentMeshRightHand = Player->FPMesh->GetSocketLocation("Hand_R");
 			break;
 			case ECameraMode::ECM_TPS:
 				CurrentMeshAttachTransform = WeaponDataAsset->MeshAttachTransform;
-				CurrentMeshRightHand = MainCon->Main->GetMesh()->GetSocketLocation("hand_r");
+				CurrentMeshRightHand = Player->GetRightHandLocation();// GetMesh()->GetSocketLocation("Hand_R");
 			break;
 			
 		}
 	}
-	else if(OwningPlayer)
+	else
 	{
 		RotVec = OwningPlayer->GetActorForwardVector();
 
 		CurrentMeshAttachTransform = WeaponDataAsset->MeshAttachTransform;
-		CurrentMeshRightHand = OwningPlayer->GetMesh()->GetSocketLocation("hand_r");
+		CurrentMeshRightHand = OwningPlayer->GetRightHandLocation();
 	}
 	
 

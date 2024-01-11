@@ -6,7 +6,10 @@
 #include "OpenWorldRPG/OpenWorldRPGGameModeBase.h"
 #include "OpenWorldRPG/CustomLibrary/CustomSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
+
 #include "Components/WidgetComponent.h"
+#include "Components/BoxComponent.h"
+#include "Components/BillboardComponent.h"
 
 // Sets default values
 AMissionVolume::AMissionVolume()

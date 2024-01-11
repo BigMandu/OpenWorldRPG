@@ -17,30 +17,34 @@ UCLASS()
 class OPENWORLDRPG_API UMainMenuWidget : public UUserWidget
 {
 	GENERATED_BODY()
-public:
 
-	//TArray<UBorder> border
-
-	UPROPERTY(meta = (bindwidget))
-	class UButton* NewGame;
-	UPROPERTY(meta = (bindwidget))
-	UButton* Continue;
-	UPROPERTY(meta = (bindwidget))
-	UButton* Option;
-	UPROPERTY(meta = (bindwidget))
-	UButton* Credit;
-	UPROPERTY(meta = (bindwidget))
-	UButton* Exit;
-
-
-	/* Sound */
-private:
+	TWeakObjectPtr<class UOptionWidget> OptionWidget;
 
 	FTimerHandle GetControlHandle;
+
+	/* Sound */
 	//Loop
 	class USoundCue* MainThemeSound;
 
 	USoundCue* ClickSound;
+
+public:
+
+	UPROPERTY(meta = (bindwidget))
+	class UButton* NewGameBtn;
+	UPROPERTY(meta = (bindwidget))
+	UButton* ContinueBtn;
+	UPROPERTY(meta = (bindwidget))
+	UButton* OptionBtn;
+	UPROPERTY(meta = (bindwidget))
+	UButton* CreditBtn;
+	UPROPERTY(meta = (bindwidget))
+	UButton* ExitBtn;
+
+private:
+
+	UFUNCTION()
+	void RemoveAdditionalWidget();
 
 
 
@@ -68,13 +72,5 @@ public:
 
 	UFUNCTION()
 	void Click_Exit();
-
-
-
-	UFUNCTION()
-	void Hoverbutton();
-	UFUNCTION()
-	void UnHoverbutton();
-
 
 };

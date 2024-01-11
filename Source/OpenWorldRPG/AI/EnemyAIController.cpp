@@ -25,7 +25,7 @@
 #include "OpenWorldRPG/NewInventory/NewInventoryComponent.h"
 #include "OpenWorldRPG/NewInventory/NewItemObject.h"
 #include "../MainController.h"
-#include "OpenWorldRPG/Item/BaseGrenade.h"
+#include "OpenWorldRPG/Item/GrenadeBase.h"
 #include "OpenWorldRPG/Item/GrenadePDA.h"
 #include "DrawDebugHelpers.h"
 
@@ -35,6 +35,13 @@ AEnemyAIController::AEnemyAIController(const FObjectInitializer& ObjectInitializ
 	: Super(ObjectInitializer.SetDefaultSubobjectClass<UCrowdFollowingComponent>(TEXT("PathFollowingComponent")))
 {
 	PrimaryActorTick.bCanEverTick = true;
+
+
+	static ConstructorHelpers::FObjectFinder<UBehaviorTree> BehaviorTreeAssetObj(TEXT("/Game/Blueprints/AI/BT_EnemyAI.BT_EnemyAI"));
+	if (BehaviorTreeAssetObj.Succeeded())
+	{
+		BTAsset = BehaviorTreeAssetObj.Object;
+	}
 
 	/**************** CrowdFollowing Comp 관련 ****************/
 	if (UCrowdFollowingComponent* CrowdFollowComp = Cast<UCrowdFollowingComponent>(GetComponentByClass(UCrowdFollowingComponent::StaticClass())))
@@ -92,6 +99,8 @@ AEnemyAIController::AEnemyAIController(const FObjectInitializer& ObjectInitializ
 	AttackMVDist = 100.f;
 	bUpdateEnemyLo = false;
 	EnemyAttackLo = FVector::ZeroVector;
+
+
 }
 
 void AEnemyAIController::PostInitializeComponents()
@@ -136,16 +145,16 @@ void AEnemyAIController::OnPossess(APawn* InPawn)
 	{
 		const FVector OriginPosition = OwnerActor->GetActorLocation();
 
-		if(BBComp && OwnerActor->BTAsset)
+		if(BBComp && BTAsset)
 		{
-			BBComp->InitializeBlackboard(*(OwnerActor->BTAsset->BlackboardAsset)); //Blackboard초기화
+			BBComp->InitializeBlackboard(*(BTAsset->BlackboardAsset)); //Blackboard초기화
 
 			//여긴 귀찮아서 걍 이걸로함
 			BBComp->SetValueAsVector(OriginPosKey, OriginPosition); //Spawn위치 저장.
 			BBComp->SetValueAsBool(bHasPatrolPointsKey, OwnerActor->bHasPatrolPoints); //Targetpoint 보유 여부를 넘겨줌.
 			BBComp->SetValueAsInt(PatrolPointIndexKey, 0); //Targetpoint index를 0으로 세팅한다.
 		
-			BTComp->StartTree(*(OwnerActor->BTAsset)); //마지막에 StartTree
+			BTComp->StartTree(*BTAsset); //마지막에 StartTree
 
 			SightConfig->SetMaxAge(OwnerActor->SightMaxAge);
 			HearingConfig->SetMaxAge(OwnerActor->HearingMaxAge);
@@ -158,7 +167,7 @@ void AEnemyAIController::OnPossess(APawn* InPawn)
 */
 bool AEnemyAIController::IsGrenade(AActor* DetectActor)
 {
-	if ( ABaseGrenade* Grenade = Cast<ABaseGrenade>(DetectActor) )
+	if (AGrenadeBase* Grenade = Cast<AGrenadeBase>(DetectActor) )
 	{
 		if ( UGrenadePDA* GPDA = Cast< UGrenadePDA>(Grenade->ItemSetting.DataAsset) )
 		{
@@ -263,10 +272,10 @@ void AEnemyAIController::DetectedTarget(AActor* Target, FAIStimulus Stimulus)
 /**************************************************/
 void AEnemyAIController::DetectedGrenade(AActor* DetectTarget, FAIStimulus Stimulus)
 {
-	if ( ABaseGrenade* Grenade = Cast<ABaseGrenade>(DetectTarget) )
+	if (AGrenadeBase* Grenade = Cast<AGrenadeBase>(DetectTarget))
 	{
 		//Grenade List에 없다면 추가 단계를 진행한다.
-		if (DetectedGrenadeList.Num() == 0 || DetectedGrenadeList.Find(Grenade) == INDEX_NONE )
+		if (DetectedGrenadeList.Num() == 0 || DetectedGrenadeList.Find(Grenade) == INDEX_NONE)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("AICon::DetectGrenade // Detect Grenade!!!! "));
 
@@ -287,10 +296,10 @@ void AEnemyAIController::DetectedGrenade(AActor* DetectTarget, FAIStimulus Stimu
 	}
 }
 
-void AEnemyAIController::GrenadeEffectIsEnd(ABaseGrenade* ExplodedGrenade)
+void AEnemyAIController::GrenadeEffectIsEnd(AGrenadeBase* ExplodedGrenade)
 {
 	
-	if ( DetectedGrenadeList.Find(ExplodedGrenade) != INDEX_NONE )
+	if (DetectedGrenadeList.Find(ExplodedGrenade) != INDEX_NONE)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("AICon::GrenadeEffectIsEnd// grenade  was exploded , remove at list"));
 		DetectedGrenadeList.Remove(ExplodedGrenade);
@@ -299,7 +308,7 @@ void AEnemyAIController::GrenadeEffectIsEnd(ABaseGrenade* ExplodedGrenade)
 
 	//DetectedList가 비어있다면 인식되었던 Grenade가 없으므로
 	//detect bool key를 false한다.
-	if ( DetectedGrenadeList.Num() <= 0 )
+	if (DetectedGrenadeList.Num() <= 0)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("AICon::GrenadeEffectIsEnd// There is no more Detect grenade"));
 		UpdateBBCompBoolKey(bDetectGrenade, false);
@@ -610,10 +619,10 @@ void AEnemyAIController::CalcGrenadeLocation()
 	
 	const FVector AILoc = OwnerActor->GetActorLocation();
 	//const FVector SavedGrenadeLoc = BBComp->GetValueAsVector(DetectGrenadeLocationKey);
-	ABaseGrenade* SavedGrenade = Cast<ABaseGrenade>(BBComp->GetValueAsObject(DetectedGrenadeKey));
+	AGrenadeBase* SavedGrenade = Cast<AGrenadeBase>(BBComp->GetValueAsObject(DetectedGrenadeKey));
 	FVector SavedGrenadeLoc = FVector(0.f);
 
-	ABaseGrenade* ShortDistGrenade = nullptr;
+	AGrenadeBase* ShortDistGrenade = nullptr;
 
 	//이미 Detect된 Grenade가 있었다면 비교를 위해 저장해둔다.
 	if(SavedGrenade )
